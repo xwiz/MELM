@@ -1,9 +1,7 @@
 # A Morpheme-Event Language Model
 ## Toward Reality-Encoding Conversational AI at the Capability of a Five-Year-Old
 
-**Whitepaper v1.0 — May 2026**
-**Audience:** Strategic partners and ML researchers
-**Author:** Independent research (5-year programme)
+**May 2026**
 
 ---
 
@@ -94,7 +92,7 @@ The **BabyLM Challenge** (2023, 2024, planned 2025) constrains pretraining to �
 
 ### 3.6 Lessons from speech systems (STT/TTS)
 
-A reviewer asked an unusually productive question: do speech-side systems already exploit morpheme-aware and event-aware primitives, and what can we learn? The answer is *yes, in pieces, and the convergent evidence strengthens MELM's case considerably*.
+Speech-side systems already exploit morpheme-aware and event-aware primitives in pieces. The convergent evidence is worth tracing because it strengthens the MELM case from an adjacent modality.
 
 **ASR has independently rediscovered morpheme-aware tokenization for low-resource and morphologically-rich languages.** Recent work for Malayalam, Slovak, Amharic, Yoloxóchitl Mixtec, and a broad survey of African languages (ACL AfricanNLP 2025) all converge on the same conclusion: subword vocabularies aligned to morphemes (S-BPE, MorphBPE, syllable-BPE) reduce word error rate substantially in agglutinative and templatic languages where word-level vocabularies blow up combinatorially. This is *direct empirical validation of the MELM thesis from an adjacent modality*. ASR teams arrived at this conclusion not from theory but from forced encounter with morphological productivity.
 
@@ -106,7 +104,7 @@ A reviewer asked an unusually productive question: do speech-side systems alread
 
 **Whisper itself sits in the awkward middle.** Whisper uses GPT-2 byte-level BPE — designed for English — refit but not redesigned for multilingual ASR. The 2025 paper "Beyond WER: Probing Whisper's Sub-token Decoder Across Diverse Language Resource Levels" documents the predictable consequence: substantial performance gaps on languages typologically distant from Indo-European training data. This is the *negative example* for MELM's thesis: a frontier-quality acoustic model, hobbled in its outputs by a tokenizer that was never designed for the linguistic diversity it encounters. The same critique applies, *a fortiori*, to text-only LLMs.
 
-**Implications for MELM design.** Three concrete updates emerge:
+**Implications for MELM design.** Three concrete points follow:
 
 1. **Phonological grounding is a viable secondary representation.** A future variant of MELM (call it MELM-Phon) could ground morpheme embeddings in phonological feature vectors (IPA-style) rather than purely orthographic tokens. This would unlock cross-script transfer (English ↔ Russian ↔ Arabic without script mapping) and natural integration with speech.
 2. **Prosodic boundaries should be incorporated into multimodal training.** When MELM is extended to audio-grounded data (a likely Phase 2), prosodic boundary detection should serve as an auxiliary supervision signal for the Event Processor's segmentation, complementing the Bayesian-surprise heuristic.
@@ -250,7 +248,7 @@ Run the standard BabyLM 2024/2025 evaluation suite (BLiMP for syntactic generali
 
 ### 6.2 Five-year-old conversational benchmark (new)
 
-A bespoke suite, designed in collaboration with developmental psycholinguists, covering:
+A bespoke suite, adapted from established developmental psycholinguistics instruments, covering:
 
 - **Receptive vocabulary** — Peabody-style picture-vocabulary probes.
 - **Productive grammar** — elicited production of past tense, plural, comparative, possessive, with a 50/50 mix of regular and irregular targets.
@@ -323,86 +321,94 @@ The morpheme-aware gain is largest in low-resource regimes. As corpus scale incr
 
 ---
 
-## 8. Roadmap & MVP Milestones — Compressed 6-Month Path to MVP
+## 8. Roadmap, Team, and Budget
 
-The original roadmap envisioned a ~14-month cadence. After auditing what is actually buildable with off-the-shelf 2026 components, **the time to a publicly-demonstrable MELM-MVP can be compressed to six months at a total budget of ~$400–500K.** This section documents how.
+We ship MELM-MVP — an 800M-parameter model demonstrating five-year-old conversational competence and episodic recall — in six months with a two-engineer team and $150K–$350K of total funding. The rest of this section walks through how.
 
-### 8.1 The three things that change the math
+### 8.1 What carries the weight
 
-Three findings collapse the original timeline:
+Three open-source components do most of the heavy lifting, which is why the build stays small.
 
-**(i) EM-LLM works as a zero-training wrapper on any transformer-based LLM.** The official EM-LLM repository (github.com/em-llm/EM-LLM-model) supports Mistral, Llama 3, Llama 3.1, Phi-3-mini, and Phi-3.5-mini base models out of the box, with no fine-tuning required. *This means the entire Layer 3 Event Processor can be validated in Week 1 against a frozen pretrained base, decoupled from morpheme work entirely.* The original plan implicitly built EM-LLM-equivalent functionality from scratch; instead, we drop it in.
+**(i) EM-LLM** ([github.com/em-llm/EM-LLM-model](https://github.com/em-llm/EM-LLM-model)) is a zero-training wrapper that runs over any transformer LLM. The repo ships with Mistral, Llama 3, Llama 3.1, Phi-3-mini, and Phi-3.5-mini as supported base models. Layer 3's Event Processor enters our build as integration work, not novel research.
 
-**(ii) Pretrained Mamba checkpoints are public.** state-spaces/mamba-{130m, 370m, 790m, 1.4b, 2.8b}-hf are openly available on HuggingFace, plus NVIDIA's Nemotron 3 Super (March 2026), an open Mamba-Transformer hybrid. We warm-start the Layer 3 backbone from a 790M Mamba checkpoint rather than pretraining from scratch. The morpheme tokenizer (Layer 1) and compositional embedding (Layer 2) become the only new modules trained from random initialization; Layer 3's body is fine-tuned, not pretrained.
+**(ii) Pretrained Mamba checkpoints** are openly available on HuggingFace at state-spaces/mamba-{130m, 370m, 790m, 1.4b, 2.8b}-hf, alongside NVIDIA's Nemotron 3 Super (March 2026, an open Mamba-Transformer hybrid). We warm-start the Layer 3 backbone from a 790M Mamba checkpoint and fine-tune it. Layer 1 (morphological front-end) and Layer 2 (compositional embedding) are the only modules trained from random initialization, and both are small.
 
-**(iii) BabyLM 2024 100M corpus is downloadable.** The corpus is published on HuggingFace and through the BabyLM GitHub. It is already deduplicated, child-suitability-filtered, and split into the canonical 100M-word strict track. *We do not construct a corpus.* We download it and run morpheme segmentation + AMR annotation on top. This eliminates the original M0 (4-month corpus pipeline) and replaces it with two weeks of preprocessing.
+**(iii) BabyLM 2024** publishes the canonical 100M-word strict-track corpus on HuggingFace, already deduplicated and child-suitability-filtered. We download it, run morpheme segmentation and AMR annotation on top, and the corpus is ready in roughly two weeks of preprocessing.
 
-Combined, these three findings convert the longest-pole work-streams into rapid integrations of mature open-source components. The original whitepaper-style 14-month plan was honest about a *from-scratch* implementation; the field has matured enough in 2025–2026 that a *from-components* implementation is dramatically faster.
+The remaining work is integration, fine-tuning, evaluation, and the bespoke benchmark design. Six months covers it.
 
-### 8.2 Compressed timeline
+### 8.2 Six-month timeline
 
-| Month | Focus | Key Deliverable | Decoupled Work-streams | Spend |
+| Month | Focus | Key deliverable | Parallel work-streams | Spend |
 |---|---|---|---|---|
-| **1** | Foundations in parallel | (a) Morpheme FST + Morfessor fallback validated on BabyLM; (b) EM-LLM wrapper on Phi-3.5-mini passing episodic-recall benchmarks; (c) Cloud infra + AMR pipeline online | A: Morphology · B: EP validation · C: Data | ~$5K |
-| **2** | First end-to-end model | MELM-Tiny (370M, warm-started from state-spaces/mamba-370m-hf) trained on morpheme-segmented BabyLM, passing BabyLM 2024 baselines | Single integrated track | ~$10K |
-| **3** | Synthetic augmentation + scale-up | (a) 30M tokens of grounded synthetic dialogue via DeepSeek V4 API; (b) MELM-Small (≈500M) trained with EP integrated | A: Synthetic data · B: Backbone scale-up | ~$15K |
-| **4** | MELM-MVP full training | 800M-param MELM-MVP, multi-epoch with curriculum (CHILDES → encyclopedia → dialogue), continuous BabyLM evaluation, architecture ablations | Single track | ~$25K |
-| **5** | Benchmark suite + baselines | (a) Five-year-old conversational benchmark designed with developmental psycholinguist consultant; (b) Episodic recall benchmark; (c) BPE / RAG / full-context baselines run head-to-head | A: Benchmark dev · B: Baseline runs | ~$15K |
-| **6** | Polish + public release | Bug fixes, demo video, blog post, HuggingFace model card with weights, evaluation harness, open-source release | Single track | ~$5K |
+| **1** | Foundations | (a) Morpheme FST + Morfessor fallback validated on BabyLM; (b) EM-LLM wrapper running over Phi-3.5-mini and passing the Section 6.3 episodic-recall benchmark; (c) Cloud infra + AMR pipeline online | A: morphology · B: EP validation · C: data | ~$3K |
+| **2** | First end-to-end model | MELM-Tiny (370M, warm-started from mamba-370m-hf) trained on morpheme-segmented BabyLM, passing BabyLM 2024 baselines | Single integrated track | ~$6K |
+| **3** | Synthetic augmentation + scale-up | (a) 30M tokens of grounded synthetic dialogue via DeepSeek V4 API; (b) MELM-Small (~500M) trained with EP integrated | A: synthetic data · B: backbone scale-up | ~$10K |
+| **4** | MELM-MVP full training | 800M-param MELM-MVP, multi-epoch curriculum (CHILDES → encyclopedia → dialogue), continuous BabyLM evaluation, architecture ablations | Single track | ~$15K |
+| **5** | Benchmarks + baselines | (a) Five-year-old conversational benchmark; (b) episodic recall benchmark; (c) BPE / RAG / full-context baselines run head-to-head | A: benchmark dev · B: baseline runs | ~$8K |
+| **6** | Polish + release | Bug fixes, demo video, blog post, HuggingFace model card with weights, evaluation harness, open-source release | Single track | ~$3K |
 
-**Total: 6 months, ~$75K compute + API + consulting; ~$280K for a 3-engineer team; ~$400–500K all-in including buffer and overhead.**
-
-### 8.3 Build vs. buy decisions explicit
+### 8.3 Build vs. buy
 
 | Component | Build or Buy | Source / Reason |
 |---|---|---|
 | Morphological front-end (Layer 1) | **Buy + glue** | Morfessor 2.0 (open) + MorphoLex (downloadable) + CELEX (academic license) + foma/HFST for FST compilation |
 | Compositional embedding (Layer 2) | **Build (small)** | ~2M params; single-cell Tree-LSTM is a few hundred lines of PyTorch |
-| Backbone (Layer 3 body) | **Buy + fine-tune** | Warm-start from state-spaces/mamba-790m-hf or Nemotron 3 Super hybrid |
-| Event Processor (Layer 3 add-on) | **Buy + adapt** | EM-LLM repo as wrapper; lightly adapt for our event-token format |
+| Backbone body (Layer 3) | **Buy + fine-tune** | Warm-start from state-spaces/mamba-790m-hf or Nemotron 3 Super |
+| Event Processor (Layer 3 add-on) | **Buy + adapt** | EM-LLM repo as wrapper; light adaptation for our event-token format |
 | Output decoder (Layer 4) | **Build (small)** | Inverse of Layer 1; Tree-LSTM + FST realiser |
-| AMR annotation (Stage 3) | **Buy** | SPRING / AMRBART pretrained parsers; batch on cheap T4 GPUs |
+| AMR annotation | **Buy** | SPRING / AMRBART pretrained parsers; batch on cheap T4 GPUs |
 | Corpus | **Download** | BabyLM 2024 100M strict track from HuggingFace |
-| Synthetic dialogue | **Buy via API** | DeepSeek V4 API ($300–600 for 30M tokens) or local Llama-3.3-70B |
-| Training infrastructure | **Buy** | HuggingFace Trainer + DeepSpeed ZeRO-3; Modal or Lambda for compute |
+| Synthetic dialogue | **Buy via API** | DeepSeek V4 API (~$300–600 for 30M tokens) or local Llama-3.3-70B |
+| Training infra | **Buy** | HuggingFace Trainer + DeepSpeed ZeRO-3; Modal or Lambda for compute |
 | Evaluation harness | **Buy + extend** | EleutherAI lm-evaluation-harness as base; add bespoke five-year-old probes |
 | Episodic recall benchmark | **Build** | Adapt LongBench + ∞-Bench protocols for our event-segmentation tasks |
-| Cloud compute | **Buy** | Lambda H100 PCIe @ $2.49/hr or Modal @ $1.50/hr-equivalent (per-second billing); spot/preemptible for non-checkpointed work |
+| Cloud compute | **Buy** | Lambda H100 PCIe @ $2.49/hr or Modal @ ~$1.50/hr-equivalent (per-second billing); spot/preemptible for non-checkpointed work |
 
-**The pattern: build only the architectural novelty. Everything else is integration of mature open-source.** This is the same playbook Phi-3 (Microsoft) and Mistral followed at larger scale — the engineering ratio that Phi achieved against larger models was driven by data and integration, not novel infrastructure.
+We build only the architectural novelty. Everything else is integration of mature open-source. This is the same pattern Phi-3 and Mistral followed at larger scale — the engineering ratio those models achieved against bigger competitors came from data and integration, not novel infrastructure.
 
-### 8.4 Compute budget walk-through (this is the surprising part)
+### 8.4 Compute math
 
-For a 790M-parameter model trained on 200M tokens (BabyLM 100M + 30M synthetic + 70M repeated for curriculum / multi-epoch):
+For a 790M-parameter model trained on ~200M tokens (BabyLM 100M + 30M synthetic + 70M repeated for curriculum and multi-epoch):
 
 - Training FLOPs ≈ 6 × 8e8 × 2e8 ≈ 1e18 FLOPs
 - H100 BF16 throughput ≈ 700 TFLOPS = 7e14 FLOPs/sec
 - Single H100 wall-clock ≈ 1,400 sec ≈ 23 min for one full pass
-- 8× H100 cluster ≈ 3 min
-- Realistic with overhead, gradient accumulation, eval breaks: ~30 min per training run
+- 8× H100 cluster ≈ ~3 min per pass
+- Realistic with overhead, gradient accumulation, eval breaks: ~30 min per full training run
 - Architecture ablations across the project: ~50 full runs ≈ 25 GPU-hours per ablation
-- Total compute: 50 × 25 ≈ 1,250 H100-hours
-- Cost at Lambda PCIe ($2.49/hr): **~$3,100 of compute for the entire MVP training programme**
+- Total compute: ~1,250 H100-hours
+- At Lambda PCIe ($2.49/hr): **~$3,100 of compute for the entire MVP training programme**
 
-Even with a 10× safety margin for re-runs, evaluation runs, and exploratory work, the total compute spend is **under $40K**. This is shockingly cheap compared to the prevailing assumption that foundational language model work requires seven-figure compute budgets. The reason is straightforward: at sub-1B scale on a 100M-word corpus, the Chinchilla-optimal training compute simply isn't very large. The Phi-3 mini paper notes the same — Phi-3-mini (3.8B) was trained for 3.3T tokens, but that was a deliberate over-training choice for capability, not a Chinchilla-optimum. MELM at 800M / 200M tokens is *under-Chinchilla* by design, traded against the morpheme inductive bias and the warm-start from a pretrained Mamba.
+Even with a 10× safety margin for re-runs, evaluation runs, and exploratory work, total compute spend stays under $40K. This is rounding-error against the typical assumption that foundational language model work requires seven-figure compute budgets. The reason is straightforward: at sub-1B scale on a 100M-word corpus, Chinchilla-optimal training compute is small. Phi-3-mini (3.8B) was trained for 3.3T tokens, but that was a deliberate over-training choice for capability, not a Chinchilla optimum. MELM at 800M / 200M tokens is under-Chinchilla by design, traded against the morpheme inductive bias and the warm-start from a pretrained Mamba.
 
-### 8.5 Team composition (3 engineers + fractional consultant)
+### 8.5 Team
 
-| Role | FTE | Primary work-streams | Salary band (US, fully loaded, 6mo) |
-|---|---|---|---|
-| Senior ML engineer | 1.0 | Backbone integration, scaling, training infra, ablations | ~$120K |
-| NLP engineer | 1.0 | Morphological front-end, AMR pipeline, evaluation harness | ~$90K |
-| Research engineer | 1.0 | EM-LLM integration, synthetic data, paper, benchmarks | ~$90K |
-| Developmental psycholinguist | 0.1 (consult) | Five-year-old benchmark design, validation | ~$10K |
-| **Total people cost** | **3.1 FTE** |  | **~$310K** |
+Two of us. Both senior practitioners with strong NL/ML backgrounds, covering the full stack:
 
-This is deliberately small. The bet is that aggressive use of open-source components and a tight thesis lets a 3-person team out-execute a 12-person team building everything from scratch. Mistral's first model was built by a similarly small core team.
+- **ML engineer** — backbone integration, training infrastructure, scaling, ablations
+- **NLP engineer** — morphological front-end, AMR pipeline, EM-LLM integration, evaluation harness
 
-### 8.6 Critical path and parallelism map
+The work is well-scoped enough that a third hire creates more coordination overhead than throughput. Benchmark design and developmental-psycholinguistics literature are within our reach via published instruments (Peabody PVT-style probes, Sally-Anne false-belief tasks, BLiMP suites) — we read the relevant papers and adapt rather than hire out.
+
+### 8.6 Budget
+
+| Line item | Low | High |
+|---|---|---|
+| Compute (Lambda H100, ~1,500 GPU-hours with safety margin) | $25K | $40K |
+| Teacher LLM API (DeepSeek V4 for synthetic data) | $1K | $5K |
+| Storage, tooling, registry hosting, misc | $3K | $8K |
+| Two engineers, six months | $100K | $250K |
+| Buffer | $20K | $50K |
+| **Total** | **$149K** | **$353K** |
+
+The engineer line item flexes most. At the low end we run founder-equity-heavy with reduced cash compensation; at the high end we pay closer to senior-AI-engineer market cash. Either way, a single $250K SAFE from a Tier-A AI angel (AI Grant, Conviction, Pioneer) covers the MVP comfortably.
+
+### 8.7 Critical path and parallelism
 
 ```
 Month 1: ┌── (A) Morpheme FST ──────────────┐
-         ├── (B) EM-LLM wrapper validation ─┤── all merge into M2
+         ├── (B) EM-LLM wrapper validation ─┤── merge into M2
          └── (C) Data pipeline + cloud infra┘
 Month 2: ────────── MELM-Tiny (370M) ───────────────────
 Month 3: ┌── (A) Synthetic data generation ─┐
@@ -413,54 +419,29 @@ Month 5: ┌── (A) Five-year-old benchmark ───┐
 Month 6: ────────── Public release ─────────────────────
 ```
 
-The critical path is Month 2 → Month 4 (single integrated training stream). Months 1, 3, and 5 use parallel work-streams. The team size of 3 engineers is exactly tuned to the parallelism width.
+The critical path is Month 2 → Month 4 (single integrated training stream). Months 1, 3, and 5 use parallel work-streams that map cleanly onto the two-person team.
 
-### 8.7 Per-month kill criteria (modest-funding discipline)
+### 8.8 Per-month kill criteria
 
-If any of the following fails, halt and re-plan rather than push through:
+We halt and re-plan if any of these fails, rather than push through:
 
-- **End of Month 1:** Layer 1 FST coverage on Simple English Wikipedia ≥ 95%; EM-LLM wrapper on Phi-3.5-mini matches or exceeds the published numbers on a single LongBench task. *Otherwise: morpheme thesis or EP integration broken — stop.*
-- **End of Month 2:** MELM-Tiny achieves ≥ 80% of the BabyLM 2024 strict-track baseline at equivalent parameter count. *Otherwise: morpheme tokenizer + Mamba integration has a bug — debug before scaling.*
-- **End of Month 3:** Synthetic data rejection rate < 30%; MELM-Small ≥ 90% of BabyLM baseline. *Otherwise: synthetic pipeline grounding is failing — fix before adding more.*
-- **End of Month 4:** MELM-MVP outperforms MELM-Small by ≥ 5% on BabyLM. *Otherwise: scaling not paying — investigate before publishing.*
-- **End of Month 5:** MELM-MVP equals or beats BPE-baseline on per-parameter generalization AND wins clearly on episodic recall. *This is the thesis pass-fail.*
+- **End of Month 1:** Layer 1 FST coverage on Simple English Wikipedia ≥ 95% AND EM-LLM wrapper on Phi-3.5-mini matches the published numbers on a single LongBench task.
+- **End of Month 2:** MELM-Tiny achieves ≥ 80% of the BabyLM 2024 strict-track baseline at equivalent parameter count.
+- **End of Month 3:** Synthetic-data rejection rate < 30% AND MELM-Small ≥ 90% of the BabyLM baseline.
+- **End of Month 4:** MELM-MVP outperforms MELM-Small by ≥ 5% on BabyLM.
+- **End of Month 5:** MELM-MVP equals or beats BPE-baseline on per-parameter generalization AND clearly wins on episodic recall. This is the thesis pass-fail.
 
-### 8.8 What this compressed plan does NOT include (deliberate scope discipline)
+### 8.9 Out of scope for the MVP
 
-To hit six months, the following are *explicitly deferred* to a post-MVP Phase 2:
+The following are kept out of the MVP, on purpose, and revisited only after the demo lands:
 
-- Multilingual extension (originally M4) — defer entirely; English-only MVP
-- Phonological grounding / MELM-Phon variant — note in paper, defer build
-- Audio modality / prosodic boundary fusion — defer
-- Q4 (AMR/UCCA interoperability formal study) — collect data during MVP, publish separately
-- Q6 (corpus-scale saturation study) — defer; needs >MVP compute
+- Multilingual extension — English-only MVP
+- Phonological grounding / MELM-Phon variant — noted, deferred
+- Audio modality / prosodic boundary fusion — deferred
+- AMR/UCCA interoperability formal study (Q4) — collect data during MVP, publish separately
+- Corpus-scale saturation study (Q6) — needs more compute than the MVP runs
 
-The MVP demonstrates the thesis at the smallest scope that is scientifically interesting. Everything else is a post-MVP follow-up that becomes vastly easier to fund once the demo exists.
-
-### 8.9 Why we believe modest funding works here
-
-The single most expensive line item in any AI startup is *training a frontier model* — sums measured in tens to hundreds of millions of dollars. MELM-MVP is *not* a frontier model. It is a 800M-parameter, 200M-token, warm-started, fine-tuned-not-pretrained, sub-1B model. The compute cost is rounding-error compared to typical AI startup costs.
-
-The remaining cost is people. Three senior engineers for six months is well within the angel-check range targeted by the Tier-A investors in the accompanying outreach list (AI Grant cycles fund $250K-2M; Conviction writes $500K-2M seed checks; Pioneer grants are smaller but explicitly research-friendly). A $500K SAFE at $10M cap from a single Tier-A AI angel covers the entire MVP with comfortable buffer.
-
-The bet is that a working demo at Month 6 — a 800M-parameter model running on a laptop, holding a coherent conversation with five-year-old register, demonstrating cross-day episodic recall that BPE+RAG baselines cannot match — re-prices the round. It is the cheapest credible path we know of from thesis to demo for a foundational AI architecture bet.
-
-### 8.10 Original 14-month plan vs. compressed 6-month plan
-
-For transparency: the original 14-month plan (see Appendix A of v1 of this paper) is preserved as the *fully-from-scratch, no-shortcuts, defensible* baseline. The 6-month plan exists because the open-source ecosystem has matured to the point that the from-scratch plan is no longer the rational choice for the MVP. Post-MVP, the from-scratch infrastructure may still be worth building incrementally — but only after the architectural thesis is demonstrated.
-
----
-
-### Appendix A. Original 14-month roadmap (preserved for reference)
-
-| Milestone | Deliverable | Time |
-|---|---|---|
-| M0 — Pipeline online | From-scratch corpus pipeline | 4 months |
-| M1 — Layer 1+2 standalone | Morphological front-end + compositional embedding | 1 month |
-| M2 — MELM-Tiny (300M) | First end-to-end model | 2 months |
-| M3 — MELM-MVP (800M) | Five-year-old benchmark + episodic recall | 3 months |
-| M4 — Multilingual extension | English + Turkish + Swahili | 3 months |
-| M5 — Public release | Open weights + harness | 1 month |
+The MVP demonstrates the thesis at the smallest scope that is scientifically interesting. Everything beyond becomes vastly easier to fund once the demo exists.
 
 ---
 
