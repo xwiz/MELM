@@ -402,8 +402,6 @@ The work is well-scoped enough that a third hire creates more coordination overh
 | Buffer | $20K | $50K |
 | **Total** | **$149K** | **$353K** |
 
-The engineer line item flexes most. At the low end we run founder-equity-heavy with reduced cash compensation; at the high end we pay closer to senior-AI-engineer market cash. Either way, a single $250K SAFE from a Tier-A AI angel (AI Grant, Conviction, Pioneer) covers the MVP comfortably.
-
 ### 8.7 Critical path and parallelism
 
 ```
