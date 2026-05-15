@@ -1,7 +1,8 @@
 # MELM Implementation Research Review
 
 Date: 2026-05-10  
-Project reviewed: `MELM_whitepaper.md`, `MELM_whitepaper.docx`, `MELM_collaborators.csv`
+Updated: 2026-05-15  
+Project reviewed: `MELM_whitepaper.md`, `MELM_whitepaper.docx`, `MELM_collaborators.csv`, and the current validation-first implementation tree.
 
 ## Executive Verdict
 
@@ -18,13 +19,20 @@ Recommended path: build MELM as a staged research system. First prove tokenizati
 
 ## Repository State
 
-This repo is currently documentation-only:
+This repo is no longer documentation-only. It now contains a validation-first MELM implementation scaffold:
 
-- `MELM_whitepaper.md`: main proposal.
-- `MELM_whitepaper.docx`: document export.
+- `melm/`: Python package with tokenizer arms, event/state memory, guard/runtime logic, benchmark adapters, evaluation gates, small-model planning, and tiny-LM training utilities.
+- `scripts/`: runnable experiment, benchmark, export, summarization, preflight, and validation entrypoints.
+- `tests/`: regression tests for tokenization, memory, guard behavior, dialogue fixtures, BabyLM adapters, small-model gates, and report decisions.
+- `benchmarks/`: replayable authored and synthetic fixtures for episodic recall, dialogue memory, support-refund rules, transcript evidence, and morpheme-meaning probes.
+- `experiments/`: configuration files for tokenizer, BabyLM, memory, semantic, model, and demo runs.
+- `reports/`: generated validation reports and JSON artifacts.
+- `docs/`: implementation notes, reproduction instructions, tokenizer strategy, roadmap, and SLM appliance validation notes.
+- `pyproject.toml`: package and test configuration.
+- `MELM_whitepaper.md`: current whitepaper draft.
 - `MELM_collaborators.csv`: outreach/collaborator target list.
 
-There is no implementation code, training pipeline, dataset manifest, benchmark harness, tokenizer prototype, or model config yet. So "existing code review" is effectively a project-doc feasibility review.
+The review should therefore be read as a research-feasibility and implementation-direction review, not as a claim that no code exists. As of the May 2026 update, the local test suite covers the scaffold and has passed on the current tree.
 
 ## What The Whitepaper Gets Right
 
