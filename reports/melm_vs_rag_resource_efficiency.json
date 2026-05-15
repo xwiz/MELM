@@ -1,0 +1,35 @@
+{
+  "implementation": "current pure-Python brute-force EventMemory",
+  "queries_per_size": 20,
+  "rows": [
+    {
+      "events": 12,
+      "build_seconds": 0.000207,
+      "rag_query_ms": 0.087225,
+      "event_memory_query_ms": 0.08939,
+      "event_memory_overhead_ratio": 1.025
+    },
+    {
+      "events": 100,
+      "build_seconds": 0.001119,
+      "rag_query_ms": 0.67802,
+      "event_memory_query_ms": 0.64637,
+      "event_memory_overhead_ratio": 0.953
+    },
+    {
+      "events": 1000,
+      "build_seconds": 0.012368,
+      "rag_query_ms": 7.3707,
+      "event_memory_query_ms": 6.65764,
+      "event_memory_overhead_ratio": 0.903
+    },
+    {
+      "events": 5000,
+      "build_seconds": 0.065766,
+      "rag_query_ms": 41.03743,
+      "event_memory_query_ms": 48.614025,
+      "event_memory_overhead_ratio": 1.185
+    }
+  ],
+  "conclusion": "Current MELM event memory is more evidence/context efficient than RAG on the validation tasks, but this Python implementation is not more CPU efficient than RAG because both retrievers scan the full event list."
+}

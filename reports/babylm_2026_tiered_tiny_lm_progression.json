@@ -1,0 +1,142 @@
+{
+  "source_reports": [
+    "reports\\babylm_2026_multiseed_tiny_lm_ablation_tiered_10step.json",
+    "reports\\babylm_2026_multiseed_tiny_lm_ablation_tiered_50step.json",
+    "reports\\babylm_2026_multiseed_tiny_lm_ablation_tiered_100step.json",
+    "reports\\babylm_2026_multiseed_tiny_lm_ablation_tiered_200step.json"
+  ],
+  "progressions": [
+    {
+      "tokenizer": "capped_morpheme",
+      "points": [
+        {
+          "steps": 10,
+          "tokenizer": "capped_morpheme",
+          "mean_bits_per_byte": 3.296159033686809,
+          "std_bits_per_byte": 0.004687824423395625
+        },
+        {
+          "steps": 50,
+          "tokenizer": "capped_morpheme",
+          "mean_bits_per_byte": 3.07547096174029,
+          "std_bits_per_byte": 0.034845009459724574
+        },
+        {
+          "steps": 100,
+          "tokenizer": "capped_morpheme",
+          "mean_bits_per_byte": 2.5452253050793847,
+          "std_bits_per_byte": 0.03870162240656269
+        },
+        {
+          "steps": 200,
+          "tokenizer": "capped_morpheme",
+          "mean_bits_per_byte": 2.216277308566473,
+          "std_bits_per_byte": 0.010993817414672473
+        }
+      ],
+      "first_bits_per_byte": 3.296159033686809,
+      "last_bits_per_byte": 2.216277308566473,
+      "absolute_improvement": 1.079881725120336,
+      "relative_improvement": 0.3276182107974536
+    },
+    {
+      "tokenizer": "tiered_morph_unigram",
+      "points": [
+        {
+          "steps": 10,
+          "tokenizer": "tiered_morph_unigram",
+          "mean_bits_per_byte": 3.7633209348996695,
+          "std_bits_per_byte": 0.002265290100104021
+        },
+        {
+          "steps": 50,
+          "tokenizer": "tiered_morph_unigram",
+          "mean_bits_per_byte": 3.53873778882715,
+          "std_bits_per_byte": 0.033490589332083466
+        },
+        {
+          "steps": 100,
+          "tokenizer": "tiered_morph_unigram",
+          "mean_bits_per_byte": 2.9894209088946497,
+          "std_bits_per_byte": 0.0327676515893514
+        },
+        {
+          "steps": 200,
+          "tokenizer": "tiered_morph_unigram",
+          "mean_bits_per_byte": 2.6788253228354875,
+          "std_bits_per_byte": 0.011164392313481871
+        }
+      ],
+      "first_bits_per_byte": 3.7633209348996695,
+      "last_bits_per_byte": 2.6788253228354875,
+      "absolute_improvement": 1.084495612064182,
+      "relative_improvement": 0.2881751598719536
+    },
+    {
+      "tokenizer": "hf_bpe",
+      "points": [
+        {
+          "steps": 10,
+          "tokenizer": "hf_bpe",
+          "mean_bits_per_byte": 3.697486429326794,
+          "std_bits_per_byte": 0.003735753157234097
+        },
+        {
+          "steps": 50,
+          "tokenizer": "hf_bpe",
+          "mean_bits_per_byte": 3.5034655054401243,
+          "std_bits_per_byte": 0.022882167040740153
+        },
+        {
+          "steps": 100,
+          "tokenizer": "hf_bpe",
+          "mean_bits_per_byte": 3.0496693978346596,
+          "std_bits_per_byte": 0.027526272410507945
+        },
+        {
+          "steps": 200,
+          "tokenizer": "hf_bpe",
+          "mean_bits_per_byte": 2.7694613893002433,
+          "std_bits_per_byte": 0.008148296657120196
+        }
+      ],
+      "first_bits_per_byte": 3.697486429326794,
+      "last_bits_per_byte": 2.7694613893002433,
+      "absolute_improvement": 0.9280250400265508,
+      "relative_improvement": 0.25098808549123397
+    },
+    {
+      "tokenizer": "hf_unigram",
+      "points": [
+        {
+          "steps": 10,
+          "tokenizer": "hf_unigram",
+          "mean_bits_per_byte": 4.168165611844022,
+          "std_bits_per_byte": 0.006515019988604715
+        },
+        {
+          "steps": 50,
+          "tokenizer": "hf_unigram",
+          "mean_bits_per_byte": 3.884461017574683,
+          "std_bits_per_byte": 0.03674642457581041
+        },
+        {
+          "steps": 100,
+          "tokenizer": "hf_unigram",
+          "mean_bits_per_byte": 3.20449943885617,
+          "std_bits_per_byte": 0.0312243784451851
+        },
+        {
+          "steps": 200,
+          "tokenizer": "hf_unigram",
+          "mean_bits_per_byte": 2.850523301660209,
+          "std_bits_per_byte": 0.0057794324430298525
+        }
+      ],
+      "first_bits_per_byte": 4.168165611844022,
+      "last_bits_per_byte": 2.850523301660209,
+      "absolute_improvement": 1.3176423101838126,
+      "relative_improvement": 0.31612043111715027
+    }
+  ]
+}

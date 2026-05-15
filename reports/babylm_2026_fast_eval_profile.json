@@ -1,0 +1,12 @@
+{
+  "blimp_dir": "local_data/babylm_eval_2026/strict/evaluation_data/fast_eval/blimp_fast",
+  "entity_dir": "local_data/babylm_eval_2026/strict/evaluation_data/fast_eval/entity_tracking_fast",
+  "blimp_fast": {
+    "files": 67,
+    "cases": 13400
+  },
+  "entity_tracking_fast": {
+    "files": 1,
+    "cases": 3152
+  }
+}

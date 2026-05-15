@@ -1,0 +1,29 @@
+{
+  "source": "manifest:reports\\babylm_2026_strict_small_manifest.json",
+  "root": "artifacts\\babylm_2026_stage_gpu_smoke",
+  "max_validation_bytes": 50000,
+  "runs": [
+    {
+      "name": "tiered_morph_unigram_seed13_1step",
+      "manifest": "artifacts\\babylm_2026_stage_gpu_smoke\\tiered_morph_unigram_seed13_1step\\run_manifest.json",
+      "tokenizer_metadata": "artifacts\\babylm_2026_stage_gpu_smoke\\tiered_morph_unigram_seed13_1step\\tokenizer\\tokenizer_metadata.json",
+      "evaluation": {
+        "tokenizer": "tiered_morph_unigram",
+        "checkpoint_dir": "artifacts\\babylm_2026_stage_gpu_smoke\\tiered_morph_unigram_seed13_1step\\checkpoint",
+        "validation_documents": 6,
+        "validation_tokens": 16498,
+        "validation_bytes": 49998,
+        "validation_sequences": 86,
+        "vocabulary_size": 16384,
+        "parameters": 23319808,
+        "checkpoint_steps": 1,
+        "device": "cuda",
+        "validation_nll": 9.305473612155144,
+        "validation_bits_per_byte": 4.429877205678073,
+        "validation_perplexity": 10998.053836302812
+      },
+      "training_validation_bits_per_byte": 4.429877205678073,
+      "bits_per_byte_delta_from_training_report": 0.0
+    }
+  ]
+}

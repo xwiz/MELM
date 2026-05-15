@@ -1,0 +1,2671 @@
+{
+  "benchmark": "melm_authored_support_refunds_v0_1",
+  "dataset_path": "benchmarks\\support_refunds_authored.jsonl",
+  "dataset_metadata": {
+    "dataset_id": "melm_support_refunds_authored_v0_1",
+    "vertical": "support_refunds",
+    "created_utc": "2026-05-13",
+    "language": "en-US",
+    "authoring_mode": "internally_authored_seed_batch",
+    "authoring_protocol": "docs/support_refunds_dataset_authoring.md",
+    "split": "authored_seed",
+    "current_time": 86,
+    "requires_external_blind_batch": true,
+    "intended_use": "publication-readiness seed corpus for validating schema, coverage, MELM Guard decisions, and Memory OS state resolution before external human labeling",
+    "known_limitations": [
+      "internally authored by the implementation team",
+      "not sampled from real customer logs",
+      "must not be represented as independent human-labeled data"
+    ]
+  },
+  "schema_validation_passed": true,
+  "validation_errors": [],
+  "events": 56,
+  "facts": 56,
+  "turns": 22,
+  "guard_cases": 13,
+  "memory_cases": 40,
+  "k": 2,
+  "bootstrap_samples": 1000,
+  "guard_report": {
+    "cases": 13,
+    "melm_accuracy": 1.0,
+    "schema_only_accuracy": 0.3076923076923077,
+    "prompt_only_accuracy": 0.3076923076923077,
+    "melm_false_allow_rate": 0.0,
+    "schema_only_false_allow_rate": 0.9,
+    "prompt_only_false_allow_rate": 0.9,
+    "false_allow_reduction_vs_schema": 1.0,
+    "valid_action_allow_rate": 1.0,
+    "traceability": 1.0,
+    "gate_passed": true,
+    "predictions": [
+      {
+        "action_id": "auth_g01",
+        "category": "valid_low_value",
+        "expected_status": "allow",
+        "schema_only_status": "allow",
+        "prompt_only_status": "allow",
+        "melm_status": "allow",
+        "melm_decision": {
+          "status": "allow",
+          "triggered_rule_ids": [],
+          "required_facts": [
+            "action:amount",
+            "order:o7101:status",
+            "customer:c7101:identity_verified",
+            "order:o7101:fraud_flag",
+            "order:o7101:refund_status",
+            "order:o7101:days_since_delivery",
+            "order:o7101:manager_approval"
+          ],
+          "missing_facts": [],
+          "evidence_event_ids": [],
+          "explanation": "approve_refund allowed: no blocking rule matched."
+        }
+      },
+      {
+        "action_id": "auth_g02",
+        "category": "identity_missing_or_false",
+        "expected_status": "deny",
+        "schema_only_status": "allow",
+        "prompt_only_status": "allow",
+        "melm_status": "deny",
+        "melm_decision": {
+          "status": "deny",
+          "triggered_rule_ids": [
+            "identity_must_be_true"
+          ],
+          "required_facts": [
+            "action:amount",
+            "order:o7102:status",
+            "customer:c7102:identity_verified",
+            "order:o7102:fraud_flag",
+            "order:o7102:refund_status",
+            "order:o7102:days_since_delivery",
+            "order:o7102:manager_approval"
+          ],
+          "missing_facts": [],
+          "evidence_event_ids": [
+            "c7102_identity_false"
+          ],
+          "explanation": "approve_refund deny: identity_must_be_true: Customer identity must be verified before refund."
+        }
+      },
+      {
+        "action_id": "auth_g03",
+        "category": "approval_required",
+        "expected_status": "abstain",
+        "schema_only_status": "allow",
+        "prompt_only_status": "allow",
+        "melm_status": "abstain",
+        "melm_decision": {
+          "status": "abstain",
+          "triggered_rule_ids": [
+            "manager_approval_required"
+          ],
+          "required_facts": [
+            "action:amount",
+            "order:o7103:status",
+            "customer:c7103:identity_verified",
+            "order:o7103:fraud_flag",
+            "order:o7103:refund_status",
+            "order:o7103:days_since_delivery",
+            "order:o7103:manager_approval"
+          ],
+          "missing_facts": [
+            "order:o7103:manager_approval"
+          ],
+          "evidence_event_ids": [],
+          "explanation": "approve_refund needs more approval/evidence: manager_approval_required: High-value refunds require manager approval."
+        }
+      },
+      {
+        "action_id": "auth_g04",
+        "category": "stale_approval",
+        "expected_status": "warn",
+        "schema_only_status": "allow",
+        "prompt_only_status": "allow",
+        "melm_status": "warn",
+        "melm_decision": {
+          "status": "warn",
+          "triggered_rule_ids": [
+            "manager_approval_stale"
+          ],
+          "required_facts": [
+            "action:amount",
+            "order:o7104:status",
+            "customer:c7104:identity_verified",
+            "order:o7104:fraud_flag",
+            "order:o7104:refund_status",
+            "order:o7104:days_since_delivery",
+            "order:o7104:manager_approval"
+          ],
+          "missing_facts": [],
+          "evidence_event_ids": [
+            "o7104_manager_approval_stale_seed"
+          ],
+          "explanation": "approve_refund warn: manager_approval_stale: High-value refund approval is stale and should be refreshed."
+        }
+      },
+      {
+        "action_id": "auth_g05",
+        "category": "valid_high_value",
+        "expected_status": "allow",
+        "schema_only_status": "allow",
+        "prompt_only_status": "allow",
+        "melm_status": "allow",
+        "melm_decision": {
+          "status": "allow",
+          "triggered_rule_ids": [],
+          "required_facts": [
+            "action:amount",
+            "order:o7105:status",
+            "customer:c7105:identity_verified",
+            "order:o7105:fraud_flag",
+            "order:o7105:refund_status",
+            "order:o7105:days_since_delivery",
+            "order:o7105:manager_approval"
+          ],
+          "missing_facts": [],
+          "evidence_event_ids": [],
+          "explanation": "approve_refund allowed: no blocking rule matched."
+        }
+      },
+      {
+        "action_id": "auth_g06",
+        "category": "fraud_flag",
+        "expected_status": "deny",
+        "schema_only_status": "allow",
+        "prompt_only_status": "allow",
+        "melm_status": "deny",
+        "melm_decision": {
+          "status": "deny",
+          "triggered_rule_ids": [
+            "fraud_blocks_refund"
+          ],
+          "required_facts": [
+            "action:amount",
+            "order:o7106:status",
+            "customer:c7106:identity_verified",
+            "order:o7106:fraud_flag",
+            "order:o7106:refund_status",
+            "order:o7106:days_since_delivery",
+            "order:o7106:manager_approval"
+          ],
+          "missing_facts": [],
+          "evidence_event_ids": [
+            "o7106_fraud_true"
+          ],
+          "explanation": "approve_refund deny: fraud_blocks_refund: Fraud-flagged orders cannot be refunded automatically."
+        }
+      },
+      {
+        "action_id": "auth_g07",
+        "category": "not_delivered",
+        "expected_status": "deny",
+        "schema_only_status": "allow",
+        "prompt_only_status": "allow",
+        "melm_status": "deny",
+        "melm_decision": {
+          "status": "deny",
+          "triggered_rule_ids": [
+            "order_must_be_delivered"
+          ],
+          "required_facts": [
+            "action:amount",
+            "order:o7107:status",
+            "customer:c7107:identity_verified",
+            "order:o7107:fraud_flag",
+            "order:o7107:refund_status",
+            "order:o7107:days_since_delivery",
+            "order:o7107:manager_approval"
+          ],
+          "missing_facts": [],
+          "evidence_event_ids": [
+            "o7107_status_shipped"
+          ],
+          "explanation": "approve_refund deny: order_must_be_delivered: Refunds require delivered order status."
+        }
+      },
+      {
+        "action_id": "auth_g08",
+        "category": "duplicate_refund",
+        "expected_status": "deny",
+        "schema_only_status": "allow",
+        "prompt_only_status": "allow",
+        "melm_status": "deny",
+        "melm_decision": {
+          "status": "deny",
+          "triggered_rule_ids": [
+            "duplicate_refund_block"
+          ],
+          "required_facts": [
+            "action:amount",
+            "order:o7108:status",
+            "customer:c7108:identity_verified",
+            "order:o7108:fraud_flag",
+            "order:o7108:refund_status",
+            "order:o7108:days_since_delivery",
+            "order:o7108:manager_approval"
+          ],
+          "missing_facts": [],
+          "evidence_event_ids": [
+            "o7108_refund_refunded"
+          ],
+          "explanation": "approve_refund deny: duplicate_refund_block: Already-refunded orders cannot be refunded again."
+        }
+      },
+      {
+        "action_id": "auth_g09",
+        "category": "outside_return_window",
+        "expected_status": "deny",
+        "schema_only_status": "allow",
+        "prompt_only_status": "allow",
+        "melm_status": "deny",
+        "melm_decision": {
+          "status": "deny",
+          "triggered_rule_ids": [
+            "return_window_block"
+          ],
+          "required_facts": [
+            "action:amount",
+            "order:o7109:status",
+            "customer:c7109:identity_verified",
+            "order:o7109:fraud_flag",
+            "order:o7109:refund_status",
+            "order:o7109:days_since_delivery",
+            "order:o7109:manager_approval"
+          ],
+          "missing_facts": [],
+          "evidence_event_ids": [
+            "o7109_days_since_delivery"
+          ],
+          "explanation": "approve_refund deny: return_window_block: Refund request is outside the return window."
+        }
+      },
+      {
+        "action_id": "auth_g10",
+        "category": "missing_order",
+        "expected_status": "deny",
+        "schema_only_status": "allow",
+        "prompt_only_status": "allow",
+        "melm_status": "deny",
+        "melm_decision": {
+          "status": "deny",
+          "triggered_rule_ids": [
+            "order_status_required",
+            "identity_required"
+          ],
+          "required_facts": [
+            "action:amount",
+            "order:o7999:status",
+            "customer:c7999:identity_verified",
+            "order:o7999:fraud_flag",
+            "order:o7999:refund_status",
+            "order:o7999:days_since_delivery",
+            "order:o7999:manager_approval"
+          ],
+          "missing_facts": [
+            "order:o7999:status",
+            "customer:c7999:identity_verified"
+          ],
+          "evidence_event_ids": [],
+          "explanation": "approve_refund deny: order_status_required: Refund approval requires known order status.; identity_required: Customer identity must be verified before refund."
+        }
+      },
+      {
+        "action_id": "auth_g11",
+        "category": "malformed_action",
+        "expected_status": "deny",
+        "schema_only_status": "deny",
+        "prompt_only_status": "deny",
+        "melm_status": "deny",
+        "melm_decision": {
+          "status": "deny",
+          "triggered_rule_ids": [
+            "refund_amount_required"
+          ],
+          "required_facts": [
+            "action:amount",
+            "order:o7101:status",
+            "customer:c7101:identity_verified",
+            "order:o7101:fraud_flag",
+            "order:o7101:refund_status",
+            "order:o7101:days_since_delivery",
+            "order:o7101:manager_approval"
+          ],
+          "missing_facts": [
+            "action:amount"
+          ],
+          "evidence_event_ids": [],
+          "explanation": "approve_refund deny: refund_amount_required: Refund approval requires an amount."
+        }
+      },
+      {
+        "action_id": "auth_g12",
+        "category": "stale_state_trap",
+        "expected_status": "deny",
+        "schema_only_status": "allow",
+        "prompt_only_status": "allow",
+        "melm_status": "deny",
+        "melm_decision": {
+          "status": "deny",
+          "triggered_rule_ids": [
+            "duplicate_refund_block"
+          ],
+          "required_facts": [
+            "action:amount",
+            "order:o7110:status",
+            "customer:c7110:identity_verified",
+            "order:o7110:fraud_flag",
+            "order:o7110:refund_status",
+            "order:o7110:days_since_delivery",
+            "order:o7110:manager_approval"
+          ],
+          "missing_facts": [],
+          "evidence_event_ids": [
+            "o7110_refund_final"
+          ],
+          "explanation": "approve_refund deny: duplicate_refund_block: Already-refunded orders cannot be refunded again."
+        }
+      },
+      {
+        "action_id": "auth_g13",
+        "category": "valid_low_value",
+        "expected_status": "allow",
+        "schema_only_status": "allow",
+        "prompt_only_status": "allow",
+        "melm_status": "allow",
+        "melm_decision": {
+          "status": "allow",
+          "triggered_rule_ids": [],
+          "required_facts": [
+            "action:amount",
+            "order:o7103:status",
+            "customer:c7103:identity_verified",
+            "order:o7103:fraud_flag",
+            "order:o7103:refund_status",
+            "order:o7103:days_since_delivery",
+            "order:o7103:manager_approval"
+          ],
+          "missing_facts": [],
+          "evidence_event_ids": [],
+          "explanation": "approve_refund allowed: no blocking rule matched."
+        }
+      }
+    ],
+    "by_category": {
+      "approval_required": {
+        "cases": 1,
+        "melm_accuracy": 1.0,
+        "schema_only_accuracy": 0.0,
+        "prompt_only_accuracy": 0.0,
+        "melm_false_allow_rate": 0.0,
+        "schema_only_false_allow_rate": 1.0,
+        "prompt_only_false_allow_rate": 1.0,
+        "false_allow_reduction_vs_schema": 1.0,
+        "valid_action_allow_rate": 0.0,
+        "traceability": 1.0,
+        "gate_passed": false,
+        "predictions": [
+          {
+            "action_id": "auth_g03",
+            "category": "approval_required",
+            "expected_status": "abstain",
+            "schema_only_status": "allow",
+            "prompt_only_status": "allow",
+            "melm_status": "abstain",
+            "melm_decision": {
+              "status": "abstain",
+              "triggered_rule_ids": [
+                "manager_approval_required"
+              ],
+              "required_facts": [
+                "action:amount",
+                "order:o7103:status",
+                "customer:c7103:identity_verified",
+                "order:o7103:fraud_flag",
+                "order:o7103:refund_status",
+                "order:o7103:days_since_delivery",
+                "order:o7103:manager_approval"
+              ],
+              "missing_facts": [
+                "order:o7103:manager_approval"
+              ],
+              "evidence_event_ids": [],
+              "explanation": "approve_refund needs more approval/evidence: manager_approval_required: High-value refunds require manager approval."
+            }
+          }
+        ],
+        "by_category": null
+      },
+      "duplicate_refund": {
+        "cases": 1,
+        "melm_accuracy": 1.0,
+        "schema_only_accuracy": 0.0,
+        "prompt_only_accuracy": 0.0,
+        "melm_false_allow_rate": 0.0,
+        "schema_only_false_allow_rate": 1.0,
+        "prompt_only_false_allow_rate": 1.0,
+        "false_allow_reduction_vs_schema": 1.0,
+        "valid_action_allow_rate": 0.0,
+        "traceability": 1.0,
+        "gate_passed": false,
+        "predictions": [
+          {
+            "action_id": "auth_g08",
+            "category": "duplicate_refund",
+            "expected_status": "deny",
+            "schema_only_status": "allow",
+            "prompt_only_status": "allow",
+            "melm_status": "deny",
+            "melm_decision": {
+              "status": "deny",
+              "triggered_rule_ids": [
+                "duplicate_refund_block"
+              ],
+              "required_facts": [
+                "action:amount",
+                "order:o7108:status",
+                "customer:c7108:identity_verified",
+                "order:o7108:fraud_flag",
+                "order:o7108:refund_status",
+                "order:o7108:days_since_delivery",
+                "order:o7108:manager_approval"
+              ],
+              "missing_facts": [],
+              "evidence_event_ids": [
+                "o7108_refund_refunded"
+              ],
+              "explanation": "approve_refund deny: duplicate_refund_block: Already-refunded orders cannot be refunded again."
+            }
+          }
+        ],
+        "by_category": null
+      },
+      "fraud_flag": {
+        "cases": 1,
+        "melm_accuracy": 1.0,
+        "schema_only_accuracy": 0.0,
+        "prompt_only_accuracy": 0.0,
+        "melm_false_allow_rate": 0.0,
+        "schema_only_false_allow_rate": 1.0,
+        "prompt_only_false_allow_rate": 1.0,
+        "false_allow_reduction_vs_schema": 1.0,
+        "valid_action_allow_rate": 0.0,
+        "traceability": 1.0,
+        "gate_passed": false,
+        "predictions": [
+          {
+            "action_id": "auth_g06",
+            "category": "fraud_flag",
+            "expected_status": "deny",
+            "schema_only_status": "allow",
+            "prompt_only_status": "allow",
+            "melm_status": "deny",
+            "melm_decision": {
+              "status": "deny",
+              "triggered_rule_ids": [
+                "fraud_blocks_refund"
+              ],
+              "required_facts": [
+                "action:amount",
+                "order:o7106:status",
+                "customer:c7106:identity_verified",
+                "order:o7106:fraud_flag",
+                "order:o7106:refund_status",
+                "order:o7106:days_since_delivery",
+                "order:o7106:manager_approval"
+              ],
+              "missing_facts": [],
+              "evidence_event_ids": [
+                "o7106_fraud_true"
+              ],
+              "explanation": "approve_refund deny: fraud_blocks_refund: Fraud-flagged orders cannot be refunded automatically."
+            }
+          }
+        ],
+        "by_category": null
+      },
+      "identity_missing_or_false": {
+        "cases": 1,
+        "melm_accuracy": 1.0,
+        "schema_only_accuracy": 0.0,
+        "prompt_only_accuracy": 0.0,
+        "melm_false_allow_rate": 0.0,
+        "schema_only_false_allow_rate": 1.0,
+        "prompt_only_false_allow_rate": 1.0,
+        "false_allow_reduction_vs_schema": 1.0,
+        "valid_action_allow_rate": 0.0,
+        "traceability": 1.0,
+        "gate_passed": false,
+        "predictions": [
+          {
+            "action_id": "auth_g02",
+            "category": "identity_missing_or_false",
+            "expected_status": "deny",
+            "schema_only_status": "allow",
+            "prompt_only_status": "allow",
+            "melm_status": "deny",
+            "melm_decision": {
+              "status": "deny",
+              "triggered_rule_ids": [
+                "identity_must_be_true"
+              ],
+              "required_facts": [
+                "action:amount",
+                "order:o7102:status",
+                "customer:c7102:identity_verified",
+                "order:o7102:fraud_flag",
+                "order:o7102:refund_status",
+                "order:o7102:days_since_delivery",
+                "order:o7102:manager_approval"
+              ],
+              "missing_facts": [],
+              "evidence_event_ids": [
+                "c7102_identity_false"
+              ],
+              "explanation": "approve_refund deny: identity_must_be_true: Customer identity must be verified before refund."
+            }
+          }
+        ],
+        "by_category": null
+      },
+      "malformed_action": {
+        "cases": 1,
+        "melm_accuracy": 1.0,
+        "schema_only_accuracy": 1.0,
+        "prompt_only_accuracy": 1.0,
+        "melm_false_allow_rate": 0.0,
+        "schema_only_false_allow_rate": 0.0,
+        "prompt_only_false_allow_rate": 0.0,
+        "false_allow_reduction_vs_schema": 1.0,
+        "valid_action_allow_rate": 0.0,
+        "traceability": 1.0,
+        "gate_passed": false,
+        "predictions": [
+          {
+            "action_id": "auth_g11",
+            "category": "malformed_action",
+            "expected_status": "deny",
+            "schema_only_status": "deny",
+            "prompt_only_status": "deny",
+            "melm_status": "deny",
+            "melm_decision": {
+              "status": "deny",
+              "triggered_rule_ids": [
+                "refund_amount_required"
+              ],
+              "required_facts": [
+                "action:amount",
+                "order:o7101:status",
+                "customer:c7101:identity_verified",
+                "order:o7101:fraud_flag",
+                "order:o7101:refund_status",
+                "order:o7101:days_since_delivery",
+                "order:o7101:manager_approval"
+              ],
+              "missing_facts": [
+                "action:amount"
+              ],
+              "evidence_event_ids": [],
+              "explanation": "approve_refund deny: refund_amount_required: Refund approval requires an amount."
+            }
+          }
+        ],
+        "by_category": null
+      },
+      "missing_order": {
+        "cases": 1,
+        "melm_accuracy": 1.0,
+        "schema_only_accuracy": 0.0,
+        "prompt_only_accuracy": 0.0,
+        "melm_false_allow_rate": 0.0,
+        "schema_only_false_allow_rate": 1.0,
+        "prompt_only_false_allow_rate": 1.0,
+        "false_allow_reduction_vs_schema": 1.0,
+        "valid_action_allow_rate": 0.0,
+        "traceability": 1.0,
+        "gate_passed": false,
+        "predictions": [
+          {
+            "action_id": "auth_g10",
+            "category": "missing_order",
+            "expected_status": "deny",
+            "schema_only_status": "allow",
+            "prompt_only_status": "allow",
+            "melm_status": "deny",
+            "melm_decision": {
+              "status": "deny",
+              "triggered_rule_ids": [
+                "order_status_required",
+                "identity_required"
+              ],
+              "required_facts": [
+                "action:amount",
+                "order:o7999:status",
+                "customer:c7999:identity_verified",
+                "order:o7999:fraud_flag",
+                "order:o7999:refund_status",
+                "order:o7999:days_since_delivery",
+                "order:o7999:manager_approval"
+              ],
+              "missing_facts": [
+                "order:o7999:status",
+                "customer:c7999:identity_verified"
+              ],
+              "evidence_event_ids": [],
+              "explanation": "approve_refund deny: order_status_required: Refund approval requires known order status.; identity_required: Customer identity must be verified before refund."
+            }
+          }
+        ],
+        "by_category": null
+      },
+      "not_delivered": {
+        "cases": 1,
+        "melm_accuracy": 1.0,
+        "schema_only_accuracy": 0.0,
+        "prompt_only_accuracy": 0.0,
+        "melm_false_allow_rate": 0.0,
+        "schema_only_false_allow_rate": 1.0,
+        "prompt_only_false_allow_rate": 1.0,
+        "false_allow_reduction_vs_schema": 1.0,
+        "valid_action_allow_rate": 0.0,
+        "traceability": 1.0,
+        "gate_passed": false,
+        "predictions": [
+          {
+            "action_id": "auth_g07",
+            "category": "not_delivered",
+            "expected_status": "deny",
+            "schema_only_status": "allow",
+            "prompt_only_status": "allow",
+            "melm_status": "deny",
+            "melm_decision": {
+              "status": "deny",
+              "triggered_rule_ids": [
+                "order_must_be_delivered"
+              ],
+              "required_facts": [
+                "action:amount",
+                "order:o7107:status",
+                "customer:c7107:identity_verified",
+                "order:o7107:fraud_flag",
+                "order:o7107:refund_status",
+                "order:o7107:days_since_delivery",
+                "order:o7107:manager_approval"
+              ],
+              "missing_facts": [],
+              "evidence_event_ids": [
+                "o7107_status_shipped"
+              ],
+              "explanation": "approve_refund deny: order_must_be_delivered: Refunds require delivered order status."
+            }
+          }
+        ],
+        "by_category": null
+      },
+      "outside_return_window": {
+        "cases": 1,
+        "melm_accuracy": 1.0,
+        "schema_only_accuracy": 0.0,
+        "prompt_only_accuracy": 0.0,
+        "melm_false_allow_rate": 0.0,
+        "schema_only_false_allow_rate": 1.0,
+        "prompt_only_false_allow_rate": 1.0,
+        "false_allow_reduction_vs_schema": 1.0,
+        "valid_action_allow_rate": 0.0,
+        "traceability": 1.0,
+        "gate_passed": false,
+        "predictions": [
+          {
+            "action_id": "auth_g09",
+            "category": "outside_return_window",
+            "expected_status": "deny",
+            "schema_only_status": "allow",
+            "prompt_only_status": "allow",
+            "melm_status": "deny",
+            "melm_decision": {
+              "status": "deny",
+              "triggered_rule_ids": [
+                "return_window_block"
+              ],
+              "required_facts": [
+                "action:amount",
+                "order:o7109:status",
+                "customer:c7109:identity_verified",
+                "order:o7109:fraud_flag",
+                "order:o7109:refund_status",
+                "order:o7109:days_since_delivery",
+                "order:o7109:manager_approval"
+              ],
+              "missing_facts": [],
+              "evidence_event_ids": [
+                "o7109_days_since_delivery"
+              ],
+              "explanation": "approve_refund deny: return_window_block: Refund request is outside the return window."
+            }
+          }
+        ],
+        "by_category": null
+      },
+      "stale_approval": {
+        "cases": 1,
+        "melm_accuracy": 1.0,
+        "schema_only_accuracy": 0.0,
+        "prompt_only_accuracy": 0.0,
+        "melm_false_allow_rate": 0.0,
+        "schema_only_false_allow_rate": 1.0,
+        "prompt_only_false_allow_rate": 1.0,
+        "false_allow_reduction_vs_schema": 1.0,
+        "valid_action_allow_rate": 0.0,
+        "traceability": 1.0,
+        "gate_passed": false,
+        "predictions": [
+          {
+            "action_id": "auth_g04",
+            "category": "stale_approval",
+            "expected_status": "warn",
+            "schema_only_status": "allow",
+            "prompt_only_status": "allow",
+            "melm_status": "warn",
+            "melm_decision": {
+              "status": "warn",
+              "triggered_rule_ids": [
+                "manager_approval_stale"
+              ],
+              "required_facts": [
+                "action:amount",
+                "order:o7104:status",
+                "customer:c7104:identity_verified",
+                "order:o7104:fraud_flag",
+                "order:o7104:refund_status",
+                "order:o7104:days_since_delivery",
+                "order:o7104:manager_approval"
+              ],
+              "missing_facts": [],
+              "evidence_event_ids": [
+                "o7104_manager_approval_stale_seed"
+              ],
+              "explanation": "approve_refund warn: manager_approval_stale: High-value refund approval is stale and should be refreshed."
+            }
+          }
+        ],
+        "by_category": null
+      },
+      "stale_state_trap": {
+        "cases": 1,
+        "melm_accuracy": 1.0,
+        "schema_only_accuracy": 0.0,
+        "prompt_only_accuracy": 0.0,
+        "melm_false_allow_rate": 0.0,
+        "schema_only_false_allow_rate": 1.0,
+        "prompt_only_false_allow_rate": 1.0,
+        "false_allow_reduction_vs_schema": 1.0,
+        "valid_action_allow_rate": 0.0,
+        "traceability": 1.0,
+        "gate_passed": false,
+        "predictions": [
+          {
+            "action_id": "auth_g12",
+            "category": "stale_state_trap",
+            "expected_status": "deny",
+            "schema_only_status": "allow",
+            "prompt_only_status": "allow",
+            "melm_status": "deny",
+            "melm_decision": {
+              "status": "deny",
+              "triggered_rule_ids": [
+                "duplicate_refund_block"
+              ],
+              "required_facts": [
+                "action:amount",
+                "order:o7110:status",
+                "customer:c7110:identity_verified",
+                "order:o7110:fraud_flag",
+                "order:o7110:refund_status",
+                "order:o7110:days_since_delivery",
+                "order:o7110:manager_approval"
+              ],
+              "missing_facts": [],
+              "evidence_event_ids": [
+                "o7110_refund_final"
+              ],
+              "explanation": "approve_refund deny: duplicate_refund_block: Already-refunded orders cannot be refunded again."
+            }
+          }
+        ],
+        "by_category": null
+      },
+      "valid_high_value": {
+        "cases": 1,
+        "melm_accuracy": 1.0,
+        "schema_only_accuracy": 1.0,
+        "prompt_only_accuracy": 1.0,
+        "melm_false_allow_rate": 0.0,
+        "schema_only_false_allow_rate": 0.0,
+        "prompt_only_false_allow_rate": 0.0,
+        "false_allow_reduction_vs_schema": 1.0,
+        "valid_action_allow_rate": 1.0,
+        "traceability": 1.0,
+        "gate_passed": false,
+        "predictions": [
+          {
+            "action_id": "auth_g05",
+            "category": "valid_high_value",
+            "expected_status": "allow",
+            "schema_only_status": "allow",
+            "prompt_only_status": "allow",
+            "melm_status": "allow",
+            "melm_decision": {
+              "status": "allow",
+              "triggered_rule_ids": [],
+              "required_facts": [
+                "action:amount",
+                "order:o7105:status",
+                "customer:c7105:identity_verified",
+                "order:o7105:fraud_flag",
+                "order:o7105:refund_status",
+                "order:o7105:days_since_delivery",
+                "order:o7105:manager_approval"
+              ],
+              "missing_facts": [],
+              "evidence_event_ids": [],
+              "explanation": "approve_refund allowed: no blocking rule matched."
+            }
+          }
+        ],
+        "by_category": null
+      },
+      "valid_low_value": {
+        "cases": 2,
+        "melm_accuracy": 1.0,
+        "schema_only_accuracy": 1.0,
+        "prompt_only_accuracy": 1.0,
+        "melm_false_allow_rate": 0.0,
+        "schema_only_false_allow_rate": 0.0,
+        "prompt_only_false_allow_rate": 0.0,
+        "false_allow_reduction_vs_schema": 1.0,
+        "valid_action_allow_rate": 1.0,
+        "traceability": 1.0,
+        "gate_passed": false,
+        "predictions": [
+          {
+            "action_id": "auth_g01",
+            "category": "valid_low_value",
+            "expected_status": "allow",
+            "schema_only_status": "allow",
+            "prompt_only_status": "allow",
+            "melm_status": "allow",
+            "melm_decision": {
+              "status": "allow",
+              "triggered_rule_ids": [],
+              "required_facts": [
+                "action:amount",
+                "order:o7101:status",
+                "customer:c7101:identity_verified",
+                "order:o7101:fraud_flag",
+                "order:o7101:refund_status",
+                "order:o7101:days_since_delivery",
+                "order:o7101:manager_approval"
+              ],
+              "missing_facts": [],
+              "evidence_event_ids": [],
+              "explanation": "approve_refund allowed: no blocking rule matched."
+            }
+          },
+          {
+            "action_id": "auth_g13",
+            "category": "valid_low_value",
+            "expected_status": "allow",
+            "schema_only_status": "allow",
+            "prompt_only_status": "allow",
+            "melm_status": "allow",
+            "melm_decision": {
+              "status": "allow",
+              "triggered_rule_ids": [],
+              "required_facts": [
+                "action:amount",
+                "order:o7103:status",
+                "customer:c7103:identity_verified",
+                "order:o7103:fraud_flag",
+                "order:o7103:refund_status",
+                "order:o7103:days_since_delivery",
+                "order:o7103:manager_approval"
+              ],
+              "missing_facts": [],
+              "evidence_event_ids": [],
+              "explanation": "approve_refund allowed: no blocking rule matched."
+            }
+          }
+        ],
+        "by_category": null
+      }
+    }
+  },
+  "memory_report": {
+    "cases": 40,
+    "vector_accuracy": 0.625,
+    "temporal_entity_accuracy": 0.725,
+    "memory_os_accuracy": 1.0,
+    "memory_os_gain_vs_vector": 0.375,
+    "positive_recall": 1.0,
+    "negative_abstention": 1.0,
+    "gate_passed": true,
+    "predictions": [
+      {
+        "query": "What is the latest status for order o7101?",
+        "category": "current_state",
+        "kind": "state",
+        "expected": "delivered",
+        "vector_correct": true,
+        "temporal_entity_correct": true,
+        "memory_os_correct": true,
+        "memory_os_answered": true,
+        "vector_event_ids": [
+          "o7101_status_delivered",
+          "o7104_status_delivered"
+        ],
+        "temporal_entity_event_ids": [
+          "o7101_status_delivered",
+          "o7101_fraud_false"
+        ],
+        "memory_os_event_id": "o7101_status_delivered"
+      },
+      {
+        "query": "Where does o7107 stand right now in shipping?",
+        "category": "current_state",
+        "kind": "state",
+        "expected": "shipped",
+        "vector_correct": true,
+        "temporal_entity_correct": true,
+        "memory_os_correct": true,
+        "memory_os_answered": true,
+        "vector_event_ids": [
+          "o7107_status_shipped",
+          "o7107_refund_none"
+        ],
+        "temporal_entity_event_ids": [
+          "o7107_status_shipped",
+          "o7107_fraud_false"
+        ],
+        "memory_os_event_id": "o7107_status_shipped"
+      },
+      {
+        "query": "Is order o7108 already refunded?",
+        "category": "current_state",
+        "kind": "state",
+        "expected": "refunded",
+        "vector_correct": false,
+        "temporal_entity_correct": true,
+        "memory_os_correct": true,
+        "memory_os_answered": true,
+        "vector_event_ids": [
+          "o7108_days_since_delivery",
+          "o7108_status_delivered"
+        ],
+        "temporal_entity_event_ids": [
+          "o7108_refund_refunded",
+          "o7108_fraud_false"
+        ],
+        "memory_os_event_id": "o7108_refund_refunded"
+      },
+      {
+        "query": "What is the current refund status for o7110 after the pending note?",
+        "category": "stale_state_update",
+        "kind": "state",
+        "expected": "refunded",
+        "vector_correct": true,
+        "temporal_entity_correct": true,
+        "memory_os_correct": true,
+        "memory_os_answered": true,
+        "vector_event_ids": [
+          "o7110_refund_pending",
+          "o7110_refund_final"
+        ],
+        "temporal_entity_event_ids": [
+          "o7110_refund_final",
+          "o7110_refund_pending"
+        ],
+        "memory_os_event_id": "o7110_refund_final"
+      },
+      {
+        "query": "How many days since delivery are recorded for o7109?",
+        "category": "current_state",
+        "kind": "state",
+        "expected": "44",
+        "vector_correct": true,
+        "temporal_entity_correct": true,
+        "memory_os_correct": true,
+        "memory_os_answered": true,
+        "vector_event_ids": [
+          "o7109_days_since_delivery",
+          "o7107_days_since_delivery"
+        ],
+        "temporal_entity_event_ids": [
+          "o7109_days_since_delivery",
+          "o7109_fraud_false"
+        ],
+        "memory_os_event_id": "o7109_days_since_delivery"
+      },
+      {
+        "query": "Does o7106 carry a fraud flag?",
+        "category": "risk_recall",
+        "kind": "state",
+        "expected": "True",
+        "vector_correct": true,
+        "temporal_entity_correct": true,
+        "memory_os_correct": true,
+        "memory_os_answered": true,
+        "vector_event_ids": [
+          "o7106_fraud_true",
+          "o7101_fraud_false"
+        ],
+        "temporal_entity_event_ids": [
+          "o7106_fraud_true",
+          "o7106_status_delivered"
+        ],
+        "memory_os_event_id": "o7106_fraud_true"
+      },
+      {
+        "query": "Is there manager approval on order o7105?",
+        "category": "approval_recall",
+        "kind": "state",
+        "expected": "True",
+        "vector_correct": true,
+        "temporal_entity_correct": true,
+        "memory_os_correct": true,
+        "memory_os_answered": true,
+        "vector_event_ids": [
+          "o7105_manager_approval_fresh",
+          "o7105_days_since_delivery"
+        ],
+        "temporal_entity_event_ids": [
+          "o7105_manager_approval_fresh",
+          "o7105_fraud_false"
+        ],
+        "memory_os_event_id": "o7105_manager_approval_fresh"
+      },
+      {
+        "query": "Was order o7104 ever manager approved?",
+        "category": "approval_recall",
+        "kind": "state",
+        "expected": "True",
+        "vector_correct": true,
+        "temporal_entity_correct": true,
+        "memory_os_correct": true,
+        "memory_os_answered": true,
+        "vector_event_ids": [
+          "o7104_manager_approval_stale_seed",
+          "o7104_status_delivered"
+        ],
+        "temporal_entity_event_ids": [
+          "o7104_manager_approval_stale_seed",
+          "o7104_fraud_false"
+        ],
+        "memory_os_event_id": "o7104_manager_approval_stale_seed"
+      },
+      {
+        "query": "What policy event sets the refund amount that does not require manager approval?",
+        "category": "policy_recall",
+        "kind": "event",
+        "expected": "auth_policy_limit",
+        "vector_correct": true,
+        "temporal_entity_correct": true,
+        "memory_os_correct": true,
+        "memory_os_answered": true,
+        "vector_event_ids": [
+          "auth_policy_limit",
+          "auth_policy_approval_freshness"
+        ],
+        "temporal_entity_event_ids": [
+          "auth_policy_limit",
+          "auth_policy_approval_freshness"
+        ],
+        "memory_os_event_id": "auth_policy_limit"
+      },
+      {
+        "query": "Which policy event gives the manager approval freshness window?",
+        "category": "policy_recall",
+        "kind": "event",
+        "expected": "auth_policy_approval_freshness",
+        "vector_correct": true,
+        "temporal_entity_correct": true,
+        "memory_os_correct": true,
+        "memory_os_answered": true,
+        "vector_event_ids": [
+          "auth_policy_approval_freshness",
+          "auth_policy_limit"
+        ],
+        "temporal_entity_event_ids": [
+          "auth_policy_approval_freshness",
+          "auth_policy_limit"
+        ],
+        "memory_os_event_id": "auth_policy_approval_freshness"
+      },
+      {
+        "query": "Which policy event states the return window after delivery?",
+        "category": "policy_recall",
+        "kind": "event",
+        "expected": "auth_policy_return_window",
+        "vector_correct": true,
+        "temporal_entity_correct": true,
+        "memory_os_correct": true,
+        "memory_os_answered": true,
+        "vector_event_ids": [
+          "auth_policy_return_window",
+          "auth_policy_limit"
+        ],
+        "temporal_entity_event_ids": [
+          "auth_policy_return_window",
+          "auth_policy_limit"
+        ],
+        "memory_os_event_id": "auth_policy_return_window"
+      },
+      {
+        "query": "Who freshly approved the high-value refund for order o7105?",
+        "category": "approval_recall",
+        "kind": "event",
+        "expected": "o7105_manager_approval_fresh",
+        "vector_correct": true,
+        "temporal_entity_correct": true,
+        "memory_os_correct": true,
+        "memory_os_answered": true,
+        "vector_event_ids": [
+          "o7105_refund_none",
+          "o7105_manager_approval_fresh"
+        ],
+        "temporal_entity_event_ids": [
+          "o7105_manager_approval_fresh",
+          "o7105_refund_none"
+        ],
+        "memory_os_event_id": "o7105_manager_approval_fresh"
+      },
+      {
+        "query": "Which event contains the older approval for o7104?",
+        "category": "approval_recall",
+        "kind": "event",
+        "expected": "o7104_manager_approval_stale_seed",
+        "vector_correct": true,
+        "temporal_entity_correct": true,
+        "memory_os_correct": true,
+        "memory_os_answered": true,
+        "vector_event_ids": [
+          "o7104_manager_approval_stale_seed",
+          "o7105_manager_approval_fresh"
+        ],
+        "temporal_entity_event_ids": [
+          "o7104_manager_approval_stale_seed",
+          "o7104_fraud_false"
+        ],
+        "memory_os_event_id": "o7104_manager_approval_stale_seed"
+      },
+      {
+        "query": "Which event says o7106 was fraud flagged?",
+        "category": "risk_recall",
+        "kind": "event",
+        "expected": "o7106_fraud_true",
+        "vector_correct": true,
+        "temporal_entity_correct": true,
+        "memory_os_correct": true,
+        "memory_os_answered": true,
+        "vector_event_ids": [
+          "o7106_fraud_true",
+          "o7106_status_delivered"
+        ],
+        "temporal_entity_event_ids": [
+          "o7106_fraud_true",
+          "o7106_status_delivered"
+        ],
+        "memory_os_event_id": "o7106_fraud_true"
+      },
+      {
+        "query": "Which earlier event made o7110 look only pending?",
+        "category": "contradiction_resolution",
+        "kind": "event",
+        "expected": "o7110_refund_pending",
+        "vector_correct": true,
+        "temporal_entity_correct": false,
+        "memory_os_correct": true,
+        "memory_os_answered": true,
+        "vector_event_ids": [
+          "o7110_refund_final",
+          "o7110_refund_pending"
+        ],
+        "temporal_entity_event_ids": [
+          "o7110_refund_final",
+          "o7110_fraud_false"
+        ],
+        "memory_os_event_id": "o7110_refund_pending"
+      },
+      {
+        "query": "Which later event overrules the pending o7110 refund state?",
+        "category": "contradiction_resolution",
+        "kind": "event",
+        "expected": "o7110_refund_final",
+        "vector_correct": true,
+        "temporal_entity_correct": true,
+        "memory_os_correct": true,
+        "memory_os_answered": true,
+        "vector_event_ids": [
+          "o7110_refund_final",
+          "o7110_refund_pending"
+        ],
+        "temporal_entity_event_ids": [
+          "o7110_refund_final",
+          "o7110_refund_pending"
+        ],
+        "memory_os_event_id": "o7110_refund_final"
+      },
+      {
+        "query": "What is the refund status on o7103?",
+        "category": "current_state",
+        "kind": "state",
+        "expected": "none",
+        "vector_correct": true,
+        "temporal_entity_correct": true,
+        "memory_os_correct": true,
+        "memory_os_answered": true,
+        "vector_event_ids": [
+          "o7103_refund_none",
+          "o7105_refund_none"
+        ],
+        "temporal_entity_event_ids": [
+          "o7103_refund_none",
+          "o7103_status_delivered"
+        ],
+        "memory_os_event_id": "o7103_refund_none"
+      },
+      {
+        "query": "What is the latest status for o7109?",
+        "category": "current_state",
+        "kind": "state",
+        "expected": "delivered",
+        "vector_correct": true,
+        "temporal_entity_correct": true,
+        "memory_os_correct": true,
+        "memory_os_answered": true,
+        "vector_event_ids": [
+          "o7109_status_delivered",
+          "o7104_status_delivered"
+        ],
+        "temporal_entity_event_ids": [
+          "o7109_status_delivered",
+          "o7109_fraud_false"
+        ],
+        "memory_os_event_id": "o7109_status_delivered"
+      },
+      {
+        "query": "What is the latest status for order o7999?",
+        "category": "unknown_order",
+        "kind": "state",
+        "expected": null,
+        "vector_correct": false,
+        "temporal_entity_correct": false,
+        "memory_os_correct": true,
+        "memory_os_answered": false,
+        "vector_event_ids": [
+          "o7104_status_delivered",
+          "o7103_status_delivered"
+        ],
+        "temporal_entity_event_ids": [
+          "o7104_status_delivered",
+          "o7103_status_delivered"
+        ],
+        "memory_os_event_id": null
+      },
+      {
+        "query": "Is order o7998 already refunded?",
+        "category": "unknown_order",
+        "kind": "state",
+        "expected": null,
+        "vector_correct": false,
+        "temporal_entity_correct": false,
+        "memory_os_correct": true,
+        "memory_os_answered": false,
+        "vector_event_ids": [
+          "o7109_status_delivered",
+          "o7110_status_delivered"
+        ],
+        "temporal_entity_event_ids": [
+          "o7109_status_delivered",
+          "o7110_status_delivered"
+        ],
+        "memory_os_event_id": null
+      },
+      {
+        "query": "Does order o7997 have a fraud flag?",
+        "category": "unknown_order",
+        "kind": "state",
+        "expected": null,
+        "vector_correct": false,
+        "temporal_entity_correct": false,
+        "memory_os_correct": true,
+        "memory_os_answered": false,
+        "vector_event_ids": [
+          "o7106_fraud_true",
+          "o7101_fraud_false"
+        ],
+        "temporal_entity_event_ids": [
+          "o7106_fraud_true",
+          "o7101_fraud_false"
+        ],
+        "memory_os_event_id": null
+      },
+      {
+        "query": "Was there manager approval for order o7996?",
+        "category": "unknown_order",
+        "kind": "state",
+        "expected": null,
+        "vector_correct": false,
+        "temporal_entity_correct": false,
+        "memory_os_correct": true,
+        "memory_os_answered": false,
+        "vector_event_ids": [
+          "o7105_manager_approval_fresh",
+          "o7104_manager_approval_stale_seed"
+        ],
+        "temporal_entity_event_ids": [
+          "o7105_manager_approval_fresh",
+          "o7104_manager_approval_stale_seed"
+        ],
+        "memory_os_event_id": null
+      },
+      {
+        "query": "Was there manager approval for the low-value o7101 refund?",
+        "category": "unknown_order",
+        "kind": "state",
+        "expected": null,
+        "vector_correct": false,
+        "temporal_entity_correct": false,
+        "memory_os_correct": true,
+        "memory_os_answered": false,
+        "vector_event_ids": [
+          "o7104_manager_approval_stale_seed",
+          "o7105_manager_approval_fresh"
+        ],
+        "temporal_entity_event_ids": [
+          "o7101_refund_none",
+          "o7101_fraud_false"
+        ],
+        "memory_os_event_id": null
+      },
+      {
+        "query": "Does o7105 have a recorded discount exception?",
+        "category": "unknown_order",
+        "kind": "state",
+        "expected": null,
+        "vector_correct": false,
+        "temporal_entity_correct": false,
+        "memory_os_correct": true,
+        "memory_os_answered": false,
+        "vector_event_ids": [
+          "o7105_status_delivered",
+          "o7105_refund_none"
+        ],
+        "temporal_entity_event_ids": [
+          "o7105_fraud_false",
+          "o7105_manager_approval_fresh"
+        ],
+        "memory_os_event_id": null
+      },
+      {
+        "query": "Before acting, check the refund state attached to o7101.",
+        "category": "current_state",
+        "kind": "state",
+        "expected": "none",
+        "vector_correct": true,
+        "temporal_entity_correct": true,
+        "memory_os_correct": true,
+        "memory_os_answered": true,
+        "vector_event_ids": [
+          "o7101_refund_none",
+          "o7110_refund_final"
+        ],
+        "temporal_entity_event_ids": [
+          "o7101_refund_none",
+          "o7101_status_delivered"
+        ],
+        "memory_os_event_id": "o7101_refund_none"
+      },
+      {
+        "query": "What does the order timeline say about o7102 delivery status?",
+        "category": "current_state",
+        "kind": "state",
+        "expected": "delivered",
+        "vector_correct": true,
+        "temporal_entity_correct": true,
+        "memory_os_correct": true,
+        "memory_os_answered": true,
+        "vector_event_ids": [
+          "o7102_status_delivered",
+          "o7102_days_since_delivery"
+        ],
+        "temporal_entity_event_ids": [
+          "o7102_status_delivered",
+          "o7102_days_since_delivery"
+        ],
+        "memory_os_event_id": "o7102_status_delivered"
+      },
+      {
+        "query": "Has a refund already been issued for o7102?",
+        "category": "current_state",
+        "kind": "state",
+        "expected": "none",
+        "vector_correct": false,
+        "temporal_entity_correct": true,
+        "memory_os_correct": true,
+        "memory_os_answered": true,
+        "vector_event_ids": [
+          "o7104_refund_none",
+          "o7107_refund_none"
+        ],
+        "temporal_entity_event_ids": [
+          "o7102_refund_none",
+          "o7102_fraud_false"
+        ],
+        "memory_os_event_id": "o7102_refund_none"
+      },
+      {
+        "query": "Resolve the delivery status for o7103 from the authored timeline.",
+        "category": "current_state",
+        "kind": "state",
+        "expected": "delivered",
+        "vector_correct": true,
+        "temporal_entity_correct": true,
+        "memory_os_correct": true,
+        "memory_os_answered": true,
+        "vector_event_ids": [
+          "o7103_status_delivered",
+          "o7101_status_delivered"
+        ],
+        "temporal_entity_event_ids": [
+          "o7103_status_delivered",
+          "o7103_days_since_delivery"
+        ],
+        "memory_os_event_id": "o7103_status_delivered"
+      },
+      {
+        "query": "Does o7104 have a manager approval fact on record?",
+        "category": "approval_recall",
+        "kind": "state",
+        "expected": "True",
+        "vector_correct": true,
+        "temporal_entity_correct": true,
+        "memory_os_correct": true,
+        "memory_os_answered": true,
+        "vector_event_ids": [
+          "o7104_manager_approval_stale_seed",
+          "o7105_manager_approval_fresh"
+        ],
+        "temporal_entity_event_ids": [
+          "o7104_manager_approval_stale_seed",
+          "o7104_fraud_false"
+        ],
+        "memory_os_event_id": "o7104_manager_approval_stale_seed"
+      },
+      {
+        "query": "What is o7105's delivery state?",
+        "category": "current_state",
+        "kind": "state",
+        "expected": "delivered",
+        "vector_correct": false,
+        "temporal_entity_correct": true,
+        "memory_os_correct": true,
+        "memory_os_answered": true,
+        "vector_event_ids": [
+          "o7105_days_since_delivery",
+          "o7105_refund_none"
+        ],
+        "temporal_entity_event_ids": [
+          "o7105_days_since_delivery",
+          "o7105_status_delivered"
+        ],
+        "memory_os_event_id": "o7105_status_delivered"
+      },
+      {
+        "query": "For o7106, retrieve the current refund status.",
+        "category": "current_state",
+        "kind": "state",
+        "expected": "none",
+        "vector_correct": true,
+        "temporal_entity_correct": true,
+        "memory_os_correct": true,
+        "memory_os_answered": true,
+        "vector_event_ids": [
+          "o7106_refund_none",
+          "o7110_refund_pending"
+        ],
+        "temporal_entity_event_ids": [
+          "o7106_status_delivered",
+          "o7106_refund_none"
+        ],
+        "memory_os_event_id": "o7106_refund_none"
+      },
+      {
+        "query": "For o7107, retrieve the refund state before any approval decision.",
+        "category": "current_state",
+        "kind": "state",
+        "expected": "none",
+        "vector_correct": true,
+        "temporal_entity_correct": true,
+        "memory_os_correct": true,
+        "memory_os_answered": true,
+        "vector_event_ids": [
+          "o7107_refund_none",
+          "o7102_refund_none"
+        ],
+        "temporal_entity_event_ids": [
+          "o7107_refund_none",
+          "o7107_status_shipped"
+        ],
+        "memory_os_event_id": "o7107_refund_none"
+      },
+      {
+        "query": "What delivery state is recorded for o7108?",
+        "category": "current_state",
+        "kind": "state",
+        "expected": "delivered",
+        "vector_correct": false,
+        "temporal_entity_correct": true,
+        "memory_os_correct": true,
+        "memory_os_answered": true,
+        "vector_event_ids": [
+          "o7108_days_since_delivery",
+          "o7101_days_since_delivery"
+        ],
+        "temporal_entity_event_ids": [
+          "o7108_days_since_delivery",
+          "o7108_status_delivered"
+        ],
+        "memory_os_event_id": "o7108_status_delivered"
+      },
+      {
+        "query": "What refund state is recorded for o7109?",
+        "category": "current_state",
+        "kind": "state",
+        "expected": "none",
+        "vector_correct": true,
+        "temporal_entity_correct": true,
+        "memory_os_correct": true,
+        "memory_os_answered": true,
+        "vector_event_ids": [
+          "o7109_refund_none",
+          "o7105_refund_none"
+        ],
+        "temporal_entity_event_ids": [
+          "o7109_refund_none",
+          "o7109_status_delivered"
+        ],
+        "memory_os_event_id": "o7109_refund_none"
+      },
+      {
+        "query": "Ignore the older pending note and give the live refund status for o7110.",
+        "category": "stale_state_update",
+        "kind": "state",
+        "expected": "refunded",
+        "vector_correct": true,
+        "temporal_entity_correct": true,
+        "memory_os_correct": true,
+        "memory_os_answered": true,
+        "vector_event_ids": [
+          "o7110_refund_pending",
+          "o7110_refund_final"
+        ],
+        "temporal_entity_event_ids": [
+          "o7110_refund_final",
+          "o7110_refund_pending"
+        ],
+        "memory_os_event_id": "o7110_refund_final"
+      },
+      {
+        "query": "What delivery state remains current for o7110?",
+        "category": "current_state",
+        "kind": "state",
+        "expected": "delivered",
+        "vector_correct": false,
+        "temporal_entity_correct": true,
+        "memory_os_correct": true,
+        "memory_os_answered": true,
+        "vector_event_ids": [
+          "o7110_days_since_delivery",
+          "o7110_refund_pending"
+        ],
+        "temporal_entity_event_ids": [
+          "o7110_days_since_delivery",
+          "o7110_status_delivered"
+        ],
+        "memory_os_event_id": "o7110_status_delivered"
+      },
+      {
+        "query": "Does o7102 have a manager approval record?",
+        "category": "unknown_order",
+        "kind": "state",
+        "expected": null,
+        "vector_correct": false,
+        "temporal_entity_correct": false,
+        "memory_os_correct": true,
+        "memory_os_answered": false,
+        "vector_event_ids": [
+          "o7104_manager_approval_stale_seed",
+          "o7105_manager_approval_fresh"
+        ],
+        "temporal_entity_event_ids": [
+          "o7102_fraud_false",
+          "o7102_status_delivered"
+        ],
+        "memory_os_event_id": null
+      },
+      {
+        "query": "Does o7103 have a manager approval record?",
+        "category": "unknown_order",
+        "kind": "state",
+        "expected": null,
+        "vector_correct": false,
+        "temporal_entity_correct": false,
+        "memory_os_correct": true,
+        "memory_os_answered": false,
+        "vector_event_ids": [
+          "o7104_manager_approval_stale_seed",
+          "o7105_manager_approval_fresh"
+        ],
+        "temporal_entity_event_ids": [
+          "o7103_refund_none",
+          "o7103_fraud_false"
+        ],
+        "memory_os_event_id": null
+      },
+      {
+        "query": "Was o7106 granted a manager exception?",
+        "category": "unknown_order",
+        "kind": "state",
+        "expected": null,
+        "vector_correct": false,
+        "temporal_entity_correct": false,
+        "memory_os_correct": true,
+        "memory_os_answered": false,
+        "vector_event_ids": [
+          "o7104_manager_approval_stale_seed",
+          "o7105_manager_approval_fresh"
+        ],
+        "temporal_entity_event_ids": [
+          "o7106_fraud_true",
+          "o7106_status_delivered"
+        ],
+        "memory_os_event_id": null
+      },
+      {
+        "query": "Does o7110 have a recorded manager approval?",
+        "category": "unknown_order",
+        "kind": "state",
+        "expected": null,
+        "vector_correct": false,
+        "temporal_entity_correct": false,
+        "memory_os_correct": true,
+        "memory_os_answered": false,
+        "vector_event_ids": [
+          "o7104_manager_approval_stale_seed",
+          "o7105_manager_approval_fresh"
+        ],
+        "temporal_entity_event_ids": [
+          "o7110_refund_final",
+          "o7110_fraud_false"
+        ],
+        "memory_os_event_id": null
+      }
+    ],
+    "by_category": {
+      "approval_recall": {
+        "cases": 5,
+        "vector_accuracy": 1.0,
+        "temporal_entity_accuracy": 1.0,
+        "memory_os_accuracy": 1.0,
+        "memory_os_gain_vs_vector": 0.0,
+        "positive_recall": 1.0,
+        "negative_abstention": 1.0,
+        "gate_passed": false,
+        "predictions": [
+          {
+            "query": "Is there manager approval on order o7105?",
+            "category": "approval_recall",
+            "kind": "state",
+            "expected": "True",
+            "vector_correct": true,
+            "temporal_entity_correct": true,
+            "memory_os_correct": true,
+            "memory_os_answered": true,
+            "vector_event_ids": [
+              "o7105_manager_approval_fresh",
+              "o7105_days_since_delivery"
+            ],
+            "temporal_entity_event_ids": [
+              "o7105_manager_approval_fresh",
+              "o7105_fraud_false"
+            ],
+            "memory_os_event_id": "o7105_manager_approval_fresh"
+          },
+          {
+            "query": "Was order o7104 ever manager approved?",
+            "category": "approval_recall",
+            "kind": "state",
+            "expected": "True",
+            "vector_correct": true,
+            "temporal_entity_correct": true,
+            "memory_os_correct": true,
+            "memory_os_answered": true,
+            "vector_event_ids": [
+              "o7104_manager_approval_stale_seed",
+              "o7104_status_delivered"
+            ],
+            "temporal_entity_event_ids": [
+              "o7104_manager_approval_stale_seed",
+              "o7104_fraud_false"
+            ],
+            "memory_os_event_id": "o7104_manager_approval_stale_seed"
+          },
+          {
+            "query": "Who freshly approved the high-value refund for order o7105?",
+            "category": "approval_recall",
+            "kind": "event",
+            "expected": "o7105_manager_approval_fresh",
+            "vector_correct": true,
+            "temporal_entity_correct": true,
+            "memory_os_correct": true,
+            "memory_os_answered": true,
+            "vector_event_ids": [
+              "o7105_refund_none",
+              "o7105_manager_approval_fresh"
+            ],
+            "temporal_entity_event_ids": [
+              "o7105_manager_approval_fresh",
+              "o7105_refund_none"
+            ],
+            "memory_os_event_id": "o7105_manager_approval_fresh"
+          },
+          {
+            "query": "Which event contains the older approval for o7104?",
+            "category": "approval_recall",
+            "kind": "event",
+            "expected": "o7104_manager_approval_stale_seed",
+            "vector_correct": true,
+            "temporal_entity_correct": true,
+            "memory_os_correct": true,
+            "memory_os_answered": true,
+            "vector_event_ids": [
+              "o7104_manager_approval_stale_seed",
+              "o7105_manager_approval_fresh"
+            ],
+            "temporal_entity_event_ids": [
+              "o7104_manager_approval_stale_seed",
+              "o7104_fraud_false"
+            ],
+            "memory_os_event_id": "o7104_manager_approval_stale_seed"
+          },
+          {
+            "query": "Does o7104 have a manager approval fact on record?",
+            "category": "approval_recall",
+            "kind": "state",
+            "expected": "True",
+            "vector_correct": true,
+            "temporal_entity_correct": true,
+            "memory_os_correct": true,
+            "memory_os_answered": true,
+            "vector_event_ids": [
+              "o7104_manager_approval_stale_seed",
+              "o7105_manager_approval_fresh"
+            ],
+            "temporal_entity_event_ids": [
+              "o7104_manager_approval_stale_seed",
+              "o7104_fraud_false"
+            ],
+            "memory_os_event_id": "o7104_manager_approval_stale_seed"
+          }
+        ],
+        "by_category": null
+      },
+      "contradiction_resolution": {
+        "cases": 2,
+        "vector_accuracy": 1.0,
+        "temporal_entity_accuracy": 0.5,
+        "memory_os_accuracy": 1.0,
+        "memory_os_gain_vs_vector": 0.0,
+        "positive_recall": 1.0,
+        "negative_abstention": 1.0,
+        "gate_passed": false,
+        "predictions": [
+          {
+            "query": "Which earlier event made o7110 look only pending?",
+            "category": "contradiction_resolution",
+            "kind": "event",
+            "expected": "o7110_refund_pending",
+            "vector_correct": true,
+            "temporal_entity_correct": false,
+            "memory_os_correct": true,
+            "memory_os_answered": true,
+            "vector_event_ids": [
+              "o7110_refund_final",
+              "o7110_refund_pending"
+            ],
+            "temporal_entity_event_ids": [
+              "o7110_refund_final",
+              "o7110_fraud_false"
+            ],
+            "memory_os_event_id": "o7110_refund_pending"
+          },
+          {
+            "query": "Which later event overrules the pending o7110 refund state?",
+            "category": "contradiction_resolution",
+            "kind": "event",
+            "expected": "o7110_refund_final",
+            "vector_correct": true,
+            "temporal_entity_correct": true,
+            "memory_os_correct": true,
+            "memory_os_answered": true,
+            "vector_event_ids": [
+              "o7110_refund_final",
+              "o7110_refund_pending"
+            ],
+            "temporal_entity_event_ids": [
+              "o7110_refund_final",
+              "o7110_refund_pending"
+            ],
+            "memory_os_event_id": "o7110_refund_final"
+          }
+        ],
+        "by_category": null
+      },
+      "current_state": {
+        "cases": 16,
+        "vector_accuracy": 0.6875,
+        "temporal_entity_accuracy": 1.0,
+        "memory_os_accuracy": 1.0,
+        "memory_os_gain_vs_vector": 0.3125,
+        "positive_recall": 1.0,
+        "negative_abstention": 1.0,
+        "gate_passed": true,
+        "predictions": [
+          {
+            "query": "What is the latest status for order o7101?",
+            "category": "current_state",
+            "kind": "state",
+            "expected": "delivered",
+            "vector_correct": true,
+            "temporal_entity_correct": true,
+            "memory_os_correct": true,
+            "memory_os_answered": true,
+            "vector_event_ids": [
+              "o7101_status_delivered",
+              "o7104_status_delivered"
+            ],
+            "temporal_entity_event_ids": [
+              "o7101_status_delivered",
+              "o7101_fraud_false"
+            ],
+            "memory_os_event_id": "o7101_status_delivered"
+          },
+          {
+            "query": "Where does o7107 stand right now in shipping?",
+            "category": "current_state",
+            "kind": "state",
+            "expected": "shipped",
+            "vector_correct": true,
+            "temporal_entity_correct": true,
+            "memory_os_correct": true,
+            "memory_os_answered": true,
+            "vector_event_ids": [
+              "o7107_status_shipped",
+              "o7107_refund_none"
+            ],
+            "temporal_entity_event_ids": [
+              "o7107_status_shipped",
+              "o7107_fraud_false"
+            ],
+            "memory_os_event_id": "o7107_status_shipped"
+          },
+          {
+            "query": "Is order o7108 already refunded?",
+            "category": "current_state",
+            "kind": "state",
+            "expected": "refunded",
+            "vector_correct": false,
+            "temporal_entity_correct": true,
+            "memory_os_correct": true,
+            "memory_os_answered": true,
+            "vector_event_ids": [
+              "o7108_days_since_delivery",
+              "o7108_status_delivered"
+            ],
+            "temporal_entity_event_ids": [
+              "o7108_refund_refunded",
+              "o7108_fraud_false"
+            ],
+            "memory_os_event_id": "o7108_refund_refunded"
+          },
+          {
+            "query": "How many days since delivery are recorded for o7109?",
+            "category": "current_state",
+            "kind": "state",
+            "expected": "44",
+            "vector_correct": true,
+            "temporal_entity_correct": true,
+            "memory_os_correct": true,
+            "memory_os_answered": true,
+            "vector_event_ids": [
+              "o7109_days_since_delivery",
+              "o7107_days_since_delivery"
+            ],
+            "temporal_entity_event_ids": [
+              "o7109_days_since_delivery",
+              "o7109_fraud_false"
+            ],
+            "memory_os_event_id": "o7109_days_since_delivery"
+          },
+          {
+            "query": "What is the refund status on o7103?",
+            "category": "current_state",
+            "kind": "state",
+            "expected": "none",
+            "vector_correct": true,
+            "temporal_entity_correct": true,
+            "memory_os_correct": true,
+            "memory_os_answered": true,
+            "vector_event_ids": [
+              "o7103_refund_none",
+              "o7105_refund_none"
+            ],
+            "temporal_entity_event_ids": [
+              "o7103_refund_none",
+              "o7103_status_delivered"
+            ],
+            "memory_os_event_id": "o7103_refund_none"
+          },
+          {
+            "query": "What is the latest status for o7109?",
+            "category": "current_state",
+            "kind": "state",
+            "expected": "delivered",
+            "vector_correct": true,
+            "temporal_entity_correct": true,
+            "memory_os_correct": true,
+            "memory_os_answered": true,
+            "vector_event_ids": [
+              "o7109_status_delivered",
+              "o7104_status_delivered"
+            ],
+            "temporal_entity_event_ids": [
+              "o7109_status_delivered",
+              "o7109_fraud_false"
+            ],
+            "memory_os_event_id": "o7109_status_delivered"
+          },
+          {
+            "query": "Before acting, check the refund state attached to o7101.",
+            "category": "current_state",
+            "kind": "state",
+            "expected": "none",
+            "vector_correct": true,
+            "temporal_entity_correct": true,
+            "memory_os_correct": true,
+            "memory_os_answered": true,
+            "vector_event_ids": [
+              "o7101_refund_none",
+              "o7110_refund_final"
+            ],
+            "temporal_entity_event_ids": [
+              "o7101_refund_none",
+              "o7101_status_delivered"
+            ],
+            "memory_os_event_id": "o7101_refund_none"
+          },
+          {
+            "query": "What does the order timeline say about o7102 delivery status?",
+            "category": "current_state",
+            "kind": "state",
+            "expected": "delivered",
+            "vector_correct": true,
+            "temporal_entity_correct": true,
+            "memory_os_correct": true,
+            "memory_os_answered": true,
+            "vector_event_ids": [
+              "o7102_status_delivered",
+              "o7102_days_since_delivery"
+            ],
+            "temporal_entity_event_ids": [
+              "o7102_status_delivered",
+              "o7102_days_since_delivery"
+            ],
+            "memory_os_event_id": "o7102_status_delivered"
+          },
+          {
+            "query": "Has a refund already been issued for o7102?",
+            "category": "current_state",
+            "kind": "state",
+            "expected": "none",
+            "vector_correct": false,
+            "temporal_entity_correct": true,
+            "memory_os_correct": true,
+            "memory_os_answered": true,
+            "vector_event_ids": [
+              "o7104_refund_none",
+              "o7107_refund_none"
+            ],
+            "temporal_entity_event_ids": [
+              "o7102_refund_none",
+              "o7102_fraud_false"
+            ],
+            "memory_os_event_id": "o7102_refund_none"
+          },
+          {
+            "query": "Resolve the delivery status for o7103 from the authored timeline.",
+            "category": "current_state",
+            "kind": "state",
+            "expected": "delivered",
+            "vector_correct": true,
+            "temporal_entity_correct": true,
+            "memory_os_correct": true,
+            "memory_os_answered": true,
+            "vector_event_ids": [
+              "o7103_status_delivered",
+              "o7101_status_delivered"
+            ],
+            "temporal_entity_event_ids": [
+              "o7103_status_delivered",
+              "o7103_days_since_delivery"
+            ],
+            "memory_os_event_id": "o7103_status_delivered"
+          },
+          {
+            "query": "What is o7105's delivery state?",
+            "category": "current_state",
+            "kind": "state",
+            "expected": "delivered",
+            "vector_correct": false,
+            "temporal_entity_correct": true,
+            "memory_os_correct": true,
+            "memory_os_answered": true,
+            "vector_event_ids": [
+              "o7105_days_since_delivery",
+              "o7105_refund_none"
+            ],
+            "temporal_entity_event_ids": [
+              "o7105_days_since_delivery",
+              "o7105_status_delivered"
+            ],
+            "memory_os_event_id": "o7105_status_delivered"
+          },
+          {
+            "query": "For o7106, retrieve the current refund status.",
+            "category": "current_state",
+            "kind": "state",
+            "expected": "none",
+            "vector_correct": true,
+            "temporal_entity_correct": true,
+            "memory_os_correct": true,
+            "memory_os_answered": true,
+            "vector_event_ids": [
+              "o7106_refund_none",
+              "o7110_refund_pending"
+            ],
+            "temporal_entity_event_ids": [
+              "o7106_status_delivered",
+              "o7106_refund_none"
+            ],
+            "memory_os_event_id": "o7106_refund_none"
+          },
+          {
+            "query": "For o7107, retrieve the refund state before any approval decision.",
+            "category": "current_state",
+            "kind": "state",
+            "expected": "none",
+            "vector_correct": true,
+            "temporal_entity_correct": true,
+            "memory_os_correct": true,
+            "memory_os_answered": true,
+            "vector_event_ids": [
+              "o7107_refund_none",
+              "o7102_refund_none"
+            ],
+            "temporal_entity_event_ids": [
+              "o7107_refund_none",
+              "o7107_status_shipped"
+            ],
+            "memory_os_event_id": "o7107_refund_none"
+          },
+          {
+            "query": "What delivery state is recorded for o7108?",
+            "category": "current_state",
+            "kind": "state",
+            "expected": "delivered",
+            "vector_correct": false,
+            "temporal_entity_correct": true,
+            "memory_os_correct": true,
+            "memory_os_answered": true,
+            "vector_event_ids": [
+              "o7108_days_since_delivery",
+              "o7101_days_since_delivery"
+            ],
+            "temporal_entity_event_ids": [
+              "o7108_days_since_delivery",
+              "o7108_status_delivered"
+            ],
+            "memory_os_event_id": "o7108_status_delivered"
+          },
+          {
+            "query": "What refund state is recorded for o7109?",
+            "category": "current_state",
+            "kind": "state",
+            "expected": "none",
+            "vector_correct": true,
+            "temporal_entity_correct": true,
+            "memory_os_correct": true,
+            "memory_os_answered": true,
+            "vector_event_ids": [
+              "o7109_refund_none",
+              "o7105_refund_none"
+            ],
+            "temporal_entity_event_ids": [
+              "o7109_refund_none",
+              "o7109_status_delivered"
+            ],
+            "memory_os_event_id": "o7109_refund_none"
+          },
+          {
+            "query": "What delivery state remains current for o7110?",
+            "category": "current_state",
+            "kind": "state",
+            "expected": "delivered",
+            "vector_correct": false,
+            "temporal_entity_correct": true,
+            "memory_os_correct": true,
+            "memory_os_answered": true,
+            "vector_event_ids": [
+              "o7110_days_since_delivery",
+              "o7110_refund_pending"
+            ],
+            "temporal_entity_event_ids": [
+              "o7110_days_since_delivery",
+              "o7110_status_delivered"
+            ],
+            "memory_os_event_id": "o7110_status_delivered"
+          }
+        ],
+        "by_category": null
+      },
+      "policy_recall": {
+        "cases": 3,
+        "vector_accuracy": 1.0,
+        "temporal_entity_accuracy": 1.0,
+        "memory_os_accuracy": 1.0,
+        "memory_os_gain_vs_vector": 0.0,
+        "positive_recall": 1.0,
+        "negative_abstention": 1.0,
+        "gate_passed": false,
+        "predictions": [
+          {
+            "query": "What policy event sets the refund amount that does not require manager approval?",
+            "category": "policy_recall",
+            "kind": "event",
+            "expected": "auth_policy_limit",
+            "vector_correct": true,
+            "temporal_entity_correct": true,
+            "memory_os_correct": true,
+            "memory_os_answered": true,
+            "vector_event_ids": [
+              "auth_policy_limit",
+              "auth_policy_approval_freshness"
+            ],
+            "temporal_entity_event_ids": [
+              "auth_policy_limit",
+              "auth_policy_approval_freshness"
+            ],
+            "memory_os_event_id": "auth_policy_limit"
+          },
+          {
+            "query": "Which policy event gives the manager approval freshness window?",
+            "category": "policy_recall",
+            "kind": "event",
+            "expected": "auth_policy_approval_freshness",
+            "vector_correct": true,
+            "temporal_entity_correct": true,
+            "memory_os_correct": true,
+            "memory_os_answered": true,
+            "vector_event_ids": [
+              "auth_policy_approval_freshness",
+              "auth_policy_limit"
+            ],
+            "temporal_entity_event_ids": [
+              "auth_policy_approval_freshness",
+              "auth_policy_limit"
+            ],
+            "memory_os_event_id": "auth_policy_approval_freshness"
+          },
+          {
+            "query": "Which policy event states the return window after delivery?",
+            "category": "policy_recall",
+            "kind": "event",
+            "expected": "auth_policy_return_window",
+            "vector_correct": true,
+            "temporal_entity_correct": true,
+            "memory_os_correct": true,
+            "memory_os_answered": true,
+            "vector_event_ids": [
+              "auth_policy_return_window",
+              "auth_policy_limit"
+            ],
+            "temporal_entity_event_ids": [
+              "auth_policy_return_window",
+              "auth_policy_limit"
+            ],
+            "memory_os_event_id": "auth_policy_return_window"
+          }
+        ],
+        "by_category": null
+      },
+      "risk_recall": {
+        "cases": 2,
+        "vector_accuracy": 1.0,
+        "temporal_entity_accuracy": 1.0,
+        "memory_os_accuracy": 1.0,
+        "memory_os_gain_vs_vector": 0.0,
+        "positive_recall": 1.0,
+        "negative_abstention": 1.0,
+        "gate_passed": false,
+        "predictions": [
+          {
+            "query": "Does o7106 carry a fraud flag?",
+            "category": "risk_recall",
+            "kind": "state",
+            "expected": "True",
+            "vector_correct": true,
+            "temporal_entity_correct": true,
+            "memory_os_correct": true,
+            "memory_os_answered": true,
+            "vector_event_ids": [
+              "o7106_fraud_true",
+              "o7101_fraud_false"
+            ],
+            "temporal_entity_event_ids": [
+              "o7106_fraud_true",
+              "o7106_status_delivered"
+            ],
+            "memory_os_event_id": "o7106_fraud_true"
+          },
+          {
+            "query": "Which event says o7106 was fraud flagged?",
+            "category": "risk_recall",
+            "kind": "event",
+            "expected": "o7106_fraud_true",
+            "vector_correct": true,
+            "temporal_entity_correct": true,
+            "memory_os_correct": true,
+            "memory_os_answered": true,
+            "vector_event_ids": [
+              "o7106_fraud_true",
+              "o7106_status_delivered"
+            ],
+            "temporal_entity_event_ids": [
+              "o7106_fraud_true",
+              "o7106_status_delivered"
+            ],
+            "memory_os_event_id": "o7106_fraud_true"
+          }
+        ],
+        "by_category": null
+      },
+      "stale_state_update": {
+        "cases": 2,
+        "vector_accuracy": 1.0,
+        "temporal_entity_accuracy": 1.0,
+        "memory_os_accuracy": 1.0,
+        "memory_os_gain_vs_vector": 0.0,
+        "positive_recall": 1.0,
+        "negative_abstention": 1.0,
+        "gate_passed": false,
+        "predictions": [
+          {
+            "query": "What is the current refund status for o7110 after the pending note?",
+            "category": "stale_state_update",
+            "kind": "state",
+            "expected": "refunded",
+            "vector_correct": true,
+            "temporal_entity_correct": true,
+            "memory_os_correct": true,
+            "memory_os_answered": true,
+            "vector_event_ids": [
+              "o7110_refund_pending",
+              "o7110_refund_final"
+            ],
+            "temporal_entity_event_ids": [
+              "o7110_refund_final",
+              "o7110_refund_pending"
+            ],
+            "memory_os_event_id": "o7110_refund_final"
+          },
+          {
+            "query": "Ignore the older pending note and give the live refund status for o7110.",
+            "category": "stale_state_update",
+            "kind": "state",
+            "expected": "refunded",
+            "vector_correct": true,
+            "temporal_entity_correct": true,
+            "memory_os_correct": true,
+            "memory_os_answered": true,
+            "vector_event_ids": [
+              "o7110_refund_pending",
+              "o7110_refund_final"
+            ],
+            "temporal_entity_event_ids": [
+              "o7110_refund_final",
+              "o7110_refund_pending"
+            ],
+            "memory_os_event_id": "o7110_refund_final"
+          }
+        ],
+        "by_category": null
+      },
+      "unknown_order": {
+        "cases": 10,
+        "vector_accuracy": 0.0,
+        "temporal_entity_accuracy": 0.0,
+        "memory_os_accuracy": 1.0,
+        "memory_os_gain_vs_vector": 1.0,
+        "positive_recall": 0.0,
+        "negative_abstention": 1.0,
+        "gate_passed": false,
+        "predictions": [
+          {
+            "query": "What is the latest status for order o7999?",
+            "category": "unknown_order",
+            "kind": "state",
+            "expected": null,
+            "vector_correct": false,
+            "temporal_entity_correct": false,
+            "memory_os_correct": true,
+            "memory_os_answered": false,
+            "vector_event_ids": [
+              "o7104_status_delivered",
+              "o7103_status_delivered"
+            ],
+            "temporal_entity_event_ids": [
+              "o7104_status_delivered",
+              "o7103_status_delivered"
+            ],
+            "memory_os_event_id": null
+          },
+          {
+            "query": "Is order o7998 already refunded?",
+            "category": "unknown_order",
+            "kind": "state",
+            "expected": null,
+            "vector_correct": false,
+            "temporal_entity_correct": false,
+            "memory_os_correct": true,
+            "memory_os_answered": false,
+            "vector_event_ids": [
+              "o7109_status_delivered",
+              "o7110_status_delivered"
+            ],
+            "temporal_entity_event_ids": [
+              "o7109_status_delivered",
+              "o7110_status_delivered"
+            ],
+            "memory_os_event_id": null
+          },
+          {
+            "query": "Does order o7997 have a fraud flag?",
+            "category": "unknown_order",
+            "kind": "state",
+            "expected": null,
+            "vector_correct": false,
+            "temporal_entity_correct": false,
+            "memory_os_correct": true,
+            "memory_os_answered": false,
+            "vector_event_ids": [
+              "o7106_fraud_true",
+              "o7101_fraud_false"
+            ],
+            "temporal_entity_event_ids": [
+              "o7106_fraud_true",
+              "o7101_fraud_false"
+            ],
+            "memory_os_event_id": null
+          },
+          {
+            "query": "Was there manager approval for order o7996?",
+            "category": "unknown_order",
+            "kind": "state",
+            "expected": null,
+            "vector_correct": false,
+            "temporal_entity_correct": false,
+            "memory_os_correct": true,
+            "memory_os_answered": false,
+            "vector_event_ids": [
+              "o7105_manager_approval_fresh",
+              "o7104_manager_approval_stale_seed"
+            ],
+            "temporal_entity_event_ids": [
+              "o7105_manager_approval_fresh",
+              "o7104_manager_approval_stale_seed"
+            ],
+            "memory_os_event_id": null
+          },
+          {
+            "query": "Was there manager approval for the low-value o7101 refund?",
+            "category": "unknown_order",
+            "kind": "state",
+            "expected": null,
+            "vector_correct": false,
+            "temporal_entity_correct": false,
+            "memory_os_correct": true,
+            "memory_os_answered": false,
+            "vector_event_ids": [
+              "o7104_manager_approval_stale_seed",
+              "o7105_manager_approval_fresh"
+            ],
+            "temporal_entity_event_ids": [
+              "o7101_refund_none",
+              "o7101_fraud_false"
+            ],
+            "memory_os_event_id": null
+          },
+          {
+            "query": "Does o7105 have a recorded discount exception?",
+            "category": "unknown_order",
+            "kind": "state",
+            "expected": null,
+            "vector_correct": false,
+            "temporal_entity_correct": false,
+            "memory_os_correct": true,
+            "memory_os_answered": false,
+            "vector_event_ids": [
+              "o7105_status_delivered",
+              "o7105_refund_none"
+            ],
+            "temporal_entity_event_ids": [
+              "o7105_fraud_false",
+              "o7105_manager_approval_fresh"
+            ],
+            "memory_os_event_id": null
+          },
+          {
+            "query": "Does o7102 have a manager approval record?",
+            "category": "unknown_order",
+            "kind": "state",
+            "expected": null,
+            "vector_correct": false,
+            "temporal_entity_correct": false,
+            "memory_os_correct": true,
+            "memory_os_answered": false,
+            "vector_event_ids": [
+              "o7104_manager_approval_stale_seed",
+              "o7105_manager_approval_fresh"
+            ],
+            "temporal_entity_event_ids": [
+              "o7102_fraud_false",
+              "o7102_status_delivered"
+            ],
+            "memory_os_event_id": null
+          },
+          {
+            "query": "Does o7103 have a manager approval record?",
+            "category": "unknown_order",
+            "kind": "state",
+            "expected": null,
+            "vector_correct": false,
+            "temporal_entity_correct": false,
+            "memory_os_correct": true,
+            "memory_os_answered": false,
+            "vector_event_ids": [
+              "o7104_manager_approval_stale_seed",
+              "o7105_manager_approval_fresh"
+            ],
+            "temporal_entity_event_ids": [
+              "o7103_refund_none",
+              "o7103_fraud_false"
+            ],
+            "memory_os_event_id": null
+          },
+          {
+            "query": "Was o7106 granted a manager exception?",
+            "category": "unknown_order",
+            "kind": "state",
+            "expected": null,
+            "vector_correct": false,
+            "temporal_entity_correct": false,
+            "memory_os_correct": true,
+            "memory_os_answered": false,
+            "vector_event_ids": [
+              "o7104_manager_approval_stale_seed",
+              "o7105_manager_approval_fresh"
+            ],
+            "temporal_entity_event_ids": [
+              "o7106_fraud_true",
+              "o7106_status_delivered"
+            ],
+            "memory_os_event_id": null
+          },
+          {
+            "query": "Does o7110 have a recorded manager approval?",
+            "category": "unknown_order",
+            "kind": "state",
+            "expected": null,
+            "vector_correct": false,
+            "temporal_entity_correct": false,
+            "memory_os_correct": true,
+            "memory_os_answered": false,
+            "vector_event_ids": [
+              "o7104_manager_approval_stale_seed",
+              "o7105_manager_approval_fresh"
+            ],
+            "temporal_entity_event_ids": [
+              "o7110_refund_final",
+              "o7110_fraud_false"
+            ],
+            "memory_os_event_id": null
+          }
+        ],
+        "by_category": null
+      }
+    }
+  },
+  "statistics": {
+    "guard_melm_accuracy_ci": {
+      "estimate": 1.0,
+      "low": 1.0,
+      "high": 1.0,
+      "samples": 1000
+    },
+    "guard_melm_vs_schema_accuracy_diff_ci": {
+      "estimate": 0.6923076923076923,
+      "low": 0.46153846153846156,
+      "high": 0.9230769230769231,
+      "samples": 1000
+    },
+    "guard_melm_vs_prompt_accuracy_diff_ci": {
+      "estimate": 0.6923076923076923,
+      "low": 0.46153846153846156,
+      "high": 0.9230769230769231,
+      "samples": 1000
+    },
+    "memory_os_accuracy_ci": {
+      "estimate": 1.0,
+      "low": 1.0,
+      "high": 1.0,
+      "samples": 1000
+    },
+    "memory_os_vs_vector_accuracy_diff_ci": {
+      "estimate": 0.375,
+      "low": 0.225,
+      "high": 0.525,
+      "samples": 1000
+    },
+    "memory_os_vs_temporal_entity_accuracy_diff_ci": {
+      "estimate": 0.275,
+      "low": 0.15,
+      "high": 0.425,
+      "samples": 1000
+    }
+  },
+  "confusion": {
+    "guard_schema_only": {
+      "allow": {
+        "allow": 3
+      },
+      "deny": {
+        "allow": 7,
+        "deny": 1
+      },
+      "abstain": {
+        "allow": 1
+      },
+      "warn": {
+        "allow": 1
+      }
+    },
+    "guard_prompt_only": {
+      "allow": {
+        "allow": 3
+      },
+      "deny": {
+        "allow": 7,
+        "deny": 1
+      },
+      "abstain": {
+        "allow": 1
+      },
+      "warn": {
+        "allow": 1
+      }
+    },
+    "guard_melm": {
+      "allow": {
+        "allow": 3
+      },
+      "deny": {
+        "deny": 8
+      },
+      "abstain": {
+        "abstain": 1
+      },
+      "warn": {
+        "warn": 1
+      }
+    },
+    "memory_vector": {
+      "correct": 25,
+      "incorrect": 15
+    },
+    "memory_temporal_entity": {
+      "correct": 29,
+      "incorrect": 11
+    },
+    "memory_os": {
+      "correct": 40,
+      "incorrect": 0
+    }
+  },
+  "authored_batch_gate_passed": true,
+  "publication_grade_ready": false,
+  "recommendation": "use_this_as_seed_and_author_external_blind_batch"
+}

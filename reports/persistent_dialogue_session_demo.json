@@ -1,0 +1,154 @@
+{
+  "source": "jsonl_persistent_session_seeded_from_authored_child_dialogue",
+  "session_path": "reports\\persistent_dialogue_session_events.jsonl",
+  "seeded": true,
+  "threshold": 1.25,
+  "k": 2,
+  "events": 12,
+  "report": {
+    "cases": 15,
+    "positives": 10,
+    "negatives": 5,
+    "accuracy": 1.0,
+    "positive_recall": 1.0,
+    "negative_abstention": 1.0,
+    "answered": 10,
+    "answer_rate": 0.6666666666666666,
+    "responses": [
+      {
+        "query": "Where did Maya tuck the moon sticker?",
+        "status": "answered",
+        "answer": "I remember: Maya checked the art table and asked where the moon sticker had gone. Maya whispered that she tucked the moon sticker inside the purple lunchbox before art class.",
+        "evidence_event_ids": [
+          "dialogue1_e3",
+          "dialogue1_e1"
+        ],
+        "confidence": 1.383383351196948
+      },
+      {
+        "query": "What happened right after Maya tucked away the moon sticker?",
+        "status": "answered",
+        "answer": "I remember: Leo carried the purple lunchbox from the art table to the reading rug. Maya whispered that she tucked the moon sticker inside the purple lunchbox before art class.",
+        "evidence_event_ids": [
+          "dialogue1_e2",
+          "dialogue1_e1"
+        ],
+        "confidence": 1.8308792582251798
+      },
+      {
+        "query": "Who said where the purple lunchbox was?",
+        "status": "answered",
+        "answer": "I remember: Sam said he saw Leo place the purple lunchbox beside the reading rug. Leo carried the purple lunchbox from the art table to the reading rug.",
+        "evidence_event_ids": [
+          "dialogue1_e4",
+          "dialogue1_e2"
+        ],
+        "confidence": 1.4341820261350418
+      },
+      {
+        "query": "What earlier event explains why Sam knew about the purple lunchbox?",
+        "status": "answered",
+        "answer": "I remember: Leo carried the purple lunchbox from the art table to the reading rug. Sam said he saw Leo place the purple lunchbox beside the reading rug.",
+        "evidence_event_ids": [
+          "dialogue1_e2",
+          "dialogue1_e4"
+        ],
+        "confidence": 1.25
+      },
+      {
+        "query": "Where did Nora first build the green block tower?",
+        "status": "answered",
+        "answer": "I remember: Nora built a green block tower under the sunny window. Owen reminded Nora that the first tower had been under the window.",
+        "evidence_event_ids": [
+          "dialogue2_e1",
+          "dialogue2_e4"
+        ],
+        "confidence": 1.4722329678670933
+      },
+      {
+        "query": "What happened right before Nora rebuilt the green blocks?",
+        "status": "answered",
+        "answer": "I remember: Iris bumped the tower while reaching for the green cape. Nora rebuilt the green blocks on the blue mat.",
+        "evidence_event_ids": [
+          "dialogue2_e2",
+          "dialogue2_e3"
+        ],
+        "confidence": 1.9305790872963897
+      },
+      {
+        "query": "Who reminded Nora where the first tower had been?",
+        "status": "answered",
+        "answer": "I remember: Owen reminded Nora that the first tower had been under the window. Nora built a green block tower under the sunny window.",
+        "evidence_event_ids": [
+          "dialogue2_e4",
+          "dialogue2_e1"
+        ],
+        "confidence": 1.5697797868009122
+      },
+      {
+        "query": "Where did Owen put the tiny shell at first?",
+        "status": "answered",
+        "answer": "I remember: Owen put the tiny shell in the blue bucket near the sandbox. Owen looked in the blue bucket and frowned because the shell was gone.",
+        "evidence_event_ids": [
+          "dialogue3_e1",
+          "dialogue3_e4"
+        ],
+        "confidence": 1.6371365639519861
+      },
+      {
+        "query": "What changed where the tiny shell was later?",
+        "status": "answered",
+        "answer": "I remember: Later, Iris moved the tiny shell from the blue bucket to the red pail.",
+        "evidence_event_ids": [
+          "dialogue3_e3"
+        ],
+        "confidence": 1.25
+      },
+      {
+        "query": "Where was the tiny shell before Iris moved it?",
+        "status": "answered",
+        "answer": "I remember: Later, Iris moved the tiny shell from the blue bucket to the red pail. Owen put the tiny shell in the blue bucket near the sandbox.",
+        "evidence_event_ids": [
+          "dialogue3_e3",
+          "dialogue3_e1"
+        ],
+        "confidence": 1.7348383021589469
+      },
+      {
+        "query": "Where did Maya hide the silver train?",
+        "status": "abstained",
+        "answer": "I do not have enough evidence for that yet.",
+        "evidence_event_ids": [],
+        "confidence": 0.0
+      },
+      {
+        "query": "Where was the moon sticker after Sam moved it?",
+        "status": "abstained",
+        "answer": "I do not have enough evidence for that yet.",
+        "evidence_event_ids": [],
+        "confidence": 0.0
+      },
+      {
+        "query": "Where did Nora put the thing?",
+        "status": "abstained",
+        "answer": "I do not have enough evidence for that yet.",
+        "evidence_event_ids": [],
+        "confidence": 0.0
+      },
+      {
+        "query": "Who explained the missing telescope?",
+        "status": "abstained",
+        "answer": "I do not have enough evidence for that yet.",
+        "evidence_event_ids": [],
+        "confidence": 0.0
+      },
+      {
+        "query": "Where was the tiny shell after Owen moved it to the shelf?",
+        "status": "abstained",
+        "answer": "I do not have enough evidence for that yet.",
+        "evidence_event_ids": [],
+        "confidence": 0.0
+      }
+    ]
+  }
+}

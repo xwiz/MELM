@@ -1,0 +1,95 @@
+{
+  "source": "manifest:reports\\babylm_2026_strict_small_manifest.json",
+  "root": "artifacts\\babylm_2026_small_model_stage",
+  "max_validation_bytes": 1000000,
+  "runs": [
+    {
+      "name": "capped_morpheme_seed13_1000step",
+      "manifest": "artifacts\\babylm_2026_small_model_stage\\capped_morpheme_seed13_1000step\\run_manifest.json",
+      "tokenizer_metadata": "artifacts\\babylm_2026_small_model_stage\\capped_morpheme_seed13_1000step\\tokenizer\\tokenizer_metadata.json",
+      "evaluation": {
+        "tokenizer": "capped_morpheme",
+        "checkpoint_dir": "artifacts\\babylm_2026_small_model_stage\\capped_morpheme_seed13_1000step\\checkpoint",
+        "validation_documents": 6,
+        "validation_tokens": 276908,
+        "validation_bytes": 999996,
+        "validation_sequences": 1443,
+        "vocabulary_size": 16384,
+        "parameters": 23319808,
+        "checkpoint_steps": 1000,
+        "device": "cuda",
+        "validation_nll": 4.204614327764505,
+        "validation_bits_per_byte": 1.6797240674283143,
+        "validation_perplexity": 66.99475466636262
+      },
+      "training_validation_bits_per_byte": 1.6797240674283143,
+      "bits_per_byte_delta_from_training_report": 0.0
+    },
+    {
+      "name": "tiered_morph_unigram_seed13_1000step",
+      "manifest": "artifacts\\babylm_2026_small_model_stage\\tiered_morph_unigram_seed13_1000step\\run_manifest.json",
+      "tokenizer_metadata": "artifacts\\babylm_2026_small_model_stage\\tiered_morph_unigram_seed13_1000step\\tokenizer\\tokenizer_metadata.json",
+      "evaluation": {
+        "tokenizer": "tiered_morph_unigram",
+        "checkpoint_dir": "artifacts\\babylm_2026_small_model_stage\\tiered_morph_unigram_seed13_1000step\\checkpoint",
+        "validation_documents": 6,
+        "validation_tokens": 288043,
+        "validation_bytes": 999996,
+        "validation_sequences": 1501,
+        "vocabulary_size": 16384,
+        "parameters": 23319808,
+        "checkpoint_steps": 1000,
+        "device": "cuda",
+        "validation_nll": 4.661877976293307,
+        "validation_bits_per_byte": 1.9372894053286547,
+        "validation_perplexity": 105.83465060973211
+      },
+      "training_validation_bits_per_byte": 1.9372894053286547,
+      "bits_per_byte_delta_from_training_report": 0.0
+    },
+    {
+      "name": "hf_bpe_seed13_1000step",
+      "manifest": "artifacts\\babylm_2026_small_model_stage\\hf_bpe_seed13_1000step\\run_manifest.json",
+      "tokenizer_metadata": "artifacts\\babylm_2026_small_model_stage\\hf_bpe_seed13_1000step\\tokenizer\\tokenizer_metadata.json",
+      "evaluation": {
+        "tokenizer": "hf_bpe",
+        "checkpoint_dir": "artifacts\\babylm_2026_small_model_stage\\hf_bpe_seed13_1000step\\checkpoint",
+        "validation_documents": 6,
+        "validation_tokens": 285121,
+        "validation_bytes": 999996,
+        "validation_sequences": 1486,
+        "vocabulary_size": 16384,
+        "parameters": 23319808,
+        "checkpoint_steps": 1000,
+        "device": "cuda",
+        "validation_nll": 4.814515420268276,
+        "validation_bits_per_byte": 1.9804234663886977,
+        "validation_perplexity": 123.28705542461739
+      },
+      "training_validation_bits_per_byte": 1.9804234663886977,
+      "bits_per_byte_delta_from_training_report": 0.0
+    },
+    {
+      "name": "hf_unigram_seed13_1000step",
+      "manifest": "artifacts\\babylm_2026_small_model_stage\\hf_unigram_seed13_1000step\\run_manifest.json",
+      "tokenizer_metadata": "artifacts\\babylm_2026_small_model_stage\\hf_unigram_seed13_1000step\\tokenizer\\tokenizer_metadata.json",
+      "evaluation": {
+        "tokenizer": "hf_unigram",
+        "checkpoint_dir": "artifacts\\babylm_2026_small_model_stage\\hf_unigram_seed13_1000step\\checkpoint",
+        "validation_documents": 6,
+        "validation_tokens": 315610,
+        "validation_bytes": 999996,
+        "validation_sequences": 1644,
+        "vocabulary_size": 16384,
+        "parameters": 23319808,
+        "checkpoint_steps": 1000,
+        "device": "cuda",
+        "validation_nll": 4.380239999160194,
+        "validation_bits_per_byte": 1.9944581969307953,
+        "validation_perplexity": 79.85719676555651
+      },
+      "training_validation_bits_per_byte": 1.9944581969307953,
+      "bits_per_byte_delta_from_training_report": 0.0
+    }
+  ]
+}

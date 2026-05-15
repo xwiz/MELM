@@ -1,0 +1,873 @@
+{
+  "source": "support_refund_fixture",
+  "current_time": 100,
+  "report": {
+    "cases": 12,
+    "melm_accuracy": 1.0,
+    "schema_only_accuracy": 0.25,
+    "prompt_only_accuracy": 0.25,
+    "melm_false_allow_rate": 0.0,
+    "schema_only_false_allow_rate": 0.9,
+    "prompt_only_false_allow_rate": 0.9,
+    "false_allow_reduction_vs_schema": 1.0,
+    "valid_action_allow_rate": 1.0,
+    "traceability": 1.0,
+    "gate_passed": true,
+    "predictions": [
+      {
+        "action_id": "g1",
+        "category": "valid_low_value",
+        "expected_status": "allow",
+        "schema_only_status": "allow",
+        "prompt_only_status": "allow",
+        "melm_status": "allow",
+        "melm_decision": {
+          "status": "allow",
+          "triggered_rule_ids": [],
+          "required_facts": [
+            "action:amount",
+            "order:o1001:status",
+            "customer:c1:identity_verified",
+            "order:o1001:fraud_flag",
+            "order:o1001:refund_status",
+            "order:o1001:days_since_delivery",
+            "order:o1001:manager_approval"
+          ],
+          "missing_facts": [],
+          "evidence_event_ids": [],
+          "explanation": "approve_refund allowed: no blocking rule matched."
+        }
+      },
+      {
+        "action_id": "g2",
+        "category": "identity_missing_or_false",
+        "expected_status": "deny",
+        "schema_only_status": "allow",
+        "prompt_only_status": "allow",
+        "melm_status": "deny",
+        "melm_decision": {
+          "status": "deny",
+          "triggered_rule_ids": [
+            "identity_must_be_true"
+          ],
+          "required_facts": [
+            "action:amount",
+            "order:o1002:status",
+            "customer:c2:identity_verified",
+            "order:o1002:fraud_flag",
+            "order:o1002:refund_status",
+            "order:o1002:days_since_delivery",
+            "order:o1002:manager_approval"
+          ],
+          "missing_facts": [],
+          "evidence_event_ids": [
+            "o1002_e_identity"
+          ],
+          "explanation": "approve_refund deny: identity_must_be_true: Customer identity must be verified before refund."
+        }
+      },
+      {
+        "action_id": "g3",
+        "category": "approval_required",
+        "expected_status": "abstain",
+        "schema_only_status": "allow",
+        "prompt_only_status": "allow",
+        "melm_status": "abstain",
+        "melm_decision": {
+          "status": "abstain",
+          "triggered_rule_ids": [
+            "manager_approval_required"
+          ],
+          "required_facts": [
+            "action:amount",
+            "order:o1003:status",
+            "customer:c3:identity_verified",
+            "order:o1003:fraud_flag",
+            "order:o1003:refund_status",
+            "order:o1003:days_since_delivery",
+            "order:o1003:manager_approval"
+          ],
+          "missing_facts": [
+            "order:o1003:manager_approval"
+          ],
+          "evidence_event_ids": [],
+          "explanation": "approve_refund needs more approval/evidence: manager_approval_required: High-value refunds require manager approval."
+        }
+      },
+      {
+        "action_id": "g4",
+        "category": "stale_approval",
+        "expected_status": "warn",
+        "schema_only_status": "allow",
+        "prompt_only_status": "allow",
+        "melm_status": "warn",
+        "melm_decision": {
+          "status": "warn",
+          "triggered_rule_ids": [
+            "manager_approval_stale"
+          ],
+          "required_facts": [
+            "action:amount",
+            "order:o1004:status",
+            "customer:c4:identity_verified",
+            "order:o1004:fraud_flag",
+            "order:o1004:refund_status",
+            "order:o1004:days_since_delivery",
+            "order:o1004:manager_approval"
+          ],
+          "missing_facts": [],
+          "evidence_event_ids": [
+            "o1004_e_approval_stale"
+          ],
+          "explanation": "approve_refund warn: manager_approval_stale: High-value refund approval is stale and should be refreshed."
+        }
+      },
+      {
+        "action_id": "g5",
+        "category": "fraud_flag",
+        "expected_status": "deny",
+        "schema_only_status": "allow",
+        "prompt_only_status": "allow",
+        "melm_status": "deny",
+        "melm_decision": {
+          "status": "deny",
+          "triggered_rule_ids": [
+            "fraud_blocks_refund"
+          ],
+          "required_facts": [
+            "action:amount",
+            "order:o1005:status",
+            "customer:c5:identity_verified",
+            "order:o1005:fraud_flag",
+            "order:o1005:refund_status",
+            "order:o1005:days_since_delivery",
+            "order:o1005:manager_approval"
+          ],
+          "missing_facts": [],
+          "evidence_event_ids": [
+            "o1005_e_fraud"
+          ],
+          "explanation": "approve_refund deny: fraud_blocks_refund: Fraud-flagged orders cannot be refunded automatically."
+        }
+      },
+      {
+        "action_id": "g6",
+        "category": "not_delivered",
+        "expected_status": "deny",
+        "schema_only_status": "allow",
+        "prompt_only_status": "allow",
+        "melm_status": "deny",
+        "melm_decision": {
+          "status": "deny",
+          "triggered_rule_ids": [
+            "order_must_be_delivered"
+          ],
+          "required_facts": [
+            "action:amount",
+            "order:o1006:status",
+            "customer:c6:identity_verified",
+            "order:o1006:fraud_flag",
+            "order:o1006:refund_status",
+            "order:o1006:days_since_delivery",
+            "order:o1006:manager_approval"
+          ],
+          "missing_facts": [],
+          "evidence_event_ids": [
+            "o1006_e_status"
+          ],
+          "explanation": "approve_refund deny: order_must_be_delivered: Refunds require delivered order status."
+        }
+      },
+      {
+        "action_id": "g7",
+        "category": "duplicate_refund",
+        "expected_status": "deny",
+        "schema_only_status": "allow",
+        "prompt_only_status": "allow",
+        "melm_status": "deny",
+        "melm_decision": {
+          "status": "deny",
+          "triggered_rule_ids": [
+            "duplicate_refund_block"
+          ],
+          "required_facts": [
+            "action:amount",
+            "order:o1007:status",
+            "customer:c7:identity_verified",
+            "order:o1007:fraud_flag",
+            "order:o1007:refund_status",
+            "order:o1007:days_since_delivery",
+            "order:o1007:manager_approval"
+          ],
+          "missing_facts": [],
+          "evidence_event_ids": [
+            "o1007_e_refunded"
+          ],
+          "explanation": "approve_refund deny: duplicate_refund_block: Already-refunded orders cannot be refunded again."
+        }
+      },
+      {
+        "action_id": "g8",
+        "category": "outside_return_window",
+        "expected_status": "deny",
+        "schema_only_status": "allow",
+        "prompt_only_status": "allow",
+        "melm_status": "deny",
+        "melm_decision": {
+          "status": "deny",
+          "triggered_rule_ids": [
+            "return_window_block"
+          ],
+          "required_facts": [
+            "action:amount",
+            "order:o1008:status",
+            "customer:c8:identity_verified",
+            "order:o1008:fraud_flag",
+            "order:o1008:refund_status",
+            "order:o1008:days_since_delivery",
+            "order:o1008:manager_approval"
+          ],
+          "missing_facts": [],
+          "evidence_event_ids": [
+            "o1008_e_days"
+          ],
+          "explanation": "approve_refund deny: return_window_block: Refund request is outside the return window."
+        }
+      },
+      {
+        "action_id": "g9",
+        "category": "malformed_action",
+        "expected_status": "deny",
+        "schema_only_status": "deny",
+        "prompt_only_status": "deny",
+        "melm_status": "deny",
+        "melm_decision": {
+          "status": "deny",
+          "triggered_rule_ids": [
+            "refund_amount_required"
+          ],
+          "required_facts": [
+            "action:amount",
+            "order:o1001:status",
+            "customer:c1:identity_verified",
+            "order:o1001:fraud_flag",
+            "order:o1001:refund_status",
+            "order:o1001:days_since_delivery",
+            "order:o1001:manager_approval"
+          ],
+          "missing_facts": [
+            "action:amount"
+          ],
+          "evidence_event_ids": [],
+          "explanation": "approve_refund deny: refund_amount_required: Refund approval requires an amount."
+        }
+      },
+      {
+        "action_id": "g10",
+        "category": "valid_high_value",
+        "expected_status": "allow",
+        "schema_only_status": "allow",
+        "prompt_only_status": "allow",
+        "melm_status": "allow",
+        "melm_decision": {
+          "status": "allow",
+          "triggered_rule_ids": [],
+          "required_facts": [
+            "action:amount",
+            "order:o1009:status",
+            "customer:c9:identity_verified",
+            "order:o1009:fraud_flag",
+            "order:o1009:refund_status",
+            "order:o1009:days_since_delivery",
+            "order:o1009:manager_approval"
+          ],
+          "missing_facts": [],
+          "evidence_event_ids": [],
+          "explanation": "approve_refund allowed: no blocking rule matched."
+        }
+      },
+      {
+        "action_id": "g11",
+        "category": "missing_order",
+        "expected_status": "deny",
+        "schema_only_status": "allow",
+        "prompt_only_status": "allow",
+        "melm_status": "deny",
+        "melm_decision": {
+          "status": "deny",
+          "triggered_rule_ids": [
+            "order_status_required",
+            "identity_required"
+          ],
+          "required_facts": [
+            "action:amount",
+            "order:o9999:status",
+            "customer:c9999:identity_verified",
+            "order:o9999:fraud_flag",
+            "order:o9999:refund_status",
+            "order:o9999:days_since_delivery",
+            "order:o9999:manager_approval"
+          ],
+          "missing_facts": [
+            "order:o9999:status",
+            "customer:c9999:identity_verified"
+          ],
+          "evidence_event_ids": [],
+          "explanation": "approve_refund deny: order_status_required: Refund approval requires known order status.; identity_required: Customer identity must be verified before refund."
+        }
+      },
+      {
+        "action_id": "g12",
+        "category": "stale_state_trap",
+        "expected_status": "deny",
+        "schema_only_status": "allow",
+        "prompt_only_status": "allow",
+        "melm_status": "deny",
+        "melm_decision": {
+          "status": "deny",
+          "triggered_rule_ids": [
+            "duplicate_refund_block"
+          ],
+          "required_facts": [
+            "action:amount",
+            "order:o1010:status",
+            "customer:c10:identity_verified",
+            "order:o1010:fraud_flag",
+            "order:o1010:refund_status",
+            "order:o1010:days_since_delivery",
+            "order:o1010:manager_approval"
+          ],
+          "missing_facts": [],
+          "evidence_event_ids": [
+            "o1010_e_status_refunded"
+          ],
+          "explanation": "approve_refund deny: duplicate_refund_block: Already-refunded orders cannot be refunded again."
+        }
+      }
+    ],
+    "by_category": {
+      "approval_required": {
+        "cases": 1,
+        "melm_accuracy": 1.0,
+        "schema_only_accuracy": 0.0,
+        "prompt_only_accuracy": 0.0,
+        "melm_false_allow_rate": 0.0,
+        "schema_only_false_allow_rate": 1.0,
+        "prompt_only_false_allow_rate": 1.0,
+        "false_allow_reduction_vs_schema": 1.0,
+        "valid_action_allow_rate": 0.0,
+        "traceability": 1.0,
+        "gate_passed": false,
+        "predictions": [
+          {
+            "action_id": "g3",
+            "category": "approval_required",
+            "expected_status": "abstain",
+            "schema_only_status": "allow",
+            "prompt_only_status": "allow",
+            "melm_status": "abstain",
+            "melm_decision": {
+              "status": "abstain",
+              "triggered_rule_ids": [
+                "manager_approval_required"
+              ],
+              "required_facts": [
+                "action:amount",
+                "order:o1003:status",
+                "customer:c3:identity_verified",
+                "order:o1003:fraud_flag",
+                "order:o1003:refund_status",
+                "order:o1003:days_since_delivery",
+                "order:o1003:manager_approval"
+              ],
+              "missing_facts": [
+                "order:o1003:manager_approval"
+              ],
+              "evidence_event_ids": [],
+              "explanation": "approve_refund needs more approval/evidence: manager_approval_required: High-value refunds require manager approval."
+            }
+          }
+        ],
+        "by_category": null
+      },
+      "duplicate_refund": {
+        "cases": 1,
+        "melm_accuracy": 1.0,
+        "schema_only_accuracy": 0.0,
+        "prompt_only_accuracy": 0.0,
+        "melm_false_allow_rate": 0.0,
+        "schema_only_false_allow_rate": 1.0,
+        "prompt_only_false_allow_rate": 1.0,
+        "false_allow_reduction_vs_schema": 1.0,
+        "valid_action_allow_rate": 0.0,
+        "traceability": 1.0,
+        "gate_passed": false,
+        "predictions": [
+          {
+            "action_id": "g7",
+            "category": "duplicate_refund",
+            "expected_status": "deny",
+            "schema_only_status": "allow",
+            "prompt_only_status": "allow",
+            "melm_status": "deny",
+            "melm_decision": {
+              "status": "deny",
+              "triggered_rule_ids": [
+                "duplicate_refund_block"
+              ],
+              "required_facts": [
+                "action:amount",
+                "order:o1007:status",
+                "customer:c7:identity_verified",
+                "order:o1007:fraud_flag",
+                "order:o1007:refund_status",
+                "order:o1007:days_since_delivery",
+                "order:o1007:manager_approval"
+              ],
+              "missing_facts": [],
+              "evidence_event_ids": [
+                "o1007_e_refunded"
+              ],
+              "explanation": "approve_refund deny: duplicate_refund_block: Already-refunded orders cannot be refunded again."
+            }
+          }
+        ],
+        "by_category": null
+      },
+      "fraud_flag": {
+        "cases": 1,
+        "melm_accuracy": 1.0,
+        "schema_only_accuracy": 0.0,
+        "prompt_only_accuracy": 0.0,
+        "melm_false_allow_rate": 0.0,
+        "schema_only_false_allow_rate": 1.0,
+        "prompt_only_false_allow_rate": 1.0,
+        "false_allow_reduction_vs_schema": 1.0,
+        "valid_action_allow_rate": 0.0,
+        "traceability": 1.0,
+        "gate_passed": false,
+        "predictions": [
+          {
+            "action_id": "g5",
+            "category": "fraud_flag",
+            "expected_status": "deny",
+            "schema_only_status": "allow",
+            "prompt_only_status": "allow",
+            "melm_status": "deny",
+            "melm_decision": {
+              "status": "deny",
+              "triggered_rule_ids": [
+                "fraud_blocks_refund"
+              ],
+              "required_facts": [
+                "action:amount",
+                "order:o1005:status",
+                "customer:c5:identity_verified",
+                "order:o1005:fraud_flag",
+                "order:o1005:refund_status",
+                "order:o1005:days_since_delivery",
+                "order:o1005:manager_approval"
+              ],
+              "missing_facts": [],
+              "evidence_event_ids": [
+                "o1005_e_fraud"
+              ],
+              "explanation": "approve_refund deny: fraud_blocks_refund: Fraud-flagged orders cannot be refunded automatically."
+            }
+          }
+        ],
+        "by_category": null
+      },
+      "identity_missing_or_false": {
+        "cases": 1,
+        "melm_accuracy": 1.0,
+        "schema_only_accuracy": 0.0,
+        "prompt_only_accuracy": 0.0,
+        "melm_false_allow_rate": 0.0,
+        "schema_only_false_allow_rate": 1.0,
+        "prompt_only_false_allow_rate": 1.0,
+        "false_allow_reduction_vs_schema": 1.0,
+        "valid_action_allow_rate": 0.0,
+        "traceability": 1.0,
+        "gate_passed": false,
+        "predictions": [
+          {
+            "action_id": "g2",
+            "category": "identity_missing_or_false",
+            "expected_status": "deny",
+            "schema_only_status": "allow",
+            "prompt_only_status": "allow",
+            "melm_status": "deny",
+            "melm_decision": {
+              "status": "deny",
+              "triggered_rule_ids": [
+                "identity_must_be_true"
+              ],
+              "required_facts": [
+                "action:amount",
+                "order:o1002:status",
+                "customer:c2:identity_verified",
+                "order:o1002:fraud_flag",
+                "order:o1002:refund_status",
+                "order:o1002:days_since_delivery",
+                "order:o1002:manager_approval"
+              ],
+              "missing_facts": [],
+              "evidence_event_ids": [
+                "o1002_e_identity"
+              ],
+              "explanation": "approve_refund deny: identity_must_be_true: Customer identity must be verified before refund."
+            }
+          }
+        ],
+        "by_category": null
+      },
+      "malformed_action": {
+        "cases": 1,
+        "melm_accuracy": 1.0,
+        "schema_only_accuracy": 1.0,
+        "prompt_only_accuracy": 1.0,
+        "melm_false_allow_rate": 0.0,
+        "schema_only_false_allow_rate": 0.0,
+        "prompt_only_false_allow_rate": 0.0,
+        "false_allow_reduction_vs_schema": 1.0,
+        "valid_action_allow_rate": 0.0,
+        "traceability": 1.0,
+        "gate_passed": false,
+        "predictions": [
+          {
+            "action_id": "g9",
+            "category": "malformed_action",
+            "expected_status": "deny",
+            "schema_only_status": "deny",
+            "prompt_only_status": "deny",
+            "melm_status": "deny",
+            "melm_decision": {
+              "status": "deny",
+              "triggered_rule_ids": [
+                "refund_amount_required"
+              ],
+              "required_facts": [
+                "action:amount",
+                "order:o1001:status",
+                "customer:c1:identity_verified",
+                "order:o1001:fraud_flag",
+                "order:o1001:refund_status",
+                "order:o1001:days_since_delivery",
+                "order:o1001:manager_approval"
+              ],
+              "missing_facts": [
+                "action:amount"
+              ],
+              "evidence_event_ids": [],
+              "explanation": "approve_refund deny: refund_amount_required: Refund approval requires an amount."
+            }
+          }
+        ],
+        "by_category": null
+      },
+      "missing_order": {
+        "cases": 1,
+        "melm_accuracy": 1.0,
+        "schema_only_accuracy": 0.0,
+        "prompt_only_accuracy": 0.0,
+        "melm_false_allow_rate": 0.0,
+        "schema_only_false_allow_rate": 1.0,
+        "prompt_only_false_allow_rate": 1.0,
+        "false_allow_reduction_vs_schema": 1.0,
+        "valid_action_allow_rate": 0.0,
+        "traceability": 1.0,
+        "gate_passed": false,
+        "predictions": [
+          {
+            "action_id": "g11",
+            "category": "missing_order",
+            "expected_status": "deny",
+            "schema_only_status": "allow",
+            "prompt_only_status": "allow",
+            "melm_status": "deny",
+            "melm_decision": {
+              "status": "deny",
+              "triggered_rule_ids": [
+                "order_status_required",
+                "identity_required"
+              ],
+              "required_facts": [
+                "action:amount",
+                "order:o9999:status",
+                "customer:c9999:identity_verified",
+                "order:o9999:fraud_flag",
+                "order:o9999:refund_status",
+                "order:o9999:days_since_delivery",
+                "order:o9999:manager_approval"
+              ],
+              "missing_facts": [
+                "order:o9999:status",
+                "customer:c9999:identity_verified"
+              ],
+              "evidence_event_ids": [],
+              "explanation": "approve_refund deny: order_status_required: Refund approval requires known order status.; identity_required: Customer identity must be verified before refund."
+            }
+          }
+        ],
+        "by_category": null
+      },
+      "not_delivered": {
+        "cases": 1,
+        "melm_accuracy": 1.0,
+        "schema_only_accuracy": 0.0,
+        "prompt_only_accuracy": 0.0,
+        "melm_false_allow_rate": 0.0,
+        "schema_only_false_allow_rate": 1.0,
+        "prompt_only_false_allow_rate": 1.0,
+        "false_allow_reduction_vs_schema": 1.0,
+        "valid_action_allow_rate": 0.0,
+        "traceability": 1.0,
+        "gate_passed": false,
+        "predictions": [
+          {
+            "action_id": "g6",
+            "category": "not_delivered",
+            "expected_status": "deny",
+            "schema_only_status": "allow",
+            "prompt_only_status": "allow",
+            "melm_status": "deny",
+            "melm_decision": {
+              "status": "deny",
+              "triggered_rule_ids": [
+                "order_must_be_delivered"
+              ],
+              "required_facts": [
+                "action:amount",
+                "order:o1006:status",
+                "customer:c6:identity_verified",
+                "order:o1006:fraud_flag",
+                "order:o1006:refund_status",
+                "order:o1006:days_since_delivery",
+                "order:o1006:manager_approval"
+              ],
+              "missing_facts": [],
+              "evidence_event_ids": [
+                "o1006_e_status"
+              ],
+              "explanation": "approve_refund deny: order_must_be_delivered: Refunds require delivered order status."
+            }
+          }
+        ],
+        "by_category": null
+      },
+      "outside_return_window": {
+        "cases": 1,
+        "melm_accuracy": 1.0,
+        "schema_only_accuracy": 0.0,
+        "prompt_only_accuracy": 0.0,
+        "melm_false_allow_rate": 0.0,
+        "schema_only_false_allow_rate": 1.0,
+        "prompt_only_false_allow_rate": 1.0,
+        "false_allow_reduction_vs_schema": 1.0,
+        "valid_action_allow_rate": 0.0,
+        "traceability": 1.0,
+        "gate_passed": false,
+        "predictions": [
+          {
+            "action_id": "g8",
+            "category": "outside_return_window",
+            "expected_status": "deny",
+            "schema_only_status": "allow",
+            "prompt_only_status": "allow",
+            "melm_status": "deny",
+            "melm_decision": {
+              "status": "deny",
+              "triggered_rule_ids": [
+                "return_window_block"
+              ],
+              "required_facts": [
+                "action:amount",
+                "order:o1008:status",
+                "customer:c8:identity_verified",
+                "order:o1008:fraud_flag",
+                "order:o1008:refund_status",
+                "order:o1008:days_since_delivery",
+                "order:o1008:manager_approval"
+              ],
+              "missing_facts": [],
+              "evidence_event_ids": [
+                "o1008_e_days"
+              ],
+              "explanation": "approve_refund deny: return_window_block: Refund request is outside the return window."
+            }
+          }
+        ],
+        "by_category": null
+      },
+      "stale_approval": {
+        "cases": 1,
+        "melm_accuracy": 1.0,
+        "schema_only_accuracy": 0.0,
+        "prompt_only_accuracy": 0.0,
+        "melm_false_allow_rate": 0.0,
+        "schema_only_false_allow_rate": 1.0,
+        "prompt_only_false_allow_rate": 1.0,
+        "false_allow_reduction_vs_schema": 1.0,
+        "valid_action_allow_rate": 0.0,
+        "traceability": 1.0,
+        "gate_passed": false,
+        "predictions": [
+          {
+            "action_id": "g4",
+            "category": "stale_approval",
+            "expected_status": "warn",
+            "schema_only_status": "allow",
+            "prompt_only_status": "allow",
+            "melm_status": "warn",
+            "melm_decision": {
+              "status": "warn",
+              "triggered_rule_ids": [
+                "manager_approval_stale"
+              ],
+              "required_facts": [
+                "action:amount",
+                "order:o1004:status",
+                "customer:c4:identity_verified",
+                "order:o1004:fraud_flag",
+                "order:o1004:refund_status",
+                "order:o1004:days_since_delivery",
+                "order:o1004:manager_approval"
+              ],
+              "missing_facts": [],
+              "evidence_event_ids": [
+                "o1004_e_approval_stale"
+              ],
+              "explanation": "approve_refund warn: manager_approval_stale: High-value refund approval is stale and should be refreshed."
+            }
+          }
+        ],
+        "by_category": null
+      },
+      "stale_state_trap": {
+        "cases": 1,
+        "melm_accuracy": 1.0,
+        "schema_only_accuracy": 0.0,
+        "prompt_only_accuracy": 0.0,
+        "melm_false_allow_rate": 0.0,
+        "schema_only_false_allow_rate": 1.0,
+        "prompt_only_false_allow_rate": 1.0,
+        "false_allow_reduction_vs_schema": 1.0,
+        "valid_action_allow_rate": 0.0,
+        "traceability": 1.0,
+        "gate_passed": false,
+        "predictions": [
+          {
+            "action_id": "g12",
+            "category": "stale_state_trap",
+            "expected_status": "deny",
+            "schema_only_status": "allow",
+            "prompt_only_status": "allow",
+            "melm_status": "deny",
+            "melm_decision": {
+              "status": "deny",
+              "triggered_rule_ids": [
+                "duplicate_refund_block"
+              ],
+              "required_facts": [
+                "action:amount",
+                "order:o1010:status",
+                "customer:c10:identity_verified",
+                "order:o1010:fraud_flag",
+                "order:o1010:refund_status",
+                "order:o1010:days_since_delivery",
+                "order:o1010:manager_approval"
+              ],
+              "missing_facts": [],
+              "evidence_event_ids": [
+                "o1010_e_status_refunded"
+              ],
+              "explanation": "approve_refund deny: duplicate_refund_block: Already-refunded orders cannot be refunded again."
+            }
+          }
+        ],
+        "by_category": null
+      },
+      "valid_high_value": {
+        "cases": 1,
+        "melm_accuracy": 1.0,
+        "schema_only_accuracy": 1.0,
+        "prompt_only_accuracy": 1.0,
+        "melm_false_allow_rate": 0.0,
+        "schema_only_false_allow_rate": 0.0,
+        "prompt_only_false_allow_rate": 0.0,
+        "false_allow_reduction_vs_schema": 1.0,
+        "valid_action_allow_rate": 1.0,
+        "traceability": 1.0,
+        "gate_passed": false,
+        "predictions": [
+          {
+            "action_id": "g10",
+            "category": "valid_high_value",
+            "expected_status": "allow",
+            "schema_only_status": "allow",
+            "prompt_only_status": "allow",
+            "melm_status": "allow",
+            "melm_decision": {
+              "status": "allow",
+              "triggered_rule_ids": [],
+              "required_facts": [
+                "action:amount",
+                "order:o1009:status",
+                "customer:c9:identity_verified",
+                "order:o1009:fraud_flag",
+                "order:o1009:refund_status",
+                "order:o1009:days_since_delivery",
+                "order:o1009:manager_approval"
+              ],
+              "missing_facts": [],
+              "evidence_event_ids": [],
+              "explanation": "approve_refund allowed: no blocking rule matched."
+            }
+          }
+        ],
+        "by_category": null
+      },
+      "valid_low_value": {
+        "cases": 1,
+        "melm_accuracy": 1.0,
+        "schema_only_accuracy": 1.0,
+        "prompt_only_accuracy": 1.0,
+        "melm_false_allow_rate": 0.0,
+        "schema_only_false_allow_rate": 0.0,
+        "prompt_only_false_allow_rate": 0.0,
+        "false_allow_reduction_vs_schema": 1.0,
+        "valid_action_allow_rate": 1.0,
+        "traceability": 1.0,
+        "gate_passed": false,
+        "predictions": [
+          {
+            "action_id": "g1",
+            "category": "valid_low_value",
+            "expected_status": "allow",
+            "schema_only_status": "allow",
+            "prompt_only_status": "allow",
+            "melm_status": "allow",
+            "melm_decision": {
+              "status": "allow",
+              "triggered_rule_ids": [],
+              "required_facts": [
+                "action:amount",
+                "order:o1001:status",
+                "customer:c1:identity_verified",
+                "order:o1001:fraud_flag",
+                "order:o1001:refund_status",
+                "order:o1001:days_since_delivery",
+                "order:o1001:manager_approval"
+              ],
+              "missing_facts": [],
+              "evidence_event_ids": [],
+              "explanation": "approve_refund allowed: no blocking rule matched."
+            }
+          }
+        ],
+        "by_category": null
+      }
+    }
+  }
+}

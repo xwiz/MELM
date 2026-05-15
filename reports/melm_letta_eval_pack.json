@@ -1,0 +1,15 @@
+{
+  "source_dataset": "local_data\\locomo10.json",
+  "letta_eval_pack": {
+    "dataset_path": "artifacts\\letta_eval\\locomo_letta_dataset.jsonl",
+    "suite_path": "artifacts\\letta_eval\\locomo_letta_suite.yaml",
+    "memory_path": "artifacts\\letta_eval\\locomo_memory.jsonl",
+    "readme_path": "artifacts\\letta_eval\\README.md",
+    "samples": 250,
+    "memories": 272
+  },
+  "letta_docs": {
+    "datasets": "https://docs.letta.com/guides/evals/concepts/datasets/",
+    "suite_yaml": "https://docs.letta.com/evals/configuration/suite-yaml-reference"
+  }
+}

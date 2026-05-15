@@ -1,0 +1,13 @@
+{
+  "source_report": "reports\\babylm_2026_small_proxy_tokenizer_ablation.json",
+  "decision": {
+    "candidate_tokenizer": "tiered_morph_unigram",
+    "best_baseline_tokenizer": "hf_bpe",
+    "candidate_bits_per_byte": 2.4911687142086527,
+    "best_baseline_bits_per_byte": 2.570307245016083,
+    "bits_per_byte_gain": 0.07913853080743039,
+    "relative_bits_per_byte_gain": 0.030789521743317963,
+    "decision": "promote_to_scaled_neural_ablation",
+    "recommendation": "Run longer BabyLM neural ablations with matched compute for tiered_morph_unigram, capped morphology, HF BPE, and HF Unigram."
+  }
+}

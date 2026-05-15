@@ -1,0 +1,283 @@
+{
+  "folds": 5,
+  "documents": 327,
+  "morph_tokenizer": "heuristic_morpheme",
+  "winner_counts": {
+    "unigram_like": 5
+  },
+  "average_nll_per_token": {
+    "byte_patch": 8.921601490173666,
+    "heuristic_morpheme": 5.613783512868365,
+    "simple_bpe": 5.384723918089191,
+    "unigram_like": 4.734963878842097,
+    "whitespace": 6.120297962635944
+  },
+  "morph_average_nll_per_token": 5.613783512868365,
+  "best_baseline_tokenizer": "unigram_like",
+  "best_baseline_average_nll_per_token": 4.734963878842097,
+  "average_lm_nll_gain": -0.878819634026268,
+  "morph_win_rate": 0.0,
+  "stable_primary_candidate": false,
+  "fold_reports": [
+    {
+      "fold": 1,
+      "train_documents": 261,
+      "validation_documents": 66,
+      "best_tokenizer": "unigram_like",
+      "best_baseline_tokenizer": "unigram_like",
+      "morph_nll_per_token": 5.663156864149469,
+      "best_baseline_nll_per_token": 4.718685706423603,
+      "lm_nll_gain": -0.9444711577258662,
+      "reports": [
+        {
+          "tokenizer": "unigram_like",
+          "train_tokens": 5246,
+          "validation_tokens": 1805,
+          "vocabulary": 613,
+          "nll_per_token": 4.718685706423603,
+          "perplexity": 112.02092748932715
+        },
+        {
+          "tokenizer": "simple_bpe",
+          "train_tokens": 5787,
+          "validation_tokens": 1700,
+          "vocabulary": 499,
+          "nll_per_token": 5.387688687614817,
+          "perplexity": 218.6973231135319
+        },
+        {
+          "tokenizer": "heuristic_morpheme",
+          "train_tokens": 4395,
+          "validation_tokens": 1164,
+          "vocabulary": 901,
+          "nll_per_token": 5.663156864149469,
+          "perplexity": 288.05656414986026
+        },
+        {
+          "tokenizer": "whitespace",
+          "train_tokens": 3547,
+          "validation_tokens": 967,
+          "vocabulary": 1119,
+          "nll_per_token": 6.156201266532043,
+          "perplexity": 471.633059313619
+        },
+        {
+          "tokenizer": "byte_patch",
+          "train_tokens": 4237,
+          "validation_tokens": 1134,
+          "vocabulary": 3131,
+          "nll_per_token": 8.994568258562833,
+          "perplexity": 8059.189390645985
+        }
+      ]
+    },
+    {
+      "fold": 2,
+      "train_documents": 261,
+      "validation_documents": 66,
+      "best_tokenizer": "unigram_like",
+      "best_baseline_tokenizer": "unigram_like",
+      "morph_nll_per_token": 5.610468280610189,
+      "best_baseline_nll_per_token": 4.738701376620078,
+      "lm_nll_gain": -0.8717669039901113,
+      "reports": [
+        {
+          "tokenizer": "unigram_like",
+          "train_tokens": 5375,
+          "validation_tokens": 1611,
+          "vocabulary": 613,
+          "nll_per_token": 4.738701376620078,
+          "perplexity": 114.28569120085537
+        },
+        {
+          "tokenizer": "simple_bpe",
+          "train_tokens": 5969,
+          "validation_tokens": 1525,
+          "vocabulary": 500,
+          "nll_per_token": 5.382071391934965,
+          "perplexity": 217.47227952249833
+        },
+        {
+          "tokenizer": "heuristic_morpheme",
+          "train_tokens": 4503,
+          "validation_tokens": 1056,
+          "vocabulary": 901,
+          "nll_per_token": 5.610468280610189,
+          "perplexity": 273.272176108328
+        },
+        {
+          "tokenizer": "whitespace",
+          "train_tokens": 3657,
+          "validation_tokens": 857,
+          "vocabulary": 1119,
+          "nll_per_token": 6.085896905540121,
+          "perplexity": 439.6139280721243
+        },
+        {
+          "tokenizer": "byte_patch",
+          "train_tokens": 4352,
+          "validation_tokens": 1019,
+          "vocabulary": 3131,
+          "nll_per_token": 9.030055293842413,
+          "perplexity": 8350.32128075998
+        }
+      ]
+    },
+    {
+      "fold": 3,
+      "train_documents": 262,
+      "validation_documents": 65,
+      "best_tokenizer": "unigram_like",
+      "best_baseline_tokenizer": "unigram_like",
+      "morph_nll_per_token": 5.5964767299585665,
+      "best_baseline_nll_per_token": 4.729701460698073,
+      "lm_nll_gain": -0.8667752692604935,
+      "reports": [
+        {
+          "tokenizer": "unigram_like",
+          "train_tokens": 5497,
+          "validation_tokens": 1486,
+          "vocabulary": 612,
+          "nll_per_token": 4.729701460698073,
+          "perplexity": 113.26174421883647
+        },
+        {
+          "tokenizer": "simple_bpe",
+          "train_tokens": 6085,
+          "validation_tokens": 1386,
+          "vocabulary": 501,
+          "nll_per_token": 5.386901529377541,
+          "perplexity": 218.5252414508073
+        },
+        {
+          "tokenizer": "heuristic_morpheme",
+          "train_tokens": 4580,
+          "validation_tokens": 979,
+          "vocabulary": 901,
+          "nll_per_token": 5.5964767299585665,
+          "perplexity": 269.47529865684885
+        },
+        {
+          "tokenizer": "whitespace",
+          "train_tokens": 3737,
+          "validation_tokens": 777,
+          "vocabulary": 1119,
+          "nll_per_token": 6.084723553460322,
+          "perplexity": 439.09840865734645
+        },
+        {
+          "tokenizer": "byte_patch",
+          "train_tokens": 4420,
+          "validation_tokens": 951,
+          "vocabulary": 3131,
+          "nll_per_token": 8.94010029666197,
+          "perplexity": 7631.962477622568
+        }
+      ]
+    },
+    {
+      "fold": 4,
+      "train_documents": 262,
+      "validation_documents": 65,
+      "best_tokenizer": "unigram_like",
+      "best_baseline_tokenizer": "unigram_like",
+      "morph_nll_per_token": 5.450364141101461,
+      "best_baseline_nll_per_token": 4.763321187829877,
+      "lm_nll_gain": -0.6870429532715834,
+      "reports": [
+        {
+          "tokenizer": "unigram_like",
+          "train_tokens": 5619,
+          "validation_tokens": 1293,
+          "vocabulary": 614,
+          "nll_per_token": 4.763321187829877,
+          "perplexity": 117.13430563129859
+        },
+        {
+          "tokenizer": "simple_bpe",
+          "train_tokens": 6253,
+          "validation_tokens": 1237,
+          "vocabulary": 504,
+          "nll_per_token": 5.371550773542185,
+          "perplexity": 215.1963298500772
+        },
+        {
+          "tokenizer": "heuristic_morpheme",
+          "train_tokens": 4649,
+          "validation_tokens": 910,
+          "vocabulary": 901,
+          "nll_per_token": 5.450364141101461,
+          "perplexity": 232.8429381561629
+        },
+        {
+          "tokenizer": "whitespace",
+          "train_tokens": 3791,
+          "validation_tokens": 723,
+          "vocabulary": 1119,
+          "nll_per_token": 6.012135039934343,
+          "perplexity": 408.35424283165094
+        },
+        {
+          "tokenizer": "byte_patch",
+          "train_tokens": 4510,
+          "validation_tokens": 861,
+          "vocabulary": 3131,
+          "nll_per_token": 8.770838487524177,
+          "perplexity": 6443.573055500937
+        }
+      ]
+    },
+    {
+      "fold": 5,
+      "train_documents": 262,
+      "validation_documents": 65,
+      "best_tokenizer": "unigram_like",
+      "best_baseline_tokenizer": "unigram_like",
+      "morph_nll_per_token": 5.748451548522142,
+      "best_baseline_nll_per_token": 4.724409662638857,
+      "lm_nll_gain": -1.0240418858832845,
+      "reports": [
+        {
+          "tokenizer": "unigram_like",
+          "train_tokens": 4732,
+          "validation_tokens": 2365,
+          "vocabulary": 612,
+          "nll_per_token": 4.724409662638857,
+          "perplexity": 112.66396898846179
+        },
+        {
+          "tokenizer": "simple_bpe",
+          "train_tokens": 5436,
+          "validation_tokens": 2108,
+          "vocabulary": 490,
+          "nll_per_token": 5.395407207976444,
+          "perplexity": 220.39187415556765
+        },
+        {
+          "tokenizer": "heuristic_morpheme",
+          "train_tokens": 4109,
+          "validation_tokens": 1450,
+          "vocabulary": 901,
+          "nll_per_token": 5.748451548522142,
+          "perplexity": 313.7045277668875
+        },
+        {
+          "tokenizer": "whitespace",
+          "train_tokens": 3324,
+          "validation_tokens": 1190,
+          "vocabulary": 1119,
+          "nll_per_token": 6.262533047712892,
+          "perplexity": 524.5459586386609
+        },
+        {
+          "tokenizer": "byte_patch",
+          "train_tokens": 3965,
+          "validation_tokens": 1406,
+          "vocabulary": 3131,
+          "nll_per_token": 8.872445114276937,
+          "perplexity": 7132.699935259753
+        }
+      ]
+    }
+  ]
+}

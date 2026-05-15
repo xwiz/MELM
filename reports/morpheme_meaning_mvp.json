@@ -1,0 +1,648 @@
+{
+  "source": "benchmarks\\morpheme_meaning_mvp.jsonl",
+  "components": 34,
+  "lexemes": 3,
+  "word_cases": 22,
+  "utterance_cases": 6,
+  "report": {
+    "word_cases": 22,
+    "word_accuracy": 1.0,
+    "utterance_cases": 6,
+    "utterance_accuracy": 1.0,
+    "overall_accuracy": 1.0,
+    "word_results": [
+      {
+        "item": "rewelcome",
+        "category": "novel_derived",
+        "expected": "prefix:re, root:wil, root:cuma",
+        "predicted": "prefix:re, root:wil, root:cuma",
+        "passed": true,
+        "details": {
+          "features": {
+            "arrival": 0.722,
+            "desire": 0.765,
+            "greeting": 0.75,
+            "guest": 0.722,
+            "person": 0.34,
+            "positive_valence": 0.595,
+            "repeat": 0.95,
+            "return": 0.427,
+            "willingness": 0.68
+          },
+          "gloss": "inferred meaning: again/repeat, desire, greeting, arrival",
+          "confidence": 0.883,
+          "component_hit": true,
+          "feature_hit": true,
+          "forbidden_hit": true,
+          "gloss_hit": true
+        }
+      },
+      {
+        "item": "unwelcome",
+        "category": "novel_derived",
+        "expected": "prefix:un, root:wil, root:cuma",
+        "predicted": "prefix:un, root:wil, root:cuma",
+        "passed": true,
+        "details": {
+          "features": {
+            "arrival": 0.722,
+            "desire": -0.535,
+            "greeting": 0.75,
+            "guest": 0.722,
+            "negation": 0.95,
+            "person": 0.34,
+            "positive_valence": -0.416,
+            "willingness": -0.476
+          },
+          "gloss": "inferred meaning: not/negation, greeting, arrival, guest",
+          "confidence": 0.883,
+          "component_hit": true,
+          "feature_hit": true,
+          "forbidden_hit": true,
+          "gloss_hit": true
+        }
+      },
+      {
+        "item": "helpfulness",
+        "category": "known_root_plus_suffix",
+        "expected": "root:help, suffix:ful, suffix:ness",
+        "predicted": "root:help, suffix:ful, suffix:ness",
+        "passed": true,
+        "details": {
+          "features": {
+            "abstract_quality": 0.63,
+            "aid": 0.95,
+            "benefit": 0.712,
+            "positive_valence": 0.332,
+            "possesses_quality": 0.81
+          },
+          "gloss": "inferred meaning: help/aid, possesses quality, benefit, abstract quality",
+          "confidence": 0.917,
+          "component_hit": true,
+          "feature_hit": true,
+          "forbidden_hit": true,
+          "gloss_hit": true
+        }
+      },
+      {
+        "item": "kindness",
+        "category": "root_plus_suffix",
+        "expected": "root:kind, suffix:ness",
+        "predicted": "root:kind, suffix:ness",
+        "passed": true,
+        "details": {
+          "features": {
+            "abstract_quality": 0.63,
+            "gentleness": 0.72,
+            "positive_valence": 0.585,
+            "social_good": 0.54
+          },
+          "gloss": "inferred meaning: gentleness, abstract quality, positive feeling, social good",
+          "confidence": 0.9,
+          "component_hit": true,
+          "feature_hit": true,
+          "forbidden_hit": true,
+          "gloss_hit": true
+        }
+      },
+      {
+        "item": "hopeless",
+        "category": "root_plus_suffix",
+        "expected": "root:hope, suffix:less",
+        "predicted": "root:hope, suffix:less",
+        "passed": true,
+        "details": {
+          "features": {
+            "absence": 0.81,
+            "desire": 0.36,
+            "hope": 0.81,
+            "negation": 0.54,
+            "positive_valence": 0.585
+          },
+          "gloss": "inferred meaning: absence, hope, positive feeling, not/negation",
+          "confidence": 0.9,
+          "component_hit": true,
+          "feature_hit": true,
+          "forbidden_hit": true,
+          "gloss_hit": true
+        }
+      },
+      {
+        "item": "readable",
+        "category": "root_plus_suffix",
+        "expected": "root:read, suffix:able",
+        "predicted": "root:read, suffix:able",
+        "passed": true,
+        "details": {
+          "features": {
+            "ability": 0.81,
+            "comprehension": 0.475,
+            "potential": 0.45,
+            "reading": 0.902,
+            "text": 0.57
+          },
+          "gloss": "inferred meaning: reading, can/able, text, understanding",
+          "confidence": 0.925,
+          "component_hit": true,
+          "feature_hit": true,
+          "forbidden_hit": true,
+          "gloss_hit": true
+        }
+      },
+      {
+        "item": "unreadable",
+        "category": "prefix_root_suffix",
+        "expected": "prefix:un, root:read, suffix:able",
+        "predicted": "prefix:un, root:read, suffix:able",
+        "passed": true,
+        "details": {
+          "features": {
+            "ability": 0.81,
+            "comprehension": 0.475,
+            "negation": 0.95,
+            "potential": 0.45,
+            "reading": 0.902,
+            "text": 0.57
+          },
+          "gloss": "inferred meaning: not/negation, reading, can/able, text",
+          "confidence": 0.933,
+          "component_hit": true,
+          "feature_hit": true,
+          "forbidden_hit": true,
+          "gloss_hit": true
+        }
+      },
+      {
+        "item": "reread",
+        "category": "prefix_root",
+        "expected": "prefix:re, root:read",
+        "predicted": "prefix:re, root:read",
+        "passed": true,
+        "details": {
+          "features": {
+            "comprehension": 0.475,
+            "reading": 0.902,
+            "repeat": 0.95,
+            "return": 0.427,
+            "text": 0.57
+          },
+          "gloss": "inferred meaning: again/repeat, reading, text, understanding",
+          "confidence": 0.95,
+          "component_hit": true,
+          "feature_hit": true,
+          "forbidden_hit": true,
+          "gloss_hit": true
+        }
+      },
+      {
+        "item": "misread",
+        "category": "prefix_root",
+        "expected": "prefix:mis, root:read",
+        "predicted": "prefix:mis, root:read",
+        "passed": true,
+        "details": {
+          "features": {
+            "comprehension": 0.475,
+            "error": 0.81,
+            "incorrectness": 0.675,
+            "reading": 0.902,
+            "text": 0.57
+          },
+          "gloss": "inferred meaning: reading, error, incorrectness, text",
+          "confidence": 0.925,
+          "component_hit": true,
+          "feature_hit": true,
+          "forbidden_hit": true,
+          "gloss_hit": true
+        }
+      },
+      {
+        "item": "prewrite",
+        "category": "prefix_root",
+        "expected": "prefix:pre, root:write",
+        "predicted": "prefix:pre, root:write",
+        "passed": true,
+        "details": {
+          "features": {
+            "before": 0.9,
+            "creation": 0.38,
+            "planning": 0.36,
+            "text": 0.617,
+            "writing": 0.902
+          },
+          "gloss": "inferred meaning: writing, before, text, creation",
+          "confidence": 0.925,
+          "component_hit": true,
+          "feature_hit": true,
+          "forbidden_hit": true,
+          "gloss_hit": true
+        }
+      },
+      {
+        "item": "postlearn",
+        "category": "prefix_root",
+        "expected": "prefix:post, root:learn",
+        "predicted": "prefix:post, root:learn",
+        "passed": true,
+        "details": {
+          "features": {
+            "after": 0.9,
+            "knowledge_gain": 0.712,
+            "learning": 0.855
+          },
+          "gloss": "inferred meaning: after, learning, knowledge gain",
+          "confidence": 0.925,
+          "component_hit": true,
+          "feature_hit": true,
+          "forbidden_hit": true,
+          "gloss_hit": true
+        }
+      },
+      {
+        "item": "teacher",
+        "category": "agentive_suffix",
+        "expected": "root:teach, suffix:er",
+        "predicted": "root:teach, suffix:er",
+        "passed": true,
+        "details": {
+          "features": {
+            "agent": 0.72,
+            "aid": 0.38,
+            "knowledge_transfer": 0.712,
+            "person": 0.45,
+            "teaching": 0.855
+          },
+          "gloss": "inferred meaning: teaching, agent, knowledge transfer, person",
+          "confidence": 0.925,
+          "component_hit": true,
+          "feature_hit": true,
+          "forbidden_hit": true,
+          "gloss_hit": true
+        }
+      },
+      {
+        "item": "learner",
+        "category": "agentive_suffix",
+        "expected": "root:learn, suffix:er",
+        "predicted": "root:learn, suffix:er",
+        "passed": true,
+        "details": {
+          "features": {
+            "agent": 0.72,
+            "knowledge_gain": 0.712,
+            "learning": 0.855,
+            "person": 0.45
+          },
+          "gloss": "inferred meaning: learning, agent, knowledge gain, person",
+          "confidence": 0.925,
+          "component_hit": true,
+          "feature_hit": true,
+          "forbidden_hit": true,
+          "gloss_hit": true
+        }
+      },
+      {
+        "item": "safely",
+        "category": "adverbial_suffix",
+        "expected": "root:safe, suffix:ly",
+        "predicted": "root:safe, suffix:ly",
+        "passed": true,
+        "details": {
+          "features": {
+            "manner": 0.63,
+            "protection": 0.57,
+            "safety": 0.902
+          },
+          "gloss": "inferred meaning: safety, manner, protection",
+          "confidence": 0.925,
+          "component_hit": true,
+          "feature_hit": true,
+          "forbidden_hit": true,
+          "gloss_hit": true
+        }
+      },
+      {
+        "item": "overcareful",
+        "category": "prefix_root_suffix",
+        "expected": "prefix:over, root:care, suffix:ful",
+        "predicted": "prefix:over, root:care, suffix:ful",
+        "passed": true,
+        "details": {
+          "features": {
+            "attention": 0.675,
+            "concern": 0.765,
+            "excess": 0.68,
+            "intensity": 0.468,
+            "possesses_quality": 0.81,
+            "protection": 0.405
+          },
+          "gloss": "inferred meaning: possesses quality, concern, excess, attention",
+          "confidence": 0.883,
+          "component_hit": true,
+          "feature_hit": true,
+          "forbidden_hit": true,
+          "gloss_hit": true
+        }
+      },
+      {
+        "item": "waterless",
+        "category": "root_plus_suffix",
+        "expected": "root:water, suffix:less",
+        "predicted": "root:water, suffix:less",
+        "passed": true,
+        "details": {
+          "features": {
+            "absence": 0.81,
+            "fluid": 0.76,
+            "negation": 0.54,
+            "water": 0.902
+          },
+          "gloss": "inferred meaning: water, absence, fluid, not/negation",
+          "confidence": 0.925,
+          "component_hit": true,
+          "feature_hit": true,
+          "forbidden_hit": true,
+          "gloss_hit": true
+        }
+      },
+      {
+        "item": "lightful",
+        "category": "root_plus_suffix",
+        "expected": "root:light, suffix:ful",
+        "predicted": "root:light, suffix:ful",
+        "passed": true,
+        "details": {
+          "features": {
+            "light": 0.902,
+            "positive_valence": 0.19,
+            "possesses_quality": 0.81,
+            "visibility": 0.76
+          },
+          "gloss": "inferred meaning: light, possesses quality, visibility, positive feeling",
+          "confidence": 0.925,
+          "component_hit": true,
+          "feature_hit": true,
+          "forbidden_hit": true,
+          "gloss_hit": true
+        }
+      },
+      {
+        "item": "giftable",
+        "category": "root_plus_suffix",
+        "expected": "root:gift, suffix:able",
+        "predicted": "root:gift, suffix:able",
+        "passed": true,
+        "details": {
+          "features": {
+            "ability": 0.81,
+            "giving": 0.81,
+            "object": 0.45,
+            "potential": 0.45,
+            "social_exchange": 0.54
+          },
+          "gloss": "inferred meaning: can/able, giving, social exchange, object",
+          "confidence": 0.9,
+          "component_hit": true,
+          "feature_hit": true,
+          "forbidden_hit": true,
+          "gloss_hit": true
+        }
+      },
+      {
+        "item": "guarder",
+        "category": "agentive_suffix",
+        "expected": "root:guard, suffix:er",
+        "predicted": "root:guard, suffix:er",
+        "passed": true,
+        "details": {
+          "features": {
+            "agent": 0.72,
+            "person": 0.45,
+            "protection": 0.81,
+            "watching": 0.675
+          },
+          "gloss": "inferred meaning: protection, agent, watching, person",
+          "confidence": 0.9,
+          "component_hit": true,
+          "feature_hit": true,
+          "forbidden_hit": true,
+          "gloss_hit": true
+        }
+      },
+      {
+        "item": "clearwater",
+        "category": "compound_root",
+        "expected": "root:clear, root:water",
+        "predicted": "root:clear, root:water",
+        "passed": true,
+        "details": {
+          "features": {
+            "clarity": 0.72,
+            "fluid": 0.76,
+            "visibility": 0.36,
+            "water": 0.902
+          },
+          "gloss": "inferred meaning: water, fluid, clarity, visibility",
+          "confidence": 0.925,
+          "component_hit": true,
+          "feature_hit": true,
+          "forbidden_hit": true,
+          "gloss_hit": true
+        }
+      },
+      {
+        "item": "mover",
+        "category": "agentive_suffix",
+        "expected": "root:move, suffix:er",
+        "predicted": "root:move, suffix:er",
+        "passed": true,
+        "details": {
+          "features": {
+            "agent": 0.72,
+            "change_location": 0.712,
+            "motion": 0.855,
+            "person": 0.45
+          },
+          "gloss": "inferred meaning: motion, agent, change location, person",
+          "confidence": 0.925,
+          "component_hit": true,
+          "feature_hit": true,
+          "forbidden_hit": true,
+          "gloss_hit": true
+        }
+      },
+      {
+        "item": "replay",
+        "category": "prefix_root",
+        "expected": "prefix:re, root:play",
+        "predicted": "prefix:re, root:play",
+        "passed": true,
+        "details": {
+          "features": {
+            "activity": 0.54,
+            "joy": 0.495,
+            "play": 0.81,
+            "repeat": 0.95,
+            "return": 0.427
+          },
+          "gloss": "inferred meaning: again/repeat, play, activity, joy",
+          "confidence": 0.925,
+          "component_hit": true,
+          "feature_hit": true,
+          "forbidden_hit": true,
+          "gloss_hit": true
+        }
+      }
+    ],
+    "utterance_results": [
+      {
+        "item": "Please reread the note.",
+        "category": "command_with_novel_word",
+        "expected": "command/action_frame/reread",
+        "predicted": "command/action_frame/reread",
+        "passed": true,
+        "details": {
+          "features": {
+            "comprehension": 0.475,
+            "reading": 0.902,
+            "repeat": 0.95,
+            "return": 0.427,
+            "text": 0.57
+          },
+          "components": [
+            "prefix:re",
+            "root:read"
+          ],
+          "intent_hit": true,
+          "target_hit": true,
+          "response_hit": true,
+          "feature_hit": true
+        }
+      },
+      {
+        "item": "What does unreadable mean?",
+        "category": "question_about_novel_word",
+        "expected": "question/meaning_answer/unreadable",
+        "predicted": "question/meaning_answer/unreadable",
+        "passed": true,
+        "details": {
+          "features": {
+            "ability": 0.81,
+            "comprehension": 0.475,
+            "negation": 0.95,
+            "potential": 0.45,
+            "reading": 0.902,
+            "text": 0.57
+          },
+          "components": [
+            "prefix:un",
+            "root:read",
+            "suffix:able"
+          ],
+          "intent_hit": true,
+          "target_hit": true,
+          "response_hit": true,
+          "feature_hit": true
+        }
+      },
+      {
+        "item": "A giftable means something that can be given.",
+        "category": "knowledge_transfer",
+        "expected": "knowledge_transfer/store_candidate/giftable",
+        "predicted": "knowledge_transfer/store_candidate/giftable",
+        "passed": true,
+        "details": {
+          "features": {
+            "ability": 0.81,
+            "giving": 0.81,
+            "object": 0.45,
+            "potential": 0.45,
+            "social_exchange": 0.54
+          },
+          "components": [
+            "root:gift",
+            "suffix:able"
+          ],
+          "intent_hit": true,
+          "target_hit": true,
+          "response_hit": true,
+          "feature_hit": true
+        }
+      },
+      {
+        "item": "By wilgift I mean a gift offered with willing intent.",
+        "category": "clarification",
+        "expected": "clarification/clarification_update/wilgift",
+        "predicted": "clarification/clarification_update/wilgift",
+        "passed": true,
+        "details": {
+          "features": {
+            "desire": 0.765,
+            "giving": 0.81,
+            "object": 0.45,
+            "positive_valence": 0.595,
+            "social_exchange": 0.54,
+            "willingness": 0.68
+          },
+          "components": [
+            "root:wil",
+            "root:gift"
+          ],
+          "intent_hit": true,
+          "target_hit": true,
+          "response_hit": true,
+          "feature_hit": true
+        }
+      },
+      {
+        "item": "Could you helpfulness the puzzle?",
+        "category": "type_mismatch",
+        "expected": "clarification_needed/ask_clarification/helpfulness",
+        "predicted": "clarification_needed/ask_clarification/helpfulness",
+        "passed": true,
+        "details": {
+          "features": {
+            "abstract_quality": 0.63,
+            "aid": 0.95,
+            "benefit": 0.712,
+            "positive_valence": 0.332,
+            "possesses_quality": 0.81
+          },
+          "components": [
+            "root:help",
+            "suffix:ful",
+            "suffix:ness"
+          ],
+          "intent_hit": true,
+          "target_hit": true,
+          "response_hit": true,
+          "feature_hit": true
+        }
+      },
+      {
+        "item": "Please prewrite the plan.",
+        "category": "command_with_novel_word",
+        "expected": "command/action_frame/prewrite",
+        "predicted": "command/action_frame/prewrite",
+        "passed": true,
+        "details": {
+          "features": {
+            "before": 0.9,
+            "creation": 0.38,
+            "planning": 0.36,
+            "text": 0.617,
+            "writing": 0.902
+          },
+          "components": [
+            "prefix:pre",
+            "root:write"
+          ],
+          "intent_hit": true,
+          "target_hit": true,
+          "response_hit": true,
+          "feature_hit": true
+        }
+      }
+    ]
+  }
+}

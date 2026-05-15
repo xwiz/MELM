@@ -1,0 +1,55 @@
+{
+  "root": "artifacts\\tiny_lm",
+  "runs": [
+    {
+      "name": "babylm_2026_capped_morpheme_100step_seed13",
+      "manifest": "artifacts\\tiny_lm\\babylm_2026_capped_morpheme_100step_seed13\\run_manifest.json",
+      "tokenizer": "capped_morpheme",
+      "parameters": 582464,
+      "steps": 100,
+      "validation_bits_per_byte": 2.5857515450132835,
+      "checkpoint_dir": "artifacts\\tiny_lm\\babylm_2026_capped_morpheme_100step_seed13\\checkpoint",
+      "tokenizer_metadata": "artifacts\\tiny_lm\\babylm_2026_capped_morpheme_100step_seed13\\tokenizer\\tokenizer_metadata.json"
+    },
+    {
+      "name": "babylm_2026_tiered_morph_unigram_100step_seed13",
+      "manifest": "artifacts\\tiny_lm\\babylm_2026_tiered_morph_unigram_100step_seed13\\run_manifest.json",
+      "tokenizer": "tiered_morph_unigram",
+      "parameters": 582464,
+      "steps": 100,
+      "validation_bits_per_byte": 3.0267640136977114,
+      "checkpoint_dir": "artifacts\\tiny_lm\\babylm_2026_tiered_morph_unigram_100step_seed13\\checkpoint",
+      "tokenizer_metadata": "artifacts\\tiny_lm\\babylm_2026_tiered_morph_unigram_100step_seed13\\tokenizer\\tokenizer_metadata.json"
+    },
+    {
+      "name": "babylm_2026_hf_bpe_100step_seed13",
+      "manifest": "artifacts\\tiny_lm\\babylm_2026_hf_bpe_100step_seed13\\run_manifest.json",
+      "tokenizer": "hf_bpe",
+      "parameters": 582464,
+      "steps": 100,
+      "validation_bits_per_byte": 3.0809778334435483,
+      "checkpoint_dir": "artifacts\\tiny_lm\\babylm_2026_hf_bpe_100step_seed13\\checkpoint",
+      "tokenizer_metadata": "artifacts\\tiny_lm\\babylm_2026_hf_bpe_100step_seed13\\tokenizer\\tokenizer_metadata.json"
+    },
+    {
+      "name": "babylm_2026_hf_unigram_100step_seed13",
+      "manifest": "artifacts\\tiny_lm\\babylm_2026_hf_unigram_100step_seed13\\run_manifest.json",
+      "tokenizer": "hf_unigram",
+      "parameters": 582464,
+      "steps": 100,
+      "validation_bits_per_byte": 3.2402388099344877,
+      "checkpoint_dir": "artifacts\\tiny_lm\\babylm_2026_hf_unigram_100step_seed13\\checkpoint",
+      "tokenizer_metadata": "artifacts\\tiny_lm\\babylm_2026_hf_unigram_100step_seed13\\tokenizer\\tokenizer_metadata.json"
+    },
+    {
+      "name": "babylm_2026_hybrid_morph_unigram_100step_seed13",
+      "manifest": "artifacts\\tiny_lm\\babylm_2026_hybrid_morph_unigram_100step_seed13\\run_manifest.json",
+      "tokenizer": "hybrid_morph_unigram",
+      "parameters": 582464,
+      "steps": 100,
+      "validation_bits_per_byte": 3.500621456932742,
+      "checkpoint_dir": "artifacts\\tiny_lm\\babylm_2026_hybrid_morph_unigram_100step_seed13\\checkpoint",
+      "tokenizer_metadata": "artifacts\\tiny_lm\\babylm_2026_hybrid_morph_unigram_100step_seed13\\tokenizer\\tokenizer_metadata.json"
+    }
+  ]
+}

@@ -1,0 +1,35 @@
+{
+  "source": "MELM_whitepaper.md",
+  "config": {
+    "tokenizer_name": "simple_bpe",
+    "max_vocab_size": 2048,
+    "sequence_length": 32,
+    "embedding_dim": 32,
+    "layers": 1,
+    "heads": 4,
+    "dropout": 0.0,
+    "batch_size": 2,
+    "steps": 2,
+    "learning_rate": 0.0003,
+    "seed": 13,
+    "device": "auto"
+  },
+  "report": {
+    "tokenizer": "simple_bpe",
+    "train_documents": 262,
+    "validation_documents": 65,
+    "train_tokens": 6002,
+    "validation_tokens": 2327,
+    "validation_bytes": 4978,
+    "train_sequences": 188,
+    "validation_sequences": 73,
+    "vocabulary_size": 439,
+    "parameters": 42263,
+    "steps": 2,
+    "device": "cuda",
+    "final_train_loss": 6.210561752319336,
+    "validation_nll": 6.219712838933967,
+    "validation_bits_per_byte": 4.194559545391922,
+    "validation_perplexity": 502.55889594907575
+  }
+}

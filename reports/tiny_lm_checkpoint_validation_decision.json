@@ -1,0 +1,16 @@
+{
+  "artifact_report": "reports\\tiny_lm_artifact_evaluation.json",
+  "minimal_pair_report": "reports\\tiny_lm_minimal_pairs.json",
+  "decision": {
+    "candidate_tokenizer": "capped_morpheme",
+    "best_baseline_tokenizer": "hf_bpe",
+    "candidate_bits_per_byte": 2.5857515450132835,
+    "best_baseline_bits_per_byte": 3.0809778334435483,
+    "relative_bits_per_byte_gain": 0.16073672554688914,
+    "candidate_minimal_pair_accuracy": 0.25,
+    "best_baseline_minimal_pair_accuracy": 0.5,
+    "minimal_pair_accuracy_delta": -0.25,
+    "decision": "hold_for_quality_evidence",
+    "recommendation": "Capped morphology has a loss/compression signal, but downstream smoke results lag baselines; run stronger BabyLM-style evaluations before primary-tokenizer claims."
+  }
+}

@@ -1,0 +1,13 @@
+{
+  "source_report": "reports\\babylm_2026_matched_tiny_lm_ablation.json",
+  "decision": {
+    "candidate_tokenizer": "capped_morpheme",
+    "best_baseline_tokenizer": "hf_bpe",
+    "candidate_bits_per_byte": 3.3014953453639304,
+    "best_baseline_bits_per_byte": 3.7007288949196475,
+    "bits_per_byte_gain": 0.3992335495557171,
+    "relative_bits_per_byte_gain": 0.10787970718519371,
+    "decision": "promote_to_scaled_neural_ablation",
+    "recommendation": "Run longer BabyLM neural ablations with matched compute for capped morphology, HF BPE, and HF Unigram."
+  }
+}

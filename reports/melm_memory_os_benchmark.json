@@ -1,0 +1,401 @@
+{
+  "source": "support_refund_fixture",
+  "k": 2,
+  "events": 57,
+  "report": {
+    "cases": 8,
+    "vector_accuracy": 0.75,
+    "temporal_entity_accuracy": 0.75,
+    "memory_os_accuracy": 1.0,
+    "memory_os_gain_vs_vector": 0.25,
+    "positive_recall": 1.0,
+    "negative_abstention": 1.0,
+    "gate_passed": true,
+    "predictions": [
+      {
+        "query": "What is the latest status for order o1006?",
+        "category": "current_state",
+        "kind": "state",
+        "expected": "shipped",
+        "vector_correct": true,
+        "temporal_entity_correct": true,
+        "memory_os_correct": true,
+        "memory_os_answered": true,
+        "vector_event_ids": [
+          "o1006_e_status",
+          "o1001_e_status"
+        ],
+        "temporal_entity_event_ids": [
+          "o1006_e_status",
+          "o1006_e_fraud"
+        ],
+        "memory_os_event_id": "o1006_e_status"
+      },
+      {
+        "query": "Is order o1007 already refunded?",
+        "category": "current_state",
+        "kind": "state",
+        "expected": "refunded",
+        "vector_correct": true,
+        "temporal_entity_correct": true,
+        "memory_os_correct": true,
+        "memory_os_answered": true,
+        "vector_event_ids": [
+          "o1007_e_refunded",
+          "o1007_e_status"
+        ],
+        "temporal_entity_event_ids": [
+          "o1007_e_refunded",
+          "o1007_e_fraud"
+        ],
+        "memory_os_event_id": "o1007_e_refunded"
+      },
+      {
+        "query": "What is the current refund status for order o1010?",
+        "category": "stale_state_update",
+        "kind": "state",
+        "expected": "refunded",
+        "vector_correct": true,
+        "temporal_entity_correct": true,
+        "memory_os_correct": true,
+        "memory_os_answered": true,
+        "vector_event_ids": [
+          "o1010_e_status_refunded",
+          "o1010_e_status"
+        ],
+        "temporal_entity_event_ids": [
+          "o1010_e_status_refunded",
+          "o1010_e_status"
+        ],
+        "memory_os_event_id": "o1010_e_status_refunded"
+      },
+      {
+        "query": "Who approved the high-value refund for order o1009?",
+        "category": "approval_recall",
+        "kind": "event",
+        "expected": "o1009_e_approval_fresh",
+        "vector_correct": true,
+        "temporal_entity_correct": true,
+        "memory_os_correct": true,
+        "memory_os_answered": true,
+        "vector_event_ids": [
+          "o1009_e_approval_fresh",
+          "o1004_e_approval_stale"
+        ],
+        "temporal_entity_event_ids": [
+          "o1009_e_approval_fresh",
+          "o1009_e_fraud"
+        ],
+        "memory_os_event_id": "o1009_e_approval_fresh"
+      },
+      {
+        "query": "Which event says order o1005 has a fraud flag?",
+        "category": "risk_recall",
+        "kind": "event",
+        "expected": "o1005_e_fraud",
+        "vector_correct": true,
+        "temporal_entity_correct": true,
+        "memory_os_correct": true,
+        "memory_os_answered": true,
+        "vector_event_ids": [
+          "o1005_e_fraud",
+          "o1005_e_amount"
+        ],
+        "temporal_entity_event_ids": [
+          "o1005_e_fraud",
+          "o1005_e_identity"
+        ],
+        "memory_os_event_id": "o1005_e_fraud"
+      },
+      {
+        "query": "What policy sets the refund limit without approval?",
+        "category": "policy_recall",
+        "kind": "event",
+        "expected": "policy_e1",
+        "vector_correct": true,
+        "temporal_entity_correct": true,
+        "memory_os_correct": true,
+        "memory_os_answered": true,
+        "vector_event_ids": [
+          "policy_e1",
+          "o1010_e_status_refunded"
+        ],
+        "temporal_entity_event_ids": [
+          "policy_e1",
+          "policy_e2"
+        ],
+        "memory_os_event_id": "policy_e1"
+      },
+      {
+        "query": "What is the latest status for order o9999?",
+        "category": "unknown_order",
+        "kind": "state",
+        "expected": null,
+        "vector_correct": false,
+        "temporal_entity_correct": false,
+        "memory_os_correct": true,
+        "memory_os_answered": false,
+        "vector_event_ids": [
+          "o1001_e_status",
+          "o1002_e_status"
+        ],
+        "temporal_entity_event_ids": [
+          "o1001_e_status",
+          "o1002_e_status"
+        ],
+        "memory_os_event_id": null
+      },
+      {
+        "query": "Is order o2000 already refunded?",
+        "category": "unknown_order",
+        "kind": "state",
+        "expected": null,
+        "vector_correct": false,
+        "temporal_entity_correct": false,
+        "memory_os_correct": true,
+        "memory_os_answered": false,
+        "vector_event_ids": [
+          "o1007_e_refunded",
+          "o1001_e_status"
+        ],
+        "temporal_entity_event_ids": [
+          "o1007_e_refunded",
+          "o1010_e_status_refunded"
+        ],
+        "memory_os_event_id": null
+      }
+    ],
+    "by_category": {
+      "approval_recall": {
+        "cases": 1,
+        "vector_accuracy": 1.0,
+        "temporal_entity_accuracy": 1.0,
+        "memory_os_accuracy": 1.0,
+        "memory_os_gain_vs_vector": 0.0,
+        "positive_recall": 1.0,
+        "negative_abstention": 1.0,
+        "gate_passed": false,
+        "predictions": [
+          {
+            "query": "Who approved the high-value refund for order o1009?",
+            "category": "approval_recall",
+            "kind": "event",
+            "expected": "o1009_e_approval_fresh",
+            "vector_correct": true,
+            "temporal_entity_correct": true,
+            "memory_os_correct": true,
+            "memory_os_answered": true,
+            "vector_event_ids": [
+              "o1009_e_approval_fresh",
+              "o1004_e_approval_stale"
+            ],
+            "temporal_entity_event_ids": [
+              "o1009_e_approval_fresh",
+              "o1009_e_fraud"
+            ],
+            "memory_os_event_id": "o1009_e_approval_fresh"
+          }
+        ],
+        "by_category": null
+      },
+      "current_state": {
+        "cases": 2,
+        "vector_accuracy": 1.0,
+        "temporal_entity_accuracy": 1.0,
+        "memory_os_accuracy": 1.0,
+        "memory_os_gain_vs_vector": 0.0,
+        "positive_recall": 1.0,
+        "negative_abstention": 1.0,
+        "gate_passed": false,
+        "predictions": [
+          {
+            "query": "What is the latest status for order o1006?",
+            "category": "current_state",
+            "kind": "state",
+            "expected": "shipped",
+            "vector_correct": true,
+            "temporal_entity_correct": true,
+            "memory_os_correct": true,
+            "memory_os_answered": true,
+            "vector_event_ids": [
+              "o1006_e_status",
+              "o1001_e_status"
+            ],
+            "temporal_entity_event_ids": [
+              "o1006_e_status",
+              "o1006_e_fraud"
+            ],
+            "memory_os_event_id": "o1006_e_status"
+          },
+          {
+            "query": "Is order o1007 already refunded?",
+            "category": "current_state",
+            "kind": "state",
+            "expected": "refunded",
+            "vector_correct": true,
+            "temporal_entity_correct": true,
+            "memory_os_correct": true,
+            "memory_os_answered": true,
+            "vector_event_ids": [
+              "o1007_e_refunded",
+              "o1007_e_status"
+            ],
+            "temporal_entity_event_ids": [
+              "o1007_e_refunded",
+              "o1007_e_fraud"
+            ],
+            "memory_os_event_id": "o1007_e_refunded"
+          }
+        ],
+        "by_category": null
+      },
+      "policy_recall": {
+        "cases": 1,
+        "vector_accuracy": 1.0,
+        "temporal_entity_accuracy": 1.0,
+        "memory_os_accuracy": 1.0,
+        "memory_os_gain_vs_vector": 0.0,
+        "positive_recall": 1.0,
+        "negative_abstention": 1.0,
+        "gate_passed": false,
+        "predictions": [
+          {
+            "query": "What policy sets the refund limit without approval?",
+            "category": "policy_recall",
+            "kind": "event",
+            "expected": "policy_e1",
+            "vector_correct": true,
+            "temporal_entity_correct": true,
+            "memory_os_correct": true,
+            "memory_os_answered": true,
+            "vector_event_ids": [
+              "policy_e1",
+              "o1010_e_status_refunded"
+            ],
+            "temporal_entity_event_ids": [
+              "policy_e1",
+              "policy_e2"
+            ],
+            "memory_os_event_id": "policy_e1"
+          }
+        ],
+        "by_category": null
+      },
+      "risk_recall": {
+        "cases": 1,
+        "vector_accuracy": 1.0,
+        "temporal_entity_accuracy": 1.0,
+        "memory_os_accuracy": 1.0,
+        "memory_os_gain_vs_vector": 0.0,
+        "positive_recall": 1.0,
+        "negative_abstention": 1.0,
+        "gate_passed": false,
+        "predictions": [
+          {
+            "query": "Which event says order o1005 has a fraud flag?",
+            "category": "risk_recall",
+            "kind": "event",
+            "expected": "o1005_e_fraud",
+            "vector_correct": true,
+            "temporal_entity_correct": true,
+            "memory_os_correct": true,
+            "memory_os_answered": true,
+            "vector_event_ids": [
+              "o1005_e_fraud",
+              "o1005_e_amount"
+            ],
+            "temporal_entity_event_ids": [
+              "o1005_e_fraud",
+              "o1005_e_identity"
+            ],
+            "memory_os_event_id": "o1005_e_fraud"
+          }
+        ],
+        "by_category": null
+      },
+      "stale_state_update": {
+        "cases": 1,
+        "vector_accuracy": 1.0,
+        "temporal_entity_accuracy": 1.0,
+        "memory_os_accuracy": 1.0,
+        "memory_os_gain_vs_vector": 0.0,
+        "positive_recall": 1.0,
+        "negative_abstention": 1.0,
+        "gate_passed": false,
+        "predictions": [
+          {
+            "query": "What is the current refund status for order o1010?",
+            "category": "stale_state_update",
+            "kind": "state",
+            "expected": "refunded",
+            "vector_correct": true,
+            "temporal_entity_correct": true,
+            "memory_os_correct": true,
+            "memory_os_answered": true,
+            "vector_event_ids": [
+              "o1010_e_status_refunded",
+              "o1010_e_status"
+            ],
+            "temporal_entity_event_ids": [
+              "o1010_e_status_refunded",
+              "o1010_e_status"
+            ],
+            "memory_os_event_id": "o1010_e_status_refunded"
+          }
+        ],
+        "by_category": null
+      },
+      "unknown_order": {
+        "cases": 2,
+        "vector_accuracy": 0.0,
+        "temporal_entity_accuracy": 0.0,
+        "memory_os_accuracy": 1.0,
+        "memory_os_gain_vs_vector": 1.0,
+        "positive_recall": 0.0,
+        "negative_abstention": 1.0,
+        "gate_passed": false,
+        "predictions": [
+          {
+            "query": "What is the latest status for order o9999?",
+            "category": "unknown_order",
+            "kind": "state",
+            "expected": null,
+            "vector_correct": false,
+            "temporal_entity_correct": false,
+            "memory_os_correct": true,
+            "memory_os_answered": false,
+            "vector_event_ids": [
+              "o1001_e_status",
+              "o1002_e_status"
+            ],
+            "temporal_entity_event_ids": [
+              "o1001_e_status",
+              "o1002_e_status"
+            ],
+            "memory_os_event_id": null
+          },
+          {
+            "query": "Is order o2000 already refunded?",
+            "category": "unknown_order",
+            "kind": "state",
+            "expected": null,
+            "vector_correct": false,
+            "temporal_entity_correct": false,
+            "memory_os_correct": true,
+            "memory_os_answered": false,
+            "vector_event_ids": [
+              "o1007_e_refunded",
+              "o1001_e_status"
+            ],
+            "temporal_entity_event_ids": [
+              "o1007_e_refunded",
+              "o1010_e_status_refunded"
+            ],
+            "memory_os_event_id": null
+          }
+        ],
+        "by_category": null
+      }
+    }
+  }
+}

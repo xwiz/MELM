@@ -1,0 +1,16 @@
+{
+  "artifact_report": "reports\\tiny_lm_artifact_evaluation.json",
+  "minimal_pair_report": "reports\\tiny_lm_minimal_pairs.json",
+  "decision": {
+    "candidate_tokenizer": "tiered_morph_unigram",
+    "best_baseline_tokenizer": "hf_bpe",
+    "candidate_bits_per_byte": 3.0267640136977114,
+    "best_baseline_bits_per_byte": 3.0809778334435483,
+    "relative_bits_per_byte_gain": 0.017596303081883296,
+    "candidate_minimal_pair_accuracy": 0.5,
+    "best_baseline_minimal_pair_accuracy": 0.5,
+    "minimal_pair_accuracy_delta": 0.0,
+    "decision": "promote_to_small_model_training",
+    "recommendation": "Proceed to longer BabyLM-style training and downstream evaluation."
+  }
+}

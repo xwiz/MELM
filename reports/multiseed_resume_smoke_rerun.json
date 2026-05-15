@@ -1,0 +1,98 @@
+{
+  "source": "manifest:reports\\babylm_2026_strict_small_manifest.json",
+  "config": {
+    "tokenizers": [
+      "hf_bpe",
+      "tiered_morph_unigram"
+    ],
+    "seeds": [
+      13
+    ],
+    "steps": 1,
+    "sequence_length": 32,
+    "embedding_dim": 32,
+    "layers": 1,
+    "heads": 4,
+    "batch_size": 2,
+    "max_vocab_size": 512,
+    "tokenizer_vocab_size": 512,
+    "learning_rate": 0.0003,
+    "device": "auto",
+    "pad_vocab_to_max_size": true,
+    "resume": true,
+    "run_cache_dir": "artifacts\\multiseed_resume_smoke",
+    "cached_runs": 2
+  },
+  "runs": [
+    {
+      "tokenizer": "hf_bpe",
+      "train_documents": 6,
+      "validation_documents": 6,
+      "train_tokens": 7284,
+      "validation_tokens": 4237,
+      "validation_bytes": 9996,
+      "train_sequences": 228,
+      "validation_sequences": 133,
+      "vocabulary_size": 512,
+      "parameters": 47008,
+      "steps": 1,
+      "device": "cuda",
+      "final_train_loss": 6.374446392059326,
+      "validation_nll": 6.403274757051231,
+      "validation_bits_per_byte": 3.9156953269872132,
+      "validation_perplexity": 603.8191647823953,
+      "seed": 13
+    },
+    {
+      "tokenizer": "tiered_morph_unigram",
+      "train_documents": 6,
+      "validation_documents": 6,
+      "train_tokens": 7414,
+      "validation_tokens": 4383,
+      "validation_bytes": 9996,
+      "train_sequences": 232,
+      "validation_sequences": 137,
+      "vocabulary_size": 512,
+      "parameters": 47008,
+      "steps": 1,
+      "device": "cuda",
+      "final_train_loss": 6.362712860107422,
+      "validation_nll": 6.430720278587402,
+      "validation_bits_per_byte": 4.067985360425566,
+      "validation_perplexity": 620.6208069400703,
+      "seed": 13
+    }
+  ],
+  "summaries": [
+    {
+      "tokenizer": "hf_bpe",
+      "runs": 1,
+      "mean_bits_per_byte": 3.9156953269872132,
+      "std_bits_per_byte": 0.0,
+      "mean_nll_per_token": 6.403274757051231,
+      "std_nll_per_token": 0.0,
+      "mean_parameters": 47008.0,
+      "validation_tokens": 4237
+    },
+    {
+      "tokenizer": "tiered_morph_unigram",
+      "runs": 1,
+      "mean_bits_per_byte": 4.067985360425566,
+      "std_bits_per_byte": 0.0,
+      "mean_nll_per_token": 6.430720278587402,
+      "std_nll_per_token": 0.0,
+      "mean_parameters": 47008.0,
+      "validation_tokens": 4383
+    }
+  ],
+  "decision": {
+    "candidate_tokenizer": "tiered_morph_unigram",
+    "best_baseline_tokenizer": "hf_bpe",
+    "candidate_bits_per_byte": 4.067985360425566,
+    "best_baseline_bits_per_byte": 3.9156953269872132,
+    "bits_per_byte_gain": -0.1522900334383528,
+    "relative_bits_per_byte_gain": -0.03889220705930834,
+    "decision": "do_not_scale_yet",
+    "recommendation": "Keep morphology as auxiliary supervision unless longer neural ablations recover."
+  }
+}

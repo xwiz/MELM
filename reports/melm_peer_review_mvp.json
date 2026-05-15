@@ -1,0 +1,762 @@
+{
+  "benchmark": "melm_guard_memory_peer_review_mvp",
+  "no_api_required": true,
+  "scenario_repeats": 20,
+  "bootstrap_samples": 1000,
+  "peer_review_gate_passed": true,
+  "development": {
+    "split": "development",
+    "seed": 17,
+    "events": 1183,
+    "facts": 1183,
+    "guard_cases": 240,
+    "memory_cases": 396,
+    "guard_report": {
+      "cases": 240,
+      "melm_accuracy": 1.0,
+      "schema_only_accuracy": 0.25,
+      "prompt_only_accuracy": 0.25,
+      "melm_false_allow_rate": 0.0,
+      "schema_only_false_allow_rate": 0.9,
+      "prompt_only_false_allow_rate": 0.9,
+      "false_allow_reduction_vs_schema": 1.0,
+      "valid_action_allow_rate": 1.0,
+      "traceability": 1.0,
+      "gate_passed": true,
+      "predictions": "240 records omitted; see benchmark-specific report for case table",
+      "by_category": {
+        "approval_required": {
+          "cases": 20,
+          "melm_accuracy": 1.0,
+          "schema_only_accuracy": 0.0,
+          "prompt_only_accuracy": 0.0,
+          "melm_false_allow_rate": 0.0,
+          "schema_only_false_allow_rate": 1.0,
+          "prompt_only_false_allow_rate": 1.0,
+          "false_allow_reduction_vs_schema": 1.0,
+          "valid_action_allow_rate": 0.0,
+          "traceability": 1.0,
+          "gate_passed": false,
+          "predictions": "20 records omitted; see benchmark-specific report for case table",
+          "by_category": null
+        },
+        "duplicate_refund": {
+          "cases": 20,
+          "melm_accuracy": 1.0,
+          "schema_only_accuracy": 0.0,
+          "prompt_only_accuracy": 0.0,
+          "melm_false_allow_rate": 0.0,
+          "schema_only_false_allow_rate": 1.0,
+          "prompt_only_false_allow_rate": 1.0,
+          "false_allow_reduction_vs_schema": 1.0,
+          "valid_action_allow_rate": 0.0,
+          "traceability": 1.0,
+          "gate_passed": false,
+          "predictions": "20 records omitted; see benchmark-specific report for case table",
+          "by_category": null
+        },
+        "fraud_flag": {
+          "cases": 20,
+          "melm_accuracy": 1.0,
+          "schema_only_accuracy": 0.0,
+          "prompt_only_accuracy": 0.0,
+          "melm_false_allow_rate": 0.0,
+          "schema_only_false_allow_rate": 1.0,
+          "prompt_only_false_allow_rate": 1.0,
+          "false_allow_reduction_vs_schema": 1.0,
+          "valid_action_allow_rate": 0.0,
+          "traceability": 1.0,
+          "gate_passed": false,
+          "predictions": "20 records omitted; see benchmark-specific report for case table",
+          "by_category": null
+        },
+        "identity_missing_or_false": {
+          "cases": 20,
+          "melm_accuracy": 1.0,
+          "schema_only_accuracy": 0.0,
+          "prompt_only_accuracy": 0.0,
+          "melm_false_allow_rate": 0.0,
+          "schema_only_false_allow_rate": 1.0,
+          "prompt_only_false_allow_rate": 1.0,
+          "false_allow_reduction_vs_schema": 1.0,
+          "valid_action_allow_rate": 0.0,
+          "traceability": 1.0,
+          "gate_passed": false,
+          "predictions": "20 records omitted; see benchmark-specific report for case table",
+          "by_category": null
+        },
+        "malformed_action": {
+          "cases": 20,
+          "melm_accuracy": 1.0,
+          "schema_only_accuracy": 1.0,
+          "prompt_only_accuracy": 1.0,
+          "melm_false_allow_rate": 0.0,
+          "schema_only_false_allow_rate": 0.0,
+          "prompt_only_false_allow_rate": 0.0,
+          "false_allow_reduction_vs_schema": 1.0,
+          "valid_action_allow_rate": 0.0,
+          "traceability": 1.0,
+          "gate_passed": false,
+          "predictions": "20 records omitted; see benchmark-specific report for case table",
+          "by_category": null
+        },
+        "missing_order": {
+          "cases": 20,
+          "melm_accuracy": 1.0,
+          "schema_only_accuracy": 0.0,
+          "prompt_only_accuracy": 0.0,
+          "melm_false_allow_rate": 0.0,
+          "schema_only_false_allow_rate": 1.0,
+          "prompt_only_false_allow_rate": 1.0,
+          "false_allow_reduction_vs_schema": 1.0,
+          "valid_action_allow_rate": 0.0,
+          "traceability": 1.0,
+          "gate_passed": false,
+          "predictions": "20 records omitted; see benchmark-specific report for case table",
+          "by_category": null
+        },
+        "not_delivered": {
+          "cases": 20,
+          "melm_accuracy": 1.0,
+          "schema_only_accuracy": 0.0,
+          "prompt_only_accuracy": 0.0,
+          "melm_false_allow_rate": 0.0,
+          "schema_only_false_allow_rate": 1.0,
+          "prompt_only_false_allow_rate": 1.0,
+          "false_allow_reduction_vs_schema": 1.0,
+          "valid_action_allow_rate": 0.0,
+          "traceability": 1.0,
+          "gate_passed": false,
+          "predictions": "20 records omitted; see benchmark-specific report for case table",
+          "by_category": null
+        },
+        "outside_return_window": {
+          "cases": 20,
+          "melm_accuracy": 1.0,
+          "schema_only_accuracy": 0.0,
+          "prompt_only_accuracy": 0.0,
+          "melm_false_allow_rate": 0.0,
+          "schema_only_false_allow_rate": 1.0,
+          "prompt_only_false_allow_rate": 1.0,
+          "false_allow_reduction_vs_schema": 1.0,
+          "valid_action_allow_rate": 0.0,
+          "traceability": 1.0,
+          "gate_passed": false,
+          "predictions": "20 records omitted; see benchmark-specific report for case table",
+          "by_category": null
+        },
+        "stale_approval": {
+          "cases": 20,
+          "melm_accuracy": 1.0,
+          "schema_only_accuracy": 0.0,
+          "prompt_only_accuracy": 0.0,
+          "melm_false_allow_rate": 0.0,
+          "schema_only_false_allow_rate": 1.0,
+          "prompt_only_false_allow_rate": 1.0,
+          "false_allow_reduction_vs_schema": 1.0,
+          "valid_action_allow_rate": 0.0,
+          "traceability": 1.0,
+          "gate_passed": false,
+          "predictions": "20 records omitted; see benchmark-specific report for case table",
+          "by_category": null
+        },
+        "stale_state_trap": {
+          "cases": 20,
+          "melm_accuracy": 1.0,
+          "schema_only_accuracy": 0.0,
+          "prompt_only_accuracy": 0.0,
+          "melm_false_allow_rate": 0.0,
+          "schema_only_false_allow_rate": 1.0,
+          "prompt_only_false_allow_rate": 1.0,
+          "false_allow_reduction_vs_schema": 1.0,
+          "valid_action_allow_rate": 0.0,
+          "traceability": 1.0,
+          "gate_passed": false,
+          "predictions": "20 records omitted; see benchmark-specific report for case table",
+          "by_category": null
+        },
+        "valid_high_value": {
+          "cases": 20,
+          "melm_accuracy": 1.0,
+          "schema_only_accuracy": 1.0,
+          "prompt_only_accuracy": 1.0,
+          "melm_false_allow_rate": 0.0,
+          "schema_only_false_allow_rate": 0.0,
+          "prompt_only_false_allow_rate": 0.0,
+          "false_allow_reduction_vs_schema": 1.0,
+          "valid_action_allow_rate": 1.0,
+          "traceability": 1.0,
+          "gate_passed": false,
+          "predictions": "20 records omitted; see benchmark-specific report for case table",
+          "by_category": null
+        },
+        "valid_low_value": {
+          "cases": 20,
+          "melm_accuracy": 1.0,
+          "schema_only_accuracy": 1.0,
+          "prompt_only_accuracy": 1.0,
+          "melm_false_allow_rate": 0.0,
+          "schema_only_false_allow_rate": 0.0,
+          "prompt_only_false_allow_rate": 0.0,
+          "false_allow_reduction_vs_schema": 1.0,
+          "valid_action_allow_rate": 1.0,
+          "traceability": 1.0,
+          "gate_passed": false,
+          "predictions": "20 records omitted; see benchmark-specific report for case table",
+          "by_category": null
+        }
+      }
+    },
+    "memory_report": {
+      "cases": 396,
+      "vector_accuracy": 0.8106060606060606,
+      "temporal_entity_accuracy": 0.8106060606060606,
+      "memory_os_accuracy": 1.0,
+      "memory_os_gain_vs_vector": 0.18939393939393945,
+      "positive_recall": 1.0,
+      "negative_abstention": 1.0,
+      "gate_passed": true,
+      "predictions": "396 records omitted; see benchmark-specific report for case table",
+      "by_category": {
+        "approval_recall": {
+          "cases": 40,
+          "vector_accuracy": 1.0,
+          "temporal_entity_accuracy": 1.0,
+          "memory_os_accuracy": 1.0,
+          "memory_os_gain_vs_vector": 0.0,
+          "positive_recall": 1.0,
+          "negative_abstention": 1.0,
+          "gate_passed": false,
+          "predictions": "40 records omitted; see benchmark-specific report for case table",
+          "by_category": null
+        },
+        "current_state": {
+          "cases": 220,
+          "vector_accuracy": 1.0,
+          "temporal_entity_accuracy": 1.0,
+          "memory_os_accuracy": 1.0,
+          "memory_os_gain_vs_vector": 0.0,
+          "positive_recall": 1.0,
+          "negative_abstention": 1.0,
+          "gate_passed": false,
+          "predictions": "220 records omitted; see benchmark-specific report for case table",
+          "by_category": null
+        },
+        "policy_recall": {
+          "cases": 1,
+          "vector_accuracy": 1.0,
+          "temporal_entity_accuracy": 1.0,
+          "memory_os_accuracy": 1.0,
+          "memory_os_gain_vs_vector": 0.0,
+          "positive_recall": 1.0,
+          "negative_abstention": 1.0,
+          "gate_passed": false,
+          "predictions": "1 records omitted; see benchmark-specific report for case table",
+          "by_category": null
+        },
+        "refund_state": {
+          "cases": 40,
+          "vector_accuracy": 1.0,
+          "temporal_entity_accuracy": 1.0,
+          "memory_os_accuracy": 1.0,
+          "memory_os_gain_vs_vector": 0.0,
+          "positive_recall": 1.0,
+          "negative_abstention": 1.0,
+          "gate_passed": false,
+          "predictions": "40 records omitted; see benchmark-specific report for case table",
+          "by_category": null
+        },
+        "risk_recall": {
+          "cases": 20,
+          "vector_accuracy": 1.0,
+          "temporal_entity_accuracy": 1.0,
+          "memory_os_accuracy": 1.0,
+          "memory_os_gain_vs_vector": 0.0,
+          "positive_recall": 1.0,
+          "negative_abstention": 1.0,
+          "gate_passed": false,
+          "predictions": "20 records omitted; see benchmark-specific report for case table",
+          "by_category": null
+        },
+        "unknown_order": {
+          "cases": 75,
+          "vector_accuracy": 0.0,
+          "temporal_entity_accuracy": 0.0,
+          "memory_os_accuracy": 1.0,
+          "memory_os_gain_vs_vector": 1.0,
+          "positive_recall": 0.0,
+          "negative_abstention": 1.0,
+          "gate_passed": false,
+          "predictions": "75 records omitted; see benchmark-specific report for case table",
+          "by_category": null
+        }
+      }
+    },
+    "robustness": [
+      {
+        "drop_rate": 0.05,
+        "dropped_events": 59,
+        "guard_melm_accuracy": 0.95,
+        "guard_false_allow_rate": 0.01,
+        "guard_valid_action_allow_rate": 0.85,
+        "memory_os_accuracy": 0.9570707070707071,
+        "memory_os_gain_vs_vector": 0.18939393939393945,
+        "memory_os_vs_vector_ci": {
+          "estimate": 0.1893939393939394,
+          "low": 0.15151515151515152,
+          "high": 0.22727272727272727,
+          "samples": 1000
+        }
+      },
+      {
+        "drop_rate": 0.1,
+        "dropped_events": 118,
+        "guard_melm_accuracy": 0.8875,
+        "guard_false_allow_rate": 0.03,
+        "guard_valid_action_allow_rate": 0.75,
+        "memory_os_accuracy": 0.9065656565656566,
+        "memory_os_gain_vs_vector": 0.18939393939393945,
+        "memory_os_vs_vector_ci": {
+          "estimate": 0.1893939393939394,
+          "low": 0.15151515151515152,
+          "high": 0.22727272727272727,
+          "samples": 1000
+        }
+      },
+      {
+        "drop_rate": 0.2,
+        "dropped_events": 236,
+        "guard_melm_accuracy": 0.7916666666666666,
+        "guard_false_allow_rate": 0.07,
+        "guard_valid_action_allow_rate": 0.575,
+        "memory_os_accuracy": 0.8282828282828283,
+        "memory_os_gain_vs_vector": 0.18939393939393945,
+        "memory_os_vs_vector_ci": {
+          "estimate": 0.1893939393939394,
+          "low": 0.15151515151515152,
+          "high": 0.22727272727272727,
+          "samples": 1000
+        }
+      }
+    ],
+    "statistics": {
+      "guard_melm_accuracy_ci": {
+        "estimate": 1.0,
+        "low": 1.0,
+        "high": 1.0,
+        "samples": 1000
+      },
+      "guard_melm_vs_schema_accuracy_diff_ci": {
+        "estimate": 0.75,
+        "low": 0.6958333333333333,
+        "high": 0.8041666666666667,
+        "samples": 1000
+      },
+      "guard_melm_vs_prompt_accuracy_diff_ci": {
+        "estimate": 0.75,
+        "low": 0.6916666666666667,
+        "high": 0.8,
+        "samples": 1000
+      },
+      "memory_os_accuracy_ci": {
+        "estimate": 1.0,
+        "low": 1.0,
+        "high": 1.0,
+        "samples": 1000
+      },
+      "memory_os_vs_vector_accuracy_diff_ci": {
+        "estimate": 0.1893939393939394,
+        "low": 0.15151515151515152,
+        "high": 0.2297979797979798,
+        "samples": 1000
+      },
+      "memory_os_vs_temporal_entity_accuracy_diff_ci": {
+        "estimate": 0.1893939393939394,
+        "low": 0.15404040404040403,
+        "high": 0.22474747474747475,
+        "samples": 1000
+      }
+    }
+  },
+  "heldout_seed": {
+    "split": "heldout_seed",
+    "seed": 91,
+    "events": 1183,
+    "facts": 1183,
+    "guard_cases": 240,
+    "memory_cases": 396,
+    "guard_report": {
+      "cases": 240,
+      "melm_accuracy": 1.0,
+      "schema_only_accuracy": 0.25,
+      "prompt_only_accuracy": 0.25,
+      "melm_false_allow_rate": 0.0,
+      "schema_only_false_allow_rate": 0.9,
+      "prompt_only_false_allow_rate": 0.9,
+      "false_allow_reduction_vs_schema": 1.0,
+      "valid_action_allow_rate": 1.0,
+      "traceability": 1.0,
+      "gate_passed": true,
+      "predictions": "240 records omitted; see benchmark-specific report for case table",
+      "by_category": {
+        "approval_required": {
+          "cases": 20,
+          "melm_accuracy": 1.0,
+          "schema_only_accuracy": 0.0,
+          "prompt_only_accuracy": 0.0,
+          "melm_false_allow_rate": 0.0,
+          "schema_only_false_allow_rate": 1.0,
+          "prompt_only_false_allow_rate": 1.0,
+          "false_allow_reduction_vs_schema": 1.0,
+          "valid_action_allow_rate": 0.0,
+          "traceability": 1.0,
+          "gate_passed": false,
+          "predictions": "20 records omitted; see benchmark-specific report for case table",
+          "by_category": null
+        },
+        "duplicate_refund": {
+          "cases": 20,
+          "melm_accuracy": 1.0,
+          "schema_only_accuracy": 0.0,
+          "prompt_only_accuracy": 0.0,
+          "melm_false_allow_rate": 0.0,
+          "schema_only_false_allow_rate": 1.0,
+          "prompt_only_false_allow_rate": 1.0,
+          "false_allow_reduction_vs_schema": 1.0,
+          "valid_action_allow_rate": 0.0,
+          "traceability": 1.0,
+          "gate_passed": false,
+          "predictions": "20 records omitted; see benchmark-specific report for case table",
+          "by_category": null
+        },
+        "fraud_flag": {
+          "cases": 20,
+          "melm_accuracy": 1.0,
+          "schema_only_accuracy": 0.0,
+          "prompt_only_accuracy": 0.0,
+          "melm_false_allow_rate": 0.0,
+          "schema_only_false_allow_rate": 1.0,
+          "prompt_only_false_allow_rate": 1.0,
+          "false_allow_reduction_vs_schema": 1.0,
+          "valid_action_allow_rate": 0.0,
+          "traceability": 1.0,
+          "gate_passed": false,
+          "predictions": "20 records omitted; see benchmark-specific report for case table",
+          "by_category": null
+        },
+        "identity_missing_or_false": {
+          "cases": 20,
+          "melm_accuracy": 1.0,
+          "schema_only_accuracy": 0.0,
+          "prompt_only_accuracy": 0.0,
+          "melm_false_allow_rate": 0.0,
+          "schema_only_false_allow_rate": 1.0,
+          "prompt_only_false_allow_rate": 1.0,
+          "false_allow_reduction_vs_schema": 1.0,
+          "valid_action_allow_rate": 0.0,
+          "traceability": 1.0,
+          "gate_passed": false,
+          "predictions": "20 records omitted; see benchmark-specific report for case table",
+          "by_category": null
+        },
+        "malformed_action": {
+          "cases": 20,
+          "melm_accuracy": 1.0,
+          "schema_only_accuracy": 1.0,
+          "prompt_only_accuracy": 1.0,
+          "melm_false_allow_rate": 0.0,
+          "schema_only_false_allow_rate": 0.0,
+          "prompt_only_false_allow_rate": 0.0,
+          "false_allow_reduction_vs_schema": 1.0,
+          "valid_action_allow_rate": 0.0,
+          "traceability": 1.0,
+          "gate_passed": false,
+          "predictions": "20 records omitted; see benchmark-specific report for case table",
+          "by_category": null
+        },
+        "missing_order": {
+          "cases": 20,
+          "melm_accuracy": 1.0,
+          "schema_only_accuracy": 0.0,
+          "prompt_only_accuracy": 0.0,
+          "melm_false_allow_rate": 0.0,
+          "schema_only_false_allow_rate": 1.0,
+          "prompt_only_false_allow_rate": 1.0,
+          "false_allow_reduction_vs_schema": 1.0,
+          "valid_action_allow_rate": 0.0,
+          "traceability": 1.0,
+          "gate_passed": false,
+          "predictions": "20 records omitted; see benchmark-specific report for case table",
+          "by_category": null
+        },
+        "not_delivered": {
+          "cases": 20,
+          "melm_accuracy": 1.0,
+          "schema_only_accuracy": 0.0,
+          "prompt_only_accuracy": 0.0,
+          "melm_false_allow_rate": 0.0,
+          "schema_only_false_allow_rate": 1.0,
+          "prompt_only_false_allow_rate": 1.0,
+          "false_allow_reduction_vs_schema": 1.0,
+          "valid_action_allow_rate": 0.0,
+          "traceability": 1.0,
+          "gate_passed": false,
+          "predictions": "20 records omitted; see benchmark-specific report for case table",
+          "by_category": null
+        },
+        "outside_return_window": {
+          "cases": 20,
+          "melm_accuracy": 1.0,
+          "schema_only_accuracy": 0.0,
+          "prompt_only_accuracy": 0.0,
+          "melm_false_allow_rate": 0.0,
+          "schema_only_false_allow_rate": 1.0,
+          "prompt_only_false_allow_rate": 1.0,
+          "false_allow_reduction_vs_schema": 1.0,
+          "valid_action_allow_rate": 0.0,
+          "traceability": 1.0,
+          "gate_passed": false,
+          "predictions": "20 records omitted; see benchmark-specific report for case table",
+          "by_category": null
+        },
+        "stale_approval": {
+          "cases": 20,
+          "melm_accuracy": 1.0,
+          "schema_only_accuracy": 0.0,
+          "prompt_only_accuracy": 0.0,
+          "melm_false_allow_rate": 0.0,
+          "schema_only_false_allow_rate": 1.0,
+          "prompt_only_false_allow_rate": 1.0,
+          "false_allow_reduction_vs_schema": 1.0,
+          "valid_action_allow_rate": 0.0,
+          "traceability": 1.0,
+          "gate_passed": false,
+          "predictions": "20 records omitted; see benchmark-specific report for case table",
+          "by_category": null
+        },
+        "stale_state_trap": {
+          "cases": 20,
+          "melm_accuracy": 1.0,
+          "schema_only_accuracy": 0.0,
+          "prompt_only_accuracy": 0.0,
+          "melm_false_allow_rate": 0.0,
+          "schema_only_false_allow_rate": 1.0,
+          "prompt_only_false_allow_rate": 1.0,
+          "false_allow_reduction_vs_schema": 1.0,
+          "valid_action_allow_rate": 0.0,
+          "traceability": 1.0,
+          "gate_passed": false,
+          "predictions": "20 records omitted; see benchmark-specific report for case table",
+          "by_category": null
+        },
+        "valid_high_value": {
+          "cases": 20,
+          "melm_accuracy": 1.0,
+          "schema_only_accuracy": 1.0,
+          "prompt_only_accuracy": 1.0,
+          "melm_false_allow_rate": 0.0,
+          "schema_only_false_allow_rate": 0.0,
+          "prompt_only_false_allow_rate": 0.0,
+          "false_allow_reduction_vs_schema": 1.0,
+          "valid_action_allow_rate": 1.0,
+          "traceability": 1.0,
+          "gate_passed": false,
+          "predictions": "20 records omitted; see benchmark-specific report for case table",
+          "by_category": null
+        },
+        "valid_low_value": {
+          "cases": 20,
+          "melm_accuracy": 1.0,
+          "schema_only_accuracy": 1.0,
+          "prompt_only_accuracy": 1.0,
+          "melm_false_allow_rate": 0.0,
+          "schema_only_false_allow_rate": 0.0,
+          "prompt_only_false_allow_rate": 0.0,
+          "false_allow_reduction_vs_schema": 1.0,
+          "valid_action_allow_rate": 1.0,
+          "traceability": 1.0,
+          "gate_passed": false,
+          "predictions": "20 records omitted; see benchmark-specific report for case table",
+          "by_category": null
+        }
+      }
+    },
+    "memory_report": {
+      "cases": 396,
+      "vector_accuracy": 0.8106060606060606,
+      "temporal_entity_accuracy": 0.8106060606060606,
+      "memory_os_accuracy": 1.0,
+      "memory_os_gain_vs_vector": 0.18939393939393945,
+      "positive_recall": 1.0,
+      "negative_abstention": 1.0,
+      "gate_passed": true,
+      "predictions": "396 records omitted; see benchmark-specific report for case table",
+      "by_category": {
+        "approval_recall": {
+          "cases": 40,
+          "vector_accuracy": 1.0,
+          "temporal_entity_accuracy": 1.0,
+          "memory_os_accuracy": 1.0,
+          "memory_os_gain_vs_vector": 0.0,
+          "positive_recall": 1.0,
+          "negative_abstention": 1.0,
+          "gate_passed": false,
+          "predictions": "40 records omitted; see benchmark-specific report for case table",
+          "by_category": null
+        },
+        "current_state": {
+          "cases": 220,
+          "vector_accuracy": 1.0,
+          "temporal_entity_accuracy": 1.0,
+          "memory_os_accuracy": 1.0,
+          "memory_os_gain_vs_vector": 0.0,
+          "positive_recall": 1.0,
+          "negative_abstention": 1.0,
+          "gate_passed": false,
+          "predictions": "220 records omitted; see benchmark-specific report for case table",
+          "by_category": null
+        },
+        "policy_recall": {
+          "cases": 1,
+          "vector_accuracy": 1.0,
+          "temporal_entity_accuracy": 1.0,
+          "memory_os_accuracy": 1.0,
+          "memory_os_gain_vs_vector": 0.0,
+          "positive_recall": 1.0,
+          "negative_abstention": 1.0,
+          "gate_passed": false,
+          "predictions": "1 records omitted; see benchmark-specific report for case table",
+          "by_category": null
+        },
+        "refund_state": {
+          "cases": 40,
+          "vector_accuracy": 1.0,
+          "temporal_entity_accuracy": 1.0,
+          "memory_os_accuracy": 1.0,
+          "memory_os_gain_vs_vector": 0.0,
+          "positive_recall": 1.0,
+          "negative_abstention": 1.0,
+          "gate_passed": false,
+          "predictions": "40 records omitted; see benchmark-specific report for case table",
+          "by_category": null
+        },
+        "risk_recall": {
+          "cases": 20,
+          "vector_accuracy": 1.0,
+          "temporal_entity_accuracy": 1.0,
+          "memory_os_accuracy": 1.0,
+          "memory_os_gain_vs_vector": 0.0,
+          "positive_recall": 1.0,
+          "negative_abstention": 1.0,
+          "gate_passed": false,
+          "predictions": "20 records omitted; see benchmark-specific report for case table",
+          "by_category": null
+        },
+        "unknown_order": {
+          "cases": 75,
+          "vector_accuracy": 0.0,
+          "temporal_entity_accuracy": 0.0,
+          "memory_os_accuracy": 1.0,
+          "memory_os_gain_vs_vector": 1.0,
+          "positive_recall": 0.0,
+          "negative_abstention": 1.0,
+          "gate_passed": false,
+          "predictions": "75 records omitted; see benchmark-specific report for case table",
+          "by_category": null
+        }
+      }
+    },
+    "robustness": [
+      {
+        "drop_rate": 0.05,
+        "dropped_events": 59,
+        "guard_melm_accuracy": 0.9416666666666667,
+        "guard_false_allow_rate": 0.01,
+        "guard_valid_action_allow_rate": 0.9,
+        "memory_os_accuracy": 0.9696969696969697,
+        "memory_os_gain_vs_vector": 0.18939393939393945,
+        "memory_os_vs_vector_ci": {
+          "estimate": 0.1893939393939394,
+          "low": 0.15151515151515152,
+          "high": 0.22727272727272727,
+          "samples": 1000
+        }
+      },
+      {
+        "drop_rate": 0.1,
+        "dropped_events": 118,
+        "guard_melm_accuracy": 0.9125,
+        "guard_false_allow_rate": 0.04,
+        "guard_valid_action_allow_rate": 0.825,
+        "memory_os_accuracy": 0.9166666666666666,
+        "memory_os_gain_vs_vector": 0.18939393939393934,
+        "memory_os_vs_vector_ci": {
+          "estimate": 0.1893939393939394,
+          "low": 0.15151515151515152,
+          "high": 0.22727272727272727,
+          "samples": 1000
+        }
+      },
+      {
+        "drop_rate": 0.2,
+        "dropped_events": 236,
+        "guard_melm_accuracy": 0.825,
+        "guard_false_allow_rate": 0.04,
+        "guard_valid_action_allow_rate": 0.65,
+        "memory_os_accuracy": 0.8156565656565656,
+        "memory_os_gain_vs_vector": 0.18939393939393934,
+        "memory_os_vs_vector_ci": {
+          "estimate": 0.1893939393939394,
+          "low": 0.15151515151515152,
+          "high": 0.22727272727272727,
+          "samples": 1000
+        }
+      }
+    ],
+    "statistics": {
+      "guard_melm_accuracy_ci": {
+        "estimate": 1.0,
+        "low": 1.0,
+        "high": 1.0,
+        "samples": 1000
+      },
+      "guard_melm_vs_schema_accuracy_diff_ci": {
+        "estimate": 0.75,
+        "low": 0.6958333333333333,
+        "high": 0.8041666666666667,
+        "samples": 1000
+      },
+      "guard_melm_vs_prompt_accuracy_diff_ci": {
+        "estimate": 0.75,
+        "low": 0.6958333333333333,
+        "high": 0.8,
+        "samples": 1000
+      },
+      "memory_os_accuracy_ci": {
+        "estimate": 1.0,
+        "low": 1.0,
+        "high": 1.0,
+        "samples": 1000
+      },
+      "memory_os_vs_vector_accuracy_diff_ci": {
+        "estimate": 0.1893939393939394,
+        "low": 0.15404040404040403,
+        "high": 0.22727272727272727,
+        "samples": 1000
+      },
+      "memory_os_vs_temporal_entity_accuracy_diff_ci": {
+        "estimate": 0.1893939393939394,
+        "low": 0.14898989898989898,
+        "high": 0.22474747474747475,
+        "samples": 1000
+      }
+    }
+  },
+  "recommendation": "advance_to_external_human_labeled_support_logs",
+  "limitations": [
+    "Synthetic support/refund cases are deterministic and policy-derived.",
+    "No live LLM baseline is required; prompt-only is simulated by fixed proposals.",
+    "Temporal/entity RAG and Memory OS share the same raw event annotations.",
+    "The next peer-review step must add external human-labeled logs or independently authored fixtures."
+  ]
+}

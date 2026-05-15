@@ -1,0 +1,117 @@
+{
+  "source": "manifest:reports\\babylm_2026_strict_small_manifest.json",
+  "root": "artifacts\\tiny_lm",
+  "max_validation_bytes": 250000,
+  "runs": [
+    {
+      "name": "babylm_2026_capped_morpheme_100step_seed13",
+      "manifest": "artifacts\\tiny_lm\\babylm_2026_capped_morpheme_100step_seed13\\run_manifest.json",
+      "tokenizer_metadata": "artifacts\\tiny_lm\\babylm_2026_capped_morpheme_100step_seed13\\tokenizer\\tokenizer_metadata.json",
+      "evaluation": {
+        "tokenizer": "capped_morpheme",
+        "checkpoint_dir": "artifacts\\tiny_lm\\babylm_2026_capped_morpheme_100step_seed13\\checkpoint",
+        "validation_documents": 6,
+        "validation_tokens": 67958,
+        "validation_bytes": 249996,
+        "validation_sequences": 1062,
+        "vocabulary_size": 4096,
+        "parameters": 582464,
+        "checkpoint_steps": 100,
+        "device": "cuda",
+        "validation_nll": 6.5933286594374145,
+        "validation_bits_per_byte": 2.5857515450132835,
+        "validation_perplexity": 730.2074409335464
+      },
+      "training_validation_bits_per_byte": 2.5857515450132835,
+      "bits_per_byte_delta_from_training_report": 0.0
+    },
+    {
+      "name": "babylm_2026_tiered_morph_unigram_100step_seed13",
+      "manifest": "artifacts\\tiny_lm\\babylm_2026_tiered_morph_unigram_100step_seed13\\run_manifest.json",
+      "tokenizer_metadata": "artifacts\\tiny_lm\\babylm_2026_tiered_morph_unigram_100step_seed13\\tokenizer\\tokenizer_metadata.json",
+      "evaluation": {
+        "tokenizer": "tiered_morph_unigram",
+        "checkpoint_dir": "artifacts\\tiny_lm\\babylm_2026_tiered_morph_unigram_100step_seed13\\checkpoint",
+        "validation_documents": 6,
+        "validation_tokens": 77435,
+        "validation_bytes": 249996,
+        "validation_sequences": 1210,
+        "vocabulary_size": 4096,
+        "parameters": 582464,
+        "checkpoint_steps": 100,
+        "device": "cuda",
+        "validation_nll": 6.773291710556581,
+        "validation_bits_per_byte": 3.0267640136977114,
+        "validation_perplexity": 874.1847262223753
+      },
+      "training_validation_bits_per_byte": 3.0267640136977114,
+      "bits_per_byte_delta_from_training_report": 0.0
+    },
+    {
+      "name": "babylm_2026_hf_bpe_100step_seed13",
+      "manifest": "artifacts\\tiny_lm\\babylm_2026_hf_bpe_100step_seed13\\run_manifest.json",
+      "tokenizer_metadata": "artifacts\\tiny_lm\\babylm_2026_hf_bpe_100step_seed13\\tokenizer\\tokenizer_metadata.json",
+      "evaluation": {
+        "tokenizer": "hf_bpe",
+        "checkpoint_dir": "artifacts\\tiny_lm\\babylm_2026_hf_bpe_100step_seed13\\checkpoint",
+        "validation_documents": 6,
+        "validation_tokens": 76095,
+        "validation_bytes": 249996,
+        "validation_sequences": 1189,
+        "vocabulary_size": 4096,
+        "parameters": 582464,
+        "checkpoint_steps": 100,
+        "device": "cuda",
+        "validation_nll": 7.0160225030603405,
+        "validation_bits_per_byte": 3.0809778334435483,
+        "validation_perplexity": 1114.3454855482014
+      },
+      "training_validation_bits_per_byte": 3.0809778334435483,
+      "bits_per_byte_delta_from_training_report": 0.0
+    },
+    {
+      "name": "babylm_2026_hf_unigram_100step_seed13",
+      "manifest": "artifacts\\tiny_lm\\babylm_2026_hf_unigram_100step_seed13\\run_manifest.json",
+      "tokenizer_metadata": "artifacts\\tiny_lm\\babylm_2026_hf_unigram_100step_seed13\\tokenizer\\tokenizer_metadata.json",
+      "evaluation": {
+        "tokenizer": "hf_unigram",
+        "checkpoint_dir": "artifacts\\tiny_lm\\babylm_2026_hf_unigram_100step_seed13\\checkpoint",
+        "validation_documents": 6,
+        "validation_tokens": 85741,
+        "validation_bytes": 249996,
+        "validation_sequences": 1340,
+        "vocabulary_size": 4096,
+        "parameters": 582464,
+        "checkpoint_steps": 100,
+        "device": "cuda",
+        "validation_nll": 6.548577868372994,
+        "validation_bits_per_byte": 3.2402388099344877,
+        "validation_perplexity": 698.2504633223406
+      },
+      "training_validation_bits_per_byte": 3.2402388099344877,
+      "bits_per_byte_delta_from_training_report": 0.0
+    },
+    {
+      "name": "babylm_2026_hybrid_morph_unigram_100step_seed13",
+      "manifest": "artifacts\\tiny_lm\\babylm_2026_hybrid_morph_unigram_100step_seed13\\run_manifest.json",
+      "tokenizer_metadata": "artifacts\\tiny_lm\\babylm_2026_hybrid_morph_unigram_100step_seed13\\tokenizer\\tokenizer_metadata.json",
+      "evaluation": {
+        "tokenizer": "hybrid_morph_unigram",
+        "checkpoint_dir": "artifacts\\tiny_lm\\babylm_2026_hybrid_morph_unigram_100step_seed13\\checkpoint",
+        "validation_documents": 6,
+        "validation_tokens": 94508,
+        "validation_bytes": 249996,
+        "validation_sequences": 1477,
+        "vocabulary_size": 4096,
+        "parameters": 582464,
+        "checkpoint_steps": 100,
+        "device": "cuda",
+        "validation_nll": 6.4185229555865355,
+        "validation_bits_per_byte": 3.500621456932742,
+        "validation_perplexity": 613.0968736994212
+      },
+      "training_validation_bits_per_byte": 3.500621456932742,
+      "bits_per_byte_delta_from_training_report": 0.0
+    }
+  ]
+}

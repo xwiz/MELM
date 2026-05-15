@@ -1,0 +1,5039 @@
+{
+  "data_dir": "local_data/babylm_eval_2026/strict/evaluation_data/fast_eval/blimp_fast",
+  "root": "artifacts\\tiny_lm",
+  "score_field": "bits_per_byte",
+  "max_files": 10,
+  "max_cases_per_file": 20,
+  "cases": 200,
+  "unique_texts": 400,
+  "runs": [
+    {
+      "name": "babylm_2026_hf_unigram_100step_seed13",
+      "manifest": "artifacts\\tiny_lm\\babylm_2026_hf_unigram_100step_seed13\\run_manifest.json",
+      "tokenizer": "hf_unigram",
+      "checkpoint_dir": "artifacts\\tiny_lm\\babylm_2026_hf_unigram_100step_seed13\\checkpoint",
+      "score_field": "bits_per_byte",
+      "report": {
+        "cases": 200,
+        "correct": 106,
+        "accuracy": 0.53,
+        "by_category": {
+          "adjunct_island": {
+            "category": "adjunct_island",
+            "cases": 20,
+            "correct": 9,
+            "accuracy": 0.45
+          },
+          "anaphor_gender_agreement": {
+            "category": "anaphor_gender_agreement",
+            "cases": 20,
+            "correct": 12,
+            "accuracy": 0.6
+          },
+          "anaphor_number_agreement": {
+            "category": "anaphor_number_agreement",
+            "cases": 20,
+            "correct": 12,
+            "accuracy": 0.6
+          },
+          "animate_subject_passive": {
+            "category": "animate_subject_passive",
+            "cases": 20,
+            "correct": 13,
+            "accuracy": 0.65
+          },
+          "animate_subject_trans": {
+            "category": "animate_subject_trans",
+            "cases": 20,
+            "correct": 5,
+            "accuracy": 0.25
+          },
+          "causative": {
+            "category": "causative",
+            "cases": 20,
+            "correct": 10,
+            "accuracy": 0.5
+          },
+          "complex_NP_island": {
+            "category": "complex_NP_island",
+            "cases": 20,
+            "correct": 13,
+            "accuracy": 0.65
+          },
+          "coordinate_structure_constraint_complex_left_branch": {
+            "category": "coordinate_structure_constraint_complex_left_branch",
+            "cases": 20,
+            "correct": 8,
+            "accuracy": 0.4
+          },
+          "coordinate_structure_constraint_object_extraction": {
+            "category": "coordinate_structure_constraint_object_extraction",
+            "cases": 20,
+            "correct": 12,
+            "accuracy": 0.6
+          },
+          "determiner_noun_agreement_1": {
+            "category": "determiner_noun_agreement_1",
+            "cases": 20,
+            "correct": 12,
+            "accuracy": 0.6
+          }
+        },
+        "predictions": [
+          {
+            "case_id": "adjunct_island:905",
+            "category": "adjunct_island",
+            "good_score": 2.957720164837919,
+            "bad_score": 2.9760794504036445,
+            "margin": 0.018359285565725525,
+            "chose_good": true
+          },
+          {
+            "case_id": "adjunct_island:710",
+            "category": "adjunct_island",
+            "good_score": 3.755927329189069,
+            "bad_score": 3.6954369454151985,
+            "margin": -0.060490383773870615,
+            "chose_good": false
+          },
+          {
+            "case_id": "adjunct_island:75",
+            "category": "adjunct_island",
+            "good_score": 3.3065208624485285,
+            "bad_score": 3.294740855393437,
+            "margin": -0.011780007055091524,
+            "chose_good": false
+          },
+          {
+            "case_id": "adjunct_island:758",
+            "category": "adjunct_island",
+            "good_score": 3.5495122377523676,
+            "bad_score": 3.5160762014802733,
+            "margin": -0.03343603627209424,
+            "chose_good": false
+          },
+          {
+            "case_id": "adjunct_island:869",
+            "category": "adjunct_island",
+            "good_score": 2.969015626371892,
+            "bad_score": 2.9617150566514843,
+            "margin": -0.0073005697204076014,
+            "chose_good": false
+          },
+          {
+            "case_id": "adjunct_island:552",
+            "category": "adjunct_island",
+            "good_score": 3.5429909587345465,
+            "bad_score": 3.5169723149793817,
+            "margin": -0.026018643755164828,
+            "chose_good": false
+          },
+          {
+            "case_id": "adjunct_island:318",
+            "category": "adjunct_island",
+            "good_score": 3.1734818231290056,
+            "bad_score": 3.165588134270102,
+            "margin": -0.007893688858903403,
+            "chose_good": false
+          },
+          {
+            "case_id": "adjunct_island:102",
+            "category": "adjunct_island",
+            "good_score": 3.1107437196074854,
+            "bad_score": 3.1127722577938,
+            "margin": 0.0020285381863147656,
+            "chose_good": true
+          },
+          {
+            "case_id": "adjunct_island:264",
+            "category": "adjunct_island",
+            "good_score": 3.523658390873995,
+            "bad_score": 3.525993603756967,
+            "margin": 0.002335212882971671,
+            "chose_good": true
+          },
+          {
+            "case_id": "adjunct_island:670",
+            "category": "adjunct_island",
+            "good_score": 3.723719788580929,
+            "bad_score": 3.751562651549428,
+            "margin": 0.027842862968499027,
+            "chose_good": true
+          },
+          {
+            "case_id": "adjunct_island:988",
+            "category": "adjunct_island",
+            "good_score": 2.7199309655447546,
+            "bad_score": 2.706862975101836,
+            "margin": -0.013067990442918731,
+            "chose_good": false
+          },
+          {
+            "case_id": "adjunct_island:304",
+            "category": "adjunct_island",
+            "good_score": 3.143201379974185,
+            "bad_score": 3.151876861154468,
+            "margin": 0.00867548118028294,
+            "chose_good": true
+          },
+          {
+            "case_id": "adjunct_island:586",
+            "category": "adjunct_island",
+            "good_score": 3.000471263261972,
+            "bad_score": 2.9590497436526784,
+            "margin": -0.04142151960929352,
+            "chose_good": false
+          },
+          {
+            "case_id": "adjunct_island:945",
+            "category": "adjunct_island",
+            "good_score": 2.9618380586433815,
+            "bad_score": 2.9431571780283714,
+            "margin": -0.018680880615010054,
+            "chose_good": false
+          },
+          {
+            "case_id": "adjunct_island:195",
+            "category": "adjunct_island",
+            "good_score": 3.70440473601217,
+            "bad_score": 3.7082238765659485,
+            "margin": 0.0038191405537784107,
+            "chose_good": true
+          },
+          {
+            "case_id": "adjunct_island:812",
+            "category": "adjunct_island",
+            "good_score": 3.0345967950147323,
+            "bad_score": 3.016500023767284,
+            "margin": -0.018096771247448462,
+            "chose_good": false
+          },
+          {
+            "case_id": "adjunct_island:541",
+            "category": "adjunct_island",
+            "good_score": 3.337309654564839,
+            "bad_score": 3.3170282894293885,
+            "margin": -0.020281365135450535,
+            "chose_good": false
+          },
+          {
+            "case_id": "adjunct_island:591",
+            "category": "adjunct_island",
+            "good_score": 3.929281704859722,
+            "bad_score": 3.9334353978465884,
+            "margin": 0.0041536929868661865,
+            "chose_good": true
+          },
+          {
+            "case_id": "adjunct_island:241",
+            "category": "adjunct_island",
+            "good_score": 3.820236657326336,
+            "bad_score": 3.83182551031243,
+            "margin": 0.011588852986093912,
+            "chose_good": true
+          },
+          {
+            "case_id": "adjunct_island:754",
+            "category": "adjunct_island",
+            "good_score": 2.5921480574569866,
+            "bad_score": 2.6069332649822763,
+            "margin": 0.014785207525289668,
+            "chose_good": true
+          },
+          {
+            "case_id": "anaphor_gender_agreement:803",
+            "category": "anaphor_gender_agreement",
+            "good_score": 4.166518120688252,
+            "bad_score": 4.231894439832917,
+            "margin": 0.06537631914466502,
+            "chose_good": true
+          },
+          {
+            "case_id": "anaphor_gender_agreement:534",
+            "category": "anaphor_gender_agreement",
+            "good_score": 3.8083839403461393,
+            "bad_score": 3.8868163210145807,
+            "margin": 0.07843238066844149,
+            "chose_good": true
+          },
+          {
+            "case_id": "anaphor_gender_agreement:975",
+            "category": "anaphor_gender_agreement",
+            "good_score": 4.000081989388253,
+            "bad_score": 4.074333305496346,
+            "margin": 0.07425131610809288,
+            "chose_good": true
+          },
+          {
+            "case_id": "anaphor_gender_agreement:324",
+            "category": "anaphor_gender_agreement",
+            "good_score": 4.270560824226701,
+            "bad_score": 4.312432007043512,
+            "margin": 0.041871182816811015,
+            "chose_good": true
+          },
+          {
+            "case_id": "anaphor_gender_agreement:627",
+            "category": "anaphor_gender_agreement",
+            "good_score": 4.738226166765476,
+            "bad_score": 4.851453124654167,
+            "margin": 0.11322695788869108,
+            "chose_good": true
+          },
+          {
+            "case_id": "anaphor_gender_agreement:339",
+            "category": "anaphor_gender_agreement",
+            "good_score": 4.540845230473442,
+            "bad_score": 4.65640930398575,
+            "margin": 0.11556407351230824,
+            "chose_good": true
+          },
+          {
+            "case_id": "anaphor_gender_agreement:919",
+            "category": "anaphor_gender_agreement",
+            "good_score": 3.54457121004586,
+            "bad_score": 3.512787440305206,
+            "margin": -0.03178376974065422,
+            "chose_good": false
+          },
+          {
+            "case_id": "anaphor_gender_agreement:955",
+            "category": "anaphor_gender_agreement",
+            "good_score": 4.0642776986867,
+            "bad_score": 4.124014054641576,
+            "margin": 0.05973635595487625,
+            "chose_good": true
+          },
+          {
+            "case_id": "anaphor_gender_agreement:526",
+            "category": "anaphor_gender_agreement",
+            "good_score": 3.3571963775411016,
+            "bad_score": 3.3132172688898653,
+            "margin": -0.04397910865123622,
+            "chose_good": false
+          },
+          {
+            "case_id": "anaphor_gender_agreement:718",
+            "category": "anaphor_gender_agreement",
+            "good_score": 3.8463231074950444,
+            "bad_score": 3.821632160249949,
+            "margin": -0.02469094724509535,
+            "chose_good": false
+          },
+          {
+            "case_id": "anaphor_gender_agreement:858",
+            "category": "anaphor_gender_agreement",
+            "good_score": 3.4421414548694247,
+            "bad_score": 3.477292910913806,
+            "margin": 0.0351514560443813,
+            "chose_good": true
+          },
+          {
+            "case_id": "anaphor_gender_agreement:294",
+            "category": "anaphor_gender_agreement",
+            "good_score": 4.14841811498088,
+            "bad_score": 4.218282817326967,
+            "margin": 0.069864702346087,
+            "chose_good": true
+          },
+          {
+            "case_id": "anaphor_gender_agreement:101",
+            "category": "anaphor_gender_agreement",
+            "good_score": 4.010249894754825,
+            "bad_score": 3.983070215232869,
+            "margin": -0.02717967952195588,
+            "chose_good": false
+          },
+          {
+            "case_id": "anaphor_gender_agreement:151",
+            "category": "anaphor_gender_agreement",
+            "good_score": 5.6573965307184775,
+            "bad_score": 5.624825596384824,
+            "margin": -0.03257093433365377,
+            "chose_good": false
+          },
+          {
+            "case_id": "anaphor_gender_agreement:169",
+            "category": "anaphor_gender_agreement",
+            "good_score": 4.834729501774242,
+            "bad_score": 4.926493190360059,
+            "margin": 0.09176368858581707,
+            "chose_good": true
+          },
+          {
+            "case_id": "anaphor_gender_agreement:240",
+            "category": "anaphor_gender_agreement",
+            "good_score": 3.9430086136441282,
+            "bad_score": 3.904054472058467,
+            "margin": -0.03895414158566135,
+            "chose_good": false
+          },
+          {
+            "case_id": "anaphor_gender_agreement:678",
+            "category": "anaphor_gender_agreement",
+            "good_score": 4.084967122409307,
+            "bad_score": 4.052706685553522,
+            "margin": -0.03226043685578528,
+            "chose_good": false
+          },
+          {
+            "case_id": "anaphor_gender_agreement:72",
+            "category": "anaphor_gender_agreement",
+            "good_score": 4.03675181321759,
+            "bad_score": 4.00533993066786,
+            "margin": -0.0314118825497296,
+            "chose_good": false
+          },
+          {
+            "case_id": "anaphor_gender_agreement:484",
+            "category": "anaphor_gender_agreement",
+            "good_score": 4.348452207783622,
+            "bad_score": 4.3814887520709,
+            "margin": 0.033036544287277536,
+            "chose_good": true
+          },
+          {
+            "case_id": "anaphor_gender_agreement:301",
+            "category": "anaphor_gender_agreement",
+            "good_score": 3.9940115750882987,
+            "bad_score": 4.054315709372954,
+            "margin": 0.06030413428465531,
+            "chose_good": true
+          },
+          {
+            "case_id": "anaphor_number_agreement:99",
+            "category": "anaphor_number_agreement",
+            "good_score": 3.438996043529877,
+            "bad_score": 3.587736958955085,
+            "margin": 0.14874091542520818,
+            "chose_good": true
+          },
+          {
+            "case_id": "anaphor_number_agreement:686",
+            "category": "anaphor_number_agreement",
+            "good_score": 3.2463693543533347,
+            "bad_score": 3.4693620957859745,
+            "margin": 0.2229927414326398,
+            "chose_good": true
+          },
+          {
+            "case_id": "anaphor_number_agreement:246",
+            "category": "anaphor_number_agreement",
+            "good_score": 3.9231856288521536,
+            "bad_score": 4.073192341683495,
+            "margin": 0.15000671283134182,
+            "chose_good": true
+          },
+          {
+            "case_id": "anaphor_number_agreement:942",
+            "category": "anaphor_number_agreement",
+            "good_score": 3.65220878321463,
+            "bad_score": 3.555853439276931,
+            "margin": -0.09635534393769873,
+            "chose_good": false
+          },
+          {
+            "case_id": "anaphor_number_agreement:211",
+            "category": "anaphor_number_agreement",
+            "good_score": 3.9164379778909066,
+            "bad_score": 4.045088755485783,
+            "margin": 0.12865077759487642,
+            "chose_good": true
+          },
+          {
+            "case_id": "anaphor_number_agreement:276",
+            "category": "anaphor_number_agreement",
+            "good_score": 3.9438164984696855,
+            "bad_score": 4.1111696702159115,
+            "margin": 0.167353171746226,
+            "chose_good": true
+          },
+          {
+            "case_id": "anaphor_number_agreement:789",
+            "category": "anaphor_number_agreement",
+            "good_score": 3.4469403776948457,
+            "bad_score": 3.5475755703256024,
+            "margin": 0.10063519263075671,
+            "chose_good": true
+          },
+          {
+            "case_id": "anaphor_number_agreement:758",
+            "category": "anaphor_number_agreement",
+            "good_score": 4.13843120151019,
+            "bad_score": 4.223681714182033,
+            "margin": 0.08525051267184303,
+            "chose_good": true
+          },
+          {
+            "case_id": "anaphor_number_agreement:399",
+            "category": "anaphor_number_agreement",
+            "good_score": 3.216492686390414,
+            "bad_score": 3.0662038437219126,
+            "margin": -0.1502888426685014,
+            "chose_good": false
+          },
+          {
+            "case_id": "anaphor_number_agreement:314",
+            "category": "anaphor_number_agreement",
+            "good_score": 4.0866274846135004,
+            "bad_score": 4.1734308933605355,
+            "margin": 0.08680340874703507,
+            "chose_good": true
+          },
+          {
+            "case_id": "anaphor_number_agreement:763",
+            "category": "anaphor_number_agreement",
+            "good_score": 3.7238145854180846,
+            "bad_score": 3.6855404350314163,
+            "margin": -0.03827415038666837,
+            "chose_good": false
+          },
+          {
+            "case_id": "anaphor_number_agreement:439",
+            "category": "anaphor_number_agreement",
+            "good_score": 2.6996370208362443,
+            "bad_score": 2.4866578438173583,
+            "margin": -0.21297917701888602,
+            "chose_good": false
+          },
+          {
+            "case_id": "anaphor_number_agreement:168",
+            "category": "anaphor_number_agreement",
+            "good_score": 3.948493541108192,
+            "bad_score": 4.081519077378399,
+            "margin": 0.13302553627020686,
+            "chose_good": true
+          },
+          {
+            "case_id": "anaphor_number_agreement:683",
+            "category": "anaphor_number_agreement",
+            "good_score": 4.357030097634503,
+            "bad_score": 4.388331510725213,
+            "margin": 0.031301413090710106,
+            "chose_good": true
+          },
+          {
+            "case_id": "anaphor_number_agreement:302",
+            "category": "anaphor_number_agreement",
+            "good_score": 4.7290459416984945,
+            "bad_score": 4.7263794996956605,
+            "margin": -0.0026664420028339464,
+            "chose_good": false
+          },
+          {
+            "case_id": "anaphor_number_agreement:395",
+            "category": "anaphor_number_agreement",
+            "good_score": 3.7774348454563094,
+            "bad_score": 3.675515892292811,
+            "margin": -0.1019189531634983,
+            "chose_good": false
+          },
+          {
+            "case_id": "anaphor_number_agreement:525",
+            "category": "anaphor_number_agreement",
+            "good_score": 2.9907126805082207,
+            "bad_score": 2.8554108522859263,
+            "margin": -0.13530182822229442,
+            "chose_good": false
+          },
+          {
+            "case_id": "anaphor_number_agreement:674",
+            "category": "anaphor_number_agreement",
+            "good_score": 3.8175875633165965,
+            "bad_score": 3.737017624731762,
+            "margin": -0.08056993858483441,
+            "chose_good": false
+          },
+          {
+            "case_id": "anaphor_number_agreement:745",
+            "category": "anaphor_number_agreement",
+            "good_score": 4.183985675023167,
+            "bad_score": 4.258086384562611,
+            "margin": 0.0741007095394437,
+            "chose_good": true
+          },
+          {
+            "case_id": "anaphor_number_agreement:533",
+            "category": "anaphor_number_agreement",
+            "good_score": 3.600404572907089,
+            "bad_score": 3.801138853096919,
+            "margin": 0.20073428018982975,
+            "chose_good": true
+          },
+          {
+            "case_id": "animate_subject_passive:962",
+            "category": "animate_subject_passive",
+            "good_score": 3.3050684931279517,
+            "bad_score": 3.5125333288334817,
+            "margin": 0.20746483570552998,
+            "chose_good": true
+          },
+          {
+            "case_id": "animate_subject_passive:601",
+            "category": "animate_subject_passive",
+            "good_score": 3.3992980026206876,
+            "bad_score": 3.4225151281969715,
+            "margin": 0.02321712557628386,
+            "chose_good": true
+          },
+          {
+            "case_id": "animate_subject_passive:847",
+            "category": "animate_subject_passive",
+            "good_score": 3.5018299585283175,
+            "bad_score": 3.587048027725302,
+            "margin": 0.08521806919698438,
+            "chose_good": true
+          },
+          {
+            "case_id": "animate_subject_passive:175",
+            "category": "animate_subject_passive",
+            "good_score": 3.720831150778772,
+            "bad_score": 3.8192507429423213,
+            "margin": 0.09841959216354912,
+            "chose_good": true
+          },
+          {
+            "case_id": "animate_subject_passive:4",
+            "category": "animate_subject_passive",
+            "good_score": 3.658596237976858,
+            "bad_score": 3.73682250850344,
+            "margin": 0.07822627052658193,
+            "chose_good": true
+          },
+          {
+            "case_id": "animate_subject_passive:981",
+            "category": "animate_subject_passive",
+            "good_score": 3.7545280860406747,
+            "bad_score": 3.929625253361388,
+            "margin": 0.17509716732071334,
+            "chose_good": true
+          },
+          {
+            "case_id": "animate_subject_passive:865",
+            "category": "animate_subject_passive",
+            "good_score": 3.420756608214728,
+            "bad_score": 3.121009725595768,
+            "margin": -0.29974688261896,
+            "chose_good": false
+          },
+          {
+            "case_id": "animate_subject_passive:522",
+            "category": "animate_subject_passive",
+            "good_score": 3.3708672948374865,
+            "bad_score": 3.2169806646960355,
+            "margin": -0.153886630141451,
+            "chose_good": false
+          },
+          {
+            "case_id": "animate_subject_passive:911",
+            "category": "animate_subject_passive",
+            "good_score": 3.49228521186502,
+            "bad_score": 3.401607932473107,
+            "margin": -0.09067727939191306,
+            "chose_good": false
+          },
+          {
+            "case_id": "animate_subject_passive:276",
+            "category": "animate_subject_passive",
+            "good_score": 3.390083948314293,
+            "bad_score": 3.8749438178458493,
+            "margin": 0.48485986953155624,
+            "chose_good": true
+          },
+          {
+            "case_id": "animate_subject_passive:131",
+            "category": "animate_subject_passive",
+            "good_score": 3.299877311730941,
+            "bad_score": 3.9346149588557155,
+            "margin": 0.6347376471247745,
+            "chose_good": true
+          },
+          {
+            "case_id": "animate_subject_passive:663",
+            "category": "animate_subject_passive",
+            "good_score": 4.084643643185147,
+            "bad_score": 4.289985118090649,
+            "margin": 0.20534147490550225,
+            "chose_good": true
+          },
+          {
+            "case_id": "animate_subject_passive:86",
+            "category": "animate_subject_passive",
+            "good_score": 3.39546105785789,
+            "bad_score": 3.7547691786437865,
+            "margin": 0.35930812078589636,
+            "chose_good": true
+          },
+          {
+            "case_id": "animate_subject_passive:85",
+            "category": "animate_subject_passive",
+            "good_score": 3.4521699331786873,
+            "bad_score": 3.982056155854978,
+            "margin": 0.5298862226762906,
+            "chose_good": true
+          },
+          {
+            "case_id": "animate_subject_passive:849",
+            "category": "animate_subject_passive",
+            "good_score": 4.215864159634776,
+            "bad_score": 4.025973550852019,
+            "margin": -0.18989060878275765,
+            "chose_good": false
+          },
+          {
+            "case_id": "animate_subject_passive:525",
+            "category": "animate_subject_passive",
+            "good_score": 3.58826715431254,
+            "bad_score": 3.6532611349386332,
+            "margin": 0.06499398062609307,
+            "chose_good": true
+          },
+          {
+            "case_id": "animate_subject_passive:886",
+            "category": "animate_subject_passive",
+            "good_score": 4.065569829821544,
+            "bad_score": 4.048736778324892,
+            "margin": -0.016833051496651485,
+            "chose_good": false
+          },
+          {
+            "case_id": "animate_subject_passive:163",
+            "category": "animate_subject_passive",
+            "good_score": 3.1682425422813747,
+            "bad_score": 3.161874840439495,
+            "margin": -0.006367701841879736,
+            "chose_good": false
+          },
+          {
+            "case_id": "animate_subject_passive:325",
+            "category": "animate_subject_passive",
+            "good_score": 3.3883839984139006,
+            "bad_score": 3.8145485132117742,
+            "margin": 0.42616451479787365,
+            "chose_good": true
+          },
+          {
+            "case_id": "animate_subject_passive:842",
+            "category": "animate_subject_passive",
+            "good_score": 3.7092326059432366,
+            "bad_score": 3.4632963368317173,
+            "margin": -0.24593626911151922,
+            "chose_good": false
+          },
+          {
+            "case_id": "animate_subject_trans:122",
+            "category": "animate_subject_trans",
+            "good_score": 3.042925846002958,
+            "bad_score": 2.816735656647664,
+            "margin": -0.226190189355294,
+            "chose_good": false
+          },
+          {
+            "case_id": "animate_subject_trans:297",
+            "category": "animate_subject_trans",
+            "good_score": 3.8448859878470354,
+            "bad_score": 3.076714886970875,
+            "margin": -0.7681711008761605,
+            "chose_good": false
+          },
+          {
+            "case_id": "animate_subject_trans:631",
+            "category": "animate_subject_trans",
+            "good_score": 4.052522914364318,
+            "bad_score": 4.261711055633703,
+            "margin": 0.2091881412693848,
+            "chose_good": true
+          },
+          {
+            "case_id": "animate_subject_trans:974",
+            "category": "animate_subject_trans",
+            "good_score": 3.732428609012903,
+            "bad_score": 3.2413764079465426,
+            "margin": -0.49105220106636027,
+            "chose_good": false
+          },
+          {
+            "case_id": "animate_subject_trans:165",
+            "category": "animate_subject_trans",
+            "good_score": 4.273484047739946,
+            "bad_score": 3.588000638708738,
+            "margin": -0.6854834090312081,
+            "chose_good": false
+          },
+          {
+            "case_id": "animate_subject_trans:368",
+            "category": "animate_subject_trans",
+            "good_score": 3.9853416086240228,
+            "bad_score": 3.968773923659885,
+            "margin": -0.01656768496413763,
+            "chose_good": false
+          },
+          {
+            "case_id": "animate_subject_trans:388",
+            "category": "animate_subject_trans",
+            "good_score": 3.387190100480134,
+            "bad_score": 3.70005810830621,
+            "margin": 0.31286800782607616,
+            "chose_good": true
+          },
+          {
+            "case_id": "animate_subject_trans:559",
+            "category": "animate_subject_trans",
+            "good_score": 3.741389431360368,
+            "bad_score": 3.2017466645952357,
+            "margin": -0.5396427667651325,
+            "chose_good": false
+          },
+          {
+            "case_id": "animate_subject_trans:516",
+            "category": "animate_subject_trans",
+            "good_score": 4.915106185275294,
+            "bad_score": 4.177214865472399,
+            "margin": -0.7378913198028956,
+            "chose_good": false
+          },
+          {
+            "case_id": "animate_subject_trans:884",
+            "category": "animate_subject_trans",
+            "good_score": 5.389538544082731,
+            "bad_score": 4.078594804850239,
+            "margin": -1.310943739232492,
+            "chose_good": false
+          },
+          {
+            "case_id": "animate_subject_trans:632",
+            "category": "animate_subject_trans",
+            "good_score": 4.816429726643976,
+            "bad_score": 4.195101143058632,
+            "margin": -0.6213285835853446,
+            "chose_good": false
+          },
+          {
+            "case_id": "animate_subject_trans:660",
+            "category": "animate_subject_trans",
+            "good_score": 3.605874920466886,
+            "bad_score": 3.351832394620113,
+            "margin": -0.2540425258467729,
+            "chose_good": false
+          },
+          {
+            "case_id": "animate_subject_trans:147",
+            "category": "animate_subject_trans",
+            "good_score": 3.759775381334674,
+            "bad_score": 3.6372547065100234,
+            "margin": -0.12252067482465057,
+            "chose_good": false
+          },
+          {
+            "case_id": "animate_subject_trans:779",
+            "category": "animate_subject_trans",
+            "good_score": 3.3215179208828047,
+            "bad_score": 3.526290997454821,
+            "margin": 0.20477307657201615,
+            "chose_good": true
+          },
+          {
+            "case_id": "animate_subject_trans:169",
+            "category": "animate_subject_trans",
+            "good_score": 4.854444687697307,
+            "bad_score": 4.868469360909973,
+            "margin": 0.014024673212666094,
+            "chose_good": true
+          },
+          {
+            "case_id": "animate_subject_trans:229",
+            "category": "animate_subject_trans",
+            "good_score": 4.374877769210442,
+            "bad_score": 3.5754963574866565,
+            "margin": -0.7993814117237852,
+            "chose_good": false
+          },
+          {
+            "case_id": "animate_subject_trans:635",
+            "category": "animate_subject_trans",
+            "good_score": 4.2758217735165935,
+            "bad_score": 3.1310065375297174,
+            "margin": -1.1448152359868762,
+            "chose_good": false
+          },
+          {
+            "case_id": "animate_subject_trans:704",
+            "category": "animate_subject_trans",
+            "good_score": 4.001867152924909,
+            "bad_score": 3.1593339800702958,
+            "margin": -0.8425331728546133,
+            "chose_good": false
+          },
+          {
+            "case_id": "animate_subject_trans:512",
+            "category": "animate_subject_trans",
+            "good_score": 4.166330782769411,
+            "bad_score": 4.984274455201417,
+            "margin": 0.8179436724320057,
+            "chose_good": true
+          },
+          {
+            "case_id": "animate_subject_trans:481",
+            "category": "animate_subject_trans",
+            "good_score": 4.037856894638408,
+            "bad_score": 3.838002574561827,
+            "margin": -0.19985432007658144,
+            "chose_good": false
+          },
+          {
+            "case_id": "causative:470",
+            "category": "causative",
+            "good_score": 3.8098669990870753,
+            "bad_score": 4.01790360727869,
+            "margin": 0.20803660819161474,
+            "chose_good": true
+          },
+          {
+            "case_id": "causative:518",
+            "category": "causative",
+            "good_score": 4.924314232712773,
+            "bad_score": 5.171829649180618,
+            "margin": 0.24751541646784503,
+            "chose_good": true
+          },
+          {
+            "case_id": "causative:947",
+            "category": "causative",
+            "good_score": 5.058037049789139,
+            "bad_score": 4.3074137324399295,
+            "margin": -0.7506233173492092,
+            "chose_good": false
+          },
+          {
+            "case_id": "causative:258",
+            "category": "causative",
+            "good_score": 3.631169330209423,
+            "bad_score": 3.4700941718154668,
+            "margin": -0.16107515839395603,
+            "chose_good": false
+          },
+          {
+            "case_id": "causative:966",
+            "category": "causative",
+            "good_score": 5.015531766938597,
+            "bad_score": 5.12678184033692,
+            "margin": 0.11125007339832305,
+            "chose_good": true
+          },
+          {
+            "case_id": "causative:215",
+            "category": "causative",
+            "good_score": 4.166764570640852,
+            "bad_score": 4.367589341018476,
+            "margin": 0.2008247703776247,
+            "chose_good": true
+          },
+          {
+            "case_id": "causative:185",
+            "category": "causative",
+            "good_score": 4.635011442703193,
+            "bad_score": 4.582073076171239,
+            "margin": -0.052938366531953385,
+            "chose_good": false
+          },
+          {
+            "case_id": "causative:854",
+            "category": "causative",
+            "good_score": 3.461159256654733,
+            "bad_score": 3.5387832102159047,
+            "margin": 0.0776239535611718,
+            "chose_good": true
+          },
+          {
+            "case_id": "causative:815",
+            "category": "causative",
+            "good_score": 5.760834200477277,
+            "bad_score": 5.376030139253488,
+            "margin": -0.38480406122378863,
+            "chose_good": false
+          },
+          {
+            "case_id": "causative:962",
+            "category": "causative",
+            "good_score": 4.394083871439941,
+            "bad_score": 3.9895365448200844,
+            "margin": -0.4045473266198565,
+            "chose_good": false
+          },
+          {
+            "case_id": "causative:263",
+            "category": "causative",
+            "good_score": 3.8598552980344802,
+            "bad_score": 3.531163511643266,
+            "margin": -0.32869178639121444,
+            "chose_good": false
+          },
+          {
+            "case_id": "causative:146",
+            "category": "causative",
+            "good_score": 4.193325020895621,
+            "bad_score": 3.523824388989182,
+            "margin": -0.6695006319064389,
+            "chose_good": false
+          },
+          {
+            "case_id": "causative:167",
+            "category": "causative",
+            "good_score": 4.898201266028202,
+            "bad_score": 4.5599014476085715,
+            "margin": -0.33829981841963086,
+            "chose_good": false
+          },
+          {
+            "case_id": "causative:59",
+            "category": "causative",
+            "good_score": 5.440299109228589,
+            "bad_score": 6.405689203676688,
+            "margin": 0.9653900944480984,
+            "chose_good": true
+          },
+          {
+            "case_id": "causative:792",
+            "category": "causative",
+            "good_score": 3.5441331655859325,
+            "bad_score": 3.245605450908068,
+            "margin": -0.29852771467786443,
+            "chose_good": false
+          },
+          {
+            "case_id": "causative:849",
+            "category": "causative",
+            "good_score": 3.335171545982945,
+            "bad_score": 3.491437239120466,
+            "margin": 0.15626569313752103,
+            "chose_good": true
+          },
+          {
+            "case_id": "causative:563",
+            "category": "causative",
+            "good_score": 3.915171718236397,
+            "bad_score": 4.4600966770886785,
+            "margin": 0.5449249588522815,
+            "chose_good": true
+          },
+          {
+            "case_id": "causative:435",
+            "category": "causative",
+            "good_score": 4.9060987246431695,
+            "bad_score": 5.227842739671122,
+            "margin": 0.321744015027952,
+            "chose_good": true
+          },
+          {
+            "case_id": "causative:766",
+            "category": "causative",
+            "good_score": 3.1033095488427747,
+            "bad_score": 3.0066703628347264,
+            "margin": -0.09663918600804822,
+            "chose_good": false
+          },
+          {
+            "case_id": "causative:937",
+            "category": "causative",
+            "good_score": 3.998874979866005,
+            "bad_score": 4.284276927917187,
+            "margin": 0.2854019480511818,
+            "chose_good": true
+          },
+          {
+            "case_id": "complex_NP_island:43",
+            "category": "complex_NP_island",
+            "good_score": 3.393777965521451,
+            "bad_score": 3.4221214165055547,
+            "margin": 0.028343450984103846,
+            "chose_good": true
+          },
+          {
+            "case_id": "complex_NP_island:55",
+            "category": "complex_NP_island",
+            "good_score": 3.3466844311838426,
+            "bad_score": 3.365073118232408,
+            "margin": 0.018388687048565444,
+            "chose_good": true
+          },
+          {
+            "case_id": "complex_NP_island:356",
+            "category": "complex_NP_island",
+            "good_score": 4.786500629558568,
+            "bad_score": 4.7972176171641925,
+            "margin": 0.01071698760562434,
+            "chose_good": true
+          },
+          {
+            "case_id": "complex_NP_island:720",
+            "category": "complex_NP_island",
+            "good_score": 3.5834062982202393,
+            "bad_score": 3.62968171771386,
+            "margin": 0.046275419493620795,
+            "chose_good": true
+          },
+          {
+            "case_id": "complex_NP_island:534",
+            "category": "complex_NP_island",
+            "good_score": 3.8144445406605447,
+            "bad_score": 3.8226365620331353,
+            "margin": 0.008192021372590563,
+            "chose_good": true
+          },
+          {
+            "case_id": "complex_NP_island:221",
+            "category": "complex_NP_island",
+            "good_score": 3.5080195606271567,
+            "bad_score": 3.5274940598220095,
+            "margin": 0.01947449919485278,
+            "chose_good": true
+          },
+          {
+            "case_id": "complex_NP_island:761",
+            "category": "complex_NP_island",
+            "good_score": 3.7965864259477384,
+            "bad_score": 3.797322228427889,
+            "margin": 0.0007358024801504826,
+            "chose_good": true
+          },
+          {
+            "case_id": "complex_NP_island:725",
+            "category": "complex_NP_island",
+            "good_score": 4.11337084848098,
+            "bad_score": 4.108580041623565,
+            "margin": -0.004790806857415397,
+            "chose_good": false
+          },
+          {
+            "case_id": "complex_NP_island:399",
+            "category": "complex_NP_island",
+            "good_score": 3.6124408982087313,
+            "bad_score": 3.636053984440803,
+            "margin": 0.02361308623207181,
+            "chose_good": true
+          },
+          {
+            "case_id": "complex_NP_island:764",
+            "category": "complex_NP_island",
+            "good_score": 3.710458401286569,
+            "bad_score": 3.681969371981554,
+            "margin": -0.028489029305014846,
+            "chose_good": false
+          },
+          {
+            "case_id": "complex_NP_island:68",
+            "category": "complex_NP_island",
+            "good_score": 3.263548732442741,
+            "bad_score": 3.3317857217476474,
+            "margin": 0.06823698930490663,
+            "chose_good": true
+          },
+          {
+            "case_id": "complex_NP_island:920",
+            "category": "complex_NP_island",
+            "good_score": 3.1326739142555153,
+            "bad_score": 3.1675935797153283,
+            "margin": 0.034919665459812954,
+            "chose_good": true
+          },
+          {
+            "case_id": "complex_NP_island:727",
+            "category": "complex_NP_island",
+            "good_score": 3.669280400276816,
+            "bad_score": 3.6676505550911194,
+            "margin": -0.0016298451856964213,
+            "chose_good": false
+          },
+          {
+            "case_id": "complex_NP_island:471",
+            "category": "complex_NP_island",
+            "good_score": 3.5213679158999414,
+            "bad_score": 3.494083087227567,
+            "margin": -0.02728482867237414,
+            "chose_good": false
+          },
+          {
+            "case_id": "complex_NP_island:894",
+            "category": "complex_NP_island",
+            "good_score": 3.592084010541731,
+            "bad_score": 3.5829455404054844,
+            "margin": -0.009138470136246468,
+            "chose_good": false
+          },
+          {
+            "case_id": "complex_NP_island:175",
+            "category": "complex_NP_island",
+            "good_score": 3.4576615395150276,
+            "bad_score": 3.4703642406469,
+            "margin": 0.012702701131872551,
+            "chose_good": true
+          },
+          {
+            "case_id": "complex_NP_island:896",
+            "category": "complex_NP_island",
+            "good_score": 3.6967191507048476,
+            "bad_score": 3.6703040365037305,
+            "margin": -0.026415114201117085,
+            "chose_good": false
+          },
+          {
+            "case_id": "complex_NP_island:464",
+            "category": "complex_NP_island",
+            "good_score": 3.456183332076382,
+            "bad_score": 3.43970865870204,
+            "margin": -0.016474673374342164,
+            "chose_good": false
+          },
+          {
+            "case_id": "complex_NP_island:801",
+            "category": "complex_NP_island",
+            "good_score": 3.7951095267368524,
+            "bad_score": 3.8234851237628646,
+            "margin": 0.028375597026012223,
+            "chose_good": true
+          },
+          {
+            "case_id": "complex_NP_island:752",
+            "category": "complex_NP_island",
+            "good_score": 3.6055263284123815,
+            "bad_score": 3.6309935193521463,
+            "margin": 0.025467190939764794,
+            "chose_good": true
+          },
+          {
+            "case_id": "coordinate_structure_constraint_complex_left_branch:882",
+            "category": "coordinate_structure_constraint_complex_left_branch",
+            "good_score": 3.2682125682793464,
+            "bad_score": 3.253486875875819,
+            "margin": -0.01472569240352728,
+            "chose_good": false
+          },
+          {
+            "case_id": "coordinate_structure_constraint_complex_left_branch:892",
+            "category": "coordinate_structure_constraint_complex_left_branch",
+            "good_score": 3.6915709579360034,
+            "bad_score": 3.7040176442260466,
+            "margin": 0.012446686290043196,
+            "chose_good": true
+          },
+          {
+            "case_id": "coordinate_structure_constraint_complex_left_branch:465",
+            "category": "coordinate_structure_constraint_complex_left_branch",
+            "good_score": 3.463776637393206,
+            "bad_score": 3.446019391649204,
+            "margin": -0.01775724574400206,
+            "chose_good": false
+          },
+          {
+            "case_id": "coordinate_structure_constraint_complex_left_branch:994",
+            "category": "coordinate_structure_constraint_complex_left_branch",
+            "good_score": 2.5669858170475304,
+            "bad_score": 2.585097777186646,
+            "margin": 0.018111960139115535,
+            "chose_good": true
+          },
+          {
+            "case_id": "coordinate_structure_constraint_complex_left_branch:360",
+            "category": "coordinate_structure_constraint_complex_left_branch",
+            "good_score": 3.1027403175379917,
+            "bad_score": 3.0892238414065956,
+            "margin": -0.013516476131396171,
+            "chose_good": false
+          },
+          {
+            "case_id": "coordinate_structure_constraint_complex_left_branch:330",
+            "category": "coordinate_structure_constraint_complex_left_branch",
+            "good_score": 4.032152636613737,
+            "bad_score": 4.007382519500535,
+            "margin": -0.024770117113201984,
+            "chose_good": false
+          },
+          {
+            "case_id": "coordinate_structure_constraint_complex_left_branch:576",
+            "category": "coordinate_structure_constraint_complex_left_branch",
+            "good_score": 3.461670061322019,
+            "bad_score": 3.450505530620042,
+            "margin": -0.011164530701976982,
+            "chose_good": false
+          },
+          {
+            "case_id": "coordinate_structure_constraint_complex_left_branch:139",
+            "category": "coordinate_structure_constraint_complex_left_branch",
+            "good_score": 3.285507638077239,
+            "bad_score": 3.2931516599104995,
+            "margin": 0.007644021833260517,
+            "chose_good": true
+          },
+          {
+            "case_id": "coordinate_structure_constraint_complex_left_branch:186",
+            "category": "coordinate_structure_constraint_complex_left_branch",
+            "good_score": 2.749198775968795,
+            "bad_score": 2.7693090038559944,
+            "margin": 0.020110227887199628,
+            "chose_good": true
+          },
+          {
+            "case_id": "coordinate_structure_constraint_complex_left_branch:658",
+            "category": "coordinate_structure_constraint_complex_left_branch",
+            "good_score": 4.1283756122801405,
+            "bad_score": 4.101650135117277,
+            "margin": -0.026725477162863776,
+            "chose_good": false
+          },
+          {
+            "case_id": "coordinate_structure_constraint_complex_left_branch:44",
+            "category": "coordinate_structure_constraint_complex_left_branch",
+            "good_score": 3.605008817979114,
+            "bad_score": 3.6280616945108344,
+            "margin": 0.02305287653172039,
+            "chose_good": true
+          },
+          {
+            "case_id": "coordinate_structure_constraint_complex_left_branch:961",
+            "category": "coordinate_structure_constraint_complex_left_branch",
+            "good_score": 4.246028059376801,
+            "bad_score": 4.247880176238455,
+            "margin": 0.0018521168616540962,
+            "chose_good": true
+          },
+          {
+            "case_id": "coordinate_structure_constraint_complex_left_branch:477",
+            "category": "coordinate_structure_constraint_complex_left_branch",
+            "good_score": 2.988149787541802,
+            "bad_score": 2.981552841083333,
+            "margin": -0.006596946458468977,
+            "chose_good": false
+          },
+          {
+            "case_id": "coordinate_structure_constraint_complex_left_branch:206",
+            "category": "coordinate_structure_constraint_complex_left_branch",
+            "good_score": 4.634983711052384,
+            "bad_score": 4.588224548742895,
+            "margin": -0.04675916230948918,
+            "chose_good": false
+          },
+          {
+            "case_id": "coordinate_structure_constraint_complex_left_branch:339",
+            "category": "coordinate_structure_constraint_complex_left_branch",
+            "good_score": 3.464379945728724,
+            "bad_score": 3.4519625526469278,
+            "margin": -0.012417393081796124,
+            "chose_good": false
+          },
+          {
+            "case_id": "coordinate_structure_constraint_complex_left_branch:823",
+            "category": "coordinate_structure_constraint_complex_left_branch",
+            "good_score": 3.0498819545755556,
+            "bad_score": 3.0400357021241584,
+            "margin": -0.009846252451397142,
+            "chose_good": false
+          },
+          {
+            "case_id": "coordinate_structure_constraint_complex_left_branch:985",
+            "category": "coordinate_structure_constraint_complex_left_branch",
+            "good_score": 3.4264548720773598,
+            "bad_score": 3.4021777150902404,
+            "margin": -0.024277156987119408,
+            "chose_good": false
+          },
+          {
+            "case_id": "coordinate_structure_constraint_complex_left_branch:74",
+            "category": "coordinate_structure_constraint_complex_left_branch",
+            "good_score": 2.732959805275325,
+            "bad_score": 2.73698483349154,
+            "margin": 0.0040250282162150874,
+            "chose_good": true
+          },
+          {
+            "case_id": "coordinate_structure_constraint_complex_left_branch:457",
+            "category": "coordinate_structure_constraint_complex_left_branch",
+            "good_score": 3.0147951843182312,
+            "bad_score": 3.0270569945233716,
+            "margin": 0.012261810205140389,
+            "chose_good": true
+          },
+          {
+            "case_id": "coordinate_structure_constraint_complex_left_branch:224",
+            "category": "coordinate_structure_constraint_complex_left_branch",
+            "good_score": 2.9607434381315207,
+            "bad_score": 2.9499779409528775,
+            "margin": -0.01076549717864328,
+            "chose_good": false
+          },
+          {
+            "case_id": "coordinate_structure_constraint_object_extraction:982",
+            "category": "coordinate_structure_constraint_object_extraction",
+            "good_score": 3.809035402543817,
+            "bad_score": 3.8869618339719976,
+            "margin": 0.07792643142818045,
+            "chose_good": true
+          },
+          {
+            "case_id": "coordinate_structure_constraint_object_extraction:794",
+            "category": "coordinate_structure_constraint_object_extraction",
+            "good_score": 3.4226680743542395,
+            "bad_score": 3.509140848571314,
+            "margin": 0.08647277421707456,
+            "chose_good": true
+          },
+          {
+            "case_id": "coordinate_structure_constraint_object_extraction:237",
+            "category": "coordinate_structure_constraint_object_extraction",
+            "good_score": 3.1431224504448534,
+            "bad_score": 3.132597672155564,
+            "margin": -0.010524778289289216,
+            "chose_good": false
+          },
+          {
+            "case_id": "coordinate_structure_constraint_object_extraction:867",
+            "category": "coordinate_structure_constraint_object_extraction",
+            "good_score": 4.18557997139493,
+            "bad_score": 4.172322723149701,
+            "margin": -0.013257248245229114,
+            "chose_good": false
+          },
+          {
+            "case_id": "coordinate_structure_constraint_object_extraction:883",
+            "category": "coordinate_structure_constraint_object_extraction",
+            "good_score": 3.9788246145666,
+            "bad_score": 4.267985158092038,
+            "margin": 0.2891605435254374,
+            "chose_good": true
+          },
+          {
+            "case_id": "coordinate_structure_constraint_object_extraction:803",
+            "category": "coordinate_structure_constraint_object_extraction",
+            "good_score": 3.6617284160430885,
+            "bad_score": 3.6697938127137513,
+            "margin": 0.00806539667066275,
+            "chose_good": true
+          },
+          {
+            "case_id": "coordinate_structure_constraint_object_extraction:615",
+            "category": "coordinate_structure_constraint_object_extraction",
+            "good_score": 4.077121044566745,
+            "bad_score": 4.082796185407466,
+            "margin": 0.005675140840721404,
+            "chose_good": true
+          },
+          {
+            "case_id": "coordinate_structure_constraint_object_extraction:317",
+            "category": "coordinate_structure_constraint_object_extraction",
+            "good_score": 3.5554313287771975,
+            "bad_score": 3.555715574265456,
+            "margin": 0.00028424548825833895,
+            "chose_good": true
+          },
+          {
+            "case_id": "coordinate_structure_constraint_object_extraction:997",
+            "category": "coordinate_structure_constraint_object_extraction",
+            "good_score": 3.790533015224013,
+            "bad_score": 3.9562598894317444,
+            "margin": 0.16572687420773136,
+            "chose_good": true
+          },
+          {
+            "case_id": "coordinate_structure_constraint_object_extraction:704",
+            "category": "coordinate_structure_constraint_object_extraction",
+            "good_score": 3.4905425750258563,
+            "bad_score": 3.419388486717094,
+            "margin": -0.07115408830876246,
+            "chose_good": false
+          },
+          {
+            "case_id": "coordinate_structure_constraint_object_extraction:456",
+            "category": "coordinate_structure_constraint_object_extraction",
+            "good_score": 3.741848474230562,
+            "bad_score": 3.687293643734102,
+            "margin": -0.05455483049646004,
+            "chose_good": false
+          },
+          {
+            "case_id": "coordinate_structure_constraint_object_extraction:334",
+            "category": "coordinate_structure_constraint_object_extraction",
+            "good_score": 3.2868499459884606,
+            "bad_score": 3.2796911542017573,
+            "margin": -0.007158791786703311,
+            "chose_good": false
+          },
+          {
+            "case_id": "coordinate_structure_constraint_object_extraction:30",
+            "category": "coordinate_structure_constraint_object_extraction",
+            "good_score": 3.1770191590380423,
+            "bad_score": 3.175695045338266,
+            "margin": -0.0013241136997761416,
+            "chose_good": false
+          },
+          {
+            "case_id": "coordinate_structure_constraint_object_extraction:717",
+            "category": "coordinate_structure_constraint_object_extraction",
+            "good_score": 3.3471749061938767,
+            "bad_score": 3.3780960269561886,
+            "margin": 0.030921120762311904,
+            "chose_good": true
+          },
+          {
+            "case_id": "coordinate_structure_constraint_object_extraction:100",
+            "category": "coordinate_structure_constraint_object_extraction",
+            "good_score": 3.722123514408681,
+            "bad_score": 3.76707598589832,
+            "margin": 0.04495247148963921,
+            "chose_good": true
+          },
+          {
+            "case_id": "coordinate_structure_constraint_object_extraction:790",
+            "category": "coordinate_structure_constraint_object_extraction",
+            "good_score": 3.6380226222755607,
+            "bad_score": 3.6927578207391583,
+            "margin": 0.054735198463597534,
+            "chose_good": true
+          },
+          {
+            "case_id": "coordinate_structure_constraint_object_extraction:431",
+            "category": "coordinate_structure_constraint_object_extraction",
+            "good_score": 4.173647774948783,
+            "bad_score": 3.8629575639416402,
+            "margin": -0.310690211007143,
+            "chose_good": false
+          },
+          {
+            "case_id": "coordinate_structure_constraint_object_extraction:915",
+            "category": "coordinate_structure_constraint_object_extraction",
+            "good_score": 3.861118870767678,
+            "bad_score": 3.8327930136880117,
+            "margin": -0.02832585707966606,
+            "chose_good": false
+          },
+          {
+            "case_id": "coordinate_structure_constraint_object_extraction:446",
+            "category": "coordinate_structure_constraint_object_extraction",
+            "good_score": 3.3063880294619143,
+            "bad_score": 3.3227818456987843,
+            "margin": 0.016393816236869974,
+            "chose_good": true
+          },
+          {
+            "case_id": "coordinate_structure_constraint_object_extraction:737",
+            "category": "coordinate_structure_constraint_object_extraction",
+            "good_score": 4.201391978417233,
+            "bad_score": 4.3058031338066325,
+            "margin": 0.10441115538939982,
+            "chose_good": true
+          },
+          {
+            "case_id": "determiner_noun_agreement_1:148",
+            "category": "determiner_noun_agreement_1",
+            "good_score": 3.869055381716996,
+            "bad_score": 3.9799253360693805,
+            "margin": 0.11086995435238434,
+            "chose_good": true
+          },
+          {
+            "case_id": "determiner_noun_agreement_1:535",
+            "category": "determiner_noun_agreement_1",
+            "good_score": 3.3423173457496866,
+            "bad_score": 3.2783516355629505,
+            "margin": -0.06396571018673614,
+            "chose_good": false
+          },
+          {
+            "case_id": "determiner_noun_agreement_1:698",
+            "category": "determiner_noun_agreement_1",
+            "good_score": 2.9990685058238133,
+            "bad_score": 3.1066374209543635,
+            "margin": 0.10756891513055011,
+            "chose_good": true
+          },
+          {
+            "case_id": "determiner_noun_agreement_1:885",
+            "category": "determiner_noun_agreement_1",
+            "good_score": 2.6715721351447876,
+            "bad_score": 2.7829557646919554,
+            "margin": 0.11138362954716774,
+            "chose_good": true
+          },
+          {
+            "case_id": "determiner_noun_agreement_1:773",
+            "category": "determiner_noun_agreement_1",
+            "good_score": 3.8256695905650746,
+            "bad_score": 3.912696457933854,
+            "margin": 0.08702686736877929,
+            "chose_good": true
+          },
+          {
+            "case_id": "determiner_noun_agreement_1:8",
+            "category": "determiner_noun_agreement_1",
+            "good_score": 4.068194571711462,
+            "bad_score": 3.973572136824729,
+            "margin": -0.09462243488673305,
+            "chose_good": false
+          },
+          {
+            "case_id": "determiner_noun_agreement_1:679",
+            "category": "determiner_noun_agreement_1",
+            "good_score": 3.5353057954216145,
+            "bad_score": 3.6178195623047302,
+            "margin": 0.08251376688311574,
+            "chose_good": true
+          },
+          {
+            "case_id": "determiner_noun_agreement_1:801",
+            "category": "determiner_noun_agreement_1",
+            "good_score": 3.4064409561690536,
+            "bad_score": 3.508141419230947,
+            "margin": 0.1017004630618934,
+            "chose_good": true
+          },
+          {
+            "case_id": "determiner_noun_agreement_1:246",
+            "category": "determiner_noun_agreement_1",
+            "good_score": 4.092431492575673,
+            "bad_score": 4.267350303880116,
+            "margin": 0.1749188113044431,
+            "chose_good": true
+          },
+          {
+            "case_id": "determiner_noun_agreement_1:868",
+            "category": "determiner_noun_agreement_1",
+            "good_score": 3.7331128774682987,
+            "bad_score": 3.6445800567795885,
+            "margin": -0.08853282068871016,
+            "chose_good": false
+          },
+          {
+            "case_id": "determiner_noun_agreement_1:154",
+            "category": "determiner_noun_agreement_1",
+            "good_score": 3.562991761011223,
+            "bad_score": 3.44934369333446,
+            "margin": -0.11364806767676328,
+            "chose_good": false
+          },
+          {
+            "case_id": "determiner_noun_agreement_1:244",
+            "category": "determiner_noun_agreement_1",
+            "good_score": 4.75064821566332,
+            "bad_score": 4.707707842595956,
+            "margin": -0.04294037306736431,
+            "chose_good": false
+          },
+          {
+            "case_id": "determiner_noun_agreement_1:217",
+            "category": "determiner_noun_agreement_1",
+            "good_score": 4.115714459178662,
+            "bad_score": 4.035202067434039,
+            "margin": -0.0805123917446231,
+            "chose_good": false
+          },
+          {
+            "case_id": "determiner_noun_agreement_1:844",
+            "category": "determiner_noun_agreement_1",
+            "good_score": 3.3914890620657747,
+            "bad_score": 3.448446001401991,
+            "margin": 0.05695693933621637,
+            "chose_good": true
+          },
+          {
+            "case_id": "determiner_noun_agreement_1:426",
+            "category": "determiner_noun_agreement_1",
+            "good_score": 3.8477720562702507,
+            "bad_score": 3.8912238736291496,
+            "margin": 0.043451817358898914,
+            "chose_good": true
+          },
+          {
+            "case_id": "determiner_noun_agreement_1:158",
+            "category": "determiner_noun_agreement_1",
+            "good_score": 2.7357603600130593,
+            "bad_score": 2.828132241791474,
+            "margin": 0.09237188177841471,
+            "chose_good": true
+          },
+          {
+            "case_id": "determiner_noun_agreement_1:293",
+            "category": "determiner_noun_agreement_1",
+            "good_score": 4.706391576151491,
+            "bad_score": 4.7599484541764685,
+            "margin": 0.05355687802497755,
+            "chose_good": true
+          },
+          {
+            "case_id": "determiner_noun_agreement_1:789",
+            "category": "determiner_noun_agreement_1",
+            "good_score": 3.2789779549063987,
+            "bad_score": 3.3507314370874806,
+            "margin": 0.0717534821810819,
+            "chose_good": true
+          },
+          {
+            "case_id": "determiner_noun_agreement_1:469",
+            "category": "determiner_noun_agreement_1",
+            "good_score": 3.807621593597411,
+            "bad_score": 3.7589593294065096,
+            "margin": -0.04866226419090136,
+            "chose_good": false
+          },
+          {
+            "case_id": "determiner_noun_agreement_1:104",
+            "category": "determiner_noun_agreement_1",
+            "good_score": 4.054754766339237,
+            "bad_score": 3.9673863136773826,
+            "margin": -0.08736845266185478,
+            "chose_good": false
+          }
+        ]
+      }
+    },
+    {
+      "name": "babylm_2026_hf_bpe_100step_seed13",
+      "manifest": "artifacts\\tiny_lm\\babylm_2026_hf_bpe_100step_seed13\\run_manifest.json",
+      "tokenizer": "hf_bpe",
+      "checkpoint_dir": "artifacts\\tiny_lm\\babylm_2026_hf_bpe_100step_seed13\\checkpoint",
+      "score_field": "bits_per_byte",
+      "report": {
+        "cases": 200,
+        "correct": 98,
+        "accuracy": 0.49,
+        "by_category": {
+          "adjunct_island": {
+            "category": "adjunct_island",
+            "cases": 20,
+            "correct": 8,
+            "accuracy": 0.4
+          },
+          "anaphor_gender_agreement": {
+            "category": "anaphor_gender_agreement",
+            "cases": 20,
+            "correct": 12,
+            "accuracy": 0.6
+          },
+          "anaphor_number_agreement": {
+            "category": "anaphor_number_agreement",
+            "cases": 20,
+            "correct": 8,
+            "accuracy": 0.4
+          },
+          "animate_subject_passive": {
+            "category": "animate_subject_passive",
+            "cases": 20,
+            "correct": 16,
+            "accuracy": 0.8
+          },
+          "animate_subject_trans": {
+            "category": "animate_subject_trans",
+            "cases": 20,
+            "correct": 5,
+            "accuracy": 0.25
+          },
+          "causative": {
+            "category": "causative",
+            "cases": 20,
+            "correct": 6,
+            "accuracy": 0.3
+          },
+          "complex_NP_island": {
+            "category": "complex_NP_island",
+            "cases": 20,
+            "correct": 12,
+            "accuracy": 0.6
+          },
+          "coordinate_structure_constraint_complex_left_branch": {
+            "category": "coordinate_structure_constraint_complex_left_branch",
+            "cases": 20,
+            "correct": 8,
+            "accuracy": 0.4
+          },
+          "coordinate_structure_constraint_object_extraction": {
+            "category": "coordinate_structure_constraint_object_extraction",
+            "cases": 20,
+            "correct": 10,
+            "accuracy": 0.5
+          },
+          "determiner_noun_agreement_1": {
+            "category": "determiner_noun_agreement_1",
+            "cases": 20,
+            "correct": 13,
+            "accuracy": 0.65
+          }
+        },
+        "predictions": [
+          {
+            "case_id": "adjunct_island:905",
+            "category": "adjunct_island",
+            "good_score": 3.050410187003205,
+            "bad_score": 3.0582861944132222,
+            "margin": 0.007876007410017039,
+            "chose_good": true
+          },
+          {
+            "case_id": "adjunct_island:710",
+            "category": "adjunct_island",
+            "good_score": 3.9006072919863044,
+            "bad_score": 3.883367217566614,
+            "margin": -0.017240074419690554,
+            "chose_good": false
+          },
+          {
+            "case_id": "adjunct_island:75",
+            "category": "adjunct_island",
+            "good_score": 3.493026684457133,
+            "bad_score": 3.4863269866093254,
+            "margin": -0.006699697847807773,
+            "chose_good": false
+          },
+          {
+            "case_id": "adjunct_island:758",
+            "category": "adjunct_island",
+            "good_score": 3.018715939099759,
+            "bad_score": 2.987751092333312,
+            "margin": -0.030964846766447174,
+            "chose_good": false
+          },
+          {
+            "case_id": "adjunct_island:869",
+            "category": "adjunct_island",
+            "good_score": 3.174941448631759,
+            "bad_score": 3.175465276516714,
+            "margin": 0.0005238278849550859,
+            "chose_good": true
+          },
+          {
+            "case_id": "adjunct_island:552",
+            "category": "adjunct_island",
+            "good_score": 3.290884915832672,
+            "bad_score": 3.2639848928404747,
+            "margin": -0.026900022992197403,
+            "chose_good": false
+          },
+          {
+            "case_id": "adjunct_island:318",
+            "category": "adjunct_island",
+            "good_score": 3.116313134284823,
+            "bad_score": 3.1098209349627615,
+            "margin": -0.006492199322061687,
+            "chose_good": false
+          },
+          {
+            "case_id": "adjunct_island:102",
+            "category": "adjunct_island",
+            "good_score": 2.8326012870976123,
+            "bad_score": 2.8249271956650963,
+            "margin": -0.0076740914325159615,
+            "chose_good": false
+          },
+          {
+            "case_id": "adjunct_island:264",
+            "category": "adjunct_island",
+            "good_score": 3.127742270332515,
+            "bad_score": 3.1670931988321964,
+            "margin": 0.03935092849968136,
+            "chose_good": true
+          },
+          {
+            "case_id": "adjunct_island:670",
+            "category": "adjunct_island",
+            "good_score": 3.5058015347755087,
+            "bad_score": 3.5164890870446066,
+            "margin": 0.0106875522690979,
+            "chose_good": true
+          },
+          {
+            "case_id": "adjunct_island:988",
+            "category": "adjunct_island",
+            "good_score": 2.483533983210922,
+            "bad_score": 2.4782138010727466,
+            "margin": -0.005320182138175422,
+            "chose_good": false
+          },
+          {
+            "case_id": "adjunct_island:304",
+            "category": "adjunct_island",
+            "good_score": 3.2429474930468523,
+            "bad_score": 3.2492513976008612,
+            "margin": 0.006303904554008977,
+            "chose_good": true
+          },
+          {
+            "case_id": "adjunct_island:586",
+            "category": "adjunct_island",
+            "good_score": 2.839100539667595,
+            "bad_score": 2.822858498120111,
+            "margin": -0.016242041547483765,
+            "chose_good": false
+          },
+          {
+            "case_id": "adjunct_island:945",
+            "category": "adjunct_island",
+            "good_score": 2.7030749008687183,
+            "bad_score": 2.7080132794986533,
+            "margin": 0.00493837862993507,
+            "chose_good": true
+          },
+          {
+            "case_id": "adjunct_island:195",
+            "category": "adjunct_island",
+            "good_score": 3.69081497963672,
+            "bad_score": 3.6814330446059977,
+            "margin": -0.009381935030722044,
+            "chose_good": false
+          },
+          {
+            "case_id": "adjunct_island:812",
+            "category": "adjunct_island",
+            "good_score": 3.0346306641314422,
+            "bad_score": 3.0184705321878096,
+            "margin": -0.01616013194363264,
+            "chose_good": false
+          },
+          {
+            "case_id": "adjunct_island:541",
+            "category": "adjunct_island",
+            "good_score": 2.7573799550877207,
+            "bad_score": 2.7769681496376766,
+            "margin": 0.019588194549955862,
+            "chose_good": true
+          },
+          {
+            "case_id": "adjunct_island:591",
+            "category": "adjunct_island",
+            "good_score": 3.8913175985744344,
+            "bad_score": 3.906228222431676,
+            "margin": 0.0149106238572414,
+            "chose_good": true
+          },
+          {
+            "case_id": "adjunct_island:241",
+            "category": "adjunct_island",
+            "good_score": 3.457663611566725,
+            "bad_score": 3.4308607968704483,
+            "margin": -0.026802814696276656,
+            "chose_good": false
+          },
+          {
+            "case_id": "adjunct_island:754",
+            "category": "adjunct_island",
+            "good_score": 3.1030171424531914,
+            "bad_score": 3.0914419544542158,
+            "margin": -0.011575187998975611,
+            "chose_good": false
+          },
+          {
+            "case_id": "anaphor_gender_agreement:803",
+            "category": "anaphor_gender_agreement",
+            "good_score": 4.214037781104464,
+            "bad_score": 4.305278478767023,
+            "margin": 0.09124069766255882,
+            "chose_good": true
+          },
+          {
+            "case_id": "anaphor_gender_agreement:534",
+            "category": "anaphor_gender_agreement",
+            "good_score": 2.9325769168301163,
+            "bad_score": 3.056851468860757,
+            "margin": 0.12427455203064053,
+            "chose_good": true
+          },
+          {
+            "case_id": "anaphor_gender_agreement:975",
+            "category": "anaphor_gender_agreement",
+            "good_score": 3.526131626865022,
+            "bad_score": 3.6785499002560007,
+            "margin": 0.1524182733909787,
+            "chose_good": true
+          },
+          {
+            "case_id": "anaphor_gender_agreement:324",
+            "category": "anaphor_gender_agreement",
+            "good_score": 2.965456948852409,
+            "bad_score": 3.0692931941373387,
+            "margin": 0.10383624528492952,
+            "chose_good": true
+          },
+          {
+            "case_id": "anaphor_gender_agreement:627",
+            "category": "anaphor_gender_agreement",
+            "good_score": 4.45624762598576,
+            "bad_score": 4.527352058383414,
+            "margin": 0.07110443239765374,
+            "chose_good": true
+          },
+          {
+            "case_id": "anaphor_gender_agreement:339",
+            "category": "anaphor_gender_agreement",
+            "good_score": 3.697654431397916,
+            "bad_score": 3.8349376943442346,
+            "margin": 0.13728326294631854,
+            "chose_good": true
+          },
+          {
+            "case_id": "anaphor_gender_agreement:919",
+            "category": "anaphor_gender_agreement",
+            "good_score": 3.3683322581686226,
+            "bad_score": 3.320908386158505,
+            "margin": -0.04742387201011766,
+            "chose_good": false
+          },
+          {
+            "case_id": "anaphor_gender_agreement:955",
+            "category": "anaphor_gender_agreement",
+            "good_score": 3.801614124947672,
+            "bad_score": 3.9633615943587404,
+            "margin": 0.16174746941106832,
+            "chose_good": true
+          },
+          {
+            "case_id": "anaphor_gender_agreement:526",
+            "category": "anaphor_gender_agreement",
+            "good_score": 3.250476032339103,
+            "bad_score": 3.1916573760892195,
+            "margin": -0.05881865624988336,
+            "chose_good": false
+          },
+          {
+            "case_id": "anaphor_gender_agreement:718",
+            "category": "anaphor_gender_agreement",
+            "good_score": 4.3689052736422385,
+            "bad_score": 4.311929760375442,
+            "margin": -0.05697551326679662,
+            "chose_good": false
+          },
+          {
+            "case_id": "anaphor_gender_agreement:858",
+            "category": "anaphor_gender_agreement",
+            "good_score": 3.282413985017634,
+            "bad_score": 3.3319066604125522,
+            "margin": 0.049492675394918084,
+            "chose_good": true
+          },
+          {
+            "case_id": "anaphor_gender_agreement:294",
+            "category": "anaphor_gender_agreement",
+            "good_score": 2.806861943480714,
+            "bad_score": 2.835891447274674,
+            "margin": 0.029029503793959854,
+            "chose_good": true
+          },
+          {
+            "case_id": "anaphor_gender_agreement:101",
+            "category": "anaphor_gender_agreement",
+            "good_score": 3.6798139478148206,
+            "bad_score": 3.6042920089271395,
+            "margin": -0.0755219388876811,
+            "chose_good": false
+          },
+          {
+            "case_id": "anaphor_gender_agreement:151",
+            "category": "anaphor_gender_agreement",
+            "good_score": 3.9607531114440464,
+            "bad_score": 3.886564840686256,
+            "margin": -0.07418827075779033,
+            "chose_good": false
+          },
+          {
+            "case_id": "anaphor_gender_agreement:169",
+            "category": "anaphor_gender_agreement",
+            "good_score": 4.1066293741663875,
+            "bad_score": 4.216054498190233,
+            "margin": 0.1094251240238453,
+            "chose_good": true
+          },
+          {
+            "case_id": "anaphor_gender_agreement:240",
+            "category": "anaphor_gender_agreement",
+            "good_score": 4.21572292642198,
+            "bad_score": 4.149013560431221,
+            "margin": -0.06670936599075983,
+            "chose_good": false
+          },
+          {
+            "case_id": "anaphor_gender_agreement:678",
+            "category": "anaphor_gender_agreement",
+            "good_score": 3.608619780353451,
+            "bad_score": 3.539880607905598,
+            "margin": -0.06873917244785321,
+            "chose_good": false
+          },
+          {
+            "case_id": "anaphor_gender_agreement:72",
+            "category": "anaphor_gender_agreement",
+            "good_score": 3.7038500137892054,
+            "bad_score": 3.6474681927264885,
+            "margin": -0.05638182106271694,
+            "chose_good": false
+          },
+          {
+            "case_id": "anaphor_gender_agreement:484",
+            "category": "anaphor_gender_agreement",
+            "good_score": 4.137355939518126,
+            "bad_score": 4.227547345872294,
+            "margin": 0.090191406354168,
+            "chose_good": true
+          },
+          {
+            "case_id": "anaphor_gender_agreement:301",
+            "category": "anaphor_gender_agreement",
+            "good_score": 2.7908650301284488,
+            "bad_score": 2.8913535045242282,
+            "margin": 0.10048847439577946,
+            "chose_good": true
+          },
+          {
+            "case_id": "anaphor_number_agreement:99",
+            "category": "anaphor_number_agreement",
+            "good_score": 2.8578190270701573,
+            "bad_score": 2.5885021569513857,
+            "margin": -0.2693168701187716,
+            "chose_good": false
+          },
+          {
+            "case_id": "anaphor_number_agreement:686",
+            "category": "anaphor_number_agreement",
+            "good_score": 3.204377334944578,
+            "bad_score": 2.9175219444039273,
+            "margin": -0.28685539054065057,
+            "chose_good": false
+          },
+          {
+            "case_id": "anaphor_number_agreement:246",
+            "category": "anaphor_number_agreement",
+            "good_score": 3.6965418976785416,
+            "bad_score": 3.342823895511877,
+            "margin": -0.3537180021666644,
+            "chose_good": false
+          },
+          {
+            "case_id": "anaphor_number_agreement:942",
+            "category": "anaphor_number_agreement",
+            "good_score": 2.8791424680200337,
+            "bad_score": 3.2242059649627355,
+            "margin": 0.3450634969427018,
+            "chose_good": true
+          },
+          {
+            "case_id": "anaphor_number_agreement:211",
+            "category": "anaphor_number_agreement",
+            "good_score": 3.8607158382915667,
+            "bad_score": 3.3620944509973514,
+            "margin": -0.49862138729421535,
+            "chose_good": false
+          },
+          {
+            "case_id": "anaphor_number_agreement:276",
+            "category": "anaphor_number_agreement",
+            "good_score": 4.4618078250881545,
+            "bad_score": 3.993131269605382,
+            "margin": -0.46867655548277254,
+            "chose_good": false
+          },
+          {
+            "case_id": "anaphor_number_agreement:789",
+            "category": "anaphor_number_agreement",
+            "good_score": 2.9904856491069904,
+            "bad_score": 2.7228128181255036,
+            "margin": -0.26767283098148686,
+            "chose_good": false
+          },
+          {
+            "case_id": "anaphor_number_agreement:758",
+            "category": "anaphor_number_agreement",
+            "good_score": 3.7867730893526095,
+            "bad_score": 3.305946611673686,
+            "margin": -0.4808264776789235,
+            "chose_good": false
+          },
+          {
+            "case_id": "anaphor_number_agreement:399",
+            "category": "anaphor_number_agreement",
+            "good_score": 2.465834965345088,
+            "bad_score": 2.682744737901507,
+            "margin": 0.21690977255641908,
+            "chose_good": true
+          },
+          {
+            "case_id": "anaphor_number_agreement:314",
+            "category": "anaphor_number_agreement",
+            "good_score": 3.8481413315321458,
+            "bad_score": 3.306294312675806,
+            "margin": -0.5418470188563398,
+            "chose_good": false
+          },
+          {
+            "case_id": "anaphor_number_agreement:763",
+            "category": "anaphor_number_agreement",
+            "good_score": 3.343104777577266,
+            "bad_score": 3.706181869224704,
+            "margin": 0.3630770916474382,
+            "chose_good": true
+          },
+          {
+            "case_id": "anaphor_number_agreement:439",
+            "category": "anaphor_number_agreement",
+            "good_score": 2.0280299787090024,
+            "bad_score": 2.1846717780444846,
+            "margin": 0.15664179933548228,
+            "chose_good": true
+          },
+          {
+            "case_id": "anaphor_number_agreement:168",
+            "category": "anaphor_number_agreement",
+            "good_score": 3.5112068413887467,
+            "bad_score": 3.204753187628035,
+            "margin": -0.30645365376071165,
+            "chose_good": false
+          },
+          {
+            "case_id": "anaphor_number_agreement:683",
+            "category": "anaphor_number_agreement",
+            "good_score": 3.5726067901592202,
+            "bad_score": 3.99867649908423,
+            "margin": 0.42606970892500984,
+            "chose_good": true
+          },
+          {
+            "case_id": "anaphor_number_agreement:302",
+            "category": "anaphor_number_agreement",
+            "good_score": 3.8931302374346934,
+            "bad_score": 3.4432212023397253,
+            "margin": -0.44990903509496816,
+            "chose_good": false
+          },
+          {
+            "case_id": "anaphor_number_agreement:395",
+            "category": "anaphor_number_agreement",
+            "good_score": 3.283816041878208,
+            "bad_score": 3.6176953048394815,
+            "margin": 0.3338792629612737,
+            "chose_good": true
+          },
+          {
+            "case_id": "anaphor_number_agreement:525",
+            "category": "anaphor_number_agreement",
+            "good_score": 2.3476244982972765,
+            "bad_score": 2.5920537993645474,
+            "margin": 0.2444293010672709,
+            "chose_good": true
+          },
+          {
+            "case_id": "anaphor_number_agreement:674",
+            "category": "anaphor_number_agreement",
+            "good_score": 3.2485934437620703,
+            "bad_score": 3.643636823930326,
+            "margin": 0.3950433801682558,
+            "chose_good": true
+          },
+          {
+            "case_id": "anaphor_number_agreement:745",
+            "category": "anaphor_number_agreement",
+            "good_score": 3.3673536701711755,
+            "bad_score": 3.129050215449145,
+            "margin": -0.2383034547220304,
+            "chose_good": false
+          },
+          {
+            "case_id": "anaphor_number_agreement:533",
+            "category": "anaphor_number_agreement",
+            "good_score": 3.0048056820690325,
+            "bad_score": 2.683918703503055,
+            "margin": -0.32088697856597737,
+            "chose_good": false
+          },
+          {
+            "case_id": "animate_subject_passive:962",
+            "category": "animate_subject_passive",
+            "good_score": 3.2072223480943,
+            "bad_score": 3.4253578782819365,
+            "margin": 0.21813553018763665,
+            "chose_good": true
+          },
+          {
+            "case_id": "animate_subject_passive:601",
+            "category": "animate_subject_passive",
+            "good_score": 3.235499344640706,
+            "bad_score": 3.0986023156313545,
+            "margin": -0.13689702900935163,
+            "chose_good": false
+          },
+          {
+            "case_id": "animate_subject_passive:847",
+            "category": "animate_subject_passive",
+            "good_score": 2.8847947924957404,
+            "bad_score": 3.2422684975913545,
+            "margin": 0.35747370509561405,
+            "chose_good": true
+          },
+          {
+            "case_id": "animate_subject_passive:175",
+            "category": "animate_subject_passive",
+            "good_score": 4.051508384968125,
+            "bad_score": 4.3284003536364875,
+            "margin": 0.2768919686683624,
+            "chose_good": true
+          },
+          {
+            "case_id": "animate_subject_passive:4",
+            "category": "animate_subject_passive",
+            "good_score": 2.967762051431107,
+            "bad_score": 3.2827078223450212,
+            "margin": 0.3149457709139143,
+            "chose_good": true
+          },
+          {
+            "case_id": "animate_subject_passive:981",
+            "category": "animate_subject_passive",
+            "good_score": 4.00491214617832,
+            "bad_score": 4.164696462971133,
+            "margin": 0.15978431679281258,
+            "chose_good": true
+          },
+          {
+            "case_id": "animate_subject_passive:865",
+            "category": "animate_subject_passive",
+            "good_score": 3.6560484678777927,
+            "bad_score": 3.507507850327085,
+            "margin": -0.14854061755070758,
+            "chose_good": false
+          },
+          {
+            "case_id": "animate_subject_passive:522",
+            "category": "animate_subject_passive",
+            "good_score": 3.210211692363467,
+            "bad_score": 3.427987424751789,
+            "margin": 0.21777573238832204,
+            "chose_good": true
+          },
+          {
+            "case_id": "animate_subject_passive:911",
+            "category": "animate_subject_passive",
+            "good_score": 3.2127793412248944,
+            "bad_score": 3.8023053614398563,
+            "margin": 0.5895260202149619,
+            "chose_good": true
+          },
+          {
+            "case_id": "animate_subject_passive:276",
+            "category": "animate_subject_passive",
+            "good_score": 3.9376327227956187,
+            "bad_score": 4.058222086884797,
+            "margin": 0.1205893640891782,
+            "chose_good": true
+          },
+          {
+            "case_id": "animate_subject_passive:131",
+            "category": "animate_subject_passive",
+            "good_score": 3.033726592284107,
+            "bad_score": 3.6682090171550006,
+            "margin": 0.6344824248708938,
+            "chose_good": true
+          },
+          {
+            "case_id": "animate_subject_passive:663",
+            "category": "animate_subject_passive",
+            "good_score": 3.971726026004058,
+            "bad_score": 4.125202769325596,
+            "margin": 0.15347674332153804,
+            "chose_good": true
+          },
+          {
+            "case_id": "animate_subject_passive:86",
+            "category": "animate_subject_passive",
+            "good_score": 3.6662484295719855,
+            "bad_score": 3.988672353054344,
+            "margin": 0.3224239234823587,
+            "chose_good": true
+          },
+          {
+            "case_id": "animate_subject_passive:85",
+            "category": "animate_subject_passive",
+            "good_score": 4.042137694095507,
+            "bad_score": 4.584229638038409,
+            "margin": 0.5420919439429026,
+            "chose_good": true
+          },
+          {
+            "case_id": "animate_subject_passive:849",
+            "category": "animate_subject_passive",
+            "good_score": 3.678698304896819,
+            "bad_score": 3.692345766306077,
+            "margin": 0.013647461409257655,
+            "chose_good": true
+          },
+          {
+            "case_id": "animate_subject_passive:525",
+            "category": "animate_subject_passive",
+            "good_score": 3.7005809313547315,
+            "bad_score": 4.168197728373721,
+            "margin": 0.46761679701898906,
+            "chose_good": true
+          },
+          {
+            "case_id": "animate_subject_passive:886",
+            "category": "animate_subject_passive",
+            "good_score": 3.849724150407182,
+            "bad_score": 3.973429945894726,
+            "margin": 0.12370579548754401,
+            "chose_good": true
+          },
+          {
+            "case_id": "animate_subject_passive:163",
+            "category": "animate_subject_passive",
+            "good_score": 3.345191849768571,
+            "bad_score": 3.304077953064494,
+            "margin": -0.041113896704076947,
+            "chose_good": false
+          },
+          {
+            "case_id": "animate_subject_passive:325",
+            "category": "animate_subject_passive",
+            "good_score": 3.7551038706409776,
+            "bad_score": 3.5238261567394766,
+            "margin": -0.23127771390150098,
+            "chose_good": false
+          },
+          {
+            "case_id": "animate_subject_passive:842",
+            "category": "animate_subject_passive",
+            "good_score": 3.6101167173465614,
+            "bad_score": 3.645072442136134,
+            "margin": 0.03495572478957243,
+            "chose_good": true
+          },
+          {
+            "case_id": "animate_subject_trans:122",
+            "category": "animate_subject_trans",
+            "good_score": 3.2019638213557253,
+            "bad_score": 2.560965861601704,
+            "margin": -0.6409979597540212,
+            "chose_good": false
+          },
+          {
+            "case_id": "animate_subject_trans:297",
+            "category": "animate_subject_trans",
+            "good_score": 4.020432024348742,
+            "bad_score": 3.0989485065909146,
+            "margin": -0.9214835177578276,
+            "chose_good": false
+          },
+          {
+            "case_id": "animate_subject_trans:631",
+            "category": "animate_subject_trans",
+            "good_score": 3.9043916550038986,
+            "bad_score": 4.271861976170068,
+            "margin": 0.3674703211661692,
+            "chose_good": true
+          },
+          {
+            "case_id": "animate_subject_trans:974",
+            "category": "animate_subject_trans",
+            "good_score": 3.5054301898357663,
+            "bad_score": 3.4295952216771326,
+            "margin": -0.07583496815863366,
+            "chose_good": false
+          },
+          {
+            "case_id": "animate_subject_trans:165",
+            "category": "animate_subject_trans",
+            "good_score": 4.0666836697271025,
+            "bad_score": 3.6980041616203545,
+            "margin": -0.368679508106748,
+            "chose_good": false
+          },
+          {
+            "case_id": "animate_subject_trans:368",
+            "category": "animate_subject_trans",
+            "good_score": 3.8089052721034506,
+            "bad_score": 3.495853645491242,
+            "margin": -0.31305162661220853,
+            "chose_good": false
+          },
+          {
+            "case_id": "animate_subject_trans:388",
+            "category": "animate_subject_trans",
+            "good_score": 3.599405590946466,
+            "bad_score": 3.7677000847695123,
+            "margin": 0.1682944938230464,
+            "chose_good": true
+          },
+          {
+            "case_id": "animate_subject_trans:559",
+            "category": "animate_subject_trans",
+            "good_score": 4.307028560572786,
+            "bad_score": 3.433306487015164,
+            "margin": -0.8737220735576221,
+            "chose_good": false
+          },
+          {
+            "case_id": "animate_subject_trans:516",
+            "category": "animate_subject_trans",
+            "good_score": 4.606117779496534,
+            "bad_score": 4.316822298258237,
+            "margin": -0.2892954812382973,
+            "chose_good": false
+          },
+          {
+            "case_id": "animate_subject_trans:884",
+            "category": "animate_subject_trans",
+            "good_score": 5.4908244380000975,
+            "bad_score": 3.994446936884483,
+            "margin": -1.4963775011156146,
+            "chose_good": false
+          },
+          {
+            "case_id": "animate_subject_trans:632",
+            "category": "animate_subject_trans",
+            "good_score": 5.290234384725686,
+            "bad_score": 4.260363284926441,
+            "margin": -1.0298710997992453,
+            "chose_good": false
+          },
+          {
+            "case_id": "animate_subject_trans:660",
+            "category": "animate_subject_trans",
+            "good_score": 4.180441120978283,
+            "bad_score": 4.21942074112673,
+            "margin": 0.03897962014844758,
+            "chose_good": true
+          },
+          {
+            "case_id": "animate_subject_trans:147",
+            "category": "animate_subject_trans",
+            "good_score": 3.611997347633746,
+            "bad_score": 3.490466323349495,
+            "margin": -0.12153102428425111,
+            "chose_good": false
+          },
+          {
+            "case_id": "animate_subject_trans:779",
+            "category": "animate_subject_trans",
+            "good_score": 3.1997992279438447,
+            "bad_score": 3.4179906430895404,
+            "margin": 0.21819141514569562,
+            "chose_good": true
+          },
+          {
+            "case_id": "animate_subject_trans:169",
+            "category": "animate_subject_trans",
+            "good_score": 5.294906630685885,
+            "bad_score": 5.2179561587622345,
+            "margin": -0.07695047192365045,
+            "chose_good": false
+          },
+          {
+            "case_id": "animate_subject_trans:229",
+            "category": "animate_subject_trans",
+            "good_score": 4.457055625048464,
+            "bad_score": 3.3393618847500086,
+            "margin": -1.1176937402984555,
+            "chose_good": false
+          },
+          {
+            "case_id": "animate_subject_trans:635",
+            "category": "animate_subject_trans",
+            "good_score": 4.5086495931526525,
+            "bad_score": 3.6048298405100057,
+            "margin": -0.9038197526426468,
+            "chose_good": false
+          },
+          {
+            "case_id": "animate_subject_trans:704",
+            "category": "animate_subject_trans",
+            "good_score": 4.765661760566741,
+            "bad_score": 3.7147838968091342,
+            "margin": -1.0508778637576066,
+            "chose_good": false
+          },
+          {
+            "case_id": "animate_subject_trans:512",
+            "category": "animate_subject_trans",
+            "good_score": 4.639144481084409,
+            "bad_score": 4.336365437593698,
+            "margin": -0.3027790434907107,
+            "chose_good": false
+          },
+          {
+            "case_id": "animate_subject_trans:481",
+            "category": "animate_subject_trans",
+            "good_score": 3.701176652925048,
+            "bad_score": 3.790637504239004,
+            "margin": 0.08946085131395609,
+            "chose_good": true
+          },
+          {
+            "case_id": "causative:470",
+            "category": "causative",
+            "good_score": 3.1662277971409747,
+            "bad_score": 3.0363499375978207,
+            "margin": -0.129877859543154,
+            "chose_good": false
+          },
+          {
+            "case_id": "causative:518",
+            "category": "causative",
+            "good_score": 3.8098777766665295,
+            "bad_score": 3.818881169990858,
+            "margin": 0.009003393324328535,
+            "chose_good": true
+          },
+          {
+            "case_id": "causative:947",
+            "category": "causative",
+            "good_score": 4.614321604183912,
+            "bad_score": 4.329906741406998,
+            "margin": -0.28441486277691386,
+            "chose_good": false
+          },
+          {
+            "case_id": "causative:258",
+            "category": "causative",
+            "good_score": 3.592455245653956,
+            "bad_score": 3.5344060166270914,
+            "margin": -0.0580492290268646,
+            "chose_good": false
+          },
+          {
+            "case_id": "causative:966",
+            "category": "causative",
+            "good_score": 4.400349996784981,
+            "bad_score": 4.141870956583085,
+            "margin": -0.2584790402018964,
+            "chose_good": false
+          },
+          {
+            "case_id": "causative:215",
+            "category": "causative",
+            "good_score": 3.831528227721858,
+            "bad_score": 4.028610586168476,
+            "margin": 0.19708235844661814,
+            "chose_good": true
+          },
+          {
+            "case_id": "causative:185",
+            "category": "causative",
+            "good_score": 4.177341806358379,
+            "bad_score": 4.7926140335262,
+            "margin": 0.6152722271678206,
+            "chose_good": true
+          },
+          {
+            "case_id": "causative:854",
+            "category": "causative",
+            "good_score": 3.9037636561170195,
+            "bad_score": 3.495399244396643,
+            "margin": -0.40836441172037663,
+            "chose_good": false
+          },
+          {
+            "case_id": "causative:815",
+            "category": "causative",
+            "good_score": 4.237479158747535,
+            "bad_score": 4.267169211696585,
+            "margin": 0.029690052949050028,
+            "chose_good": true
+          },
+          {
+            "case_id": "causative:962",
+            "category": "causative",
+            "good_score": 4.287534657165201,
+            "bad_score": 3.606763284964938,
+            "margin": -0.6807713722002635,
+            "chose_good": false
+          },
+          {
+            "case_id": "causative:263",
+            "category": "causative",
+            "good_score": 3.7102729925234286,
+            "bad_score": 3.544205987954098,
+            "margin": -0.16606700456933066,
+            "chose_good": false
+          },
+          {
+            "case_id": "causative:146",
+            "category": "causative",
+            "good_score": 3.5731674040991477,
+            "bad_score": 2.7952767649358816,
+            "margin": -0.7778906391632661,
+            "chose_good": false
+          },
+          {
+            "case_id": "causative:167",
+            "category": "causative",
+            "good_score": 4.581279051381389,
+            "bad_score": 4.119258462074918,
+            "margin": -0.46202058930647105,
+            "chose_good": false
+          },
+          {
+            "case_id": "causative:59",
+            "category": "causative",
+            "good_score": 4.075079321370749,
+            "bad_score": 4.501677400107374,
+            "margin": 0.4265980787366246,
+            "chose_good": true
+          },
+          {
+            "case_id": "causative:792",
+            "category": "causative",
+            "good_score": 3.4614338695181983,
+            "bad_score": 3.3285232825755533,
+            "margin": -0.13291058694264501,
+            "chose_good": false
+          },
+          {
+            "case_id": "causative:849",
+            "category": "causative",
+            "good_score": 3.410509101829655,
+            "bad_score": 3.1563987705947327,
+            "margin": -0.25411033123492244,
+            "chose_good": false
+          },
+          {
+            "case_id": "causative:563",
+            "category": "causative",
+            "good_score": 3.799727589922808,
+            "bad_score": 3.7690066994233553,
+            "margin": -0.03072089049945248,
+            "chose_good": false
+          },
+          {
+            "case_id": "causative:435",
+            "category": "causative",
+            "good_score": 4.497734312922792,
+            "bad_score": 4.823324245265175,
+            "margin": 0.32558993234238276,
+            "chose_good": true
+          },
+          {
+            "case_id": "causative:766",
+            "category": "causative",
+            "good_score": 3.577248737705295,
+            "bad_score": 3.4271554118933003,
+            "margin": -0.15009332581199475,
+            "chose_good": false
+          },
+          {
+            "case_id": "causative:937",
+            "category": "causative",
+            "good_score": 4.3277529051031625,
+            "bad_score": 3.9998310380368687,
+            "margin": -0.3279218670662938,
+            "chose_good": false
+          },
+          {
+            "case_id": "complex_NP_island:43",
+            "category": "complex_NP_island",
+            "good_score": 3.363487116146835,
+            "bad_score": 3.3822596327495296,
+            "margin": 0.018772516602694633,
+            "chose_good": true
+          },
+          {
+            "case_id": "complex_NP_island:55",
+            "category": "complex_NP_island",
+            "good_score": 3.096759922491215,
+            "bad_score": 3.0843387565774685,
+            "margin": -0.012421165913746535,
+            "chose_good": false
+          },
+          {
+            "case_id": "complex_NP_island:356",
+            "category": "complex_NP_island",
+            "good_score": 4.589473824610612,
+            "bad_score": 4.66408410707153,
+            "margin": 0.0746102824609185,
+            "chose_good": true
+          },
+          {
+            "case_id": "complex_NP_island:720",
+            "category": "complex_NP_island",
+            "good_score": 3.316572283763866,
+            "bad_score": 3.3129328133651765,
+            "margin": -0.003639470398689504,
+            "chose_good": false
+          },
+          {
+            "case_id": "complex_NP_island:534",
+            "category": "complex_NP_island",
+            "good_score": 4.2193439527145955,
+            "bad_score": 4.2185270607920495,
+            "margin": -0.0008168919225459703,
+            "chose_good": false
+          },
+          {
+            "case_id": "complex_NP_island:221",
+            "category": "complex_NP_island",
+            "good_score": 3.2083161570015397,
+            "bad_score": 3.1985242227510593,
+            "margin": -0.009791934250480416,
+            "chose_good": false
+          },
+          {
+            "case_id": "complex_NP_island:761",
+            "category": "complex_NP_island",
+            "good_score": 3.27845213278193,
+            "bad_score": 3.3057965487523924,
+            "margin": 0.027344415970462332,
+            "chose_good": true
+          },
+          {
+            "case_id": "complex_NP_island:725",
+            "category": "complex_NP_island",
+            "good_score": 3.9733271780677932,
+            "bad_score": 3.9813172691761203,
+            "margin": 0.007990091108327046,
+            "chose_good": true
+          },
+          {
+            "case_id": "complex_NP_island:399",
+            "category": "complex_NP_island",
+            "good_score": 3.715953113542614,
+            "bad_score": 3.7212392308468187,
+            "margin": 0.005286117304204918,
+            "chose_good": true
+          },
+          {
+            "case_id": "complex_NP_island:764",
+            "category": "complex_NP_island",
+            "good_score": 3.6895988434081097,
+            "bad_score": 3.657958621853376,
+            "margin": -0.03164022155473356,
+            "chose_good": false
+          },
+          {
+            "case_id": "complex_NP_island:68",
+            "category": "complex_NP_island",
+            "good_score": 3.2957982497946503,
+            "bad_score": 3.3402394034499556,
+            "margin": 0.04444115365530532,
+            "chose_good": true
+          },
+          {
+            "case_id": "complex_NP_island:920",
+            "category": "complex_NP_island",
+            "good_score": 3.5402358949706882,
+            "bad_score": 3.5501119396576644,
+            "margin": 0.009876044686976115,
+            "chose_good": true
+          },
+          {
+            "case_id": "complex_NP_island:727",
+            "category": "complex_NP_island",
+            "good_score": 3.398471760645011,
+            "bad_score": 3.4131963214191536,
+            "margin": 0.014724560774142414,
+            "chose_good": true
+          },
+          {
+            "case_id": "complex_NP_island:471",
+            "category": "complex_NP_island",
+            "good_score": 3.365882466299351,
+            "bad_score": 3.3665885957942208,
+            "margin": 0.0007061294948695895,
+            "chose_good": true
+          },
+          {
+            "case_id": "complex_NP_island:894",
+            "category": "complex_NP_island",
+            "good_score": 3.3203197954741714,
+            "bad_score": 3.331548913869461,
+            "margin": 0.011229118395289728,
+            "chose_good": true
+          },
+          {
+            "case_id": "complex_NP_island:175",
+            "category": "complex_NP_island",
+            "good_score": 3.2217694208585046,
+            "bad_score": 3.2266554077657803,
+            "margin": 0.004885986907275708,
+            "chose_good": true
+          },
+          {
+            "case_id": "complex_NP_island:896",
+            "category": "complex_NP_island",
+            "good_score": 3.361423578990856,
+            "bad_score": 3.357245032117739,
+            "margin": -0.004178546873117028,
+            "chose_good": false
+          },
+          {
+            "case_id": "complex_NP_island:464",
+            "category": "complex_NP_island",
+            "good_score": 3.2699585753298406,
+            "bad_score": 3.277368801924193,
+            "margin": 0.007410226594352309,
+            "chose_good": true
+          },
+          {
+            "case_id": "complex_NP_island:801",
+            "category": "complex_NP_island",
+            "good_score": 3.900722382715221,
+            "bad_score": 3.883804554034938,
+            "margin": -0.01691782868028291,
+            "chose_good": false
+          },
+          {
+            "case_id": "complex_NP_island:752",
+            "category": "complex_NP_island",
+            "good_score": 3.4697752782416273,
+            "bad_score": 3.439631980651015,
+            "margin": -0.030143297590612406,
+            "chose_good": false
+          },
+          {
+            "case_id": "coordinate_structure_constraint_complex_left_branch:882",
+            "category": "coordinate_structure_constraint_complex_left_branch",
+            "good_score": 3.2213208543684,
+            "bad_score": 3.2143407352309095,
+            "margin": -0.006980119137490526,
+            "chose_good": false
+          },
+          {
+            "case_id": "coordinate_structure_constraint_complex_left_branch:892",
+            "category": "coordinate_structure_constraint_complex_left_branch",
+            "good_score": 3.5999420833275164,
+            "bad_score": 3.6125649640884436,
+            "margin": 0.012622880760927213,
+            "chose_good": true
+          },
+          {
+            "case_id": "coordinate_structure_constraint_complex_left_branch:465",
+            "category": "coordinate_structure_constraint_complex_left_branch",
+            "good_score": 3.3133359089481558,
+            "bad_score": 3.3282943989921723,
+            "margin": 0.014958490044016504,
+            "chose_good": true
+          },
+          {
+            "case_id": "coordinate_structure_constraint_complex_left_branch:994",
+            "category": "coordinate_structure_constraint_complex_left_branch",
+            "good_score": 2.8713925627047066,
+            "bad_score": 2.859265034096465,
+            "margin": -0.012127528608241622,
+            "chose_good": false
+          },
+          {
+            "case_id": "coordinate_structure_constraint_complex_left_branch:360",
+            "category": "coordinate_structure_constraint_complex_left_branch",
+            "good_score": 3.989065916901796,
+            "bad_score": 4.01579389702025,
+            "margin": 0.026727980118453676,
+            "chose_good": true
+          },
+          {
+            "case_id": "coordinate_structure_constraint_complex_left_branch:330",
+            "category": "coordinate_structure_constraint_complex_left_branch",
+            "good_score": 3.4590903213470794,
+            "bad_score": 3.474158140401447,
+            "margin": 0.015067819054367604,
+            "chose_good": true
+          },
+          {
+            "case_id": "coordinate_structure_constraint_complex_left_branch:576",
+            "category": "coordinate_structure_constraint_complex_left_branch",
+            "good_score": 3.2110469966405857,
+            "bad_score": 3.2065498427078953,
+            "margin": -0.004497153932690345,
+            "chose_good": false
+          },
+          {
+            "case_id": "coordinate_structure_constraint_complex_left_branch:139",
+            "category": "coordinate_structure_constraint_complex_left_branch",
+            "good_score": 3.359807744769014,
+            "bad_score": 3.3629246774002395,
+            "margin": 0.0031169326312254775,
+            "chose_good": true
+          },
+          {
+            "case_id": "coordinate_structure_constraint_complex_left_branch:186",
+            "category": "coordinate_structure_constraint_complex_left_branch",
+            "good_score": 3.4301182042053586,
+            "bad_score": 3.4126699356490855,
+            "margin": -0.017448268556273128,
+            "chose_good": false
+          },
+          {
+            "case_id": "coordinate_structure_constraint_complex_left_branch:658",
+            "category": "coordinate_structure_constraint_complex_left_branch",
+            "good_score": 3.964104403597126,
+            "bad_score": 3.9508119944543867,
+            "margin": -0.013292409142739103,
+            "chose_good": false
+          },
+          {
+            "case_id": "coordinate_structure_constraint_complex_left_branch:44",
+            "category": "coordinate_structure_constraint_complex_left_branch",
+            "good_score": 3.668907427722538,
+            "bad_score": 3.6460498356612696,
+            "margin": -0.022857592061268583,
+            "chose_good": false
+          },
+          {
+            "case_id": "coordinate_structure_constraint_complex_left_branch:961",
+            "category": "coordinate_structure_constraint_complex_left_branch",
+            "good_score": 4.0165767632269604,
+            "bad_score": 4.003050087609881,
+            "margin": -0.01352667561707932,
+            "chose_good": false
+          },
+          {
+            "case_id": "coordinate_structure_constraint_complex_left_branch:477",
+            "category": "coordinate_structure_constraint_complex_left_branch",
+            "good_score": 2.867640096347678,
+            "bad_score": 2.846483119202406,
+            "margin": -0.021156977145272204,
+            "chose_good": false
+          },
+          {
+            "case_id": "coordinate_structure_constraint_complex_left_branch:206",
+            "category": "coordinate_structure_constraint_complex_left_branch",
+            "good_score": 3.914876996759542,
+            "bad_score": 3.898007432703484,
+            "margin": -0.016869564056058106,
+            "chose_good": false
+          },
+          {
+            "case_id": "coordinate_structure_constraint_complex_left_branch:339",
+            "category": "coordinate_structure_constraint_complex_left_branch",
+            "good_score": 3.362023999343881,
+            "bad_score": 3.359125963918302,
+            "margin": -0.002898035425578982,
+            "chose_good": false
+          },
+          {
+            "case_id": "coordinate_structure_constraint_complex_left_branch:823",
+            "category": "coordinate_structure_constraint_complex_left_branch",
+            "good_score": 3.2541995058681827,
+            "bad_score": 3.2423924546453486,
+            "margin": -0.011807051222834097,
+            "chose_good": false
+          },
+          {
+            "case_id": "coordinate_structure_constraint_complex_left_branch:985",
+            "category": "coordinate_structure_constraint_complex_left_branch",
+            "good_score": 3.3945122149362588,
+            "bad_score": 3.3976242901415215,
+            "margin": 0.0031120752052626877,
+            "chose_good": true
+          },
+          {
+            "case_id": "coordinate_structure_constraint_complex_left_branch:74",
+            "category": "coordinate_structure_constraint_complex_left_branch",
+            "good_score": 3.2861376054690363,
+            "bad_score": 3.316844925049024,
+            "margin": 0.030707319579987846,
+            "chose_good": true
+          },
+          {
+            "case_id": "coordinate_structure_constraint_complex_left_branch:457",
+            "category": "coordinate_structure_constraint_complex_left_branch",
+            "good_score": 2.602638859801311,
+            "bad_score": 2.5942470400593103,
+            "margin": -0.00839181974200054,
+            "chose_good": false
+          },
+          {
+            "case_id": "coordinate_structure_constraint_complex_left_branch:224",
+            "category": "coordinate_structure_constraint_complex_left_branch",
+            "good_score": 2.621886258353978,
+            "bad_score": 2.639080134917444,
+            "margin": 0.01719387656346605,
+            "chose_good": true
+          },
+          {
+            "case_id": "coordinate_structure_constraint_object_extraction:982",
+            "category": "coordinate_structure_constraint_object_extraction",
+            "good_score": 3.632196835478436,
+            "bad_score": 3.7375166495915053,
+            "margin": 0.10531981411306912,
+            "chose_good": true
+          },
+          {
+            "case_id": "coordinate_structure_constraint_object_extraction:794",
+            "category": "coordinate_structure_constraint_object_extraction",
+            "good_score": 3.25198440208367,
+            "bad_score": 3.2206660801320606,
+            "margin": -0.03131832195160955,
+            "chose_good": false
+          },
+          {
+            "case_id": "coordinate_structure_constraint_object_extraction:237",
+            "category": "coordinate_structure_constraint_object_extraction",
+            "good_score": 3.1628926480816464,
+            "bad_score": 3.069142937294836,
+            "margin": -0.0937497107868106,
+            "chose_good": false
+          },
+          {
+            "case_id": "coordinate_structure_constraint_object_extraction:867",
+            "category": "coordinate_structure_constraint_object_extraction",
+            "good_score": 3.3062363751603834,
+            "bad_score": 3.335862106598011,
+            "margin": 0.02962573143762759,
+            "chose_good": true
+          },
+          {
+            "case_id": "coordinate_structure_constraint_object_extraction:883",
+            "category": "coordinate_structure_constraint_object_extraction",
+            "good_score": 3.052592395840948,
+            "bad_score": 3.321723501896893,
+            "margin": 0.2691311060559447,
+            "chose_good": true
+          },
+          {
+            "case_id": "coordinate_structure_constraint_object_extraction:803",
+            "category": "coordinate_structure_constraint_object_extraction",
+            "good_score": 3.744399513209996,
+            "bad_score": 3.757454942271333,
+            "margin": 0.013055429061337165,
+            "chose_good": true
+          },
+          {
+            "case_id": "coordinate_structure_constraint_object_extraction:615",
+            "category": "coordinate_structure_constraint_object_extraction",
+            "good_score": 3.467274195352077,
+            "bad_score": 3.3593185260677645,
+            "margin": -0.10795566928431244,
+            "chose_good": false
+          },
+          {
+            "case_id": "coordinate_structure_constraint_object_extraction:317",
+            "category": "coordinate_structure_constraint_object_extraction",
+            "good_score": 3.594707443683634,
+            "bad_score": 3.5244506157561184,
+            "margin": -0.07025682792751553,
+            "chose_good": false
+          },
+          {
+            "case_id": "coordinate_structure_constraint_object_extraction:997",
+            "category": "coordinate_structure_constraint_object_extraction",
+            "good_score": 3.8600419055803945,
+            "bad_score": 3.901783569081806,
+            "margin": 0.04174166350141162,
+            "chose_good": true
+          },
+          {
+            "case_id": "coordinate_structure_constraint_object_extraction:704",
+            "category": "coordinate_structure_constraint_object_extraction",
+            "good_score": 3.7468395756466615,
+            "bad_score": 3.692910082712722,
+            "margin": -0.05392949293393956,
+            "chose_good": false
+          },
+          {
+            "case_id": "coordinate_structure_constraint_object_extraction:456",
+            "category": "coordinate_structure_constraint_object_extraction",
+            "good_score": 3.8191890909162862,
+            "bad_score": 3.7146324335477914,
+            "margin": -0.10455665736849484,
+            "chose_good": false
+          },
+          {
+            "case_id": "coordinate_structure_constraint_object_extraction:334",
+            "category": "coordinate_structure_constraint_object_extraction",
+            "good_score": 3.168317718112788,
+            "bad_score": 3.184613864472597,
+            "margin": 0.01629614635980925,
+            "chose_good": true
+          },
+          {
+            "case_id": "coordinate_structure_constraint_object_extraction:30",
+            "category": "coordinate_structure_constraint_object_extraction",
+            "good_score": 3.1542164673109196,
+            "bad_score": 3.0907874607638806,
+            "margin": -0.06342900654703909,
+            "chose_good": false
+          },
+          {
+            "case_id": "coordinate_structure_constraint_object_extraction:717",
+            "category": "coordinate_structure_constraint_object_extraction",
+            "good_score": 2.8602072621515657,
+            "bad_score": 2.796591439540927,
+            "margin": -0.0636158226106387,
+            "chose_good": false
+          },
+          {
+            "case_id": "coordinate_structure_constraint_object_extraction:100",
+            "category": "coordinate_structure_constraint_object_extraction",
+            "good_score": 3.8320268489956475,
+            "bad_score": 3.9076508702331614,
+            "margin": 0.07562402123751388,
+            "chose_good": true
+          },
+          {
+            "case_id": "coordinate_structure_constraint_object_extraction:790",
+            "category": "coordinate_structure_constraint_object_extraction",
+            "good_score": 3.827110438282983,
+            "bad_score": 3.8330413173255375,
+            "margin": 0.0059308790425545155,
+            "chose_good": true
+          },
+          {
+            "case_id": "coordinate_structure_constraint_object_extraction:431",
+            "category": "coordinate_structure_constraint_object_extraction",
+            "good_score": 4.012123641326164,
+            "bad_score": 3.692201055570765,
+            "margin": -0.31992258575539845,
+            "chose_good": false
+          },
+          {
+            "case_id": "coordinate_structure_constraint_object_extraction:915",
+            "category": "coordinate_structure_constraint_object_extraction",
+            "good_score": 3.154717075096696,
+            "bad_score": 3.139300550273354,
+            "margin": -0.015416524823342215,
+            "chose_good": false
+          },
+          {
+            "case_id": "coordinate_structure_constraint_object_extraction:446",
+            "category": "coordinate_structure_constraint_object_extraction",
+            "good_score": 3.7861785559121244,
+            "bad_score": 3.8114027009696896,
+            "margin": 0.025224145057565206,
+            "chose_good": true
+          },
+          {
+            "case_id": "coordinate_structure_constraint_object_extraction:737",
+            "category": "coordinate_structure_constraint_object_extraction",
+            "good_score": 3.9209383319280198,
+            "bad_score": 4.109171095566889,
+            "margin": 0.18823276363886965,
+            "chose_good": true
+          },
+          {
+            "case_id": "determiner_noun_agreement_1:148",
+            "category": "determiner_noun_agreement_1",
+            "good_score": 4.07091058155394,
+            "bad_score": 3.9712679014075976,
+            "margin": -0.09964268014634214,
+            "chose_good": false
+          },
+          {
+            "case_id": "determiner_noun_agreement_1:535",
+            "category": "determiner_noun_agreement_1",
+            "good_score": 3.0018865917762976,
+            "bad_score": 3.0276489508588638,
+            "margin": 0.02576235908256619,
+            "chose_good": true
+          },
+          {
+            "case_id": "determiner_noun_agreement_1:698",
+            "category": "determiner_noun_agreement_1",
+            "good_score": 3.697251072762564,
+            "bad_score": 3.632007443070308,
+            "margin": -0.06524362969225583,
+            "chose_good": false
+          },
+          {
+            "case_id": "determiner_noun_agreement_1:885",
+            "category": "determiner_noun_agreement_1",
+            "good_score": 2.4673230356770866,
+            "bad_score": 2.6113006059818273,
+            "margin": 0.1439775703047408,
+            "chose_good": true
+          },
+          {
+            "case_id": "determiner_noun_agreement_1:773",
+            "category": "determiner_noun_agreement_1",
+            "good_score": 4.018205661998157,
+            "bad_score": 3.942909739434379,
+            "margin": -0.07529592256377793,
+            "chose_good": false
+          },
+          {
+            "case_id": "determiner_noun_agreement_1:8",
+            "category": "determiner_noun_agreement_1",
+            "good_score": 4.617276701815117,
+            "bad_score": 4.4969494078259995,
+            "margin": -0.12032729398911712,
+            "chose_good": false
+          },
+          {
+            "case_id": "determiner_noun_agreement_1:679",
+            "category": "determiner_noun_agreement_1",
+            "good_score": 2.9668897085776096,
+            "bad_score": 3.1176932181759223,
+            "margin": 0.15080350959831268,
+            "chose_good": true
+          },
+          {
+            "case_id": "determiner_noun_agreement_1:801",
+            "category": "determiner_noun_agreement_1",
+            "good_score": 4.114470066423869,
+            "bad_score": 4.050078464869707,
+            "margin": -0.06439160155416168,
+            "chose_good": false
+          },
+          {
+            "case_id": "determiner_noun_agreement_1:246",
+            "category": "determiner_noun_agreement_1",
+            "good_score": 4.237622998782802,
+            "bad_score": 4.457823597328683,
+            "margin": 0.2202005985458806,
+            "chose_good": true
+          },
+          {
+            "case_id": "determiner_noun_agreement_1:868",
+            "category": "determiner_noun_agreement_1",
+            "good_score": 3.4175387062689104,
+            "bad_score": 3.507265556689002,
+            "margin": 0.08972685042009143,
+            "chose_good": true
+          },
+          {
+            "case_id": "determiner_noun_agreement_1:154",
+            "category": "determiner_noun_agreement_1",
+            "good_score": 3.341098899696143,
+            "bad_score": 3.3889496991263908,
+            "margin": 0.047850799430247726,
+            "chose_good": true
+          },
+          {
+            "case_id": "determiner_noun_agreement_1:244",
+            "category": "determiner_noun_agreement_1",
+            "good_score": 3.2921241925585827,
+            "bad_score": 3.3706371117781506,
+            "margin": 0.07851291921956793,
+            "chose_good": true
+          },
+          {
+            "case_id": "determiner_noun_agreement_1:217",
+            "category": "determiner_noun_agreement_1",
+            "good_score": 4.024625273148282,
+            "bad_score": 3.8818658969772937,
+            "margin": -0.14275937617098844,
+            "chose_good": false
+          },
+          {
+            "case_id": "determiner_noun_agreement_1:844",
+            "category": "determiner_noun_agreement_1",
+            "good_score": 3.262771352268122,
+            "bad_score": 3.375287623102357,
+            "margin": 0.11251627083423488,
+            "chose_good": true
+          },
+          {
+            "case_id": "determiner_noun_agreement_1:426",
+            "category": "determiner_noun_agreement_1",
+            "good_score": 3.4772511764571967,
+            "bad_score": 3.3737627292302124,
+            "margin": -0.10348844722698436,
+            "chose_good": false
+          },
+          {
+            "case_id": "determiner_noun_agreement_1:158",
+            "category": "determiner_noun_agreement_1",
+            "good_score": 2.9223445913822372,
+            "bad_score": 3.0514402484267733,
+            "margin": 0.12909565704453607,
+            "chose_good": true
+          },
+          {
+            "case_id": "determiner_noun_agreement_1:293",
+            "category": "determiner_noun_agreement_1",
+            "good_score": 4.474644922844284,
+            "bad_score": 4.6485788902233285,
+            "margin": 0.17393396737904432,
+            "chose_good": true
+          },
+          {
+            "case_id": "determiner_noun_agreement_1:789",
+            "category": "determiner_noun_agreement_1",
+            "good_score": 3.4971356202712767,
+            "bad_score": 3.728581806913881,
+            "margin": 0.23144618664260452,
+            "chose_good": true
+          },
+          {
+            "case_id": "determiner_noun_agreement_1:469",
+            "category": "determiner_noun_agreement_1",
+            "good_score": 3.5409701466625894,
+            "bad_score": 3.5896523333969497,
+            "margin": 0.04868218673436031,
+            "chose_good": true
+          },
+          {
+            "case_id": "determiner_noun_agreement_1:104",
+            "category": "determiner_noun_agreement_1",
+            "good_score": 3.3610804730385073,
+            "bad_score": 3.4416395382731566,
+            "margin": 0.08055906523464929,
+            "chose_good": true
+          }
+        ]
+      }
+    },
+    {
+      "name": "babylm_2026_capped_morpheme_100step_seed13",
+      "manifest": "artifacts\\tiny_lm\\babylm_2026_capped_morpheme_100step_seed13\\run_manifest.json",
+      "tokenizer": "capped_morpheme",
+      "checkpoint_dir": "artifacts\\tiny_lm\\babylm_2026_capped_morpheme_100step_seed13\\checkpoint",
+      "score_field": "bits_per_byte",
+      "report": {
+        "cases": 200,
+        "correct": 97,
+        "accuracy": 0.485,
+        "by_category": {
+          "adjunct_island": {
+            "category": "adjunct_island",
+            "cases": 20,
+            "correct": 6,
+            "accuracy": 0.3
+          },
+          "anaphor_gender_agreement": {
+            "category": "anaphor_gender_agreement",
+            "cases": 20,
+            "correct": 12,
+            "accuracy": 0.6
+          },
+          "anaphor_number_agreement": {
+            "category": "anaphor_number_agreement",
+            "cases": 20,
+            "correct": 11,
+            "accuracy": 0.55
+          },
+          "animate_subject_passive": {
+            "category": "animate_subject_passive",
+            "cases": 20,
+            "correct": 7,
+            "accuracy": 0.35
+          },
+          "animate_subject_trans": {
+            "category": "animate_subject_trans",
+            "cases": 20,
+            "correct": 12,
+            "accuracy": 0.6
+          },
+          "causative": {
+            "category": "causative",
+            "cases": 20,
+            "correct": 9,
+            "accuracy": 0.45
+          },
+          "complex_NP_island": {
+            "category": "complex_NP_island",
+            "cases": 20,
+            "correct": 11,
+            "accuracy": 0.55
+          },
+          "coordinate_structure_constraint_complex_left_branch": {
+            "category": "coordinate_structure_constraint_complex_left_branch",
+            "cases": 20,
+            "correct": 4,
+            "accuracy": 0.2
+          },
+          "coordinate_structure_constraint_object_extraction": {
+            "category": "coordinate_structure_constraint_object_extraction",
+            "cases": 20,
+            "correct": 13,
+            "accuracy": 0.65
+          },
+          "determiner_noun_agreement_1": {
+            "category": "determiner_noun_agreement_1",
+            "cases": 20,
+            "correct": 12,
+            "accuracy": 0.6
+          }
+        },
+        "predictions": [
+          {
+            "case_id": "adjunct_island:905",
+            "category": "adjunct_island",
+            "good_score": 2.666296264640105,
+            "bad_score": 2.6771161609986946,
+            "margin": 0.010819896358589709,
+            "chose_good": true
+          },
+          {
+            "case_id": "adjunct_island:710",
+            "category": "adjunct_island",
+            "good_score": 2.888990373610789,
+            "bad_score": 2.8414523331992982,
+            "margin": -0.0475380404114909,
+            "chose_good": false
+          },
+          {
+            "case_id": "adjunct_island:75",
+            "category": "adjunct_island",
+            "good_score": 2.2983944870600532,
+            "bad_score": 2.2951681508290704,
+            "margin": -0.0032263362309827848,
+            "chose_good": false
+          },
+          {
+            "case_id": "adjunct_island:758",
+            "category": "adjunct_island",
+            "good_score": 2.7563485524158073,
+            "bad_score": 2.7572256639352073,
+            "margin": 0.0008771115193999535,
+            "chose_good": true
+          },
+          {
+            "case_id": "adjunct_island:869",
+            "category": "adjunct_island",
+            "good_score": 2.7010168001206294,
+            "bad_score": 2.694734617849913,
+            "margin": -0.006282182270716419,
+            "chose_good": false
+          },
+          {
+            "case_id": "adjunct_island:552",
+            "category": "adjunct_island",
+            "good_score": 2.428197466705111,
+            "bad_score": 2.42094759538554,
+            "margin": -0.007249871319571,
+            "chose_good": false
+          },
+          {
+            "case_id": "adjunct_island:318",
+            "category": "adjunct_island",
+            "good_score": 2.0969133602614147,
+            "bad_score": 2.0916618146330754,
+            "margin": -0.005251545628339294,
+            "chose_good": false
+          },
+          {
+            "case_id": "adjunct_island:102",
+            "category": "adjunct_island",
+            "good_score": 2.0669240824442765,
+            "bad_score": 2.0600601815442614,
+            "margin": -0.006863900900015096,
+            "chose_good": false
+          },
+          {
+            "case_id": "adjunct_island:264",
+            "category": "adjunct_island",
+            "good_score": 2.1830230599159277,
+            "bad_score": 2.2013093456607686,
+            "margin": 0.018286285744840924,
+            "chose_good": true
+          },
+          {
+            "case_id": "adjunct_island:670",
+            "category": "adjunct_island",
+            "good_score": 2.17859017477018,
+            "bad_score": 2.159453995415365,
+            "margin": -0.01913617935481504,
+            "chose_good": false
+          },
+          {
+            "case_id": "adjunct_island:988",
+            "category": "adjunct_island",
+            "good_score": 2.7080427862033813,
+            "bad_score": 2.7325646390944858,
+            "margin": 0.024521852891104423,
+            "chose_good": true
+          },
+          {
+            "case_id": "adjunct_island:304",
+            "category": "adjunct_island",
+            "good_score": 2.8783119171596545,
+            "bad_score": 2.8772076486230262,
+            "margin": -0.0011042685366282612,
+            "chose_good": false
+          },
+          {
+            "case_id": "adjunct_island:586",
+            "category": "adjunct_island",
+            "good_score": 2.5160303405932476,
+            "bad_score": 2.5000376456956377,
+            "margin": -0.015992694897609905,
+            "chose_good": false
+          },
+          {
+            "case_id": "adjunct_island:945",
+            "category": "adjunct_island",
+            "good_score": 2.6288991838021216,
+            "bad_score": 2.6170356829594845,
+            "margin": -0.011863500842637098,
+            "chose_good": false
+          },
+          {
+            "case_id": "adjunct_island:195",
+            "category": "adjunct_island",
+            "good_score": 2.574624138992215,
+            "bad_score": 2.579729443983078,
+            "margin": 0.005105304990862702,
+            "chose_good": true
+          },
+          {
+            "case_id": "adjunct_island:812",
+            "category": "adjunct_island",
+            "good_score": 2.426784653433239,
+            "bad_score": 2.414460147362209,
+            "margin": -0.012324506071029973,
+            "chose_good": false
+          },
+          {
+            "case_id": "adjunct_island:541",
+            "category": "adjunct_island",
+            "good_score": 2.5214795641559835,
+            "bad_score": 2.5207370089352543,
+            "margin": -0.0007425552207291908,
+            "chose_good": false
+          },
+          {
+            "case_id": "adjunct_island:591",
+            "category": "adjunct_island",
+            "good_score": 2.7378847697084474,
+            "bad_score": 2.7491206282659135,
+            "margin": 0.011235858557466116,
+            "chose_good": true
+          },
+          {
+            "case_id": "adjunct_island:241",
+            "category": "adjunct_island",
+            "good_score": 2.4870151025623715,
+            "bad_score": 2.4855610898429528,
+            "margin": -0.0014540127194186958,
+            "chose_good": false
+          },
+          {
+            "case_id": "adjunct_island:754",
+            "category": "adjunct_island",
+            "good_score": 2.614630700945106,
+            "bad_score": 2.5962499169841453,
+            "margin": -0.018380783960960656,
+            "chose_good": false
+          },
+          {
+            "case_id": "anaphor_gender_agreement:803",
+            "category": "anaphor_gender_agreement",
+            "good_score": 2.678474599532804,
+            "bad_score": 2.77463561324149,
+            "margin": 0.09616101370868613,
+            "chose_good": true
+          },
+          {
+            "case_id": "anaphor_gender_agreement:534",
+            "category": "anaphor_gender_agreement",
+            "good_score": 2.6050937145225608,
+            "bad_score": 2.7573585041607225,
+            "margin": 0.1522647896381617,
+            "chose_good": true
+          },
+          {
+            "case_id": "anaphor_gender_agreement:975",
+            "category": "anaphor_gender_agreement",
+            "good_score": 3.0922861280066907,
+            "bad_score": 3.2570525463594353,
+            "margin": 0.16476641835274464,
+            "chose_good": true
+          },
+          {
+            "case_id": "anaphor_gender_agreement:324",
+            "category": "anaphor_gender_agreement",
+            "good_score": 3.045408243585512,
+            "bad_score": 3.083808988490562,
+            "margin": 0.0384007449050503,
+            "chose_good": true
+          },
+          {
+            "case_id": "anaphor_gender_agreement:627",
+            "category": "anaphor_gender_agreement",
+            "good_score": 2.9530591208445616,
+            "bad_score": 3.0733461821526107,
+            "margin": 0.12028706130804911,
+            "chose_good": true
+          },
+          {
+            "case_id": "anaphor_gender_agreement:339",
+            "category": "anaphor_gender_agreement",
+            "good_score": 2.8012198144893357,
+            "bad_score": 2.9403637720231286,
+            "margin": 0.13914395753379294,
+            "chose_good": true
+          },
+          {
+            "case_id": "anaphor_gender_agreement:919",
+            "category": "anaphor_gender_agreement",
+            "good_score": 2.1112404292728266,
+            "bad_score": 2.101012648915094,
+            "margin": -0.010227780357732641,
+            "chose_good": false
+          },
+          {
+            "case_id": "anaphor_gender_agreement:955",
+            "category": "anaphor_gender_agreement",
+            "good_score": 2.152707299470178,
+            "bad_score": 2.286657830395909,
+            "margin": 0.13395053092573095,
+            "chose_good": true
+          },
+          {
+            "case_id": "anaphor_gender_agreement:526",
+            "category": "anaphor_gender_agreement",
+            "good_score": 3.161870423200883,
+            "bad_score": 3.146888621381022,
+            "margin": -0.014981801819861307,
+            "chose_good": false
+          },
+          {
+            "case_id": "anaphor_gender_agreement:718",
+            "category": "anaphor_gender_agreement",
+            "good_score": 1.706259124068556,
+            "bad_score": 1.6951053096347042,
+            "margin": -0.011153814433851883,
+            "chose_good": false
+          },
+          {
+            "case_id": "anaphor_gender_agreement:858",
+            "category": "anaphor_gender_agreement",
+            "good_score": 3.017475371776857,
+            "bad_score": 3.125265521136143,
+            "margin": 0.10779014935928588,
+            "chose_good": true
+          },
+          {
+            "case_id": "anaphor_gender_agreement:294",
+            "category": "anaphor_gender_agreement",
+            "good_score": 3.0066268437465515,
+            "bad_score": 3.1713130853879132,
+            "margin": 0.1646862416413617,
+            "chose_good": true
+          },
+          {
+            "case_id": "anaphor_gender_agreement:101",
+            "category": "anaphor_gender_agreement",
+            "good_score": 2.0111395070041405,
+            "bad_score": 1.9960188628972673,
+            "margin": -0.015120644106873193,
+            "chose_good": false
+          },
+          {
+            "case_id": "anaphor_gender_agreement:151",
+            "category": "anaphor_gender_agreement",
+            "good_score": 2.8701919462574055,
+            "bad_score": 2.8424224808980907,
+            "margin": -0.027769465359314793,
+            "chose_good": false
+          },
+          {
+            "case_id": "anaphor_gender_agreement:169",
+            "category": "anaphor_gender_agreement",
+            "good_score": 2.4541702345728114,
+            "bad_score": 2.5710703363991456,
+            "margin": 0.11690010182633426,
+            "chose_good": true
+          },
+          {
+            "case_id": "anaphor_gender_agreement:240",
+            "category": "anaphor_gender_agreement",
+            "good_score": 3.153115498097806,
+            "bad_score": 3.1259300225628346,
+            "margin": -0.027185475534971193,
+            "chose_good": false
+          },
+          {
+            "case_id": "anaphor_gender_agreement:678",
+            "category": "anaphor_gender_agreement",
+            "good_score": 2.723730792722749,
+            "bad_score": 2.694400550410324,
+            "margin": -0.029330242312425092,
+            "chose_good": false
+          },
+          {
+            "case_id": "anaphor_gender_agreement:72",
+            "category": "anaphor_gender_agreement",
+            "good_score": 2.2140682071190687,
+            "bad_score": 2.189305983181817,
+            "margin": -0.024762223937251804,
+            "chose_good": false
+          },
+          {
+            "case_id": "anaphor_gender_agreement:484",
+            "category": "anaphor_gender_agreement",
+            "good_score": 2.2352848133800713,
+            "bad_score": 2.263978822191932,
+            "margin": 0.028694008811860794,
+            "chose_good": true
+          },
+          {
+            "case_id": "anaphor_gender_agreement:301",
+            "category": "anaphor_gender_agreement",
+            "good_score": 2.8771743647107333,
+            "bad_score": 3.013119064989114,
+            "margin": 0.1359447002783809,
+            "chose_good": true
+          },
+          {
+            "case_id": "anaphor_number_agreement:99",
+            "category": "anaphor_number_agreement",
+            "good_score": 2.49037878143237,
+            "bad_score": 2.4927654512523225,
+            "margin": 0.0023866698199523917,
+            "chose_good": true
+          },
+          {
+            "case_id": "anaphor_number_agreement:686",
+            "category": "anaphor_number_agreement",
+            "good_score": 3.2512613237614563,
+            "bad_score": 3.200643847344409,
+            "margin": -0.05061747641704706,
+            "chose_good": false
+          },
+          {
+            "case_id": "anaphor_number_agreement:246",
+            "category": "anaphor_number_agreement",
+            "good_score": 2.6670334938793343,
+            "bad_score": 2.6609984927181114,
+            "margin": -0.006035001161222908,
+            "chose_good": false
+          },
+          {
+            "case_id": "anaphor_number_agreement:942",
+            "category": "anaphor_number_agreement",
+            "good_score": 2.377673218859795,
+            "bad_score": 2.4488632014099934,
+            "margin": 0.07118998255019848,
+            "chose_good": true
+          },
+          {
+            "case_id": "anaphor_number_agreement:211",
+            "category": "anaphor_number_agreement",
+            "good_score": 3.0210800563548785,
+            "bad_score": 2.9370331380144887,
+            "margin": -0.0840469183403898,
+            "chose_good": false
+          },
+          {
+            "case_id": "anaphor_number_agreement:276",
+            "category": "anaphor_number_agreement",
+            "good_score": 2.808728608776649,
+            "bad_score": 2.7683974585293942,
+            "margin": -0.040331150247254755,
+            "chose_good": false
+          },
+          {
+            "case_id": "anaphor_number_agreement:789",
+            "category": "anaphor_number_agreement",
+            "good_score": 1.9679356344396848,
+            "bad_score": 1.9968329105835019,
+            "margin": 0.028897276143817097,
+            "chose_good": true
+          },
+          {
+            "case_id": "anaphor_number_agreement:758",
+            "category": "anaphor_number_agreement",
+            "good_score": 2.7997868285834775,
+            "bad_score": 2.754646830521954,
+            "margin": -0.04513999806152347,
+            "chose_good": false
+          },
+          {
+            "case_id": "anaphor_number_agreement:399",
+            "category": "anaphor_number_agreement",
+            "good_score": 2.761827732185968,
+            "bad_score": 2.770050073324649,
+            "margin": 0.008222341138680811,
+            "chose_good": true
+          },
+          {
+            "case_id": "anaphor_number_agreement:314",
+            "category": "anaphor_number_agreement",
+            "good_score": 3.2580593817412655,
+            "bad_score": 3.1390051096308795,
+            "margin": -0.119054272110386,
+            "chose_good": false
+          },
+          {
+            "case_id": "anaphor_number_agreement:763",
+            "category": "anaphor_number_agreement",
+            "good_score": 2.5245476237734548,
+            "bad_score": 2.6099842497391945,
+            "margin": 0.08543662596573975,
+            "chose_good": true
+          },
+          {
+            "case_id": "anaphor_number_agreement:439",
+            "category": "anaphor_number_agreement",
+            "good_score": 2.3046124262317758,
+            "bad_score": 2.269641322009855,
+            "margin": -0.03497110422192096,
+            "chose_good": false
+          },
+          {
+            "case_id": "anaphor_number_agreement:168",
+            "category": "anaphor_number_agreement",
+            "good_score": 2.809117692498381,
+            "bad_score": 2.800546845949753,
+            "margin": -0.00857084654862783,
+            "chose_good": false
+          },
+          {
+            "case_id": "anaphor_number_agreement:683",
+            "category": "anaphor_number_agreement",
+            "good_score": 2.7184837691137855,
+            "bad_score": 2.855435985529355,
+            "margin": 0.13695221641556943,
+            "chose_good": true
+          },
+          {
+            "case_id": "anaphor_number_agreement:302",
+            "category": "anaphor_number_agreement",
+            "good_score": 2.773095827999365,
+            "bad_score": 2.7502976429512613,
+            "margin": -0.022798185048103825,
+            "chose_good": false
+          },
+          {
+            "case_id": "anaphor_number_agreement:395",
+            "category": "anaphor_number_agreement",
+            "good_score": 2.738747670769468,
+            "bad_score": 2.7733454080661115,
+            "margin": 0.034597737296643505,
+            "chose_good": true
+          },
+          {
+            "case_id": "anaphor_number_agreement:525",
+            "category": "anaphor_number_agreement",
+            "good_score": 3.027493472316867,
+            "bad_score": 3.166245750287054,
+            "margin": 0.13875227797018663,
+            "chose_good": true
+          },
+          {
+            "case_id": "anaphor_number_agreement:674",
+            "category": "anaphor_number_agreement",
+            "good_score": 3.495169583485773,
+            "bad_score": 3.7213376912803584,
+            "margin": 0.22616810779458563,
+            "chose_good": true
+          },
+          {
+            "case_id": "anaphor_number_agreement:745",
+            "category": "anaphor_number_agreement",
+            "good_score": 2.2470051576280548,
+            "bad_score": 2.2847026257854233,
+            "margin": 0.03769746815736852,
+            "chose_good": true
+          },
+          {
+            "case_id": "anaphor_number_agreement:533",
+            "category": "anaphor_number_agreement",
+            "good_score": 2.7625421863360193,
+            "bad_score": 2.7837444985819495,
+            "margin": 0.021202312245930166,
+            "chose_good": true
+          },
+          {
+            "case_id": "animate_subject_passive:962",
+            "category": "animate_subject_passive",
+            "good_score": 3.3699438996429696,
+            "bad_score": 3.141478184770999,
+            "margin": -0.22846571487197043,
+            "chose_good": false
+          },
+          {
+            "case_id": "animate_subject_passive:601",
+            "category": "animate_subject_passive",
+            "good_score": 2.977533848414124,
+            "bad_score": 3.010317146302501,
+            "margin": 0.03278329788837686,
+            "chose_good": true
+          },
+          {
+            "case_id": "animate_subject_passive:847",
+            "category": "animate_subject_passive",
+            "good_score": 2.59722292302232,
+            "bad_score": 2.5881485106907647,
+            "margin": -0.009074412331555148,
+            "chose_good": false
+          },
+          {
+            "case_id": "animate_subject_passive:175",
+            "category": "animate_subject_passive",
+            "good_score": 3.088229378307118,
+            "bad_score": 3.0181151084317253,
+            "margin": -0.07011426987539293,
+            "chose_good": false
+          },
+          {
+            "case_id": "animate_subject_passive:4",
+            "category": "animate_subject_passive",
+            "good_score": 2.854301657003895,
+            "bad_score": 2.771760685732467,
+            "margin": -0.08254097127142801,
+            "chose_good": false
+          },
+          {
+            "case_id": "animate_subject_passive:981",
+            "category": "animate_subject_passive",
+            "good_score": 2.991705362661977,
+            "bad_score": 2.559009698344604,
+            "margin": -0.43269566431737294,
+            "chose_good": false
+          },
+          {
+            "case_id": "animate_subject_passive:865",
+            "category": "animate_subject_passive",
+            "good_score": 2.243309441552847,
+            "bad_score": 2.3458189912667353,
+            "margin": 0.10250954971388815,
+            "chose_good": true
+          },
+          {
+            "case_id": "animate_subject_passive:522",
+            "category": "animate_subject_passive",
+            "good_score": 3.3692428613725367,
+            "bad_score": 3.253390860708494,
+            "margin": -0.11585200066404289,
+            "chose_good": false
+          },
+          {
+            "case_id": "animate_subject_passive:911",
+            "category": "animate_subject_passive",
+            "good_score": 2.975076803640016,
+            "bad_score": 2.742189606559447,
+            "margin": -0.23288719708056904,
+            "chose_good": false
+          },
+          {
+            "case_id": "animate_subject_passive:276",
+            "category": "animate_subject_passive",
+            "good_score": 2.783418190967496,
+            "bad_score": 2.7553882745912115,
+            "margin": -0.028029916376284714,
+            "chose_good": false
+          },
+          {
+            "case_id": "animate_subject_passive:131",
+            "category": "animate_subject_passive",
+            "good_score": 2.1752967971391057,
+            "bad_score": 2.2508022631307045,
+            "margin": 0.0755054659915988,
+            "chose_good": true
+          },
+          {
+            "case_id": "animate_subject_passive:663",
+            "category": "animate_subject_passive",
+            "good_score": 2.5734743884894002,
+            "bad_score": 2.3496111536838122,
+            "margin": -0.223863234805588,
+            "chose_good": false
+          },
+          {
+            "case_id": "animate_subject_passive:86",
+            "category": "animate_subject_passive",
+            "good_score": 2.49099302661794,
+            "bad_score": 2.4148966622611185,
+            "margin": -0.07609636435682132,
+            "chose_good": false
+          },
+          {
+            "case_id": "animate_subject_passive:85",
+            "category": "animate_subject_passive",
+            "good_score": 2.8740250219836563,
+            "bad_score": 2.640892503074391,
+            "margin": -0.23313251890926523,
+            "chose_good": false
+          },
+          {
+            "case_id": "animate_subject_passive:849",
+            "category": "animate_subject_passive",
+            "good_score": 2.572515774401645,
+            "bad_score": 2.7026386612390096,
+            "margin": 0.1301228868373645,
+            "chose_good": true
+          },
+          {
+            "case_id": "animate_subject_passive:525",
+            "category": "animate_subject_passive",
+            "good_score": 2.6255557238907388,
+            "bad_score": 2.9020719335467993,
+            "margin": 0.2765162096560605,
+            "chose_good": true
+          },
+          {
+            "case_id": "animate_subject_passive:886",
+            "category": "animate_subject_passive",
+            "good_score": 2.5690967885761355,
+            "bad_score": 2.727475510589431,
+            "margin": 0.15837872201329528,
+            "chose_good": true
+          },
+          {
+            "case_id": "animate_subject_passive:163",
+            "category": "animate_subject_passive",
+            "good_score": 2.495113615560021,
+            "bad_score": 2.4801555080965105,
+            "margin": -0.014958107463510562,
+            "chose_good": false
+          },
+          {
+            "case_id": "animate_subject_passive:325",
+            "category": "animate_subject_passive",
+            "good_score": 2.4166881573800145,
+            "bad_score": 2.750863598312225,
+            "margin": 0.3341754409322104,
+            "chose_good": true
+          },
+          {
+            "case_id": "animate_subject_passive:842",
+            "category": "animate_subject_passive",
+            "good_score": 2.94863038940462,
+            "bad_score": 2.752085957239784,
+            "margin": -0.1965444321648362,
+            "chose_good": false
+          },
+          {
+            "case_id": "animate_subject_trans:122",
+            "category": "animate_subject_trans",
+            "good_score": 3.0501243900558386,
+            "bad_score": 2.8409948930425633,
+            "margin": -0.20912949701327532,
+            "chose_good": false
+          },
+          {
+            "case_id": "animate_subject_trans:297",
+            "category": "animate_subject_trans",
+            "good_score": 2.8931597123437744,
+            "bad_score": 2.533131906776738,
+            "margin": -0.3600278055670363,
+            "chose_good": false
+          },
+          {
+            "case_id": "animate_subject_trans:631",
+            "category": "animate_subject_trans",
+            "good_score": 3.5088784569405784,
+            "bad_score": 2.9626408361341214,
+            "margin": -0.546237620806457,
+            "chose_good": false
+          },
+          {
+            "case_id": "animate_subject_trans:974",
+            "category": "animate_subject_trans",
+            "good_score": 2.9949689600695124,
+            "bad_score": 3.1129239418783174,
+            "margin": 0.11795498180880504,
+            "chose_good": true
+          },
+          {
+            "case_id": "animate_subject_trans:165",
+            "category": "animate_subject_trans",
+            "good_score": 2.5436936669065724,
+            "bad_score": 2.7899982655833737,
+            "margin": 0.24630459867680132,
+            "chose_good": true
+          },
+          {
+            "case_id": "animate_subject_trans:368",
+            "category": "animate_subject_trans",
+            "good_score": 3.0523480875131277,
+            "bad_score": 2.7453640088233593,
+            "margin": -0.3069840786897684,
+            "chose_good": false
+          },
+          {
+            "case_id": "animate_subject_trans:388",
+            "category": "animate_subject_trans",
+            "good_score": 2.625556128749419,
+            "bad_score": 2.3944565178067196,
+            "margin": -0.23109961094269948,
+            "chose_good": false
+          },
+          {
+            "case_id": "animate_subject_trans:559",
+            "category": "animate_subject_trans",
+            "good_score": 2.8762842883453446,
+            "bad_score": 2.638060226400714,
+            "margin": -0.23822406194463053,
+            "chose_good": false
+          },
+          {
+            "case_id": "animate_subject_trans:516",
+            "category": "animate_subject_trans",
+            "good_score": 2.433713284092019,
+            "bad_score": 2.575403392383275,
+            "margin": 0.14169010829125606,
+            "chose_good": true
+          },
+          {
+            "case_id": "animate_subject_trans:884",
+            "category": "animate_subject_trans",
+            "good_score": 2.5690758754857903,
+            "bad_score": 2.679714162370885,
+            "margin": 0.11063828688509458,
+            "chose_good": true
+          },
+          {
+            "case_id": "animate_subject_trans:632",
+            "category": "animate_subject_trans",
+            "good_score": 2.0861675965007267,
+            "bad_score": 2.413288762061672,
+            "margin": 0.3271211655609454,
+            "chose_good": true
+          },
+          {
+            "case_id": "animate_subject_trans:660",
+            "category": "animate_subject_trans",
+            "good_score": 2.768750877483733,
+            "bad_score": 2.8034173777416482,
+            "margin": 0.03466650025791518,
+            "chose_good": true
+          },
+          {
+            "case_id": "animate_subject_trans:147",
+            "category": "animate_subject_trans",
+            "good_score": 2.848158687864343,
+            "bad_score": 3.2723603597412625,
+            "margin": 0.4242016718769195,
+            "chose_good": true
+          },
+          {
+            "case_id": "animate_subject_trans:779",
+            "category": "animate_subject_trans",
+            "good_score": 2.5363718586047255,
+            "bad_score": 2.7807104845309887,
+            "margin": 0.2443386259262632,
+            "chose_good": true
+          },
+          {
+            "case_id": "animate_subject_trans:169",
+            "category": "animate_subject_trans",
+            "good_score": 3.559499869750835,
+            "bad_score": 3.0343945296587056,
+            "margin": -0.5251053400921295,
+            "chose_good": false
+          },
+          {
+            "case_id": "animate_subject_trans:229",
+            "category": "animate_subject_trans",
+            "good_score": 3.106687136224938,
+            "bad_score": 3.1900309771082602,
+            "margin": 0.08334384088332225,
+            "chose_good": true
+          },
+          {
+            "case_id": "animate_subject_trans:635",
+            "category": "animate_subject_trans",
+            "good_score": 2.7303151026489916,
+            "bad_score": 2.4526245224107,
+            "margin": -0.2776905802382914,
+            "chose_good": false
+          },
+          {
+            "case_id": "animate_subject_trans:704",
+            "category": "animate_subject_trans",
+            "good_score": 2.5176445669348584,
+            "bad_score": 2.871673691449689,
+            "margin": 0.3540291245148306,
+            "chose_good": true
+          },
+          {
+            "case_id": "animate_subject_trans:512",
+            "category": "animate_subject_trans",
+            "good_score": 2.5424721279371947,
+            "bad_score": 2.5896422946686086,
+            "margin": 0.04717016673141394,
+            "chose_good": true
+          },
+          {
+            "case_id": "animate_subject_trans:481",
+            "category": "animate_subject_trans",
+            "good_score": 3.1574503752649905,
+            "bad_score": 3.8985533090368,
+            "margin": 0.7411029337718094,
+            "chose_good": true
+          },
+          {
+            "case_id": "causative:470",
+            "category": "causative",
+            "good_score": 2.369868302198339,
+            "bad_score": 2.6558986581244297,
+            "margin": 0.2860303559260906,
+            "chose_good": true
+          },
+          {
+            "case_id": "causative:518",
+            "category": "causative",
+            "good_score": 2.7015249431878257,
+            "bad_score": 2.523220937320224,
+            "margin": -0.17830400586760176,
+            "chose_good": false
+          },
+          {
+            "case_id": "causative:947",
+            "category": "causative",
+            "good_score": 2.842623499953174,
+            "bad_score": 2.6460189528795914,
+            "margin": -0.19660454707358266,
+            "chose_good": false
+          },
+          {
+            "case_id": "causative:258",
+            "category": "causative",
+            "good_score": 2.08310079940484,
+            "bad_score": 2.1220731487476225,
+            "margin": 0.038972349342782486,
+            "chose_good": true
+          },
+          {
+            "case_id": "causative:966",
+            "category": "causative",
+            "good_score": 2.68648045123483,
+            "bad_score": 2.837443873888189,
+            "margin": 0.15096342265335894,
+            "chose_good": true
+          },
+          {
+            "case_id": "causative:215",
+            "category": "causative",
+            "good_score": 2.8429228048001236,
+            "bad_score": 3.4257611759602797,
+            "margin": 0.5828383711601561,
+            "chose_good": true
+          },
+          {
+            "case_id": "causative:185",
+            "category": "causative",
+            "good_score": 3.084540157825542,
+            "bad_score": 2.6583224324791215,
+            "margin": -0.42621772534642055,
+            "chose_good": false
+          },
+          {
+            "case_id": "causative:854",
+            "category": "causative",
+            "good_score": 2.1116918067781434,
+            "bad_score": 2.153130916344715,
+            "margin": 0.04143910956657182,
+            "chose_good": true
+          },
+          {
+            "case_id": "causative:815",
+            "category": "causative",
+            "good_score": 3.092423416024119,
+            "bad_score": 2.9879412726956094,
+            "margin": -0.10448214332850947,
+            "chose_good": false
+          },
+          {
+            "case_id": "causative:962",
+            "category": "causative",
+            "good_score": 2.3943148647023564,
+            "bad_score": 2.503959328918606,
+            "margin": 0.10964446421624974,
+            "chose_good": true
+          },
+          {
+            "case_id": "causative:263",
+            "category": "causative",
+            "good_score": 2.6231786058399216,
+            "bad_score": 2.9083050501788876,
+            "margin": 0.28512644433896606,
+            "chose_good": true
+          },
+          {
+            "case_id": "causative:146",
+            "category": "causative",
+            "good_score": 3.243483414306622,
+            "bad_score": 3.158723906290281,
+            "margin": -0.08475950801634058,
+            "chose_good": false
+          },
+          {
+            "case_id": "causative:167",
+            "category": "causative",
+            "good_score": 2.813199153829979,
+            "bad_score": 2.562246974792332,
+            "margin": -0.25095217903764677,
+            "chose_good": false
+          },
+          {
+            "case_id": "causative:59",
+            "category": "causative",
+            "good_score": 2.503642016169351,
+            "bad_score": 2.7420841129473845,
+            "margin": 0.23844209677803363,
+            "chose_good": true
+          },
+          {
+            "case_id": "causative:792",
+            "category": "causative",
+            "good_score": 2.429242388703659,
+            "bad_score": 2.6095145296312046,
+            "margin": 0.18027214092754562,
+            "chose_good": true
+          },
+          {
+            "case_id": "causative:849",
+            "category": "causative",
+            "good_score": 3.5866966491294514,
+            "bad_score": 3.5778892323666813,
+            "margin": -0.008807416762770082,
+            "chose_good": false
+          },
+          {
+            "case_id": "causative:563",
+            "category": "causative",
+            "good_score": 3.5202266598751977,
+            "bad_score": 3.094327941316226,
+            "margin": -0.42589871855897155,
+            "chose_good": false
+          },
+          {
+            "case_id": "causative:435",
+            "category": "causative",
+            "good_score": 2.6815098499354293,
+            "bad_score": 2.6815098499354293,
+            "margin": 0.0,
+            "chose_good": false
+          },
+          {
+            "case_id": "causative:766",
+            "category": "causative",
+            "good_score": 2.629706226462603,
+            "bad_score": 2.5296210274780835,
+            "margin": -0.10008519898451951,
+            "chose_good": false
+          },
+          {
+            "case_id": "causative:937",
+            "category": "causative",
+            "good_score": 2.7787639603895706,
+            "bad_score": 2.5022760252711067,
+            "margin": -0.2764879351184639,
+            "chose_good": false
+          },
+          {
+            "case_id": "complex_NP_island:43",
+            "category": "complex_NP_island",
+            "good_score": 1.8345751085885353,
+            "bad_score": 1.834632495315649,
+            "margin": 5.738672711363968e-05,
+            "chose_good": true
+          },
+          {
+            "case_id": "complex_NP_island:55",
+            "category": "complex_NP_island",
+            "good_score": 2.3582565034183482,
+            "bad_score": 2.366594323004948,
+            "margin": 0.00833781958659996,
+            "chose_good": true
+          },
+          {
+            "case_id": "complex_NP_island:356",
+            "category": "complex_NP_island",
+            "good_score": 2.464866844653502,
+            "bad_score": 2.464266321703195,
+            "margin": -0.000600522950306992,
+            "chose_good": false
+          },
+          {
+            "case_id": "complex_NP_island:720",
+            "category": "complex_NP_island",
+            "good_score": 2.5451136862025177,
+            "bad_score": 2.548006804814201,
+            "margin": 0.0028931186116833985,
+            "chose_good": true
+          },
+          {
+            "case_id": "complex_NP_island:534",
+            "category": "complex_NP_island",
+            "good_score": 2.3992016374604472,
+            "bad_score": 2.395516465091106,
+            "margin": -0.003685172369341405,
+            "chose_good": false
+          },
+          {
+            "case_id": "complex_NP_island:221",
+            "category": "complex_NP_island",
+            "good_score": 2.194132669248084,
+            "bad_score": 2.2195545617065875,
+            "margin": 0.02542189245850368,
+            "chose_good": true
+          },
+          {
+            "case_id": "complex_NP_island:761",
+            "category": "complex_NP_island",
+            "good_score": 2.3229455957261367,
+            "bad_score": 2.3345944379405936,
+            "margin": 0.011648842214456945,
+            "chose_good": true
+          },
+          {
+            "case_id": "complex_NP_island:725",
+            "category": "complex_NP_island",
+            "good_score": 2.4125740506105036,
+            "bad_score": 2.417382598326157,
+            "margin": 0.004808547715653422,
+            "chose_good": true
+          },
+          {
+            "case_id": "complex_NP_island:399",
+            "category": "complex_NP_island",
+            "good_score": 2.7471251931343934,
+            "bad_score": 2.7347521318480053,
+            "margin": -0.012373061286388154,
+            "chose_good": false
+          },
+          {
+            "case_id": "complex_NP_island:764",
+            "category": "complex_NP_island",
+            "good_score": 2.1899014370277947,
+            "bad_score": 2.171822368527875,
+            "margin": -0.018079068499919693,
+            "chose_good": false
+          },
+          {
+            "case_id": "complex_NP_island:68",
+            "category": "complex_NP_island",
+            "good_score": 2.346205320822439,
+            "bad_score": 2.347286970843693,
+            "margin": 0.0010816500212538216,
+            "chose_good": true
+          },
+          {
+            "case_id": "complex_NP_island:920",
+            "category": "complex_NP_island",
+            "good_score": 2.6775397765485076,
+            "bad_score": 2.6590634185419817,
+            "margin": -0.018476358006525917,
+            "chose_good": false
+          },
+          {
+            "case_id": "complex_NP_island:727",
+            "category": "complex_NP_island",
+            "good_score": 2.290263481903321,
+            "bad_score": 2.3007595649820414,
+            "margin": 0.010496083078720186,
+            "chose_good": true
+          },
+          {
+            "case_id": "complex_NP_island:471",
+            "category": "complex_NP_island",
+            "good_score": 1.9912068869455481,
+            "bad_score": 1.9848156885205663,
+            "margin": -0.006391198424981814,
+            "chose_good": false
+          },
+          {
+            "case_id": "complex_NP_island:894",
+            "category": "complex_NP_island",
+            "good_score": 2.3167468169477874,
+            "bad_score": 2.3216255574254343,
+            "margin": 0.0048787404776469145,
+            "chose_good": true
+          },
+          {
+            "case_id": "complex_NP_island:175",
+            "category": "complex_NP_island",
+            "good_score": 2.3353152320768373,
+            "bad_score": 2.355835522981348,
+            "margin": 0.020520290904510574,
+            "chose_good": true
+          },
+          {
+            "case_id": "complex_NP_island:896",
+            "category": "complex_NP_island",
+            "good_score": 1.993201198619313,
+            "bad_score": 2.00377200793725,
+            "margin": 0.01057080931793708,
+            "chose_good": true
+          },
+          {
+            "case_id": "complex_NP_island:464",
+            "category": "complex_NP_island",
+            "good_score": 2.2989237388909216,
+            "bad_score": 2.2818972136564675,
+            "margin": -0.017026525234454137,
+            "chose_good": false
+          },
+          {
+            "case_id": "complex_NP_island:801",
+            "category": "complex_NP_island",
+            "good_score": 1.9037655728390348,
+            "bad_score": 1.891005551860972,
+            "margin": -0.012760020978062725,
+            "chose_good": false
+          },
+          {
+            "case_id": "complex_NP_island:752",
+            "category": "complex_NP_island",
+            "good_score": 2.373825404107682,
+            "bad_score": 2.36451957921736,
+            "margin": -0.009305824890322167,
+            "chose_good": false
+          },
+          {
+            "case_id": "coordinate_structure_constraint_complex_left_branch:882",
+            "category": "coordinate_structure_constraint_complex_left_branch",
+            "good_score": 2.483858872233802,
+            "bad_score": 2.4734820519643685,
+            "margin": -0.010376820269433651,
+            "chose_good": false
+          },
+          {
+            "case_id": "coordinate_structure_constraint_complex_left_branch:892",
+            "category": "coordinate_structure_constraint_complex_left_branch",
+            "good_score": 2.2605203639382583,
+            "bad_score": 2.259457300564925,
+            "margin": -0.0010630633733330619,
+            "chose_good": false
+          },
+          {
+            "case_id": "coordinate_structure_constraint_complex_left_branch:465",
+            "category": "coordinate_structure_constraint_complex_left_branch",
+            "good_score": 2.108094678802084,
+            "bad_score": 2.1145140344351288,
+            "margin": 0.006419355633044965,
+            "chose_good": true
+          },
+          {
+            "case_id": "coordinate_structure_constraint_complex_left_branch:994",
+            "category": "coordinate_structure_constraint_complex_left_branch",
+            "good_score": 2.619239146711053,
+            "bad_score": 2.6053682171364887,
+            "margin": -0.013870929574564261,
+            "chose_good": false
+          },
+          {
+            "case_id": "coordinate_structure_constraint_complex_left_branch:360",
+            "category": "coordinate_structure_constraint_complex_left_branch",
+            "good_score": 2.743038228023553,
+            "bad_score": 2.7424858822881273,
+            "margin": -0.0005523457354255079,
+            "chose_good": false
+          },
+          {
+            "case_id": "coordinate_structure_constraint_complex_left_branch:330",
+            "category": "coordinate_structure_constraint_complex_left_branch",
+            "good_score": 2.889927859655729,
+            "bad_score": 2.87120720414401,
+            "margin": -0.018720655511718753,
+            "chose_good": false
+          },
+          {
+            "case_id": "coordinate_structure_constraint_complex_left_branch:576",
+            "category": "coordinate_structure_constraint_complex_left_branch",
+            "good_score": 2.0447449008383383,
+            "bad_score": 2.0403454563710195,
+            "margin": -0.004399444467318769,
+            "chose_good": false
+          },
+          {
+            "case_id": "coordinate_structure_constraint_complex_left_branch:139",
+            "category": "coordinate_structure_constraint_complex_left_branch",
+            "good_score": 2.4553283732212283,
+            "bad_score": 2.4475870901405914,
+            "margin": -0.007741283080636929,
+            "chose_good": false
+          },
+          {
+            "case_id": "coordinate_structure_constraint_complex_left_branch:186",
+            "category": "coordinate_structure_constraint_complex_left_branch",
+            "good_score": 2.5824438758138264,
+            "bad_score": 2.573066575149458,
+            "margin": -0.00937730066436826,
+            "chose_good": false
+          },
+          {
+            "case_id": "coordinate_structure_constraint_complex_left_branch:658",
+            "category": "coordinate_structure_constraint_complex_left_branch",
+            "good_score": 2.370782279154411,
+            "bad_score": 2.369906329473363,
+            "margin": -0.0008759496810477607,
+            "chose_good": false
+          },
+          {
+            "case_id": "coordinate_structure_constraint_complex_left_branch:44",
+            "category": "coordinate_structure_constraint_complex_left_branch",
+            "good_score": 2.438274738225912,
+            "bad_score": 2.4408229649124875,
+            "margin": 0.0025482266865757275,
+            "chose_good": true
+          },
+          {
+            "case_id": "coordinate_structure_constraint_complex_left_branch:961",
+            "category": "coordinate_structure_constraint_complex_left_branch",
+            "good_score": 2.38685983115846,
+            "bad_score": 2.3849703064477654,
+            "margin": -0.001889524710694701,
+            "chose_good": false
+          },
+          {
+            "case_id": "coordinate_structure_constraint_complex_left_branch:477",
+            "category": "coordinate_structure_constraint_complex_left_branch",
+            "good_score": 2.208780269689505,
+            "bad_score": 2.2161877421455327,
+            "margin": 0.007407472456027797,
+            "chose_good": true
+          },
+          {
+            "case_id": "coordinate_structure_constraint_complex_left_branch:206",
+            "category": "coordinate_structure_constraint_complex_left_branch",
+            "good_score": 2.212511296091624,
+            "bad_score": 2.2076418377242963,
+            "margin": -0.004869458367327439,
+            "chose_good": false
+          },
+          {
+            "case_id": "coordinate_structure_constraint_complex_left_branch:339",
+            "category": "coordinate_structure_constraint_complex_left_branch",
+            "good_score": 2.1659554015142417,
+            "bad_score": 2.1567344583262216,
+            "margin": -0.009220943188020136,
+            "chose_good": false
+          },
+          {
+            "case_id": "coordinate_structure_constraint_complex_left_branch:823",
+            "category": "coordinate_structure_constraint_complex_left_branch",
+            "good_score": 2.1630071274994505,
+            "bad_score": 2.173168559377192,
+            "margin": 0.010161431877741656,
+            "chose_good": true
+          },
+          {
+            "case_id": "coordinate_structure_constraint_complex_left_branch:985",
+            "category": "coordinate_structure_constraint_complex_left_branch",
+            "good_score": 2.6945101737899138,
+            "bad_score": 2.6742437382122404,
+            "margin": -0.02026643557767338,
+            "chose_good": false
+          },
+          {
+            "case_id": "coordinate_structure_constraint_complex_left_branch:74",
+            "category": "coordinate_structure_constraint_complex_left_branch",
+            "good_score": 2.137783734251759,
+            "bad_score": 2.1300366252588243,
+            "margin": -0.007747108992934848,
+            "chose_good": false
+          },
+          {
+            "case_id": "coordinate_structure_constraint_complex_left_branch:457",
+            "category": "coordinate_structure_constraint_complex_left_branch",
+            "good_score": 2.5453900120506026,
+            "bad_score": 2.542148998995093,
+            "margin": -0.0032410130555096117,
+            "chose_good": false
+          },
+          {
+            "case_id": "coordinate_structure_constraint_complex_left_branch:224",
+            "category": "coordinate_structure_constraint_complex_left_branch",
+            "good_score": 2.607334106473,
+            "bad_score": 2.5713700196726226,
+            "margin": -0.03596408680037744,
+            "chose_good": false
+          },
+          {
+            "case_id": "coordinate_structure_constraint_object_extraction:982",
+            "category": "coordinate_structure_constraint_object_extraction",
+            "good_score": 2.970017668455225,
+            "bad_score": 3.067744280165301,
+            "margin": 0.09772661171007613,
+            "chose_good": true
+          },
+          {
+            "case_id": "coordinate_structure_constraint_object_extraction:794",
+            "category": "coordinate_structure_constraint_object_extraction",
+            "good_score": 2.551149570893986,
+            "bad_score": 2.634752457035372,
+            "margin": 0.083602886141386,
+            "chose_good": true
+          },
+          {
+            "case_id": "coordinate_structure_constraint_object_extraction:237",
+            "category": "coordinate_structure_constraint_object_extraction",
+            "good_score": 2.5208823403171774,
+            "bad_score": 2.5216649333713406,
+            "margin": 0.000782593054163172,
+            "chose_good": true
+          },
+          {
+            "case_id": "coordinate_structure_constraint_object_extraction:867",
+            "category": "coordinate_structure_constraint_object_extraction",
+            "good_score": 2.7830014832583703,
+            "bad_score": 2.820258394483552,
+            "margin": 0.03725691122518171,
+            "chose_good": true
+          },
+          {
+            "case_id": "coordinate_structure_constraint_object_extraction:883",
+            "category": "coordinate_structure_constraint_object_extraction",
+            "good_score": 2.3039436986533386,
+            "bad_score": 2.44867781422899,
+            "margin": 0.1447341155756514,
+            "chose_good": true
+          },
+          {
+            "case_id": "coordinate_structure_constraint_object_extraction:803",
+            "category": "coordinate_structure_constraint_object_extraction",
+            "good_score": 2.5109630753453684,
+            "bad_score": 2.4859755685878104,
+            "margin": -0.02498750675755801,
+            "chose_good": false
+          },
+          {
+            "case_id": "coordinate_structure_constraint_object_extraction:615",
+            "category": "coordinate_structure_constraint_object_extraction",
+            "good_score": 2.6123146528767522,
+            "bad_score": 2.622822620861819,
+            "margin": 0.010507967985066813,
+            "chose_good": true
+          },
+          {
+            "case_id": "coordinate_structure_constraint_object_extraction:317",
+            "category": "coordinate_structure_constraint_object_extraction",
+            "good_score": 2.361731784393301,
+            "bad_score": 2.356926607720913,
+            "margin": -0.004805176672388001,
+            "chose_good": false
+          },
+          {
+            "case_id": "coordinate_structure_constraint_object_extraction:997",
+            "category": "coordinate_structure_constraint_object_extraction",
+            "good_score": 2.502085468493951,
+            "bad_score": 2.568754258101097,
+            "margin": 0.06666878960714628,
+            "chose_good": true
+          },
+          {
+            "case_id": "coordinate_structure_constraint_object_extraction:704",
+            "category": "coordinate_structure_constraint_object_extraction",
+            "good_score": 2.1744304401696173,
+            "bad_score": 2.1616445940030307,
+            "margin": -0.012785846166586623,
+            "chose_good": false
+          },
+          {
+            "case_id": "coordinate_structure_constraint_object_extraction:456",
+            "category": "coordinate_structure_constraint_object_extraction",
+            "good_score": 2.4068004795007054,
+            "bad_score": 2.3992645715942778,
+            "margin": -0.0075359079064276635,
+            "chose_good": false
+          },
+          {
+            "case_id": "coordinate_structure_constraint_object_extraction:334",
+            "category": "coordinate_structure_constraint_object_extraction",
+            "good_score": 3.104064311819839,
+            "bad_score": 3.1018712448341934,
+            "margin": -0.0021930669856455864,
+            "chose_good": false
+          },
+          {
+            "case_id": "coordinate_structure_constraint_object_extraction:30",
+            "category": "coordinate_structure_constraint_object_extraction",
+            "good_score": 2.8868405114625664,
+            "bad_score": 2.8585746406641164,
+            "margin": -0.02826587079845,
+            "chose_good": false
+          },
+          {
+            "case_id": "coordinate_structure_constraint_object_extraction:717",
+            "category": "coordinate_structure_constraint_object_extraction",
+            "good_score": 2.8114680668276493,
+            "bad_score": 2.882430252357385,
+            "margin": 0.07096218552973577,
+            "chose_good": true
+          },
+          {
+            "case_id": "coordinate_structure_constraint_object_extraction:100",
+            "category": "coordinate_structure_constraint_object_extraction",
+            "good_score": 2.7062737052124297,
+            "bad_score": 2.7834358180724394,
+            "margin": 0.07716211286000974,
+            "chose_good": true
+          },
+          {
+            "case_id": "coordinate_structure_constraint_object_extraction:790",
+            "category": "coordinate_structure_constraint_object_extraction",
+            "good_score": 2.536758484229954,
+            "bad_score": 2.539289443459197,
+            "margin": 0.0025309592292428462,
+            "chose_good": true
+          },
+          {
+            "case_id": "coordinate_structure_constraint_object_extraction:431",
+            "category": "coordinate_structure_constraint_object_extraction",
+            "good_score": 2.635633849300301,
+            "bad_score": 2.4585112144479826,
+            "margin": -0.1771226348523185,
+            "chose_good": false
+          },
+          {
+            "case_id": "coordinate_structure_constraint_object_extraction:915",
+            "category": "coordinate_structure_constraint_object_extraction",
+            "good_score": 2.6581909758565065,
+            "bad_score": 2.685179181360502,
+            "margin": 0.02698820550399539,
+            "chose_good": true
+          },
+          {
+            "case_id": "coordinate_structure_constraint_object_extraction:446",
+            "category": "coordinate_structure_constraint_object_extraction",
+            "good_score": 2.820360345798983,
+            "bad_score": 2.8346492147771483,
+            "margin": 0.014288868978165059,
+            "chose_good": true
+          },
+          {
+            "case_id": "coordinate_structure_constraint_object_extraction:737",
+            "category": "coordinate_structure_constraint_object_extraction",
+            "good_score": 2.8974704264400732,
+            "bad_score": 2.937516001155398,
+            "margin": 0.04004557471532477,
+            "chose_good": true
+          },
+          {
+            "case_id": "determiner_noun_agreement_1:148",
+            "category": "determiner_noun_agreement_1",
+            "good_score": 2.9295685364811717,
+            "bad_score": 3.0495527961611044,
+            "margin": 0.11998425967993276,
+            "chose_good": true
+          },
+          {
+            "case_id": "determiner_noun_agreement_1:535",
+            "category": "determiner_noun_agreement_1",
+            "good_score": 2.218674623124264,
+            "bad_score": 2.1359111500548678,
+            "margin": -0.08276347306939602,
+            "chose_good": false
+          },
+          {
+            "case_id": "determiner_noun_agreement_1:698",
+            "category": "determiner_noun_agreement_1",
+            "good_score": 2.5683188722114907,
+            "bad_score": 2.6964498340508887,
+            "margin": 0.12813096183939798,
+            "chose_good": true
+          },
+          {
+            "case_id": "determiner_noun_agreement_1:885",
+            "category": "determiner_noun_agreement_1",
+            "good_score": 2.4034861331461608,
+            "bad_score": 2.5065790126029754,
+            "margin": 0.10309287945681467,
+            "chose_good": true
+          },
+          {
+            "case_id": "determiner_noun_agreement_1:773",
+            "category": "determiner_noun_agreement_1",
+            "good_score": 2.1601915651256456,
+            "bad_score": 2.2598496245801933,
+            "margin": 0.09965805945454775,
+            "chose_good": true
+          },
+          {
+            "case_id": "determiner_noun_agreement_1:8",
+            "category": "determiner_noun_agreement_1",
+            "good_score": 2.7774353335562556,
+            "bad_score": 2.6519736149482664,
+            "margin": -0.12546171860798916,
+            "chose_good": false
+          },
+          {
+            "case_id": "determiner_noun_agreement_1:679",
+            "category": "determiner_noun_agreement_1",
+            "good_score": 2.456188314214679,
+            "bad_score": 2.580362899081868,
+            "margin": 0.12417458486718891,
+            "chose_good": true
+          },
+          {
+            "case_id": "determiner_noun_agreement_1:801",
+            "category": "determiner_noun_agreement_1",
+            "good_score": 2.9640724393750633,
+            "bad_score": 3.094056821843732,
+            "margin": 0.1299843824686686,
+            "chose_good": true
+          },
+          {
+            "case_id": "determiner_noun_agreement_1:246",
+            "category": "determiner_noun_agreement_1",
+            "good_score": 2.370881029855338,
+            "bad_score": 2.4539263983905317,
+            "margin": 0.08304536853519373,
+            "chose_good": true
+          },
+          {
+            "case_id": "determiner_noun_agreement_1:868",
+            "category": "determiner_noun_agreement_1",
+            "good_score": 2.7778660281453327,
+            "bad_score": 2.7018302787864097,
+            "margin": -0.07603574935892299,
+            "chose_good": false
+          },
+          {
+            "case_id": "determiner_noun_agreement_1:154",
+            "category": "determiner_noun_agreement_1",
+            "good_score": 2.523931353426828,
+            "bad_score": 2.4044726885794083,
+            "margin": -0.11945866484741963,
+            "chose_good": false
+          },
+          {
+            "case_id": "determiner_noun_agreement_1:244",
+            "category": "determiner_noun_agreement_1",
+            "good_score": 2.730916640634159,
+            "bad_score": 2.6041500261792754,
+            "margin": -0.1267666144548838,
+            "chose_good": false
+          },
+          {
+            "case_id": "determiner_noun_agreement_1:217",
+            "category": "determiner_noun_agreement_1",
+            "good_score": 2.305041761264495,
+            "bad_score": 2.216284618357123,
+            "margin": -0.08875714290737191,
+            "chose_good": false
+          },
+          {
+            "case_id": "determiner_noun_agreement_1:844",
+            "category": "determiner_noun_agreement_1",
+            "good_score": 2.7076535793478524,
+            "bad_score": 2.8173090839176864,
+            "margin": 0.10965550456983397,
+            "chose_good": true
+          },
+          {
+            "case_id": "determiner_noun_agreement_1:426",
+            "category": "determiner_noun_agreement_1",
+            "good_score": 3.465254314197104,
+            "bad_score": 3.568470813785151,
+            "margin": 0.10321649958804668,
+            "chose_good": true
+          },
+          {
+            "case_id": "determiner_noun_agreement_1:158",
+            "category": "determiner_noun_agreement_1",
+            "good_score": 2.436585332809742,
+            "bad_score": 2.5306467419778382,
+            "margin": 0.09406140916809624,
+            "chose_good": true
+          },
+          {
+            "case_id": "determiner_noun_agreement_1:293",
+            "category": "determiner_noun_agreement_1",
+            "good_score": 3.279859652408052,
+            "bad_score": 3.412518880734167,
+            "margin": 0.13265922832611476,
+            "chose_good": true
+          },
+          {
+            "case_id": "determiner_noun_agreement_1:789",
+            "category": "determiner_noun_agreement_1",
+            "good_score": 2.2820394043489562,
+            "bad_score": 2.3680908758335595,
+            "margin": 0.08605147148460324,
+            "chose_good": true
+          },
+          {
+            "case_id": "determiner_noun_agreement_1:469",
+            "category": "determiner_noun_agreement_1",
+            "good_score": 2.413276135668722,
+            "bad_score": 2.3088894821698713,
+            "margin": -0.10438665349885046,
+            "chose_good": false
+          },
+          {
+            "case_id": "determiner_noun_agreement_1:104",
+            "category": "determiner_noun_agreement_1",
+            "good_score": 2.6991635329432593,
+            "bad_score": 2.6112755943999986,
+            "margin": -0.08788793854326071,
+            "chose_good": false
+          }
+        ]
+      }
+    }
+  ]
+}

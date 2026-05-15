@@ -1,0 +1,399 @@
+{
+  "source": "annotated_transcript_persistent_session",
+  "annotations": "benchmarks\\sample_transcript_annotations.jsonl",
+  "session_path": "reports\\sample_transcript_session_events.jsonl",
+  "seeded": true,
+  "threshold": 1.25,
+  "k": 2,
+  "turns": 8,
+  "events": 11,
+  "distractor_events": 4,
+  "recall_cases": 6,
+  "evidence_cases": 10,
+  "state_cases": 4,
+  "dialogue_report": {
+    "cases": 10,
+    "positives": 6,
+    "negatives": 4,
+    "accuracy": 1.0,
+    "positive_recall": 1.0,
+    "negative_abstention": 1.0,
+    "answered": 6,
+    "answer_rate": 0.6,
+    "responses": [
+      {
+        "query": "Where did Lila put the rainbow bead?",
+        "status": "answered",
+        "answer": "I remember: Lila put the rainbow bead in the yellow box before music. Lila checked the craft tray and did not find the rainbow bead.",
+        "evidence_event_ids": [
+          "sample_e1",
+          "sample_e3"
+        ],
+        "confidence": 1.68887656499994
+      },
+      {
+        "query": "What happened right after Lila put the rainbow bead away?",
+        "status": "answered",
+        "answer": "I remember: Ben slid the yellow box under the puzzle shelf. Lila put the rainbow bead in the yellow box before music.",
+        "evidence_event_ids": [
+          "sample_e2",
+          "sample_e1"
+        ],
+        "confidence": 1.8612842825308367
+      },
+      {
+        "query": "Who saw where the yellow box went?",
+        "status": "answered",
+        "answer": "I remember: Ben slid the yellow box under the puzzle shelf. Rafi saw Ben slide the yellow box under the puzzle shelf.",
+        "evidence_event_ids": [
+          "sample_e2",
+          "sample_e4"
+        ],
+        "confidence": 1.4118802153517005
+      },
+      {
+        "query": "What earlier event explains why Rafi knew where the yellow box was?",
+        "status": "answered",
+        "answer": "I remember: Rafi saw Ben slide the yellow box under the puzzle shelf. Ben slid the yellow box under the puzzle shelf.",
+        "evidence_event_ids": [
+          "sample_e4",
+          "sample_e2"
+        ],
+        "confidence": 1.3296631983009994
+      },
+      {
+        "query": "Where did Mina stack the star blocks first?",
+        "status": "answered",
+        "answer": "I remember: Mina stacked the star blocks beside the window. Mina rebuilt the star blocks on the carpet.",
+        "evidence_event_ids": [
+          "sample_e5",
+          "sample_e7"
+        ],
+        "confidence": 1.3443310539518174
+      },
+      {
+        "query": "What happened right before Mina rebuilt the star blocks?",
+        "status": "answered",
+        "answer": "I remember: Taro knocked the star blocks while grabbing the drum. Mina rebuilt the star blocks on the carpet.",
+        "evidence_event_ids": [
+          "sample_e6",
+          "sample_e7"
+        ],
+        "confidence": 1.976820323027551
+      },
+      {
+        "query": "Where did Lila hide the silver button?",
+        "status": "abstained",
+        "answer": "I do not have enough evidence for that yet.",
+        "evidence_event_ids": [],
+        "confidence": 0.0
+      },
+      {
+        "query": "Where was the rainbow bead after Rafi moved it?",
+        "status": "abstained",
+        "answer": "I do not have enough evidence for that yet.",
+        "evidence_event_ids": [],
+        "confidence": 0.0
+      },
+      {
+        "query": "Where did Mina put the thing?",
+        "status": "abstained",
+        "answer": "I do not have enough evidence for that yet.",
+        "evidence_event_ids": [],
+        "confidence": 0.0
+      },
+      {
+        "query": "Who explained the missing robot?",
+        "status": "abstained",
+        "answer": "I do not have enough evidence for that yet.",
+        "evidence_event_ids": [],
+        "confidence": 0.0
+      }
+    ]
+  },
+  "noisy_dialogue_report": {
+    "cases": 10,
+    "positives": 6,
+    "negatives": 4,
+    "accuracy": 1.0,
+    "positive_recall": 1.0,
+    "negative_abstention": 1.0,
+    "answered": 6,
+    "answer_rate": 0.6,
+    "responses": [
+      {
+        "query": "Do you remember where Lila left the rainbow bead?",
+        "status": "answered",
+        "answer": "I remember: Lila put the rainbow bead in the yellow box before music. Lila checked the craft tray and did not find the rainbow bead.",
+        "evidence_event_ids": [
+          "sample_e1",
+          "sample_e3"
+        ],
+        "confidence": 1.5596471914376255
+      },
+      {
+        "query": "After Lila put away the rainbow bead, what came next?",
+        "status": "answered",
+        "answer": "I remember: Ben slid the yellow box under the puzzle shelf. Lila put the rainbow bead in the yellow box before music.",
+        "evidence_event_ids": [
+          "sample_e2",
+          "sample_e1"
+        ],
+        "confidence": 1.8612842825308367
+      },
+      {
+        "query": "Which child noticed where the yellow box went?",
+        "status": "answered",
+        "answer": "I remember: Ben slid the yellow box under the puzzle shelf. Rafi saw Ben slide the yellow box under the puzzle shelf.",
+        "evidence_event_ids": [
+          "sample_e2",
+          "sample_e4"
+        ],
+        "confidence": 1.3716370213557838
+      },
+      {
+        "query": "Why could Rafi say where the yellow box was?",
+        "status": "answered",
+        "answer": "I remember: Rafi saw Ben slide the yellow box under the puzzle shelf. Ben slid the yellow box under the puzzle shelf.",
+        "evidence_event_ids": [
+          "sample_e4",
+          "sample_e2"
+        ],
+        "confidence": 1.3883972994809528
+      },
+      {
+        "query": "At first, where were Mina's star blocks?",
+        "status": "answered",
+        "answer": "I remember: Mina stacked the star blocks beside the window.",
+        "evidence_event_ids": [
+          "sample_e5"
+        ],
+        "confidence": 1.25
+      },
+      {
+        "query": "Just before Mina rebuilt the star blocks, what happened?",
+        "status": "answered",
+        "answer": "I remember: Taro knocked the star blocks while grabbing the drum. Mina rebuilt the star blocks on the carpet.",
+        "evidence_event_ids": [
+          "sample_e6",
+          "sample_e7"
+        ],
+        "confidence": 1.976820323027551
+      },
+      {
+        "query": "Did Lila hide a silver button somewhere?",
+        "status": "abstained",
+        "answer": "I do not have enough evidence for that yet.",
+        "evidence_event_ids": [],
+        "confidence": 0.0
+      },
+      {
+        "query": "After Rafi moved the rainbow bead, where was it?",
+        "status": "abstained",
+        "answer": "I do not have enough evidence for that yet.",
+        "evidence_event_ids": [],
+        "confidence": 0.0
+      },
+      {
+        "query": "Where was Mina's thing?",
+        "status": "abstained",
+        "answer": "I do not have enough evidence for that yet.",
+        "evidence_event_ids": [],
+        "confidence": 0.0
+      },
+      {
+        "query": "Who explained where the missing robot went?",
+        "status": "abstained",
+        "answer": "I do not have enough evidence for that yet.",
+        "evidence_event_ids": [],
+        "confidence": 0.0
+      }
+    ]
+  },
+  "memory_report": {
+    "cases": 6,
+    "rag_recall_at_k": 0.6666666666666666,
+    "event_memory_recall_at_k": 1.0,
+    "absolute_gain": 0.33333333333333337,
+    "rag_mrr_at_k": 0.5,
+    "event_memory_mrr_at_k": 0.8333333333333334,
+    "mrr_gain": 0.33333333333333337,
+    "by_category": {
+      "causal_source": {
+        "cases": 1,
+        "rag_recall_at_k": 1.0,
+        "event_memory_recall_at_k": 1.0,
+        "absolute_gain": 0.0,
+        "rag_mrr_at_k": 0.5,
+        "event_memory_mrr_at_k": 0.5,
+        "mrr_gain": 0.0,
+        "by_category": null
+      },
+      "direct": {
+        "cases": 2,
+        "rag_recall_at_k": 1.0,
+        "event_memory_recall_at_k": 1.0,
+        "absolute_gain": 0.0,
+        "rag_mrr_at_k": 1.0,
+        "event_memory_mrr_at_k": 1.0,
+        "mrr_gain": 0.0,
+        "by_category": null
+      },
+      "temporal_after": {
+        "cases": 1,
+        "rag_recall_at_k": 0.0,
+        "event_memory_recall_at_k": 1.0,
+        "absolute_gain": 1.0,
+        "rag_mrr_at_k": 0.0,
+        "event_memory_mrr_at_k": 1.0,
+        "mrr_gain": 1.0,
+        "by_category": null
+      },
+      "temporal_before": {
+        "cases": 1,
+        "rag_recall_at_k": 0.0,
+        "event_memory_recall_at_k": 1.0,
+        "absolute_gain": 1.0,
+        "rag_mrr_at_k": 0.0,
+        "event_memory_mrr_at_k": 1.0,
+        "mrr_gain": 1.0,
+        "by_category": null
+      },
+      "witness": {
+        "cases": 1,
+        "rag_recall_at_k": 1.0,
+        "event_memory_recall_at_k": 1.0,
+        "absolute_gain": 0.0,
+        "rag_mrr_at_k": 0.5,
+        "event_memory_mrr_at_k": 0.5,
+        "mrr_gain": 0.0,
+        "by_category": null
+      }
+    }
+  },
+  "state_report": {
+    "cases": 4,
+    "accuracy": 1.0,
+    "answer_rate": 0.75,
+    "false_positive_rate": 0.0,
+    "true_positives": 3,
+    "false_positives": 0,
+    "false_negatives": 0,
+    "true_negatives": 1,
+    "results": [
+      {
+        "query": "Where is the yellow box now?",
+        "object_name": "yellow box",
+        "expected_location": "puzzle shelf",
+        "predicted_location": "puzzle shelf",
+        "predicted_event_id": "sample_e2",
+        "correct": true,
+        "category": "latest_after_update"
+      },
+      {
+        "query": "Where are the star blocks now?",
+        "object_name": "star blocks",
+        "expected_location": "carpet",
+        "predicted_location": "carpet",
+        "predicted_event_id": "sample_e7",
+        "correct": true,
+        "category": "latest_after_update"
+      },
+      {
+        "query": "Where was the rainbow bead right after Lila put it away?",
+        "object_name": "rainbow bead",
+        "expected_location": "yellow box",
+        "predicted_location": "yellow box",
+        "predicted_event_id": "sample_e1",
+        "correct": true,
+        "category": "at_initial_put"
+      },
+      {
+        "query": "Where is the silver button now?",
+        "object_name": "silver button",
+        "expected_location": null,
+        "predicted_location": null,
+        "predicted_event_id": null,
+        "correct": true,
+        "category": "unknown_object"
+      }
+    ],
+    "by_category": {
+      "at_initial_put": {
+        "cases": 1,
+        "accuracy": 1.0,
+        "answer_rate": 1.0,
+        "false_positive_rate": 0.0,
+        "true_positives": 1,
+        "false_positives": 0,
+        "false_negatives": 0,
+        "true_negatives": 0,
+        "results": [
+          {
+            "query": "Where was the rainbow bead right after Lila put it away?",
+            "object_name": "rainbow bead",
+            "expected_location": "yellow box",
+            "predicted_location": "yellow box",
+            "predicted_event_id": "sample_e1",
+            "correct": true,
+            "category": "at_initial_put"
+          }
+        ],
+        "by_category": null
+      },
+      "latest_after_update": {
+        "cases": 2,
+        "accuracy": 1.0,
+        "answer_rate": 1.0,
+        "false_positive_rate": 0.0,
+        "true_positives": 2,
+        "false_positives": 0,
+        "false_negatives": 0,
+        "true_negatives": 0,
+        "results": [
+          {
+            "query": "Where is the yellow box now?",
+            "object_name": "yellow box",
+            "expected_location": "puzzle shelf",
+            "predicted_location": "puzzle shelf",
+            "predicted_event_id": "sample_e2",
+            "correct": true,
+            "category": "latest_after_update"
+          },
+          {
+            "query": "Where are the star blocks now?",
+            "object_name": "star blocks",
+            "expected_location": "carpet",
+            "predicted_location": "carpet",
+            "predicted_event_id": "sample_e7",
+            "correct": true,
+            "category": "latest_after_update"
+          }
+        ],
+        "by_category": null
+      },
+      "unknown_object": {
+        "cases": 1,
+        "accuracy": 1.0,
+        "answer_rate": 0.0,
+        "false_positive_rate": 0.0,
+        "true_positives": 0,
+        "false_positives": 0,
+        "false_negatives": 0,
+        "true_negatives": 1,
+        "results": [
+          {
+            "query": "Where is the silver button now?",
+            "object_name": "silver button",
+            "expected_location": null,
+            "predicted_location": null,
+            "predicted_event_id": null,
+            "correct": true,
+            "category": "unknown_object"
+          }
+        ],
+        "by_category": null
+      }
+    }
+  }
+}

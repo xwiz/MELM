@@ -1,0 +1,72 @@
+{
+  "source": "manifest:reports\\babylm_2026_strict_small_manifest.json",
+  "note": "Tiny neural smoke comparison; use bits_per_byte for cross-tokenizer ranking.",
+  "config": {
+    "steps": 1,
+    "sequence_length": 32,
+    "embedding_dim": 32,
+    "layers": 1,
+    "heads": 4,
+    "batch_size": 4,
+    "max_vocab_size": 2048,
+    "learning_rate": 0.0003,
+    "seed": 13,
+    "device": "auto"
+  },
+  "reports": [
+    {
+      "tokenizer": "heuristic_morpheme",
+      "train_documents": 6,
+      "validation_documents": 6,
+      "train_tokens": 137864,
+      "validation_tokens": 67958,
+      "validation_bytes": 249996,
+      "train_sequences": 4309,
+      "validation_sequences": 2124,
+      "vocabulary_size": 2048,
+      "parameters": 146848,
+      "steps": 1,
+      "device": "cuda",
+      "final_train_loss": 7.7425923347473145,
+      "validation_nll": 7.780146528817868,
+      "validation_bits_per_byte": 3.0511941610138233,
+      "validation_perplexity": 2392.625383422001
+    },
+    {
+      "tokenizer": "simple_bpe",
+      "train_documents": 6,
+      "validation_documents": 6,
+      "train_tokens": 192357,
+      "validation_tokens": 97707,
+      "validation_bytes": 249996,
+      "train_sequences": 6012,
+      "validation_sequences": 3054,
+      "vocabulary_size": 927,
+      "parameters": 73983,
+      "steps": 1,
+      "device": "cuda",
+      "final_train_loss": 6.8828535079956055,
+      "validation_nll": 6.984749970511301,
+      "validation_bits_per_byte": 3.938383673929603,
+      "validation_perplexity": 1080.0363430359541
+    },
+    {
+      "tokenizer": "unigram_like",
+      "train_documents": 6,
+      "validation_documents": 6,
+      "train_tokens": 205488,
+      "validation_tokens": 107939,
+      "validation_bytes": 249996,
+      "train_sequences": 6422,
+      "validation_sequences": 3374,
+      "vocabulary_size": 1007,
+      "parameters": 79183,
+      "steps": 1,
+      "device": "cuda",
+      "final_train_loss": 7.119131088256836,
+      "validation_nll": 7.070474674933198,
+      "validation_bits_per_byte": 4.404214276084435,
+      "validation_perplexity": 1176.7064547623863
+    }
+  ]
+}

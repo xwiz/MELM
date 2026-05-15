@@ -1,0 +1,45 @@
+{
+  "root": "artifacts\\babylm_2026_small_model_stage",
+  "runs": [
+    {
+      "name": "capped_morpheme_seed13_1000step",
+      "manifest": "artifacts\\babylm_2026_small_model_stage\\capped_morpheme_seed13_1000step\\run_manifest.json",
+      "tokenizer": "capped_morpheme",
+      "parameters": 23319808,
+      "steps": 1000,
+      "validation_bits_per_byte": 1.6797240674283143,
+      "checkpoint_dir": "artifacts\\babylm_2026_small_model_stage\\capped_morpheme_seed13_1000step\\checkpoint",
+      "tokenizer_metadata": "artifacts\\babylm_2026_small_model_stage\\capped_morpheme_seed13_1000step\\tokenizer\\tokenizer_metadata.json"
+    },
+    {
+      "name": "tiered_morph_unigram_seed13_1000step",
+      "manifest": "artifacts\\babylm_2026_small_model_stage\\tiered_morph_unigram_seed13_1000step\\run_manifest.json",
+      "tokenizer": "tiered_morph_unigram",
+      "parameters": 23319808,
+      "steps": 1000,
+      "validation_bits_per_byte": 1.9372894053286547,
+      "checkpoint_dir": "artifacts\\babylm_2026_small_model_stage\\tiered_morph_unigram_seed13_1000step\\checkpoint",
+      "tokenizer_metadata": "artifacts\\babylm_2026_small_model_stage\\tiered_morph_unigram_seed13_1000step\\tokenizer\\tokenizer_metadata.json"
+    },
+    {
+      "name": "hf_bpe_seed13_1000step",
+      "manifest": "artifacts\\babylm_2026_small_model_stage\\hf_bpe_seed13_1000step\\run_manifest.json",
+      "tokenizer": "hf_bpe",
+      "parameters": 23319808,
+      "steps": 1000,
+      "validation_bits_per_byte": 1.9804234663886977,
+      "checkpoint_dir": "artifacts\\babylm_2026_small_model_stage\\hf_bpe_seed13_1000step\\checkpoint",
+      "tokenizer_metadata": "artifacts\\babylm_2026_small_model_stage\\hf_bpe_seed13_1000step\\tokenizer\\tokenizer_metadata.json"
+    },
+    {
+      "name": "hf_unigram_seed13_1000step",
+      "manifest": "artifacts\\babylm_2026_small_model_stage\\hf_unigram_seed13_1000step\\run_manifest.json",
+      "tokenizer": "hf_unigram",
+      "parameters": 23319808,
+      "steps": 1000,
+      "validation_bits_per_byte": 1.9944581969307953,
+      "checkpoint_dir": "artifacts\\babylm_2026_small_model_stage\\hf_unigram_seed13_1000step\\checkpoint",
+      "tokenizer_metadata": "artifacts\\babylm_2026_small_model_stage\\hf_unigram_seed13_1000step\\tokenizer\\tokenizer_metadata.json"
+    }
+  ]
+}

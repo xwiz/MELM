@@ -1,0 +1,1396 @@
+{
+  "root": "artifacts\\tiny_lm",
+  "score_field": "mean_nll_per_token",
+  "cases": [
+    {
+      "case_id": "agreement_singular_1",
+      "category": "agreement",
+      "good": "The dog is running.",
+      "bad": "The dog are running."
+    },
+    {
+      "case_id": "agreement_plural_1",
+      "category": "agreement",
+      "good": "Two cats are sleeping.",
+      "bad": "Two cats is sleeping."
+    },
+    {
+      "case_id": "determiner_1",
+      "category": "determiner",
+      "good": "Maya found a red ball.",
+      "bad": "Maya found red ball."
+    },
+    {
+      "case_id": "past_tense_1",
+      "category": "tense",
+      "good": "Yesterday Leo opened the box.",
+      "bad": "Yesterday Leo open the box."
+    },
+    {
+      "case_id": "auxiliary_1",
+      "category": "auxiliary",
+      "good": "The baby can see the moon.",
+      "bad": "The baby can sees the moon."
+    },
+    {
+      "case_id": "preposition_1",
+      "category": "preposition",
+      "good": "Maya put the cup on the table.",
+      "bad": "Maya put the cup the table."
+    },
+    {
+      "case_id": "pronoun_1",
+      "category": "pronoun",
+      "good": "She gave the toy to him.",
+      "bad": "She gave the toy to he."
+    },
+    {
+      "case_id": "word_order_1",
+      "category": "word_order",
+      "good": "The little bird ate the seed.",
+      "bad": "The little bird the seed ate."
+    }
+  ],
+  "runs": [
+    {
+      "name": "babylm_2026_hf_bpe_100step_seed13",
+      "manifest": "artifacts\\tiny_lm\\babylm_2026_hf_bpe_100step_seed13\\run_manifest.json",
+      "tokenizer": "hf_bpe",
+      "checkpoint_dir": "artifacts\\tiny_lm\\babylm_2026_hf_bpe_100step_seed13\\checkpoint",
+      "score_field": "mean_nll_per_token",
+      "text_scores": [
+        {
+          "text": "Maya found a red ball.",
+          "tokens": 8,
+          "bytes": 22,
+          "sequences": 1,
+          "mean_nll_per_token": 7.5843000411987305,
+          "total_nll": 60.674400329589844,
+          "bits_per_byte": 3.978848021109589
+        },
+        {
+          "text": "Maya found red ball.",
+          "tokens": 7,
+          "bytes": 20,
+          "sequences": 1,
+          "mean_nll_per_token": 7.838683537074497,
+          "total_nll": 54.870784759521484,
+          "bits_per_byte": 3.958090453112368
+        },
+        {
+          "text": "Maya put the cup on the table.",
+          "tokens": 10,
+          "bytes": 30,
+          "sequences": 1,
+          "mean_nll_per_token": 6.826518249511719,
+          "total_nll": 68.26518249511719,
+          "bits_per_byte": 3.282861341702855
+        },
+        {
+          "text": "Maya put the cup the table.",
+          "tokens": 9,
+          "bytes": 27,
+          "sequences": 1,
+          "mean_nll_per_token": 6.864605373806423,
+          "total_nll": 61.78144836425781,
+          "bits_per_byte": 3.301177376816752
+        },
+        {
+          "text": "She gave the toy to he.",
+          "tokens": 8,
+          "bytes": 23,
+          "sequences": 1,
+          "mean_nll_per_token": 7.422369956970215,
+          "total_nll": 59.37895965576172,
+          "bits_per_byte": 3.7245969838484028
+        },
+        {
+          "text": "She gave the toy to him.",
+          "tokens": 8,
+          "bytes": 24,
+          "sequences": 1,
+          "mean_nll_per_token": 7.451990127563477,
+          "total_nll": 59.61592102050781,
+          "bits_per_byte": 3.583649733929781
+        },
+        {
+          "text": "The baby can see the moon.",
+          "tokens": 9,
+          "bytes": 26,
+          "sequences": 1,
+          "mean_nll_per_token": 6.838471306694879,
+          "total_nll": 61.546241760253906,
+          "bits_per_byte": 3.4150945297258284
+        },
+        {
+          "text": "The baby can sees the moon.",
+          "tokens": 10,
+          "bytes": 27,
+          "sequences": 1,
+          "mean_nll_per_token": 7.0131477355957035,
+          "total_nll": 70.13147735595703,
+          "bits_per_byte": 3.7473457256168827
+        },
+        {
+          "text": "The dog are running.",
+          "tokens": 6,
+          "bytes": 20,
+          "sequences": 1,
+          "mean_nll_per_token": 7.380322774251302,
+          "total_nll": 44.28193664550781,
+          "bits_per_byte": 3.194266519971669
+        },
+        {
+          "text": "The dog is running.",
+          "tokens": 6,
+          "bytes": 19,
+          "sequences": 1,
+          "mean_nll_per_token": 7.046148300170898,
+          "total_nll": 42.27688980102539,
+          "bits_per_byte": 3.210139961060449
+        },
+        {
+          "text": "The little bird ate the seed.",
+          "tokens": 9,
+          "bytes": 29,
+          "sequences": 1,
+          "mean_nll_per_token": 7.214313083224827,
+          "total_nll": 64.92881774902344,
+          "bits_per_byte": 3.23008563369998
+        },
+        {
+          "text": "The little bird the seed ate.",
+          "tokens": 9,
+          "bytes": 29,
+          "sequences": 1,
+          "mean_nll_per_token": 7.207873874240452,
+          "total_nll": 64.87086486816406,
+          "bits_per_byte": 3.2272025877061505
+        },
+        {
+          "text": "Two cats are sleeping.",
+          "tokens": 7,
+          "bytes": 22,
+          "sequences": 1,
+          "mean_nll_per_token": 7.713714054652622,
+          "total_nll": 53.99599838256836,
+          "bits_per_byte": 3.54089814065363
+        },
+        {
+          "text": "Two cats is sleeping.",
+          "tokens": 7,
+          "bytes": 21,
+          "sequences": 1,
+          "mean_nll_per_token": 7.559919084821429,
+          "total_nll": 52.91943359375,
+          "bits_per_byte": 3.6355525910645685
+        },
+        {
+          "text": "Yesterday Leo open the box.",
+          "tokens": 7,
+          "bytes": 27,
+          "sequences": 1,
+          "mean_nll_per_token": 7.624734061104911,
+          "total_nll": 53.373138427734375,
+          "bits_per_byte": 2.8518948935693533
+        },
+        {
+          "text": "Yesterday Leo opened the box.",
+          "tokens": 7,
+          "bytes": 29,
+          "sequences": 1,
+          "mean_nll_per_token": 7.782564980643136,
+          "total_nll": 54.47795486450195,
+          "bits_per_byte": 2.7101750110617155
+        }
+      ],
+      "report": {
+        "cases": 8,
+        "correct": 4,
+        "accuracy": 0.5,
+        "by_category": {
+          "agreement": {
+            "category": "agreement",
+            "cases": 2,
+            "correct": 1,
+            "accuracy": 0.5
+          },
+          "auxiliary": {
+            "category": "auxiliary",
+            "cases": 1,
+            "correct": 1,
+            "accuracy": 1.0
+          },
+          "determiner": {
+            "category": "determiner",
+            "cases": 1,
+            "correct": 1,
+            "accuracy": 1.0
+          },
+          "preposition": {
+            "category": "preposition",
+            "cases": 1,
+            "correct": 1,
+            "accuracy": 1.0
+          },
+          "pronoun": {
+            "category": "pronoun",
+            "cases": 1,
+            "correct": 0,
+            "accuracy": 0.0
+          },
+          "tense": {
+            "category": "tense",
+            "cases": 1,
+            "correct": 0,
+            "accuracy": 0.0
+          },
+          "word_order": {
+            "category": "word_order",
+            "cases": 1,
+            "correct": 0,
+            "accuracy": 0.0
+          }
+        },
+        "predictions": [
+          {
+            "case_id": "agreement_singular_1",
+            "category": "agreement",
+            "good_score": 7.046148300170898,
+            "bad_score": 7.380322774251302,
+            "margin": 0.33417447408040335,
+            "chose_good": true
+          },
+          {
+            "case_id": "agreement_plural_1",
+            "category": "agreement",
+            "good_score": 7.713714054652622,
+            "bad_score": 7.559919084821429,
+            "margin": -0.15379496983119356,
+            "chose_good": false
+          },
+          {
+            "case_id": "determiner_1",
+            "category": "determiner",
+            "good_score": 7.5843000411987305,
+            "bad_score": 7.838683537074497,
+            "margin": 0.2543834958757669,
+            "chose_good": true
+          },
+          {
+            "case_id": "past_tense_1",
+            "category": "tense",
+            "good_score": 7.782564980643136,
+            "bad_score": 7.624734061104911,
+            "margin": -0.1578309195382257,
+            "chose_good": false
+          },
+          {
+            "case_id": "auxiliary_1",
+            "category": "auxiliary",
+            "good_score": 6.838471306694879,
+            "bad_score": 7.0131477355957035,
+            "margin": 0.1746764289008249,
+            "chose_good": true
+          },
+          {
+            "case_id": "preposition_1",
+            "category": "preposition",
+            "good_score": 6.826518249511719,
+            "bad_score": 6.864605373806423,
+            "margin": 0.03808712429470429,
+            "chose_good": true
+          },
+          {
+            "case_id": "pronoun_1",
+            "category": "pronoun",
+            "good_score": 7.451990127563477,
+            "bad_score": 7.422369956970215,
+            "margin": -0.02962017059326172,
+            "chose_good": false
+          },
+          {
+            "case_id": "word_order_1",
+            "category": "word_order",
+            "good_score": 7.214313083224827,
+            "bad_score": 7.207873874240452,
+            "margin": -0.006439208984375,
+            "chose_good": false
+          }
+        ]
+      }
+    },
+    {
+      "name": "babylm_2026_hf_unigram_100step_seed13",
+      "manifest": "artifacts\\tiny_lm\\babylm_2026_hf_unigram_100step_seed13\\run_manifest.json",
+      "tokenizer": "hf_unigram",
+      "checkpoint_dir": "artifacts\\tiny_lm\\babylm_2026_hf_unigram_100step_seed13\\checkpoint",
+      "score_field": "mean_nll_per_token",
+      "text_scores": [
+        {
+          "text": "Maya found a red ball.",
+          "tokens": 8,
+          "bytes": 22,
+          "sequences": 1,
+          "mean_nll_per_token": 7.152251720428467,
+          "total_nll": 57.218013763427734,
+          "bits_per_byte": 3.752188395727893
+        },
+        {
+          "text": "Maya found red ball.",
+          "tokens": 7,
+          "bytes": 20,
+          "sequences": 1,
+          "mean_nll_per_token": 7.432535443987165,
+          "total_nll": 52.027748107910156,
+          "bits_per_byte": 3.7530087091951065
+        },
+        {
+          "text": "Maya put the cup on the table.",
+          "tokens": 10,
+          "bytes": 30,
+          "sequences": 1,
+          "mean_nll_per_token": 6.878139495849609,
+          "total_nll": 68.7813949584961,
+          "bits_per_byte": 3.3076859137349155
+        },
+        {
+          "text": "Maya put the cup the table.",
+          "tokens": 9,
+          "bytes": 27,
+          "sequences": 1,
+          "mean_nll_per_token": 6.9294484456380205,
+          "total_nll": 62.36503601074219,
+          "bits_per_byte": 3.3323603028725692
+        },
+        {
+          "text": "She gave the toy to he.",
+          "tokens": 10,
+          "bytes": 23,
+          "sequences": 1,
+          "mean_nll_per_token": 6.370709991455078,
+          "total_nll": 63.70709991455078,
+          "bits_per_byte": 3.996083352875657
+        },
+        {
+          "text": "She gave the toy to him.",
+          "tokens": 10,
+          "bytes": 24,
+          "sequences": 1,
+          "mean_nll_per_token": 6.40799560546875,
+          "total_nll": 64.0799560546875,
+          "bits_per_byte": 3.8519931175200153
+        },
+        {
+          "text": "The baby can see the moon.",
+          "tokens": 10,
+          "bytes": 26,
+          "sequences": 1,
+          "mean_nll_per_token": 6.994868469238281,
+          "total_nll": 69.94868469238281,
+          "bits_per_byte": 3.881331558554094
+        },
+        {
+          "text": "The baby can sees the moon.",
+          "tokens": 11,
+          "bytes": 27,
+          "sequences": 1,
+          "mean_nll_per_token": 6.7248403375799,
+          "total_nll": 73.9732437133789,
+          "bits_per_byte": 3.9526234023615716
+        },
+        {
+          "text": "The dog are running.",
+          "tokens": 7,
+          "bytes": 20,
+          "sequences": 1,
+          "mean_nll_per_token": 6.953859601702009,
+          "total_nll": 48.67701721191406,
+          "bits_per_byte": 3.511304566844757
+        },
+        {
+          "text": "The dog is running.",
+          "tokens": 7,
+          "bytes": 19,
+          "sequences": 1,
+          "mean_nll_per_token": 6.964813777378628,
+          "total_nll": 48.75369644165039,
+          "bits_per_byte": 3.701932425335522
+        },
+        {
+          "text": "The little bird ate the seed.",
+          "tokens": 9,
+          "bytes": 29,
+          "sequences": 1,
+          "mean_nll_per_token": 7.360521104600695,
+          "total_nll": 66.24468994140625,
+          "bits_per_byte": 3.2955477815066825
+        },
+        {
+          "text": "The little bird the seed ate.",
+          "tokens": 9,
+          "bytes": 29,
+          "sequences": 1,
+          "mean_nll_per_token": 7.277432759602864,
+          "total_nll": 65.49689483642578,
+          "bits_per_byte": 3.258346392211635
+        },
+        {
+          "text": "Two cats are sleeping.",
+          "tokens": 8,
+          "bytes": 22,
+          "sequences": 1,
+          "mean_nll_per_token": 6.894272804260254,
+          "total_nll": 55.15418243408203,
+          "bits_per_byte": 3.6168484309970603
+        },
+        {
+          "text": "Two cats is sleeping.",
+          "tokens": 8,
+          "bytes": 21,
+          "sequences": 1,
+          "mean_nll_per_token": 6.897254943847656,
+          "total_nll": 55.17803955078125,
+          "bits_per_byte": 3.7907182869470093
+        },
+        {
+          "text": "Yesterday Leo open the box.",
+          "tokens": 9,
+          "bytes": 27,
+          "sequences": 1,
+          "mean_nll_per_token": 7.167355855305989,
+          "total_nll": 64.5062026977539,
+          "bits_per_byte": 3.446769582912142
+        },
+        {
+          "text": "Yesterday Leo opened the box.",
+          "tokens": 10,
+          "bytes": 29,
+          "sequences": 1,
+          "mean_nll_per_token": 7.113359069824218,
+          "total_nll": 71.13359069824219,
+          "bits_per_byte": 3.538761328999286
+        }
+      ],
+      "report": {
+        "cases": 8,
+        "correct": 4,
+        "accuracy": 0.5,
+        "by_category": {
+          "agreement": {
+            "category": "agreement",
+            "cases": 2,
+            "correct": 1,
+            "accuracy": 0.5
+          },
+          "auxiliary": {
+            "category": "auxiliary",
+            "cases": 1,
+            "correct": 0,
+            "accuracy": 0.0
+          },
+          "determiner": {
+            "category": "determiner",
+            "cases": 1,
+            "correct": 1,
+            "accuracy": 1.0
+          },
+          "preposition": {
+            "category": "preposition",
+            "cases": 1,
+            "correct": 1,
+            "accuracy": 1.0
+          },
+          "pronoun": {
+            "category": "pronoun",
+            "cases": 1,
+            "correct": 0,
+            "accuracy": 0.0
+          },
+          "tense": {
+            "category": "tense",
+            "cases": 1,
+            "correct": 1,
+            "accuracy": 1.0
+          },
+          "word_order": {
+            "category": "word_order",
+            "cases": 1,
+            "correct": 0,
+            "accuracy": 0.0
+          }
+        },
+        "predictions": [
+          {
+            "case_id": "agreement_singular_1",
+            "category": "agreement",
+            "good_score": 6.964813777378628,
+            "bad_score": 6.953859601702009,
+            "margin": -0.010954175676618938,
+            "chose_good": false
+          },
+          {
+            "case_id": "agreement_plural_1",
+            "category": "agreement",
+            "good_score": 6.894272804260254,
+            "bad_score": 6.897254943847656,
+            "margin": 0.0029821395874023438,
+            "chose_good": true
+          },
+          {
+            "case_id": "determiner_1",
+            "category": "determiner",
+            "good_score": 7.152251720428467,
+            "bad_score": 7.432535443987165,
+            "margin": 0.28028372355869813,
+            "chose_good": true
+          },
+          {
+            "case_id": "past_tense_1",
+            "category": "tense",
+            "good_score": 7.113359069824218,
+            "bad_score": 7.167355855305989,
+            "margin": 0.05399678548177089,
+            "chose_good": true
+          },
+          {
+            "case_id": "auxiliary_1",
+            "category": "auxiliary",
+            "good_score": 6.994868469238281,
+            "bad_score": 6.7248403375799,
+            "margin": -0.270028131658381,
+            "chose_good": false
+          },
+          {
+            "case_id": "preposition_1",
+            "category": "preposition",
+            "good_score": 6.878139495849609,
+            "bad_score": 6.9294484456380205,
+            "margin": 0.05130894978841116,
+            "chose_good": true
+          },
+          {
+            "case_id": "pronoun_1",
+            "category": "pronoun",
+            "good_score": 6.40799560546875,
+            "bad_score": 6.370709991455078,
+            "margin": -0.037285614013672586,
+            "chose_good": false
+          },
+          {
+            "case_id": "word_order_1",
+            "category": "word_order",
+            "good_score": 7.360521104600695,
+            "bad_score": 7.277432759602864,
+            "margin": -0.08308834499783035,
+            "chose_good": false
+          }
+        ]
+      }
+    },
+    {
+      "name": "babylm_2026_tiered_morph_unigram_100step_seed13",
+      "manifest": "artifacts\\tiny_lm\\babylm_2026_tiered_morph_unigram_100step_seed13\\run_manifest.json",
+      "tokenizer": "tiered_morph_unigram",
+      "checkpoint_dir": "artifacts\\tiny_lm\\babylm_2026_tiered_morph_unigram_100step_seed13\\checkpoint",
+      "score_field": "mean_nll_per_token",
+      "text_scores": [
+        {
+          "text": "Maya found a red ball.",
+          "tokens": 8,
+          "bytes": 22,
+          "sequences": 1,
+          "mean_nll_per_token": 7.4830474853515625,
+          "total_nll": 59.8643798828125,
+          "bits_per_byte": 3.9257292719466643
+        },
+        {
+          "text": "Maya found red ball.",
+          "tokens": 7,
+          "bytes": 20,
+          "sequences": 1,
+          "mean_nll_per_token": 7.713437761579241,
+          "total_nll": 53.99406433105469,
+          "bits_per_byte": 3.8948484423926133
+        },
+        {
+          "text": "Maya put the cup on the table.",
+          "tokens": 10,
+          "bytes": 30,
+          "sequences": 1,
+          "mean_nll_per_token": 6.8099205017089846,
+          "total_nll": 68.09920501708984,
+          "bits_per_byte": 3.274879512221211
+        },
+        {
+          "text": "Maya put the cup the table.",
+          "tokens": 9,
+          "bytes": 27,
+          "sequences": 1,
+          "mean_nll_per_token": 6.849231719970703,
+          "total_nll": 61.64308547973633,
+          "bits_per_byte": 3.293784212100373
+        },
+        {
+          "text": "She gave the toy to he.",
+          "tokens": 9,
+          "bytes": 23,
+          "sequences": 1,
+          "mean_nll_per_token": 6.811694675021702,
+          "total_nll": 61.30525207519531,
+          "bits_per_byte": 3.8454253543187873
+        },
+        {
+          "text": "She gave the toy to him.",
+          "tokens": 9,
+          "bytes": 24,
+          "sequences": 1,
+          "mean_nll_per_token": 6.8403036329481335,
+          "total_nll": 61.5627326965332,
+          "bits_per_byte": 3.7006770485358875
+        },
+        {
+          "text": "The baby can see the moon.",
+          "tokens": 9,
+          "bytes": 26,
+          "sequences": 1,
+          "mean_nll_per_token": 6.858024173312717,
+          "total_nll": 61.72221755981445,
+          "bits_per_byte": 3.424859122546693
+        },
+        {
+          "text": "The baby can sees the moon.",
+          "tokens": 10,
+          "bytes": 27,
+          "sequences": 1,
+          "mean_nll_per_token": 6.633049011230469,
+          "total_nll": 66.33049011230469,
+          "bits_per_byte": 3.5442470053613477
+        },
+        {
+          "text": "The dog are running.",
+          "tokens": 6,
+          "bytes": 20,
+          "sequences": 1,
+          "mean_nll_per_token": 7.157057444254558,
+          "total_nll": 42.942344665527344,
+          "bits_per_byte": 3.0976353846550464
+        },
+        {
+          "text": "The dog is running.",
+          "tokens": 6,
+          "bytes": 19,
+          "sequences": 1,
+          "mean_nll_per_token": 7.249378840128581,
+          "total_nll": 43.496273040771484,
+          "bits_per_byte": 3.3027293375301756
+        },
+        {
+          "text": "The little bird ate the seed.",
+          "tokens": 8,
+          "bytes": 29,
+          "sequences": 1,
+          "mean_nll_per_token": 7.097090244293213,
+          "total_nll": 56.7767219543457,
+          "bits_per_byte": 2.8245343172919335
+        },
+        {
+          "text": "The little bird the seed ate.",
+          "tokens": 8,
+          "bytes": 29,
+          "sequences": 1,
+          "mean_nll_per_token": 7.04473352432251,
+          "total_nll": 56.35786819458008,
+          "bits_per_byte": 2.8036971365308454
+        },
+        {
+          "text": "Two cats are sleeping.",
+          "tokens": 8,
+          "bytes": 22,
+          "sequences": 1,
+          "mean_nll_per_token": 7.227650165557861,
+          "total_nll": 57.82120132446289,
+          "bits_per_byte": 3.7917436549565897
+        },
+        {
+          "text": "Two cats is sleeping.",
+          "tokens": 8,
+          "bytes": 21,
+          "sequences": 1,
+          "mean_nll_per_token": 7.294151306152344,
+          "total_nll": 58.35321044921875,
+          "bits_per_byte": 4.008851777858949
+        },
+        {
+          "text": "Yesterday Leo open the box.",
+          "tokens": 9,
+          "bytes": 27,
+          "sequences": 1,
+          "mean_nll_per_token": 7.406324598524305,
+          "total_nll": 66.65692138671875,
+          "bits_per_byte": 3.5616892565016527
+        },
+        {
+          "text": "Yesterday Leo opened the box.",
+          "tokens": 10,
+          "bytes": 29,
+          "sequences": 1,
+          "mean_nll_per_token": 7.213902282714844,
+          "total_nll": 72.13902282714844,
+          "bits_per_byte": 3.5887796719759577
+        }
+      ],
+      "report": {
+        "cases": 8,
+        "correct": 4,
+        "accuracy": 0.5,
+        "by_category": {
+          "agreement": {
+            "category": "agreement",
+            "cases": 2,
+            "correct": 1,
+            "accuracy": 0.5
+          },
+          "auxiliary": {
+            "category": "auxiliary",
+            "cases": 1,
+            "correct": 0,
+            "accuracy": 0.0
+          },
+          "determiner": {
+            "category": "determiner",
+            "cases": 1,
+            "correct": 1,
+            "accuracy": 1.0
+          },
+          "preposition": {
+            "category": "preposition",
+            "cases": 1,
+            "correct": 1,
+            "accuracy": 1.0
+          },
+          "pronoun": {
+            "category": "pronoun",
+            "cases": 1,
+            "correct": 0,
+            "accuracy": 0.0
+          },
+          "tense": {
+            "category": "tense",
+            "cases": 1,
+            "correct": 1,
+            "accuracy": 1.0
+          },
+          "word_order": {
+            "category": "word_order",
+            "cases": 1,
+            "correct": 0,
+            "accuracy": 0.0
+          }
+        },
+        "predictions": [
+          {
+            "case_id": "agreement_singular_1",
+            "category": "agreement",
+            "good_score": 7.249378840128581,
+            "bad_score": 7.157057444254558,
+            "margin": -0.09232139587402344,
+            "chose_good": false
+          },
+          {
+            "case_id": "agreement_plural_1",
+            "category": "agreement",
+            "good_score": 7.227650165557861,
+            "bad_score": 7.294151306152344,
+            "margin": 0.06650114059448242,
+            "chose_good": true
+          },
+          {
+            "case_id": "determiner_1",
+            "category": "determiner",
+            "good_score": 7.4830474853515625,
+            "bad_score": 7.713437761579241,
+            "margin": 0.23039027622767883,
+            "chose_good": true
+          },
+          {
+            "case_id": "past_tense_1",
+            "category": "tense",
+            "good_score": 7.213902282714844,
+            "bad_score": 7.406324598524305,
+            "margin": 0.19242231580946179,
+            "chose_good": true
+          },
+          {
+            "case_id": "auxiliary_1",
+            "category": "auxiliary",
+            "good_score": 6.858024173312717,
+            "bad_score": 6.633049011230469,
+            "margin": -0.22497516208224866,
+            "chose_good": false
+          },
+          {
+            "case_id": "preposition_1",
+            "category": "preposition",
+            "good_score": 6.8099205017089846,
+            "bad_score": 6.849231719970703,
+            "margin": 0.03931121826171857,
+            "chose_good": true
+          },
+          {
+            "case_id": "pronoun_1",
+            "category": "pronoun",
+            "good_score": 6.8403036329481335,
+            "bad_score": 6.811694675021702,
+            "margin": -0.0286089579264317,
+            "chose_good": false
+          },
+          {
+            "case_id": "word_order_1",
+            "category": "word_order",
+            "good_score": 7.097090244293213,
+            "bad_score": 7.04473352432251,
+            "margin": -0.052356719970703125,
+            "chose_good": false
+          }
+        ]
+      }
+    },
+    {
+      "name": "babylm_2026_hybrid_morph_unigram_100step_seed13",
+      "manifest": "artifacts\\tiny_lm\\babylm_2026_hybrid_morph_unigram_100step_seed13\\run_manifest.json",
+      "tokenizer": "hybrid_morph_unigram",
+      "checkpoint_dir": "artifacts\\tiny_lm\\babylm_2026_hybrid_morph_unigram_100step_seed13\\checkpoint",
+      "score_field": "mean_nll_per_token",
+      "text_scores": [
+        {
+          "text": "Maya found a red ball.",
+          "tokens": 10,
+          "bytes": 22,
+          "sequences": 1,
+          "mean_nll_per_token": 6.894354248046875,
+          "total_nll": 68.94354248046875,
+          "bits_per_byte": 4.521113947176811
+        },
+        {
+          "text": "Maya found red ball.",
+          "tokens": 9,
+          "bytes": 20,
+          "sequences": 1,
+          "mean_nll_per_token": 6.932950337727864,
+          "total_nll": 62.39655303955078,
+          "bits_per_byte": 4.500959881936255
+        },
+        {
+          "text": "Maya put the cup on the table.",
+          "tokens": 12,
+          "bytes": 30,
+          "sequences": 1,
+          "mean_nll_per_token": 6.4942169189453125,
+          "total_nll": 77.93060302734375,
+          "bits_per_byte": 3.7476698173678424
+        },
+        {
+          "text": "Maya put the cup the table.",
+          "tokens": 11,
+          "bytes": 27,
+          "sequences": 1,
+          "mean_nll_per_token": 6.4504616477272725,
+          "total_nll": 70.955078125,
+          "bits_per_byte": 3.7913533087713507
+        },
+        {
+          "text": "She gave the toy to he.",
+          "tokens": 8,
+          "bytes": 23,
+          "sequences": 1,
+          "mean_nll_per_token": 6.563636779785156,
+          "total_nll": 52.50909423828125,
+          "bits_per_byte": 3.2936786895278085
+        },
+        {
+          "text": "She gave the toy to him.",
+          "tokens": 8,
+          "bytes": 24,
+          "sequences": 1,
+          "mean_nll_per_token": 6.572291374206543,
+          "total_nll": 52.578330993652344,
+          "bits_per_byte": 3.1606040576150303
+        },
+        {
+          "text": "The baby can see the moon.",
+          "tokens": 11,
+          "bytes": 26,
+          "sequences": 1,
+          "mean_nll_per_token": 6.280825528231534,
+          "total_nll": 69.08908081054688,
+          "bits_per_byte": 3.833633625575109
+        },
+        {
+          "text": "The baby can sees the moon.",
+          "tokens": 14,
+          "bytes": 27,
+          "sequences": 1,
+          "mean_nll_per_token": 6.014584677559989,
+          "total_nll": 84.20418548583984,
+          "bits_per_byte": 4.499294845278355
+        },
+        {
+          "text": "The dog are running.",
+          "tokens": 6,
+          "bytes": 20,
+          "sequences": 1,
+          "mean_nll_per_token": 7.093630472819011,
+          "total_nll": 42.56178283691406,
+          "bits_per_byte": 3.0701836515104457
+        },
+        {
+          "text": "The dog is running.",
+          "tokens": 6,
+          "bytes": 19,
+          "sequences": 1,
+          "mean_nll_per_token": 7.029705047607422,
+          "total_nll": 42.17823028564453,
+          "bits_per_byte": 3.202648614030108
+        },
+        {
+          "text": "The little bird ate the seed.",
+          "tokens": 8,
+          "bytes": 29,
+          "sequences": 1,
+          "mean_nll_per_token": 7.248278617858887,
+          "total_nll": 57.986228942871094,
+          "bits_per_byte": 2.884704997783869
+        },
+        {
+          "text": "The little bird the seed ate.",
+          "tokens": 8,
+          "bytes": 29,
+          "sequences": 1,
+          "mean_nll_per_token": 7.26779317855835,
+          "total_nll": 58.1423454284668,
+          "bits_per_byte": 2.892471497079384
+        },
+        {
+          "text": "Two cats are sleeping.",
+          "tokens": 6,
+          "bytes": 22,
+          "sequences": 1,
+          "mean_nll_per_token": 7.638234456380208,
+          "total_nll": 45.82940673828125,
+          "bits_per_byte": 3.0053571740091636
+        },
+        {
+          "text": "Two cats is sleeping.",
+          "tokens": 6,
+          "bytes": 21,
+          "sequences": 1,
+          "mean_nll_per_token": 7.556526819864909,
+          "total_nll": 45.33916091918945,
+          "bits_per_byte": 3.1147896483895865
+        },
+        {
+          "text": "Yesterday Leo open the box.",
+          "tokens": 7,
+          "bytes": 27,
+          "sequences": 1,
+          "mean_nll_per_token": 7.593409946986607,
+          "total_nll": 53.15386962890625,
+          "bits_per_byte": 2.840178671025242
+        },
+        {
+          "text": "Yesterday Leo opened the box.",
+          "tokens": 7,
+          "bytes": 29,
+          "sequences": 1,
+          "mean_nll_per_token": 7.710956573486328,
+          "total_nll": 53.9766960144043,
+          "bits_per_byte": 2.685238333225936
+        }
+      ],
+      "report": {
+        "cases": 8,
+        "correct": 3,
+        "accuracy": 0.375,
+        "by_category": {
+          "agreement": {
+            "category": "agreement",
+            "cases": 2,
+            "correct": 1,
+            "accuracy": 0.5
+          },
+          "auxiliary": {
+            "category": "auxiliary",
+            "cases": 1,
+            "correct": 0,
+            "accuracy": 0.0
+          },
+          "determiner": {
+            "category": "determiner",
+            "cases": 1,
+            "correct": 1,
+            "accuracy": 1.0
+          },
+          "preposition": {
+            "category": "preposition",
+            "cases": 1,
+            "correct": 0,
+            "accuracy": 0.0
+          },
+          "pronoun": {
+            "category": "pronoun",
+            "cases": 1,
+            "correct": 0,
+            "accuracy": 0.0
+          },
+          "tense": {
+            "category": "tense",
+            "cases": 1,
+            "correct": 0,
+            "accuracy": 0.0
+          },
+          "word_order": {
+            "category": "word_order",
+            "cases": 1,
+            "correct": 1,
+            "accuracy": 1.0
+          }
+        },
+        "predictions": [
+          {
+            "case_id": "agreement_singular_1",
+            "category": "agreement",
+            "good_score": 7.029705047607422,
+            "bad_score": 7.093630472819011,
+            "margin": 0.06392542521158884,
+            "chose_good": true
+          },
+          {
+            "case_id": "agreement_plural_1",
+            "category": "agreement",
+            "good_score": 7.638234456380208,
+            "bad_score": 7.556526819864909,
+            "margin": -0.08170763651529889,
+            "chose_good": false
+          },
+          {
+            "case_id": "determiner_1",
+            "category": "determiner",
+            "good_score": 6.894354248046875,
+            "bad_score": 6.932950337727864,
+            "margin": 0.03859608968098893,
+            "chose_good": true
+          },
+          {
+            "case_id": "past_tense_1",
+            "category": "tense",
+            "good_score": 7.710956573486328,
+            "bad_score": 7.593409946986607,
+            "margin": -0.11754662649972136,
+            "chose_good": false
+          },
+          {
+            "case_id": "auxiliary_1",
+            "category": "auxiliary",
+            "good_score": 6.280825528231534,
+            "bad_score": 6.014584677559989,
+            "margin": -0.26624085067154546,
+            "chose_good": false
+          },
+          {
+            "case_id": "preposition_1",
+            "category": "preposition",
+            "good_score": 6.4942169189453125,
+            "bad_score": 6.4504616477272725,
+            "margin": -0.043755271218040015,
+            "chose_good": false
+          },
+          {
+            "case_id": "pronoun_1",
+            "category": "pronoun",
+            "good_score": 6.572291374206543,
+            "bad_score": 6.563636779785156,
+            "margin": -0.008654594421386719,
+            "chose_good": false
+          },
+          {
+            "case_id": "word_order_1",
+            "category": "word_order",
+            "good_score": 7.248278617858887,
+            "bad_score": 7.26779317855835,
+            "margin": 0.01951456069946289,
+            "chose_good": true
+          }
+        ]
+      }
+    },
+    {
+      "name": "babylm_2026_capped_morpheme_100step_seed13",
+      "manifest": "artifacts\\tiny_lm\\babylm_2026_capped_morpheme_100step_seed13\\run_manifest.json",
+      "tokenizer": "capped_morpheme",
+      "checkpoint_dir": "artifacts\\tiny_lm\\babylm_2026_capped_morpheme_100step_seed13\\checkpoint",
+      "score_field": "mean_nll_per_token",
+      "text_scores": [
+        {
+          "text": "Maya found a red ball.",
+          "tokens": 7,
+          "bytes": 22,
+          "sequences": 1,
+          "mean_nll_per_token": 7.195643288748605,
+          "total_nll": 50.369503021240234,
+          "bits_per_byte": 3.303083282762952
+        },
+        {
+          "text": "Maya found red ball.",
+          "tokens": 6,
+          "bytes": 20,
+          "sequences": 1,
+          "mean_nll_per_token": 7.269105275472005,
+          "total_nll": 43.61463165283203,
+          "bits_per_byte": 3.1461306397869793
+        },
+        {
+          "text": "Maya put the cup on the table.",
+          "tokens": 9,
+          "bytes": 30,
+          "sequences": 1,
+          "mean_nll_per_token": 6.925443861219618,
+          "total_nll": 62.32899475097656,
+          "bits_per_byte": 2.9973910543609374
+        },
+        {
+          "text": "Maya put the cup the table.",
+          "tokens": 8,
+          "bytes": 27,
+          "sequences": 1,
+          "mean_nll_per_token": 6.896039962768555,
+          "total_nll": 55.16831970214844,
+          "bits_per_byte": 2.947817083276535
+        },
+        {
+          "text": "She gave the toy to he.",
+          "tokens": 8,
+          "bytes": 23,
+          "sequences": 1,
+          "mean_nll_per_token": 6.7533860206604,
+          "total_nll": 54.0270881652832,
+          "bits_per_byte": 3.388896181292386
+        },
+        {
+          "text": "She gave the toy to him.",
+          "tokens": 8,
+          "bytes": 24,
+          "sequences": 1,
+          "mean_nll_per_token": 6.805143356323242,
+          "total_nll": 54.44114685058594,
+          "bits_per_byte": 3.272582190902006
+        },
+        {
+          "text": "The baby can see the moon.",
+          "tokens": 8,
+          "bytes": 26,
+          "sequences": 1,
+          "mean_nll_per_token": 7.028719425201416,
+          "total_nll": 56.22975540161133,
+          "bits_per_byte": 3.120091894934772
+        },
+        {
+          "text": "The baby can sees the moon.",
+          "tokens": 9,
+          "bytes": 27,
+          "sequences": 1,
+          "mean_nll_per_token": 6.787044525146484,
+          "total_nll": 61.08340072631836,
+          "bits_per_byte": 3.263878492907141
+        },
+        {
+          "text": "The dog are running.",
+          "tokens": 7,
+          "bytes": 20,
+          "sequences": 1,
+          "mean_nll_per_token": 7.1807403564453125,
+          "total_nll": 50.26518249511719,
+          "bits_per_byte": 3.625866475754215
+        },
+        {
+          "text": "The dog is running.",
+          "tokens": 7,
+          "bytes": 19,
+          "sequences": 1,
+          "mean_nll_per_token": 7.245571136474609,
+          "total_nll": 50.718997955322266,
+          "bits_per_byte": 3.8511603594211006
+        },
+        {
+          "text": "The little bird ate the seed.",
+          "tokens": 8,
+          "bytes": 29,
+          "sequences": 1,
+          "mean_nll_per_token": 7.364737510681152,
+          "total_nll": 58.91790008544922,
+          "bits_per_byte": 2.931053871478242
+        },
+        {
+          "text": "The little bird the seed ate.",
+          "tokens": 8,
+          "bytes": 29,
+          "sequences": 1,
+          "mean_nll_per_token": 7.352104187011719,
+          "total_nll": 58.81683349609375,
+          "bits_per_byte": 2.9260260001933216
+        },
+        {
+          "text": "Two cats are sleeping.",
+          "tokens": 8,
+          "bytes": 22,
+          "sequences": 1,
+          "mean_nll_per_token": 7.126400947570801,
+          "total_nll": 57.011207580566406,
+          "bits_per_byte": 3.738626656889747
+        },
+        {
+          "text": "Two cats is sleeping.",
+          "tokens": 8,
+          "bytes": 21,
+          "sequences": 1,
+          "mean_nll_per_token": 7.123443603515625,
+          "total_nll": 56.987548828125,
+          "bits_per_byte": 3.9150311469882664
+        },
+        {
+          "text": "Yesterday Leo open the box.",
+          "tokens": 7,
+          "bytes": 27,
+          "sequences": 1,
+          "mean_nll_per_token": 7.595037732805524,
+          "total_nll": 53.16526412963867,
+          "bits_per_byte": 2.8407875150882074
+        },
+        {
+          "text": "Yesterday Leo opened the box.",
+          "tokens": 8,
+          "bytes": 29,
+          "sequences": 1,
+          "mean_nll_per_token": 7.3661627769470215,
+          "total_nll": 58.92930221557617,
+          "bits_per_byte": 2.931621105843405
+        }
+      ],
+      "report": {
+        "cases": 8,
+        "correct": 2,
+        "accuracy": 0.25,
+        "by_category": {
+          "agreement": {
+            "category": "agreement",
+            "cases": 2,
+            "correct": 0,
+            "accuracy": 0.0
+          },
+          "auxiliary": {
+            "category": "auxiliary",
+            "cases": 1,
+            "correct": 0,
+            "accuracy": 0.0
+          },
+          "determiner": {
+            "category": "determiner",
+            "cases": 1,
+            "correct": 1,
+            "accuracy": 1.0
+          },
+          "preposition": {
+            "category": "preposition",
+            "cases": 1,
+            "correct": 0,
+            "accuracy": 0.0
+          },
+          "pronoun": {
+            "category": "pronoun",
+            "cases": 1,
+            "correct": 0,
+            "accuracy": 0.0
+          },
+          "tense": {
+            "category": "tense",
+            "cases": 1,
+            "correct": 1,
+            "accuracy": 1.0
+          },
+          "word_order": {
+            "category": "word_order",
+            "cases": 1,
+            "correct": 0,
+            "accuracy": 0.0
+          }
+        },
+        "predictions": [
+          {
+            "case_id": "agreement_singular_1",
+            "category": "agreement",
+            "good_score": 7.245571136474609,
+            "bad_score": 7.1807403564453125,
+            "margin": -0.06483078002929688,
+            "chose_good": false
+          },
+          {
+            "case_id": "agreement_plural_1",
+            "category": "agreement",
+            "good_score": 7.126400947570801,
+            "bad_score": 7.123443603515625,
+            "margin": -0.0029573440551757812,
+            "chose_good": false
+          },
+          {
+            "case_id": "determiner_1",
+            "category": "determiner",
+            "good_score": 7.195643288748605,
+            "bad_score": 7.269105275472005,
+            "margin": 0.07346198672339987,
+            "chose_good": true
+          },
+          {
+            "case_id": "past_tense_1",
+            "category": "tense",
+            "good_score": 7.3661627769470215,
+            "bad_score": 7.595037732805524,
+            "margin": 0.22887495585850282,
+            "chose_good": true
+          },
+          {
+            "case_id": "auxiliary_1",
+            "category": "auxiliary",
+            "good_score": 7.028719425201416,
+            "bad_score": 6.787044525146484,
+            "margin": -0.24167490005493164,
+            "chose_good": false
+          },
+          {
+            "case_id": "preposition_1",
+            "category": "preposition",
+            "good_score": 6.925443861219618,
+            "bad_score": 6.896039962768555,
+            "margin": -0.02940389845106317,
+            "chose_good": false
+          },
+          {
+            "case_id": "pronoun_1",
+            "category": "pronoun",
+            "good_score": 6.805143356323242,
+            "bad_score": 6.7533860206604,
+            "margin": -0.0517573356628418,
+            "chose_good": false
+          },
+          {
+            "case_id": "word_order_1",
+            "category": "word_order",
+            "good_score": 7.364737510681152,
+            "bad_score": 7.352104187011719,
+            "margin": -0.012633323669433594,
+            "chose_good": false
+          }
+        ]
+      }
+    }
+  ]
+}

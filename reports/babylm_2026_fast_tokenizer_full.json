@@ -1,0 +1,47 @@
+{
+  "source": "manifest:reports\\babylm_2026_strict_small_manifest.json",
+  "vocab_size": 8192,
+  "arms": [
+    "hf_bpe",
+    "hf_unigram",
+    "capped_morpheme"
+  ],
+  "rank_by": "bits_per_byte",
+  "train_documents": 6,
+  "validation_documents": 6,
+  "train_bytes": 54399840,
+  "validation_bytes": 56752783,
+  "elapsed_seconds": 389.38457899999776,
+  "reports": [
+    {
+      "tokenizer": "capped_morpheme",
+      "train_tokens": 14996860,
+      "validation_tokens": 15566580,
+      "vocabulary": 8192,
+      "nll_per_token": 5.8419684251608786,
+      "perplexity": 344.4567110266362,
+      "validation_bytes": 56752783,
+      "bits_per_byte": 2.31174426684436
+    },
+    {
+      "tokenizer": "hf_bpe",
+      "train_tokens": 14981675,
+      "validation_tokens": 15694331,
+      "vocabulary": 8188,
+      "nll_per_token": 6.367538649066508,
+      "perplexity": 582.622025342014,
+      "validation_bytes": 56752783,
+      "bits_per_byte": 2.5403980661631813
+    },
+    {
+      "tokenizer": "hf_unigram",
+      "train_tokens": 16802441,
+      "validation_tokens": 17641522,
+      "vocabulary": 8288,
+      "nll_per_token": 5.727693651486304,
+      "perplexity": 307.25980236545104,
+      "validation_bytes": 56752783,
+      "bits_per_byte": 2.568639803360849
+    }
+  ]
+}

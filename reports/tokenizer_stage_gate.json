@@ -1,0 +1,30 @@
+{
+  "progression": "reports/babylm_2026_tiered_tiny_lm_progression.json",
+  "blimp_reports": [
+    "reports/tiny_lm_blimp_fast_full.json",
+    "reports/tiny_lm_blimp_fast_full_bits_per_byte.json",
+    "reports/tiny_lm_blimp_fast_full_total_nll.json"
+  ],
+  "entity_report": "reports/tiny_lm_entity_tracking_fast.json",
+  "proxy_decision": "reports\\babylm_2026_small_proxy_tokenizer_decision.json",
+  "decision": {
+    "candidate": "tiered_morph_unigram",
+    "decision": "advance_to_scaled_neural_ablation",
+    "latest_step": 200,
+    "candidate_latest_bits_per_byte": 2.6788253228354875,
+    "best_baseline": "hf_bpe",
+    "best_baseline_latest_bits_per_byte": 2.7694613893002433,
+    "relative_bits_per_byte_gain": 0.03272696518352862,
+    "blimp_wins": 3,
+    "blimp_reports": 3,
+    "entity_best_baseline": "hf_bpe",
+    "candidate_entity_accuracy": 0.41116751269035534,
+    "best_baseline_entity_accuracy": 0.41878172588832485,
+    "entity_accuracy_delta": -0.0076142131979695105,
+    "proxy_decision": "promote_to_scaled_neural_ablation",
+    "proxy_best_baseline": "hf_bpe",
+    "proxy_relative_bits_per_byte_gain": 0.030789521743317963,
+    "proxy_supports_scale": true,
+    "recommendation": "Schedule longer matched BabyLM-style neural ablations for tiered morphology-Unigram, HF BPE, HF Unigram, and capped morphology."
+  }
+}

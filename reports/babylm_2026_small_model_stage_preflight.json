@@ -1,0 +1,48 @@
+{
+  "config": "experiments\\babylm\\small_model_tokenizer_stage.json",
+  "min_free_disk_gb": 2.0,
+  "require_cuda": false,
+  "report": {
+    "stage_name": "babylm_2026_small_model_tokenizer_stage",
+    "status": "pass",
+    "checks": [
+      {
+        "name": "manifest",
+        "status": "pass",
+        "detail": "C:\\Users\\Son\\cowork\\MELM\\reports\\babylm_2026_strict_small_manifest.json"
+      },
+      {
+        "name": "source_gate",
+        "status": "pass",
+        "detail": "C:\\Users\\Son\\cowork\\MELM\\reports\\tokenizer_stage_gate.json"
+      },
+      {
+        "name": "source_proxy_decision",
+        "status": "pass",
+        "detail": "C:\\Users\\Son\\cowork\\MELM\\reports\\babylm_2026_small_proxy_tokenizer_decision.json"
+      },
+      {
+        "name": "disk",
+        "status": "pass",
+        "detail": "free=4596609024 required=2000000000 checkpoint_estimate=373116928"
+      },
+      {
+        "name": "device",
+        "status": "pass",
+        "detail": "cuda_available=True largest_device_memory=8585216000 training_memory_lower_bound=656232448"
+      }
+    ],
+    "estimated_parameters_per_arm": 23319808,
+    "estimated_checkpoint_bytes": 373116928,
+    "estimated_training_memory_lower_bound_bytes": 656232448,
+    "free_disk_bytes": 4596609024,
+    "cuda_available": true,
+    "cuda_devices": [
+      {
+        "index": 0,
+        "name": "NVIDIA GeForce RTX 4060 Laptop GPU",
+        "total_memory": 8585216000
+      }
+    ]
+  }
+}

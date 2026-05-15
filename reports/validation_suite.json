@@ -1,0 +1,94 @@
+{
+  "overall_passed": true,
+  "hard_failures": 0,
+  "checks": [
+    {
+      "name": "synthetic_event_memory_gain",
+      "severity": "hard",
+      "passed": true,
+      "metric": 0.47000000000000003,
+      "threshold": 0.15,
+      "detail": "Proceed with structured event memory"
+    },
+    {
+      "name": "held_out_abstention_calibration",
+      "severity": "hard",
+      "passed": true,
+      "metric": 1.0,
+      "threshold": 1.0,
+      "detail": "score_with_evidence_veto at threshold 1.25; positive recall 75.00%, negative abstention 85.33%"
+    },
+    {
+      "name": "tokenizer_decision_consistency",
+      "severity": "hard",
+      "passed": true,
+      "metric": -1.150972751335022,
+      "threshold": 0.0,
+      "detail": "decision=auxiliary_only; LM gain -1.151; boundary gain 57.14%"
+    },
+    {
+      "name": "tokenizer_stability",
+      "severity": "advisory",
+      "passed": false,
+      "metric": -0.878819634026268,
+      "threshold": 0.0,
+      "detail": "morphology win rate 0.00%; best baseline unigram_like"
+    },
+    {
+      "name": "state_grounding_seed_accuracy",
+      "severity": "hard",
+      "passed": true,
+      "metric": 1.0,
+      "threshold": 0.95,
+      "detail": "4 seed cases"
+    },
+    {
+      "name": "state_resolution",
+      "severity": "hard",
+      "passed": true,
+      "metric": 1.0,
+      "threshold": 0.95,
+      "detail": "100 object-location cases; false positive rate 0.00%"
+    },
+    {
+      "name": "authored_dialogue_memory_gain",
+      "severity": "hard",
+      "passed": true,
+      "metric": 0.19999999999999996,
+      "threshold": 0.15,
+      "detail": "Proceed with structured event memory"
+    },
+    {
+      "name": "authored_dialogue_abstention",
+      "severity": "hard",
+      "passed": true,
+      "metric": 1.0666666666666667,
+      "threshold": 1.0,
+      "detail": "positive recall 80.00%; negative abstention 100.00%"
+    },
+    {
+      "name": "sample_transcript_memory_gain",
+      "severity": "hard",
+      "passed": true,
+      "metric": 0.33333333333333337,
+      "threshold": 0.15,
+      "detail": "Proceed with structured event memory"
+    },
+    {
+      "name": "sample_transcript_abstention",
+      "severity": "hard",
+      "passed": true,
+      "metric": 1.25,
+      "threshold": 1.0,
+      "detail": "positive recall 100.00%; negative abstention 100.00%"
+    },
+    {
+      "name": "sample_transcript_state_resolution",
+      "severity": "hard",
+      "passed": true,
+      "metric": 1.0,
+      "threshold": 0.95,
+      "detail": "4 annotated state cases; false positive rate 0.00%"
+    }
+  ]
+}

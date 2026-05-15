@@ -1,0 +1,1866 @@
+{
+  "cases": 100,
+  "accuracy": 1.0,
+  "answer_rate": 0.75,
+  "false_positive_rate": 0.0,
+  "true_positives": 75,
+  "false_positives": 0,
+  "false_negatives": 0,
+  "true_negatives": 25,
+  "results": [
+    {
+      "query": "Where is the red cup 0 now?",
+      "object_name": "red cup 0",
+      "expected_location": "counter",
+      "predicted_location": "counter",
+      "predicted_event_id": "s000_e5",
+      "correct": true,
+      "category": "latest_after_move"
+    },
+    {
+      "query": "Where was the red cup 0 before Leo moved it later?",
+      "object_name": "red cup 0",
+      "expected_location": "table",
+      "predicted_location": "table",
+      "predicted_event_id": "s000_e1",
+      "correct": true,
+      "category": "before_move"
+    },
+    {
+      "query": "Where was the red cup 0 right after Maya put it down?",
+      "object_name": "red cup 0",
+      "expected_location": "table",
+      "predicted_location": "table",
+      "predicted_event_id": "s000_e1",
+      "correct": true,
+      "category": "at_initial_put"
+    },
+    {
+      "query": "Where is the purple violin 0 now?",
+      "object_name": "purple violin 0",
+      "expected_location": null,
+      "predicted_location": null,
+      "predicted_event_id": null,
+      "correct": true,
+      "category": "unknown_object"
+    },
+    {
+      "query": "Where is the blue book 1 now?",
+      "object_name": "blue book 1",
+      "expected_location": "box",
+      "predicted_location": "box",
+      "predicted_event_id": "s001_e5",
+      "correct": true,
+      "category": "latest_after_move"
+    },
+    {
+      "query": "Where was the blue book 1 before Nora moved it later?",
+      "object_name": "blue book 1",
+      "expected_location": "bench",
+      "predicted_location": "bench",
+      "predicted_event_id": "s001_e1",
+      "correct": true,
+      "category": "before_move"
+    },
+    {
+      "query": "Where was the blue book 1 right after Leo put it down?",
+      "object_name": "blue book 1",
+      "expected_location": "bench",
+      "predicted_location": "bench",
+      "predicted_event_id": "s001_e1",
+      "correct": true,
+      "category": "at_initial_put"
+    },
+    {
+      "query": "Where is the purple violin 1 now?",
+      "object_name": "purple violin 1",
+      "expected_location": null,
+      "predicted_location": null,
+      "predicted_event_id": null,
+      "correct": true,
+      "category": "unknown_object"
+    },
+    {
+      "query": "Where is the green key 2 now?",
+      "object_name": "green key 2",
+      "expected_location": "basket",
+      "predicted_location": "basket",
+      "predicted_event_id": "s002_e5",
+      "correct": true,
+      "category": "latest_after_move"
+    },
+    {
+      "query": "Where was the green key 2 before Sam moved it later?",
+      "object_name": "green key 2",
+      "expected_location": "dresser",
+      "predicted_location": "dresser",
+      "predicted_event_id": "s002_e1",
+      "correct": true,
+      "category": "before_move"
+    },
+    {
+      "query": "Where was the green key 2 right after Nora put it down?",
+      "object_name": "green key 2",
+      "expected_location": "dresser",
+      "predicted_location": "dresser",
+      "predicted_event_id": "s002_e1",
+      "correct": true,
+      "category": "at_initial_put"
+    },
+    {
+      "query": "Where is the purple violin 2 now?",
+      "object_name": "purple violin 2",
+      "expected_location": null,
+      "predicted_location": null,
+      "predicted_event_id": null,
+      "correct": true,
+      "category": "unknown_object"
+    },
+    {
+      "query": "Where is the yellow ball 3 now?",
+      "object_name": "yellow ball 3",
+      "expected_location": "drawer",
+      "predicted_location": "drawer",
+      "predicted_event_id": "s003_e5",
+      "correct": true,
+      "category": "latest_after_move"
+    },
+    {
+      "query": "Where was the yellow ball 3 before Iris moved it later?",
+      "object_name": "yellow ball 3",
+      "expected_location": "mat",
+      "predicted_location": "mat",
+      "predicted_event_id": "s003_e1",
+      "correct": true,
+      "category": "before_move"
+    },
+    {
+      "query": "Where was the yellow ball 3 right after Sam put it down?",
+      "object_name": "yellow ball 3",
+      "expected_location": "mat",
+      "predicted_location": "mat",
+      "predicted_event_id": "s003_e1",
+      "correct": true,
+      "category": "at_initial_put"
+    },
+    {
+      "query": "Where is the purple violin 3 now?",
+      "object_name": "purple violin 3",
+      "expected_location": null,
+      "predicted_location": null,
+      "predicted_event_id": null,
+      "correct": true,
+      "category": "unknown_object"
+    },
+    {
+      "query": "Where is the silver spoon 4 now?",
+      "object_name": "silver spoon 4",
+      "expected_location": "stool",
+      "predicted_location": "stool",
+      "predicted_event_id": "s004_e5",
+      "correct": true,
+      "category": "latest_after_move"
+    },
+    {
+      "query": "Where was the silver spoon 4 before Owen moved it later?",
+      "object_name": "silver spoon 4",
+      "expected_location": "chair",
+      "predicted_location": "chair",
+      "predicted_event_id": "s004_e1",
+      "correct": true,
+      "category": "before_move"
+    },
+    {
+      "query": "Where was the silver spoon 4 right after Iris put it down?",
+      "object_name": "silver spoon 4",
+      "expected_location": "chair",
+      "predicted_location": "chair",
+      "predicted_event_id": "s004_e1",
+      "correct": true,
+      "category": "at_initial_put"
+    },
+    {
+      "query": "Where is the purple violin 4 now?",
+      "object_name": "purple violin 4",
+      "expected_location": null,
+      "predicted_location": null,
+      "predicted_event_id": null,
+      "correct": true,
+      "category": "unknown_object"
+    },
+    {
+      "query": "Where is the paper map 5 now?",
+      "object_name": "paper map 5",
+      "expected_location": "cabinet",
+      "predicted_location": "cabinet",
+      "predicted_event_id": "s005_e5",
+      "correct": true,
+      "category": "latest_after_move"
+    },
+    {
+      "query": "Where was the paper map 5 before Maya moved it later?",
+      "object_name": "paper map 5",
+      "expected_location": "desk",
+      "predicted_location": "desk",
+      "predicted_event_id": "s005_e1",
+      "correct": true,
+      "category": "before_move"
+    },
+    {
+      "query": "Where was the paper map 5 right after Owen put it down?",
+      "object_name": "paper map 5",
+      "expected_location": "desk",
+      "predicted_location": "desk",
+      "predicted_event_id": "s005_e1",
+      "correct": true,
+      "category": "at_initial_put"
+    },
+    {
+      "query": "Where is the purple violin 5 now?",
+      "object_name": "purple violin 5",
+      "expected_location": null,
+      "predicted_location": null,
+      "predicted_event_id": null,
+      "correct": true,
+      "category": "unknown_object"
+    },
+    {
+      "query": "Where is the red cup 6 now?",
+      "object_name": "red cup 6",
+      "expected_location": "counter",
+      "predicted_location": "counter",
+      "predicted_event_id": "s006_e5",
+      "correct": true,
+      "category": "latest_after_move"
+    },
+    {
+      "query": "Where was the red cup 6 before Leo moved it later?",
+      "object_name": "red cup 6",
+      "expected_location": "table",
+      "predicted_location": "table",
+      "predicted_event_id": "s006_e1",
+      "correct": true,
+      "category": "before_move"
+    },
+    {
+      "query": "Where was the red cup 6 right after Maya put it down?",
+      "object_name": "red cup 6",
+      "expected_location": "table",
+      "predicted_location": "table",
+      "predicted_event_id": "s006_e1",
+      "correct": true,
+      "category": "at_initial_put"
+    },
+    {
+      "query": "Where is the purple violin 6 now?",
+      "object_name": "purple violin 6",
+      "expected_location": null,
+      "predicted_location": null,
+      "predicted_event_id": null,
+      "correct": true,
+      "category": "unknown_object"
+    },
+    {
+      "query": "Where is the blue book 7 now?",
+      "object_name": "blue book 7",
+      "expected_location": "box",
+      "predicted_location": "box",
+      "predicted_event_id": "s007_e5",
+      "correct": true,
+      "category": "latest_after_move"
+    },
+    {
+      "query": "Where was the blue book 7 before Nora moved it later?",
+      "object_name": "blue book 7",
+      "expected_location": "bench",
+      "predicted_location": "bench",
+      "predicted_event_id": "s007_e1",
+      "correct": true,
+      "category": "before_move"
+    },
+    {
+      "query": "Where was the blue book 7 right after Leo put it down?",
+      "object_name": "blue book 7",
+      "expected_location": "bench",
+      "predicted_location": "bench",
+      "predicted_event_id": "s007_e1",
+      "correct": true,
+      "category": "at_initial_put"
+    },
+    {
+      "query": "Where is the purple violin 7 now?",
+      "object_name": "purple violin 7",
+      "expected_location": null,
+      "predicted_location": null,
+      "predicted_event_id": null,
+      "correct": true,
+      "category": "unknown_object"
+    },
+    {
+      "query": "Where is the green key 8 now?",
+      "object_name": "green key 8",
+      "expected_location": "basket",
+      "predicted_location": "basket",
+      "predicted_event_id": "s008_e5",
+      "correct": true,
+      "category": "latest_after_move"
+    },
+    {
+      "query": "Where was the green key 8 before Sam moved it later?",
+      "object_name": "green key 8",
+      "expected_location": "dresser",
+      "predicted_location": "dresser",
+      "predicted_event_id": "s008_e1",
+      "correct": true,
+      "category": "before_move"
+    },
+    {
+      "query": "Where was the green key 8 right after Nora put it down?",
+      "object_name": "green key 8",
+      "expected_location": "dresser",
+      "predicted_location": "dresser",
+      "predicted_event_id": "s008_e1",
+      "correct": true,
+      "category": "at_initial_put"
+    },
+    {
+      "query": "Where is the purple violin 8 now?",
+      "object_name": "purple violin 8",
+      "expected_location": null,
+      "predicted_location": null,
+      "predicted_event_id": null,
+      "correct": true,
+      "category": "unknown_object"
+    },
+    {
+      "query": "Where is the yellow ball 9 now?",
+      "object_name": "yellow ball 9",
+      "expected_location": "drawer",
+      "predicted_location": "drawer",
+      "predicted_event_id": "s009_e5",
+      "correct": true,
+      "category": "latest_after_move"
+    },
+    {
+      "query": "Where was the yellow ball 9 before Iris moved it later?",
+      "object_name": "yellow ball 9",
+      "expected_location": "mat",
+      "predicted_location": "mat",
+      "predicted_event_id": "s009_e1",
+      "correct": true,
+      "category": "before_move"
+    },
+    {
+      "query": "Where was the yellow ball 9 right after Sam put it down?",
+      "object_name": "yellow ball 9",
+      "expected_location": "mat",
+      "predicted_location": "mat",
+      "predicted_event_id": "s009_e1",
+      "correct": true,
+      "category": "at_initial_put"
+    },
+    {
+      "query": "Where is the purple violin 9 now?",
+      "object_name": "purple violin 9",
+      "expected_location": null,
+      "predicted_location": null,
+      "predicted_event_id": null,
+      "correct": true,
+      "category": "unknown_object"
+    },
+    {
+      "query": "Where is the silver spoon 10 now?",
+      "object_name": "silver spoon 10",
+      "expected_location": "stool",
+      "predicted_location": "stool",
+      "predicted_event_id": "s010_e5",
+      "correct": true,
+      "category": "latest_after_move"
+    },
+    {
+      "query": "Where was the silver spoon 10 before Owen moved it later?",
+      "object_name": "silver spoon 10",
+      "expected_location": "chair",
+      "predicted_location": "chair",
+      "predicted_event_id": "s010_e1",
+      "correct": true,
+      "category": "before_move"
+    },
+    {
+      "query": "Where was the silver spoon 10 right after Iris put it down?",
+      "object_name": "silver spoon 10",
+      "expected_location": "chair",
+      "predicted_location": "chair",
+      "predicted_event_id": "s010_e1",
+      "correct": true,
+      "category": "at_initial_put"
+    },
+    {
+      "query": "Where is the purple violin 10 now?",
+      "object_name": "purple violin 10",
+      "expected_location": null,
+      "predicted_location": null,
+      "predicted_event_id": null,
+      "correct": true,
+      "category": "unknown_object"
+    },
+    {
+      "query": "Where is the paper map 11 now?",
+      "object_name": "paper map 11",
+      "expected_location": "cabinet",
+      "predicted_location": "cabinet",
+      "predicted_event_id": "s011_e5",
+      "correct": true,
+      "category": "latest_after_move"
+    },
+    {
+      "query": "Where was the paper map 11 before Maya moved it later?",
+      "object_name": "paper map 11",
+      "expected_location": "desk",
+      "predicted_location": "desk",
+      "predicted_event_id": "s011_e1",
+      "correct": true,
+      "category": "before_move"
+    },
+    {
+      "query": "Where was the paper map 11 right after Owen put it down?",
+      "object_name": "paper map 11",
+      "expected_location": "desk",
+      "predicted_location": "desk",
+      "predicted_event_id": "s011_e1",
+      "correct": true,
+      "category": "at_initial_put"
+    },
+    {
+      "query": "Where is the purple violin 11 now?",
+      "object_name": "purple violin 11",
+      "expected_location": null,
+      "predicted_location": null,
+      "predicted_event_id": null,
+      "correct": true,
+      "category": "unknown_object"
+    },
+    {
+      "query": "Where is the red cup 12 now?",
+      "object_name": "red cup 12",
+      "expected_location": "counter",
+      "predicted_location": "counter",
+      "predicted_event_id": "s012_e5",
+      "correct": true,
+      "category": "latest_after_move"
+    },
+    {
+      "query": "Where was the red cup 12 before Leo moved it later?",
+      "object_name": "red cup 12",
+      "expected_location": "table",
+      "predicted_location": "table",
+      "predicted_event_id": "s012_e1",
+      "correct": true,
+      "category": "before_move"
+    },
+    {
+      "query": "Where was the red cup 12 right after Maya put it down?",
+      "object_name": "red cup 12",
+      "expected_location": "table",
+      "predicted_location": "table",
+      "predicted_event_id": "s012_e1",
+      "correct": true,
+      "category": "at_initial_put"
+    },
+    {
+      "query": "Where is the purple violin 12 now?",
+      "object_name": "purple violin 12",
+      "expected_location": null,
+      "predicted_location": null,
+      "predicted_event_id": null,
+      "correct": true,
+      "category": "unknown_object"
+    },
+    {
+      "query": "Where is the blue book 13 now?",
+      "object_name": "blue book 13",
+      "expected_location": "box",
+      "predicted_location": "box",
+      "predicted_event_id": "s013_e5",
+      "correct": true,
+      "category": "latest_after_move"
+    },
+    {
+      "query": "Where was the blue book 13 before Nora moved it later?",
+      "object_name": "blue book 13",
+      "expected_location": "bench",
+      "predicted_location": "bench",
+      "predicted_event_id": "s013_e1",
+      "correct": true,
+      "category": "before_move"
+    },
+    {
+      "query": "Where was the blue book 13 right after Leo put it down?",
+      "object_name": "blue book 13",
+      "expected_location": "bench",
+      "predicted_location": "bench",
+      "predicted_event_id": "s013_e1",
+      "correct": true,
+      "category": "at_initial_put"
+    },
+    {
+      "query": "Where is the purple violin 13 now?",
+      "object_name": "purple violin 13",
+      "expected_location": null,
+      "predicted_location": null,
+      "predicted_event_id": null,
+      "correct": true,
+      "category": "unknown_object"
+    },
+    {
+      "query": "Where is the green key 14 now?",
+      "object_name": "green key 14",
+      "expected_location": "basket",
+      "predicted_location": "basket",
+      "predicted_event_id": "s014_e5",
+      "correct": true,
+      "category": "latest_after_move"
+    },
+    {
+      "query": "Where was the green key 14 before Sam moved it later?",
+      "object_name": "green key 14",
+      "expected_location": "dresser",
+      "predicted_location": "dresser",
+      "predicted_event_id": "s014_e1",
+      "correct": true,
+      "category": "before_move"
+    },
+    {
+      "query": "Where was the green key 14 right after Nora put it down?",
+      "object_name": "green key 14",
+      "expected_location": "dresser",
+      "predicted_location": "dresser",
+      "predicted_event_id": "s014_e1",
+      "correct": true,
+      "category": "at_initial_put"
+    },
+    {
+      "query": "Where is the purple violin 14 now?",
+      "object_name": "purple violin 14",
+      "expected_location": null,
+      "predicted_location": null,
+      "predicted_event_id": null,
+      "correct": true,
+      "category": "unknown_object"
+    },
+    {
+      "query": "Where is the yellow ball 15 now?",
+      "object_name": "yellow ball 15",
+      "expected_location": "drawer",
+      "predicted_location": "drawer",
+      "predicted_event_id": "s015_e5",
+      "correct": true,
+      "category": "latest_after_move"
+    },
+    {
+      "query": "Where was the yellow ball 15 before Iris moved it later?",
+      "object_name": "yellow ball 15",
+      "expected_location": "mat",
+      "predicted_location": "mat",
+      "predicted_event_id": "s015_e1",
+      "correct": true,
+      "category": "before_move"
+    },
+    {
+      "query": "Where was the yellow ball 15 right after Sam put it down?",
+      "object_name": "yellow ball 15",
+      "expected_location": "mat",
+      "predicted_location": "mat",
+      "predicted_event_id": "s015_e1",
+      "correct": true,
+      "category": "at_initial_put"
+    },
+    {
+      "query": "Where is the purple violin 15 now?",
+      "object_name": "purple violin 15",
+      "expected_location": null,
+      "predicted_location": null,
+      "predicted_event_id": null,
+      "correct": true,
+      "category": "unknown_object"
+    },
+    {
+      "query": "Where is the silver spoon 16 now?",
+      "object_name": "silver spoon 16",
+      "expected_location": "stool",
+      "predicted_location": "stool",
+      "predicted_event_id": "s016_e5",
+      "correct": true,
+      "category": "latest_after_move"
+    },
+    {
+      "query": "Where was the silver spoon 16 before Owen moved it later?",
+      "object_name": "silver spoon 16",
+      "expected_location": "chair",
+      "predicted_location": "chair",
+      "predicted_event_id": "s016_e1",
+      "correct": true,
+      "category": "before_move"
+    },
+    {
+      "query": "Where was the silver spoon 16 right after Iris put it down?",
+      "object_name": "silver spoon 16",
+      "expected_location": "chair",
+      "predicted_location": "chair",
+      "predicted_event_id": "s016_e1",
+      "correct": true,
+      "category": "at_initial_put"
+    },
+    {
+      "query": "Where is the purple violin 16 now?",
+      "object_name": "purple violin 16",
+      "expected_location": null,
+      "predicted_location": null,
+      "predicted_event_id": null,
+      "correct": true,
+      "category": "unknown_object"
+    },
+    {
+      "query": "Where is the paper map 17 now?",
+      "object_name": "paper map 17",
+      "expected_location": "cabinet",
+      "predicted_location": "cabinet",
+      "predicted_event_id": "s017_e5",
+      "correct": true,
+      "category": "latest_after_move"
+    },
+    {
+      "query": "Where was the paper map 17 before Maya moved it later?",
+      "object_name": "paper map 17",
+      "expected_location": "desk",
+      "predicted_location": "desk",
+      "predicted_event_id": "s017_e1",
+      "correct": true,
+      "category": "before_move"
+    },
+    {
+      "query": "Where was the paper map 17 right after Owen put it down?",
+      "object_name": "paper map 17",
+      "expected_location": "desk",
+      "predicted_location": "desk",
+      "predicted_event_id": "s017_e1",
+      "correct": true,
+      "category": "at_initial_put"
+    },
+    {
+      "query": "Where is the purple violin 17 now?",
+      "object_name": "purple violin 17",
+      "expected_location": null,
+      "predicted_location": null,
+      "predicted_event_id": null,
+      "correct": true,
+      "category": "unknown_object"
+    },
+    {
+      "query": "Where is the red cup 18 now?",
+      "object_name": "red cup 18",
+      "expected_location": "counter",
+      "predicted_location": "counter",
+      "predicted_event_id": "s018_e5",
+      "correct": true,
+      "category": "latest_after_move"
+    },
+    {
+      "query": "Where was the red cup 18 before Leo moved it later?",
+      "object_name": "red cup 18",
+      "expected_location": "table",
+      "predicted_location": "table",
+      "predicted_event_id": "s018_e1",
+      "correct": true,
+      "category": "before_move"
+    },
+    {
+      "query": "Where was the red cup 18 right after Maya put it down?",
+      "object_name": "red cup 18",
+      "expected_location": "table",
+      "predicted_location": "table",
+      "predicted_event_id": "s018_e1",
+      "correct": true,
+      "category": "at_initial_put"
+    },
+    {
+      "query": "Where is the purple violin 18 now?",
+      "object_name": "purple violin 18",
+      "expected_location": null,
+      "predicted_location": null,
+      "predicted_event_id": null,
+      "correct": true,
+      "category": "unknown_object"
+    },
+    {
+      "query": "Where is the blue book 19 now?",
+      "object_name": "blue book 19",
+      "expected_location": "box",
+      "predicted_location": "box",
+      "predicted_event_id": "s019_e5",
+      "correct": true,
+      "category": "latest_after_move"
+    },
+    {
+      "query": "Where was the blue book 19 before Nora moved it later?",
+      "object_name": "blue book 19",
+      "expected_location": "bench",
+      "predicted_location": "bench",
+      "predicted_event_id": "s019_e1",
+      "correct": true,
+      "category": "before_move"
+    },
+    {
+      "query": "Where was the blue book 19 right after Leo put it down?",
+      "object_name": "blue book 19",
+      "expected_location": "bench",
+      "predicted_location": "bench",
+      "predicted_event_id": "s019_e1",
+      "correct": true,
+      "category": "at_initial_put"
+    },
+    {
+      "query": "Where is the purple violin 19 now?",
+      "object_name": "purple violin 19",
+      "expected_location": null,
+      "predicted_location": null,
+      "predicted_event_id": null,
+      "correct": true,
+      "category": "unknown_object"
+    },
+    {
+      "query": "Where is the green key 20 now?",
+      "object_name": "green key 20",
+      "expected_location": "basket",
+      "predicted_location": "basket",
+      "predicted_event_id": "s020_e5",
+      "correct": true,
+      "category": "latest_after_move"
+    },
+    {
+      "query": "Where was the green key 20 before Sam moved it later?",
+      "object_name": "green key 20",
+      "expected_location": "dresser",
+      "predicted_location": "dresser",
+      "predicted_event_id": "s020_e1",
+      "correct": true,
+      "category": "before_move"
+    },
+    {
+      "query": "Where was the green key 20 right after Nora put it down?",
+      "object_name": "green key 20",
+      "expected_location": "dresser",
+      "predicted_location": "dresser",
+      "predicted_event_id": "s020_e1",
+      "correct": true,
+      "category": "at_initial_put"
+    },
+    {
+      "query": "Where is the purple violin 20 now?",
+      "object_name": "purple violin 20",
+      "expected_location": null,
+      "predicted_location": null,
+      "predicted_event_id": null,
+      "correct": true,
+      "category": "unknown_object"
+    },
+    {
+      "query": "Where is the yellow ball 21 now?",
+      "object_name": "yellow ball 21",
+      "expected_location": "drawer",
+      "predicted_location": "drawer",
+      "predicted_event_id": "s021_e5",
+      "correct": true,
+      "category": "latest_after_move"
+    },
+    {
+      "query": "Where was the yellow ball 21 before Iris moved it later?",
+      "object_name": "yellow ball 21",
+      "expected_location": "mat",
+      "predicted_location": "mat",
+      "predicted_event_id": "s021_e1",
+      "correct": true,
+      "category": "before_move"
+    },
+    {
+      "query": "Where was the yellow ball 21 right after Sam put it down?",
+      "object_name": "yellow ball 21",
+      "expected_location": "mat",
+      "predicted_location": "mat",
+      "predicted_event_id": "s021_e1",
+      "correct": true,
+      "category": "at_initial_put"
+    },
+    {
+      "query": "Where is the purple violin 21 now?",
+      "object_name": "purple violin 21",
+      "expected_location": null,
+      "predicted_location": null,
+      "predicted_event_id": null,
+      "correct": true,
+      "category": "unknown_object"
+    },
+    {
+      "query": "Where is the silver spoon 22 now?",
+      "object_name": "silver spoon 22",
+      "expected_location": "stool",
+      "predicted_location": "stool",
+      "predicted_event_id": "s022_e5",
+      "correct": true,
+      "category": "latest_after_move"
+    },
+    {
+      "query": "Where was the silver spoon 22 before Owen moved it later?",
+      "object_name": "silver spoon 22",
+      "expected_location": "chair",
+      "predicted_location": "chair",
+      "predicted_event_id": "s022_e1",
+      "correct": true,
+      "category": "before_move"
+    },
+    {
+      "query": "Where was the silver spoon 22 right after Iris put it down?",
+      "object_name": "silver spoon 22",
+      "expected_location": "chair",
+      "predicted_location": "chair",
+      "predicted_event_id": "s022_e1",
+      "correct": true,
+      "category": "at_initial_put"
+    },
+    {
+      "query": "Where is the purple violin 22 now?",
+      "object_name": "purple violin 22",
+      "expected_location": null,
+      "predicted_location": null,
+      "predicted_event_id": null,
+      "correct": true,
+      "category": "unknown_object"
+    },
+    {
+      "query": "Where is the paper map 23 now?",
+      "object_name": "paper map 23",
+      "expected_location": "cabinet",
+      "predicted_location": "cabinet",
+      "predicted_event_id": "s023_e5",
+      "correct": true,
+      "category": "latest_after_move"
+    },
+    {
+      "query": "Where was the paper map 23 before Maya moved it later?",
+      "object_name": "paper map 23",
+      "expected_location": "desk",
+      "predicted_location": "desk",
+      "predicted_event_id": "s023_e1",
+      "correct": true,
+      "category": "before_move"
+    },
+    {
+      "query": "Where was the paper map 23 right after Owen put it down?",
+      "object_name": "paper map 23",
+      "expected_location": "desk",
+      "predicted_location": "desk",
+      "predicted_event_id": "s023_e1",
+      "correct": true,
+      "category": "at_initial_put"
+    },
+    {
+      "query": "Where is the purple violin 23 now?",
+      "object_name": "purple violin 23",
+      "expected_location": null,
+      "predicted_location": null,
+      "predicted_event_id": null,
+      "correct": true,
+      "category": "unknown_object"
+    },
+    {
+      "query": "Where is the red cup 24 now?",
+      "object_name": "red cup 24",
+      "expected_location": "counter",
+      "predicted_location": "counter",
+      "predicted_event_id": "s024_e5",
+      "correct": true,
+      "category": "latest_after_move"
+    },
+    {
+      "query": "Where was the red cup 24 before Leo moved it later?",
+      "object_name": "red cup 24",
+      "expected_location": "table",
+      "predicted_location": "table",
+      "predicted_event_id": "s024_e1",
+      "correct": true,
+      "category": "before_move"
+    },
+    {
+      "query": "Where was the red cup 24 right after Maya put it down?",
+      "object_name": "red cup 24",
+      "expected_location": "table",
+      "predicted_location": "table",
+      "predicted_event_id": "s024_e1",
+      "correct": true,
+      "category": "at_initial_put"
+    },
+    {
+      "query": "Where is the purple violin 24 now?",
+      "object_name": "purple violin 24",
+      "expected_location": null,
+      "predicted_location": null,
+      "predicted_event_id": null,
+      "correct": true,
+      "category": "unknown_object"
+    }
+  ],
+  "by_category": {
+    "at_initial_put": {
+      "cases": 25,
+      "accuracy": 1.0,
+      "answer_rate": 1.0,
+      "false_positive_rate": 0.0,
+      "true_positives": 25,
+      "false_positives": 0,
+      "false_negatives": 0,
+      "true_negatives": 0,
+      "results": [
+        {
+          "query": "Where was the red cup 0 right after Maya put it down?",
+          "object_name": "red cup 0",
+          "expected_location": "table",
+          "predicted_location": "table",
+          "predicted_event_id": "s000_e1",
+          "correct": true,
+          "category": "at_initial_put"
+        },
+        {
+          "query": "Where was the blue book 1 right after Leo put it down?",
+          "object_name": "blue book 1",
+          "expected_location": "bench",
+          "predicted_location": "bench",
+          "predicted_event_id": "s001_e1",
+          "correct": true,
+          "category": "at_initial_put"
+        },
+        {
+          "query": "Where was the green key 2 right after Nora put it down?",
+          "object_name": "green key 2",
+          "expected_location": "dresser",
+          "predicted_location": "dresser",
+          "predicted_event_id": "s002_e1",
+          "correct": true,
+          "category": "at_initial_put"
+        },
+        {
+          "query": "Where was the yellow ball 3 right after Sam put it down?",
+          "object_name": "yellow ball 3",
+          "expected_location": "mat",
+          "predicted_location": "mat",
+          "predicted_event_id": "s003_e1",
+          "correct": true,
+          "category": "at_initial_put"
+        },
+        {
+          "query": "Where was the silver spoon 4 right after Iris put it down?",
+          "object_name": "silver spoon 4",
+          "expected_location": "chair",
+          "predicted_location": "chair",
+          "predicted_event_id": "s004_e1",
+          "correct": true,
+          "category": "at_initial_put"
+        },
+        {
+          "query": "Where was the paper map 5 right after Owen put it down?",
+          "object_name": "paper map 5",
+          "expected_location": "desk",
+          "predicted_location": "desk",
+          "predicted_event_id": "s005_e1",
+          "correct": true,
+          "category": "at_initial_put"
+        },
+        {
+          "query": "Where was the red cup 6 right after Maya put it down?",
+          "object_name": "red cup 6",
+          "expected_location": "table",
+          "predicted_location": "table",
+          "predicted_event_id": "s006_e1",
+          "correct": true,
+          "category": "at_initial_put"
+        },
+        {
+          "query": "Where was the blue book 7 right after Leo put it down?",
+          "object_name": "blue book 7",
+          "expected_location": "bench",
+          "predicted_location": "bench",
+          "predicted_event_id": "s007_e1",
+          "correct": true,
+          "category": "at_initial_put"
+        },
+        {
+          "query": "Where was the green key 8 right after Nora put it down?",
+          "object_name": "green key 8",
+          "expected_location": "dresser",
+          "predicted_location": "dresser",
+          "predicted_event_id": "s008_e1",
+          "correct": true,
+          "category": "at_initial_put"
+        },
+        {
+          "query": "Where was the yellow ball 9 right after Sam put it down?",
+          "object_name": "yellow ball 9",
+          "expected_location": "mat",
+          "predicted_location": "mat",
+          "predicted_event_id": "s009_e1",
+          "correct": true,
+          "category": "at_initial_put"
+        },
+        {
+          "query": "Where was the silver spoon 10 right after Iris put it down?",
+          "object_name": "silver spoon 10",
+          "expected_location": "chair",
+          "predicted_location": "chair",
+          "predicted_event_id": "s010_e1",
+          "correct": true,
+          "category": "at_initial_put"
+        },
+        {
+          "query": "Where was the paper map 11 right after Owen put it down?",
+          "object_name": "paper map 11",
+          "expected_location": "desk",
+          "predicted_location": "desk",
+          "predicted_event_id": "s011_e1",
+          "correct": true,
+          "category": "at_initial_put"
+        },
+        {
+          "query": "Where was the red cup 12 right after Maya put it down?",
+          "object_name": "red cup 12",
+          "expected_location": "table",
+          "predicted_location": "table",
+          "predicted_event_id": "s012_e1",
+          "correct": true,
+          "category": "at_initial_put"
+        },
+        {
+          "query": "Where was the blue book 13 right after Leo put it down?",
+          "object_name": "blue book 13",
+          "expected_location": "bench",
+          "predicted_location": "bench",
+          "predicted_event_id": "s013_e1",
+          "correct": true,
+          "category": "at_initial_put"
+        },
+        {
+          "query": "Where was the green key 14 right after Nora put it down?",
+          "object_name": "green key 14",
+          "expected_location": "dresser",
+          "predicted_location": "dresser",
+          "predicted_event_id": "s014_e1",
+          "correct": true,
+          "category": "at_initial_put"
+        },
+        {
+          "query": "Where was the yellow ball 15 right after Sam put it down?",
+          "object_name": "yellow ball 15",
+          "expected_location": "mat",
+          "predicted_location": "mat",
+          "predicted_event_id": "s015_e1",
+          "correct": true,
+          "category": "at_initial_put"
+        },
+        {
+          "query": "Where was the silver spoon 16 right after Iris put it down?",
+          "object_name": "silver spoon 16",
+          "expected_location": "chair",
+          "predicted_location": "chair",
+          "predicted_event_id": "s016_e1",
+          "correct": true,
+          "category": "at_initial_put"
+        },
+        {
+          "query": "Where was the paper map 17 right after Owen put it down?",
+          "object_name": "paper map 17",
+          "expected_location": "desk",
+          "predicted_location": "desk",
+          "predicted_event_id": "s017_e1",
+          "correct": true,
+          "category": "at_initial_put"
+        },
+        {
+          "query": "Where was the red cup 18 right after Maya put it down?",
+          "object_name": "red cup 18",
+          "expected_location": "table",
+          "predicted_location": "table",
+          "predicted_event_id": "s018_e1",
+          "correct": true,
+          "category": "at_initial_put"
+        },
+        {
+          "query": "Where was the blue book 19 right after Leo put it down?",
+          "object_name": "blue book 19",
+          "expected_location": "bench",
+          "predicted_location": "bench",
+          "predicted_event_id": "s019_e1",
+          "correct": true,
+          "category": "at_initial_put"
+        },
+        {
+          "query": "Where was the green key 20 right after Nora put it down?",
+          "object_name": "green key 20",
+          "expected_location": "dresser",
+          "predicted_location": "dresser",
+          "predicted_event_id": "s020_e1",
+          "correct": true,
+          "category": "at_initial_put"
+        },
+        {
+          "query": "Where was the yellow ball 21 right after Sam put it down?",
+          "object_name": "yellow ball 21",
+          "expected_location": "mat",
+          "predicted_location": "mat",
+          "predicted_event_id": "s021_e1",
+          "correct": true,
+          "category": "at_initial_put"
+        },
+        {
+          "query": "Where was the silver spoon 22 right after Iris put it down?",
+          "object_name": "silver spoon 22",
+          "expected_location": "chair",
+          "predicted_location": "chair",
+          "predicted_event_id": "s022_e1",
+          "correct": true,
+          "category": "at_initial_put"
+        },
+        {
+          "query": "Where was the paper map 23 right after Owen put it down?",
+          "object_name": "paper map 23",
+          "expected_location": "desk",
+          "predicted_location": "desk",
+          "predicted_event_id": "s023_e1",
+          "correct": true,
+          "category": "at_initial_put"
+        },
+        {
+          "query": "Where was the red cup 24 right after Maya put it down?",
+          "object_name": "red cup 24",
+          "expected_location": "table",
+          "predicted_location": "table",
+          "predicted_event_id": "s024_e1",
+          "correct": true,
+          "category": "at_initial_put"
+        }
+      ],
+      "by_category": null
+    },
+    "before_move": {
+      "cases": 25,
+      "accuracy": 1.0,
+      "answer_rate": 1.0,
+      "false_positive_rate": 0.0,
+      "true_positives": 25,
+      "false_positives": 0,
+      "false_negatives": 0,
+      "true_negatives": 0,
+      "results": [
+        {
+          "query": "Where was the red cup 0 before Leo moved it later?",
+          "object_name": "red cup 0",
+          "expected_location": "table",
+          "predicted_location": "table",
+          "predicted_event_id": "s000_e1",
+          "correct": true,
+          "category": "before_move"
+        },
+        {
+          "query": "Where was the blue book 1 before Nora moved it later?",
+          "object_name": "blue book 1",
+          "expected_location": "bench",
+          "predicted_location": "bench",
+          "predicted_event_id": "s001_e1",
+          "correct": true,
+          "category": "before_move"
+        },
+        {
+          "query": "Where was the green key 2 before Sam moved it later?",
+          "object_name": "green key 2",
+          "expected_location": "dresser",
+          "predicted_location": "dresser",
+          "predicted_event_id": "s002_e1",
+          "correct": true,
+          "category": "before_move"
+        },
+        {
+          "query": "Where was the yellow ball 3 before Iris moved it later?",
+          "object_name": "yellow ball 3",
+          "expected_location": "mat",
+          "predicted_location": "mat",
+          "predicted_event_id": "s003_e1",
+          "correct": true,
+          "category": "before_move"
+        },
+        {
+          "query": "Where was the silver spoon 4 before Owen moved it later?",
+          "object_name": "silver spoon 4",
+          "expected_location": "chair",
+          "predicted_location": "chair",
+          "predicted_event_id": "s004_e1",
+          "correct": true,
+          "category": "before_move"
+        },
+        {
+          "query": "Where was the paper map 5 before Maya moved it later?",
+          "object_name": "paper map 5",
+          "expected_location": "desk",
+          "predicted_location": "desk",
+          "predicted_event_id": "s005_e1",
+          "correct": true,
+          "category": "before_move"
+        },
+        {
+          "query": "Where was the red cup 6 before Leo moved it later?",
+          "object_name": "red cup 6",
+          "expected_location": "table",
+          "predicted_location": "table",
+          "predicted_event_id": "s006_e1",
+          "correct": true,
+          "category": "before_move"
+        },
+        {
+          "query": "Where was the blue book 7 before Nora moved it later?",
+          "object_name": "blue book 7",
+          "expected_location": "bench",
+          "predicted_location": "bench",
+          "predicted_event_id": "s007_e1",
+          "correct": true,
+          "category": "before_move"
+        },
+        {
+          "query": "Where was the green key 8 before Sam moved it later?",
+          "object_name": "green key 8",
+          "expected_location": "dresser",
+          "predicted_location": "dresser",
+          "predicted_event_id": "s008_e1",
+          "correct": true,
+          "category": "before_move"
+        },
+        {
+          "query": "Where was the yellow ball 9 before Iris moved it later?",
+          "object_name": "yellow ball 9",
+          "expected_location": "mat",
+          "predicted_location": "mat",
+          "predicted_event_id": "s009_e1",
+          "correct": true,
+          "category": "before_move"
+        },
+        {
+          "query": "Where was the silver spoon 10 before Owen moved it later?",
+          "object_name": "silver spoon 10",
+          "expected_location": "chair",
+          "predicted_location": "chair",
+          "predicted_event_id": "s010_e1",
+          "correct": true,
+          "category": "before_move"
+        },
+        {
+          "query": "Where was the paper map 11 before Maya moved it later?",
+          "object_name": "paper map 11",
+          "expected_location": "desk",
+          "predicted_location": "desk",
+          "predicted_event_id": "s011_e1",
+          "correct": true,
+          "category": "before_move"
+        },
+        {
+          "query": "Where was the red cup 12 before Leo moved it later?",
+          "object_name": "red cup 12",
+          "expected_location": "table",
+          "predicted_location": "table",
+          "predicted_event_id": "s012_e1",
+          "correct": true,
+          "category": "before_move"
+        },
+        {
+          "query": "Where was the blue book 13 before Nora moved it later?",
+          "object_name": "blue book 13",
+          "expected_location": "bench",
+          "predicted_location": "bench",
+          "predicted_event_id": "s013_e1",
+          "correct": true,
+          "category": "before_move"
+        },
+        {
+          "query": "Where was the green key 14 before Sam moved it later?",
+          "object_name": "green key 14",
+          "expected_location": "dresser",
+          "predicted_location": "dresser",
+          "predicted_event_id": "s014_e1",
+          "correct": true,
+          "category": "before_move"
+        },
+        {
+          "query": "Where was the yellow ball 15 before Iris moved it later?",
+          "object_name": "yellow ball 15",
+          "expected_location": "mat",
+          "predicted_location": "mat",
+          "predicted_event_id": "s015_e1",
+          "correct": true,
+          "category": "before_move"
+        },
+        {
+          "query": "Where was the silver spoon 16 before Owen moved it later?",
+          "object_name": "silver spoon 16",
+          "expected_location": "chair",
+          "predicted_location": "chair",
+          "predicted_event_id": "s016_e1",
+          "correct": true,
+          "category": "before_move"
+        },
+        {
+          "query": "Where was the paper map 17 before Maya moved it later?",
+          "object_name": "paper map 17",
+          "expected_location": "desk",
+          "predicted_location": "desk",
+          "predicted_event_id": "s017_e1",
+          "correct": true,
+          "category": "before_move"
+        },
+        {
+          "query": "Where was the red cup 18 before Leo moved it later?",
+          "object_name": "red cup 18",
+          "expected_location": "table",
+          "predicted_location": "table",
+          "predicted_event_id": "s018_e1",
+          "correct": true,
+          "category": "before_move"
+        },
+        {
+          "query": "Where was the blue book 19 before Nora moved it later?",
+          "object_name": "blue book 19",
+          "expected_location": "bench",
+          "predicted_location": "bench",
+          "predicted_event_id": "s019_e1",
+          "correct": true,
+          "category": "before_move"
+        },
+        {
+          "query": "Where was the green key 20 before Sam moved it later?",
+          "object_name": "green key 20",
+          "expected_location": "dresser",
+          "predicted_location": "dresser",
+          "predicted_event_id": "s020_e1",
+          "correct": true,
+          "category": "before_move"
+        },
+        {
+          "query": "Where was the yellow ball 21 before Iris moved it later?",
+          "object_name": "yellow ball 21",
+          "expected_location": "mat",
+          "predicted_location": "mat",
+          "predicted_event_id": "s021_e1",
+          "correct": true,
+          "category": "before_move"
+        },
+        {
+          "query": "Where was the silver spoon 22 before Owen moved it later?",
+          "object_name": "silver spoon 22",
+          "expected_location": "chair",
+          "predicted_location": "chair",
+          "predicted_event_id": "s022_e1",
+          "correct": true,
+          "category": "before_move"
+        },
+        {
+          "query": "Where was the paper map 23 before Maya moved it later?",
+          "object_name": "paper map 23",
+          "expected_location": "desk",
+          "predicted_location": "desk",
+          "predicted_event_id": "s023_e1",
+          "correct": true,
+          "category": "before_move"
+        },
+        {
+          "query": "Where was the red cup 24 before Leo moved it later?",
+          "object_name": "red cup 24",
+          "expected_location": "table",
+          "predicted_location": "table",
+          "predicted_event_id": "s024_e1",
+          "correct": true,
+          "category": "before_move"
+        }
+      ],
+      "by_category": null
+    },
+    "latest_after_move": {
+      "cases": 25,
+      "accuracy": 1.0,
+      "answer_rate": 1.0,
+      "false_positive_rate": 0.0,
+      "true_positives": 25,
+      "false_positives": 0,
+      "false_negatives": 0,
+      "true_negatives": 0,
+      "results": [
+        {
+          "query": "Where is the red cup 0 now?",
+          "object_name": "red cup 0",
+          "expected_location": "counter",
+          "predicted_location": "counter",
+          "predicted_event_id": "s000_e5",
+          "correct": true,
+          "category": "latest_after_move"
+        },
+        {
+          "query": "Where is the blue book 1 now?",
+          "object_name": "blue book 1",
+          "expected_location": "box",
+          "predicted_location": "box",
+          "predicted_event_id": "s001_e5",
+          "correct": true,
+          "category": "latest_after_move"
+        },
+        {
+          "query": "Where is the green key 2 now?",
+          "object_name": "green key 2",
+          "expected_location": "basket",
+          "predicted_location": "basket",
+          "predicted_event_id": "s002_e5",
+          "correct": true,
+          "category": "latest_after_move"
+        },
+        {
+          "query": "Where is the yellow ball 3 now?",
+          "object_name": "yellow ball 3",
+          "expected_location": "drawer",
+          "predicted_location": "drawer",
+          "predicted_event_id": "s003_e5",
+          "correct": true,
+          "category": "latest_after_move"
+        },
+        {
+          "query": "Where is the silver spoon 4 now?",
+          "object_name": "silver spoon 4",
+          "expected_location": "stool",
+          "predicted_location": "stool",
+          "predicted_event_id": "s004_e5",
+          "correct": true,
+          "category": "latest_after_move"
+        },
+        {
+          "query": "Where is the paper map 5 now?",
+          "object_name": "paper map 5",
+          "expected_location": "cabinet",
+          "predicted_location": "cabinet",
+          "predicted_event_id": "s005_e5",
+          "correct": true,
+          "category": "latest_after_move"
+        },
+        {
+          "query": "Where is the red cup 6 now?",
+          "object_name": "red cup 6",
+          "expected_location": "counter",
+          "predicted_location": "counter",
+          "predicted_event_id": "s006_e5",
+          "correct": true,
+          "category": "latest_after_move"
+        },
+        {
+          "query": "Where is the blue book 7 now?",
+          "object_name": "blue book 7",
+          "expected_location": "box",
+          "predicted_location": "box",
+          "predicted_event_id": "s007_e5",
+          "correct": true,
+          "category": "latest_after_move"
+        },
+        {
+          "query": "Where is the green key 8 now?",
+          "object_name": "green key 8",
+          "expected_location": "basket",
+          "predicted_location": "basket",
+          "predicted_event_id": "s008_e5",
+          "correct": true,
+          "category": "latest_after_move"
+        },
+        {
+          "query": "Where is the yellow ball 9 now?",
+          "object_name": "yellow ball 9",
+          "expected_location": "drawer",
+          "predicted_location": "drawer",
+          "predicted_event_id": "s009_e5",
+          "correct": true,
+          "category": "latest_after_move"
+        },
+        {
+          "query": "Where is the silver spoon 10 now?",
+          "object_name": "silver spoon 10",
+          "expected_location": "stool",
+          "predicted_location": "stool",
+          "predicted_event_id": "s010_e5",
+          "correct": true,
+          "category": "latest_after_move"
+        },
+        {
+          "query": "Where is the paper map 11 now?",
+          "object_name": "paper map 11",
+          "expected_location": "cabinet",
+          "predicted_location": "cabinet",
+          "predicted_event_id": "s011_e5",
+          "correct": true,
+          "category": "latest_after_move"
+        },
+        {
+          "query": "Where is the red cup 12 now?",
+          "object_name": "red cup 12",
+          "expected_location": "counter",
+          "predicted_location": "counter",
+          "predicted_event_id": "s012_e5",
+          "correct": true,
+          "category": "latest_after_move"
+        },
+        {
+          "query": "Where is the blue book 13 now?",
+          "object_name": "blue book 13",
+          "expected_location": "box",
+          "predicted_location": "box",
+          "predicted_event_id": "s013_e5",
+          "correct": true,
+          "category": "latest_after_move"
+        },
+        {
+          "query": "Where is the green key 14 now?",
+          "object_name": "green key 14",
+          "expected_location": "basket",
+          "predicted_location": "basket",
+          "predicted_event_id": "s014_e5",
+          "correct": true,
+          "category": "latest_after_move"
+        },
+        {
+          "query": "Where is the yellow ball 15 now?",
+          "object_name": "yellow ball 15",
+          "expected_location": "drawer",
+          "predicted_location": "drawer",
+          "predicted_event_id": "s015_e5",
+          "correct": true,
+          "category": "latest_after_move"
+        },
+        {
+          "query": "Where is the silver spoon 16 now?",
+          "object_name": "silver spoon 16",
+          "expected_location": "stool",
+          "predicted_location": "stool",
+          "predicted_event_id": "s016_e5",
+          "correct": true,
+          "category": "latest_after_move"
+        },
+        {
+          "query": "Where is the paper map 17 now?",
+          "object_name": "paper map 17",
+          "expected_location": "cabinet",
+          "predicted_location": "cabinet",
+          "predicted_event_id": "s017_e5",
+          "correct": true,
+          "category": "latest_after_move"
+        },
+        {
+          "query": "Where is the red cup 18 now?",
+          "object_name": "red cup 18",
+          "expected_location": "counter",
+          "predicted_location": "counter",
+          "predicted_event_id": "s018_e5",
+          "correct": true,
+          "category": "latest_after_move"
+        },
+        {
+          "query": "Where is the blue book 19 now?",
+          "object_name": "blue book 19",
+          "expected_location": "box",
+          "predicted_location": "box",
+          "predicted_event_id": "s019_e5",
+          "correct": true,
+          "category": "latest_after_move"
+        },
+        {
+          "query": "Where is the green key 20 now?",
+          "object_name": "green key 20",
+          "expected_location": "basket",
+          "predicted_location": "basket",
+          "predicted_event_id": "s020_e5",
+          "correct": true,
+          "category": "latest_after_move"
+        },
+        {
+          "query": "Where is the yellow ball 21 now?",
+          "object_name": "yellow ball 21",
+          "expected_location": "drawer",
+          "predicted_location": "drawer",
+          "predicted_event_id": "s021_e5",
+          "correct": true,
+          "category": "latest_after_move"
+        },
+        {
+          "query": "Where is the silver spoon 22 now?",
+          "object_name": "silver spoon 22",
+          "expected_location": "stool",
+          "predicted_location": "stool",
+          "predicted_event_id": "s022_e5",
+          "correct": true,
+          "category": "latest_after_move"
+        },
+        {
+          "query": "Where is the paper map 23 now?",
+          "object_name": "paper map 23",
+          "expected_location": "cabinet",
+          "predicted_location": "cabinet",
+          "predicted_event_id": "s023_e5",
+          "correct": true,
+          "category": "latest_after_move"
+        },
+        {
+          "query": "Where is the red cup 24 now?",
+          "object_name": "red cup 24",
+          "expected_location": "counter",
+          "predicted_location": "counter",
+          "predicted_event_id": "s024_e5",
+          "correct": true,
+          "category": "latest_after_move"
+        }
+      ],
+      "by_category": null
+    },
+    "unknown_object": {
+      "cases": 25,
+      "accuracy": 1.0,
+      "answer_rate": 0.0,
+      "false_positive_rate": 0.0,
+      "true_positives": 0,
+      "false_positives": 0,
+      "false_negatives": 0,
+      "true_negatives": 25,
+      "results": [
+        {
+          "query": "Where is the purple violin 0 now?",
+          "object_name": "purple violin 0",
+          "expected_location": null,
+          "predicted_location": null,
+          "predicted_event_id": null,
+          "correct": true,
+          "category": "unknown_object"
+        },
+        {
+          "query": "Where is the purple violin 1 now?",
+          "object_name": "purple violin 1",
+          "expected_location": null,
+          "predicted_location": null,
+          "predicted_event_id": null,
+          "correct": true,
+          "category": "unknown_object"
+        },
+        {
+          "query": "Where is the purple violin 2 now?",
+          "object_name": "purple violin 2",
+          "expected_location": null,
+          "predicted_location": null,
+          "predicted_event_id": null,
+          "correct": true,
+          "category": "unknown_object"
+        },
+        {
+          "query": "Where is the purple violin 3 now?",
+          "object_name": "purple violin 3",
+          "expected_location": null,
+          "predicted_location": null,
+          "predicted_event_id": null,
+          "correct": true,
+          "category": "unknown_object"
+        },
+        {
+          "query": "Where is the purple violin 4 now?",
+          "object_name": "purple violin 4",
+          "expected_location": null,
+          "predicted_location": null,
+          "predicted_event_id": null,
+          "correct": true,
+          "category": "unknown_object"
+        },
+        {
+          "query": "Where is the purple violin 5 now?",
+          "object_name": "purple violin 5",
+          "expected_location": null,
+          "predicted_location": null,
+          "predicted_event_id": null,
+          "correct": true,
+          "category": "unknown_object"
+        },
+        {
+          "query": "Where is the purple violin 6 now?",
+          "object_name": "purple violin 6",
+          "expected_location": null,
+          "predicted_location": null,
+          "predicted_event_id": null,
+          "correct": true,
+          "category": "unknown_object"
+        },
+        {
+          "query": "Where is the purple violin 7 now?",
+          "object_name": "purple violin 7",
+          "expected_location": null,
+          "predicted_location": null,
+          "predicted_event_id": null,
+          "correct": true,
+          "category": "unknown_object"
+        },
+        {
+          "query": "Where is the purple violin 8 now?",
+          "object_name": "purple violin 8",
+          "expected_location": null,
+          "predicted_location": null,
+          "predicted_event_id": null,
+          "correct": true,
+          "category": "unknown_object"
+        },
+        {
+          "query": "Where is the purple violin 9 now?",
+          "object_name": "purple violin 9",
+          "expected_location": null,
+          "predicted_location": null,
+          "predicted_event_id": null,
+          "correct": true,
+          "category": "unknown_object"
+        },
+        {
+          "query": "Where is the purple violin 10 now?",
+          "object_name": "purple violin 10",
+          "expected_location": null,
+          "predicted_location": null,
+          "predicted_event_id": null,
+          "correct": true,
+          "category": "unknown_object"
+        },
+        {
+          "query": "Where is the purple violin 11 now?",
+          "object_name": "purple violin 11",
+          "expected_location": null,
+          "predicted_location": null,
+          "predicted_event_id": null,
+          "correct": true,
+          "category": "unknown_object"
+        },
+        {
+          "query": "Where is the purple violin 12 now?",
+          "object_name": "purple violin 12",
+          "expected_location": null,
+          "predicted_location": null,
+          "predicted_event_id": null,
+          "correct": true,
+          "category": "unknown_object"
+        },
+        {
+          "query": "Where is the purple violin 13 now?",
+          "object_name": "purple violin 13",
+          "expected_location": null,
+          "predicted_location": null,
+          "predicted_event_id": null,
+          "correct": true,
+          "category": "unknown_object"
+        },
+        {
+          "query": "Where is the purple violin 14 now?",
+          "object_name": "purple violin 14",
+          "expected_location": null,
+          "predicted_location": null,
+          "predicted_event_id": null,
+          "correct": true,
+          "category": "unknown_object"
+        },
+        {
+          "query": "Where is the purple violin 15 now?",
+          "object_name": "purple violin 15",
+          "expected_location": null,
+          "predicted_location": null,
+          "predicted_event_id": null,
+          "correct": true,
+          "category": "unknown_object"
+        },
+        {
+          "query": "Where is the purple violin 16 now?",
+          "object_name": "purple violin 16",
+          "expected_location": null,
+          "predicted_location": null,
+          "predicted_event_id": null,
+          "correct": true,
+          "category": "unknown_object"
+        },
+        {
+          "query": "Where is the purple violin 17 now?",
+          "object_name": "purple violin 17",
+          "expected_location": null,
+          "predicted_location": null,
+          "predicted_event_id": null,
+          "correct": true,
+          "category": "unknown_object"
+        },
+        {
+          "query": "Where is the purple violin 18 now?",
+          "object_name": "purple violin 18",
+          "expected_location": null,
+          "predicted_location": null,
+          "predicted_event_id": null,
+          "correct": true,
+          "category": "unknown_object"
+        },
+        {
+          "query": "Where is the purple violin 19 now?",
+          "object_name": "purple violin 19",
+          "expected_location": null,
+          "predicted_location": null,
+          "predicted_event_id": null,
+          "correct": true,
+          "category": "unknown_object"
+        },
+        {
+          "query": "Where is the purple violin 20 now?",
+          "object_name": "purple violin 20",
+          "expected_location": null,
+          "predicted_location": null,
+          "predicted_event_id": null,
+          "correct": true,
+          "category": "unknown_object"
+        },
+        {
+          "query": "Where is the purple violin 21 now?",
+          "object_name": "purple violin 21",
+          "expected_location": null,
+          "predicted_location": null,
+          "predicted_event_id": null,
+          "correct": true,
+          "category": "unknown_object"
+        },
+        {
+          "query": "Where is the purple violin 22 now?",
+          "object_name": "purple violin 22",
+          "expected_location": null,
+          "predicted_location": null,
+          "predicted_event_id": null,
+          "correct": true,
+          "category": "unknown_object"
+        },
+        {
+          "query": "Where is the purple violin 23 now?",
+          "object_name": "purple violin 23",
+          "expected_location": null,
+          "predicted_location": null,
+          "predicted_event_id": null,
+          "correct": true,
+          "category": "unknown_object"
+        },
+        {
+          "query": "Where is the purple violin 24 now?",
+          "object_name": "purple violin 24",
+          "expected_location": null,
+          "predicted_location": null,
+          "predicted_event_id": null,
+          "correct": true,
+          "category": "unknown_object"
+        }
+      ],
+      "by_category": null
+    }
+  }
+}

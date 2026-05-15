@@ -1,0 +1,28 @@
+{
+  "multiseed": "reports/babylm_2026_small_model_stage_multiseed.json",
+  "blimp_reports": [
+    "reports/babylm_2026_small_model_stage_blimp_mean_nll.json",
+    "reports/babylm_2026_small_model_stage_blimp_bits_per_byte.json",
+    "reports/babylm_2026_small_model_stage_blimp_total_nll.json"
+  ],
+  "entity_report": "reports/babylm_2026_small_model_stage_entity_tracking.json",
+  "symbolic_entity_report": "reports\\babylm_2026_small_model_stage_entity_tracking_symbolic.json",
+  "decision": {
+    "candidate": "tiered_morph_unigram",
+    "decision": "advance_to_event_memory_integration",
+    "candidate_bits_per_byte": 1.928235357770898,
+    "best_hf_baseline": "hf_bpe",
+    "best_hf_baseline_bits_per_byte": 1.9752414926258028,
+    "relative_bits_per_byte_gain": 0.023797664756635365,
+    "compression_control": "capped_morpheme",
+    "compression_control_bits_per_byte": 1.6812086637207175,
+    "blimp_wins": 2,
+    "blimp_reports": 3,
+    "entity_best_hf_baseline": "hf_bpe",
+    "candidate_entity_accuracy": 0.40418781725888325,
+    "best_hf_entity_accuracy": 0.3994289340101523,
+    "entity_accuracy_delta": 0.004758883248730972,
+    "symbolic_entity_accuracy": 1.0,
+    "recommendation": "Keep tiered morphology-Unigram as the primary MELM tokenizer candidate, keep capped morphology as a compression control, and integrate explicit event/state memory next."
+  }
+}

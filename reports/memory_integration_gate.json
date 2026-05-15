@@ -1,0 +1,17 @@
+{
+  "validation_suite": "reports/validation_suite.json",
+  "state_assisted": "reports/babylm_2026_state_assisted_entity_tracking.json",
+  "decision": {
+    "candidate": "tiered_morph_unigram",
+    "decision": "advance_to_persistent_dialogue_demo",
+    "state_assisted_accuracy": 1.0,
+    "state_assisted_lift": 0.5958121827411167,
+    "state_answer_rate": 1.0,
+    "synthetic_memory_gain": 0.47000000000000003,
+    "authored_dialogue_memory_gain": 0.19999999999999996,
+    "sample_transcript_memory_gain": 0.33333333333333337,
+    "authored_dialogue_abstention_metric": 1.0666666666666667,
+    "sample_transcript_abstention_metric": 1.25,
+    "recommendation": "Build the persistent child-level dialogue demo with tiered morphology-Unigram, explicit event/state memory, and evidence-gated responses."
+  }
+}

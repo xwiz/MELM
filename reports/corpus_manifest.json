@@ -1,0 +1,96 @@
+{
+  "name": "melm_docs",
+  "version": "0.1.0",
+  "documents": [
+    {
+      "doc_id": "60559abcbd774e49",
+      "path": "benchmarks\\README.md",
+      "source": "melm_docs",
+      "split": "train",
+      "bytes": 1186,
+      "sha256": "22aff3cc693c8ad57c7005bf7562c93972b2f2ad58da74c8257ddd792e68d286",
+      "license": "unknown"
+    },
+    {
+      "doc_id": "4efd3e05374a3e1e",
+      "path": "docs\\roadmap.md",
+      "source": "melm_docs",
+      "split": "train",
+      "bytes": 1086,
+      "sha256": "282e754b6f16415e9a008059ac8a47e9af00466d7f72544d937f51050a2e21c2",
+      "license": "unknown"
+    },
+    {
+      "doc_id": "876985aa6d2530b2",
+      "path": "docs\\validation_report_template.md",
+      "source": "melm_docs",
+      "split": "train",
+      "bytes": 1418,
+      "sha256": "363a7e0d698add068046d7fed31911fbdac47ed21920111c56f0824402998958",
+      "license": "unknown"
+    },
+    {
+      "doc_id": "ebc6c4e5256f3d23",
+      "path": "MELM_whitepaper.md",
+      "source": "melm_docs",
+      "split": "train",
+      "bytes": 21510,
+      "sha256": "3a57352c3726eec285341219e5510bcc6386c3257af215b8e73d6aa928025a1b",
+      "license": "unknown"
+    },
+    {
+      "doc_id": "f8f5ab9696014aad",
+      "path": "docs\\README.md",
+      "source": "melm_docs",
+      "split": "train",
+      "bytes": 457,
+      "sha256": "4c6619b5e6a9f375424b4cb2c8bfe25e28aa7b3c967a2c9d9dba9e667b184198",
+      "license": "unknown"
+    },
+    {
+      "doc_id": "016cab187d05e2ce",
+      "path": "MELM_implementation_research_review_2026.md",
+      "source": "melm_docs",
+      "split": "train",
+      "bytes": 16725,
+      "sha256": "5f7f54af1ca21ea02ab2f8041f38d0537215c4cb317c629b80f21bde56e3fe07",
+      "license": "unknown"
+    },
+    {
+      "doc_id": "d9150f098574179f",
+      "path": "melm\\README.md",
+      "source": "melm_docs",
+      "split": "train",
+      "bytes": 1127,
+      "sha256": "63cb9f3df3aa1bdca9516c585190ba219d3d6bbabedbde91f450921210cc777e",
+      "license": "unknown"
+    },
+    {
+      "doc_id": "d5ce139fe04b337b",
+      "path": "vendor_notes\\nameless_vector.md",
+      "source": "melm_docs",
+      "split": "train",
+      "bytes": 1967,
+      "sha256": "690f8edc32e835078495d18077e95077bd7e07d3aa2605fca43bd78ad371ae4b",
+      "license": "unknown"
+    },
+    {
+      "doc_id": "3a8079660aaa4c63",
+      "path": "MELM_validation_implementation_plan.md",
+      "source": "melm_docs",
+      "split": "validation",
+      "bytes": 7453,
+      "sha256": "970ec05852cd7c9458fea64a7239052d83c85cf643149af17d69dc075e6a9f63",
+      "license": "unknown"
+    },
+    {
+      "doc_id": "a6655fa9b1d5e77e",
+      "path": "experiments\\README.md",
+      "source": "melm_docs",
+      "split": "test",
+      "bytes": 1009,
+      "sha256": "c1bb88821ff1e721985d0d4e153d937f24f929e47b1fe8d2241f4865ae9642f4",
+      "license": "unknown"
+    }
+  ]
+}
