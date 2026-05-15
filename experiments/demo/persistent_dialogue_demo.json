@@ -1,0 +1,22 @@
+{
+  "name": "persistent_dialogue_demo",
+  "description": "Evidence-gated persistent dialogue surface over explicit event memory plus targeted causal/state-change resolution.",
+  "source_gate": "reports\\memory_integration_gate.json",
+  "commands": [
+    "python scripts\\run_persistent_dialogue_demo.py --out-json reports\\persistent_dialogue_demo.json --out-md reports\\persistent_dialogue_demo.md"
+  ],
+  "current_decision": "demo_passes_authored_dialogue_fixture",
+  "result": {
+    "events": 12,
+    "cases": 15,
+    "accuracy": 1.0,
+    "positive_recall": 1.0,
+    "negative_abstention": 1.0,
+    "answer_rate": 0.6667
+  },
+  "caveats": [
+    "Answers are evidence-surface summaries, not neural generations.",
+    "The resolver is deliberately narrow and must be validated on noisier transcript-derived inputs.",
+    "This is a demo harness over authored events; the next stage needs an interactive session store and noisier transcript inputs."
+  ]
+}

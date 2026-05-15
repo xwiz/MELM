@@ -1,0 +1,6 @@
+{"category": "direct", "expected_event_id": "sample_e1", "query": "Where did Lila put the rainbow bead?", "schema": "melm.episodic_case.v1"}
+{"category": "temporal_after", "expected_event_id": "sample_e2", "query": "What happened right after Lila put the rainbow bead away?", "schema": "melm.episodic_case.v1"}
+{"category": "witness", "expected_event_id": "sample_e4", "query": "Who saw where the yellow box went?", "schema": "melm.episodic_case.v1"}
+{"category": "causal_source", "expected_event_id": "sample_e2", "query": "What earlier event explains why Rafi knew where the yellow box was?", "schema": "melm.episodic_case.v1"}
+{"category": "direct", "expected_event_id": "sample_e5", "query": "Where did Mina stack the star blocks first?", "schema": "melm.episodic_case.v1"}
+{"category": "temporal_before", "expected_event_id": "sample_e6", "query": "What happened right before Mina rebuilt the star blocks?", "schema": "melm.episodic_case.v1"}

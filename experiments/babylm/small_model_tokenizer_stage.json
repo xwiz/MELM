@@ -1,0 +1,43 @@
+{
+  "name": "babylm_2026_small_model_tokenizer_stage",
+  "description": "Checkpointed post-proxy tokenizer/model ablation for the original MELM tiered morphology-plus-Unigram thesis.",
+  "source_gate": "reports/tokenizer_stage_gate.json",
+  "source_proxy_decision": "reports/babylm_2026_small_proxy_tokenizer_decision.json",
+  "manifest": "reports/babylm_2026_strict_small_manifest.json",
+  "candidate": "tiered_morph_unigram",
+  "tokenizers": [
+    "hf_bpe",
+    "hf_unigram",
+    "capped_morpheme",
+    "tiered_morph_unigram"
+  ],
+  "seeds": [3, 13, 23],
+  "checkpoint_seed": 13,
+  "max_train_bytes": 5000000,
+  "max_validation_bytes": 1000000,
+  "steps": 1000,
+  "sequence_length": 192,
+  "embedding_dim": 384,
+  "layers": 6,
+  "heads": 8,
+  "batch_size": 8,
+  "max_vocab_size": 16384,
+  "tokenizer_vocab_size": 8192,
+  "learning_rate": 0.0003,
+  "device": "auto",
+  "artifact_root": "artifacts\\babylm_2026_small_model_stage",
+  "report_prefix": "reports\\babylm_2026_small_model_stage",
+  "current_decision": "advance_to_event_memory_integration",
+  "result": {
+    "candidate": "tiered_morph_unigram",
+    "candidate_mean_bits_per_byte": 1.928,
+    "best_hf_baseline": "hf_bpe",
+    "best_hf_baseline_mean_bits_per_byte": 1.975,
+    "relative_bits_per_byte_gain": 0.0238,
+    "fast_blimp_wins_vs_hf": "2/3",
+    "entity_accuracy": 0.4042,
+    "best_hf_entity_accuracy": 0.3994,
+    "symbolic_entity_accuracy": 1.0,
+    "compression_control": "capped_morpheme"
+  }
+}

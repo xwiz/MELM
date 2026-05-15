@@ -1,0 +1,34 @@
+{
+  "name": "babylm_2026_matched_tiny_neural_ablation",
+  "description": "Tiny neural ablation for the tokenizer arms promoted by the full fast BabyLM tokenizer probe.",
+  "commands": [
+    "python scripts\\run_tiny_lm_tokenizer_ablation.py --manifest reports\\babylm_2026_strict_small_manifest.json --tokenizers hf_bpe,hf_unigram,capped_morpheme --max-train-bytes 500000 --max-validation-bytes 250000 --steps 10 --sequence-length 64 --embedding-dim 64 --layers 1 --heads 4 --batch-size 8 --max-vocab-size 4096 --pad-vocab-to-max-size --tokenizer-vocab-size 4096 --out-json reports\\babylm_2026_matched_tiny_lm_ablation.json --out-md reports\\babylm_2026_matched_tiny_lm_ablation.md",
+    "python scripts\\summarize_tiny_lm_ablation.py --report reports\\babylm_2026_matched_tiny_lm_ablation.json",
+    "python scripts\\run_multiseed_tiny_lm_ablation.py --manifest reports\\babylm_2026_strict_small_manifest.json --tokenizers hf_bpe,hf_unigram,capped_morpheme --seeds 3,13,23 --max-train-bytes 500000 --max-validation-bytes 250000 --steps 10 --sequence-length 64 --embedding-dim 64 --layers 1 --heads 4 --batch-size 8 --max-vocab-size 4096 --tokenizer-vocab-size 4096 --out-json reports\\babylm_2026_multiseed_tiny_lm_ablation.json --out-md reports\\babylm_2026_multiseed_tiny_lm_ablation.md",
+    "python scripts\\run_multiseed_tiny_lm_ablation.py --manifest reports\\babylm_2026_strict_small_manifest.json --tokenizers hf_bpe,hf_unigram,capped_morpheme --seeds 3,13,23 --max-train-bytes 500000 --max-validation-bytes 250000 --steps 100 --sequence-length 64 --embedding-dim 64 --layers 1 --heads 4 --batch-size 8 --max-vocab-size 4096 --tokenizer-vocab-size 4096 --out-json reports\\babylm_2026_multiseed_tiny_lm_ablation_100step.json --out-md reports\\babylm_2026_multiseed_tiny_lm_ablation_100step.md",
+    "python scripts\\summarize_tiny_lm_progression.py",
+    "python scripts\\summarize_tiny_lm_artifacts.py",
+    "python scripts\\evaluate_tiny_lm_artifacts.py --manifest reports\\babylm_2026_strict_small_manifest.json --root artifacts\\tiny_lm --max-validation-bytes 250000 --out-json reports\\tiny_lm_artifact_evaluation.json --out-md reports\\tiny_lm_artifact_evaluation.md",
+    "python scripts\\run_tiny_lm_minimal_pairs.py --root artifacts\\tiny_lm --out-json reports\\tiny_lm_minimal_pairs.json --out-md reports\\tiny_lm_minimal_pairs.md",
+    "python scripts\\run_tiny_lm_minimal_pairs.py --root artifacts\\tiny_lm --score-field bits_per_byte --out-json reports\\tiny_lm_minimal_pairs_bits_per_byte.json --out-md reports\\tiny_lm_minimal_pairs_bits_per_byte.md",
+    "python scripts\\run_tiny_lm_minimal_pairs.py --root artifacts\\tiny_lm --score-field total_nll --out-json reports\\tiny_lm_minimal_pairs_total_nll.json --out-md reports\\tiny_lm_minimal_pairs_total_nll.md",
+    "python scripts\\profile_babylm_fast_eval.py",
+    "python scripts\\run_tiny_lm_blimp_fast.py --root artifacts\\tiny_lm --max-cases-per-file 20 --out-json reports\\tiny_lm_blimp_fast_20perfile.json --out-md reports\\tiny_lm_blimp_fast_20perfile.md",
+    "python scripts\\run_tiny_lm_blimp_fast.py --root artifacts\\tiny_lm --max-cases-per-file 20 --score-field bits_per_byte --out-json reports\\tiny_lm_blimp_fast_20perfile_bits_per_byte.json --out-md reports\\tiny_lm_blimp_fast_20perfile_bits_per_byte.md",
+    "python scripts\\run_tiny_lm_blimp_fast.py --root artifacts\\tiny_lm --max-cases-per-file 20 --score-field total_nll --out-json reports\\tiny_lm_blimp_fast_20perfile_total_nll.json --out-md reports\\tiny_lm_blimp_fast_20perfile_total_nll.md",
+    "python scripts\\run_tiny_lm_blimp_fast.py --root artifacts\\tiny_lm --out-json reports\\tiny_lm_blimp_fast_full.json --out-md reports\\tiny_lm_blimp_fast_full.md",
+    "python scripts\\run_tiny_lm_blimp_fast.py --root artifacts\\tiny_lm --score-field bits_per_byte --out-json reports\\tiny_lm_blimp_fast_full_bits_per_byte.json --out-md reports\\tiny_lm_blimp_fast_full_bits_per_byte.md",
+    "python scripts\\run_tiny_lm_blimp_fast.py --root artifacts\\tiny_lm --score-field total_nll --out-json reports\\tiny_lm_blimp_fast_full_total_nll.json --out-md reports\\tiny_lm_blimp_fast_full_total_nll.md",
+    "python scripts\\run_tiny_lm_entity_tracking_fast.py --root artifacts\\tiny_lm --out-json reports\\tiny_lm_entity_tracking_fast.json --out-md reports\\tiny_lm_entity_tracking_fast.md",
+    "python scripts\\summarize_checkpoint_validation_decision.py --artifact-report reports\\tiny_lm_artifact_evaluation.json --minimal-pair-report reports\\tiny_lm_minimal_pairs.json --candidate tiered_morph_unigram --out-json reports\\tiny_lm_checkpoint_validation_decision_tiered.json --out-md reports\\tiny_lm_checkpoint_validation_decision_tiered.md"
+  ],
+  "current_decision": "promote_tiered_hybrid_to_checkpointed_small_model_stage",
+  "caveats": [
+    "The tiny-model results are stable across short schedules but are still not final BabyLM quality evidence.",
+    "Saved checkpoint artifacts reload cleanly, but downstream evaluation is still only a tiny smoke fixture.",
+    "The first local minimal-pair smoke test favors BPE/Unigram, so morphology needs downstream wins before any primary-tokenizer claim.",
+    "The true tiered morphology-Unigram arm wins full fast-BLiMP under all tested scoring conventions.",
+    "BPE still leads fast entity tracking, so the tiered arm is not final.",
+    "Next runs should add BabyLM-style tasks before scaling model size."
+  ]
+}

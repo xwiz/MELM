@@ -1,0 +1,23 @@
+{
+  "name": "babylm_2026_small_proxy_tokenizer_ablation",
+  "description": "First post-stage-gate local proxy model for tiered morphology-Unigram against BPE, Unigram, and capped morphology.",
+  "commands": [
+    "python scripts\\run_tiny_lm_tokenizer_ablation.py --manifest reports\\babylm_2026_strict_small_manifest.json --tokenizers hf_bpe,hf_unigram,capped_morpheme,tiered_morph_unigram --max-train-bytes 1000000 --max-validation-bytes 500000 --steps 200 --sequence-length 96 --embedding-dim 128 --layers 2 --heads 4 --batch-size 8 --max-vocab-size 4096 --pad-vocab-to-max-size --tokenizer-vocab-size 4096 --out-json reports\\babylm_2026_small_proxy_tokenizer_ablation.json --out-md reports\\babylm_2026_small_proxy_tokenizer_ablation.md",
+    "python scripts\\summarize_tiny_lm_ablation.py --report reports\\babylm_2026_small_proxy_tokenizer_ablation.json --candidate tiered_morph_unigram --out-json reports\\babylm_2026_small_proxy_tokenizer_decision.json --out-md reports\\babylm_2026_small_proxy_tokenizer_decision.md"
+  ],
+  "current_decision": "promote_to_scaled_neural_ablation",
+  "result": {
+    "candidate": "tiered_morph_unigram",
+    "candidate_bits_per_byte": 2.491,
+    "best_hf_baseline": "hf_bpe",
+    "best_hf_baseline_bits_per_byte": 2.570,
+    "relative_gain": 0.0308,
+    "compression_baseline": "capped_morpheme",
+    "compression_baseline_bits_per_byte": 2.070
+  },
+  "caveats": [
+    "This is still a small local proxy, not a 125M-370M BabyLM model.",
+    "Capped morphology remains the strongest compression baseline.",
+    "Entity tracking still needs improvement before a final tokenizer claim."
+  ]
+}

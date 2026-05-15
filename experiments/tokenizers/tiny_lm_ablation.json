@@ -1,0 +1,11 @@
+{
+  "name": "tiny_lm_tokenizer_ablation",
+  "description": "Tiny neural LM smoke comparison for tokenizer arms. Rank by bits per byte, not token NLL.",
+  "command": "python scripts\\run_tiny_lm_tokenizer_ablation.py MELM_whitepaper.md --tokenizers simple_bpe,unigram_like,heuristic_morpheme --steps 5 --sequence-length 48 --embedding-dim 32 --layers 1 --heads 4 --batch-size 4 --out-json reports\\tiny_lm_tokenizer_ablation.json --out-md reports\\tiny_lm_tokenizer_ablation.md",
+  "purpose": "Exercise the tokenizer-to-training path before BabyLM-scale ablations.",
+  "not_a_babylm_result": true,
+  "expected_outputs": [
+    "reports\\tiny_lm_tokenizer_ablation.json",
+    "reports\\tiny_lm_tokenizer_ablation.md"
+  ]
+}

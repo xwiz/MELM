@@ -1,0 +1,23 @@
+{
+  "name": "morpheme_meaning_mvp",
+  "description": "Minimal corpus and deterministic inference harness for morpheme/root/meaning feature inference and utterance routing.",
+  "corpus": "benchmarks\\morpheme_meaning_mvp.jsonl",
+  "commands": [
+    "python scripts\\run_morpheme_meaning_mvp.py --out-json reports\\morpheme_meaning_mvp.json --out-md reports\\morpheme_meaning_mvp.md"
+  ],
+  "current_decision": "tiny_constructed_mvp_passes",
+  "result": {
+    "components": 34,
+    "lexemes": 3,
+    "word_cases": 22,
+    "utterance_cases": 6,
+    "word_accuracy": 1.0,
+    "utterance_accuracy": 1.0,
+    "overall_accuracy": 1.0
+  },
+  "caveats": [
+    "This is a constructed smoke corpus, not evidence that the full MELM meaning graph generalizes.",
+    "Sound-symbolism is intentionally absent from the active gate until it has a stronger research basis.",
+    "Next validation needs generated held-out data, adversarial near-miss forms, and usage-based correction cases."
+  ]
+}

@@ -1,0 +1,10 @@
+{"category": "direct", "expected_event_id": "dialogue1_e1", "query": "Where did Maya tuck the moon sticker?", "schema": "melm.episodic_case.v1"}
+{"category": "temporal_after", "expected_event_id": "dialogue1_e2", "query": "What happened right after Maya tucked away the moon sticker?", "schema": "melm.episodic_case.v1"}
+{"category": "witness", "expected_event_id": "dialogue1_e4", "query": "Who said where the purple lunchbox was?", "schema": "melm.episodic_case.v1"}
+{"category": "causal_source", "expected_event_id": "dialogue1_e2", "query": "What earlier event explains why Sam knew about the purple lunchbox?", "schema": "melm.episodic_case.v1"}
+{"category": "direct", "expected_event_id": "dialogue2_e1", "query": "Where did Nora first build the green block tower?", "schema": "melm.episodic_case.v1"}
+{"category": "temporal_before", "expected_event_id": "dialogue2_e2", "query": "What happened right before Nora rebuilt the green blocks?", "schema": "melm.episodic_case.v1"}
+{"category": "witness", "expected_event_id": "dialogue2_e4", "query": "Who reminded Nora where the first tower had been?", "schema": "melm.episodic_case.v1"}
+{"category": "direct", "expected_event_id": "dialogue3_e1", "query": "Where did Owen put the tiny shell at first?", "schema": "melm.episodic_case.v1"}
+{"category": "entity_conflict", "expected_event_id": "dialogue3_e3", "query": "What changed where the tiny shell was later?", "schema": "melm.episodic_case.v1"}
+{"category": "entity_conflict_before_move", "expected_event_id": "dialogue3_e1", "query": "Where was the tiny shell before Iris moved it?", "schema": "melm.episodic_case.v1"}

@@ -1,0 +1,35 @@
+{
+  "name": "phase1_smoke",
+  "description": "Dependency-free smoke check for tokenizer metrics and event memory retrieval.",
+  "commands": [
+    "python -m unittest discover -s tests",
+    "python scripts\\run_phase1_smoke.py",
+    "python scripts\\build_corpus_manifest.py . --name melm_docs --source melm_docs --out reports\\corpus_manifest.json",
+    "python scripts\\run_episodic_benchmark.py --stories 25 --k 2",
+    "python scripts\\run_memory_ablation.py --stories 25 --k 2",
+    "python scripts\\run_morphology_probe.py",
+    "python scripts\\run_tokenizer_lm_probe.py MELM_whitepaper.md",
+    "python scripts\\run_tokenizer_report.py MELM_whitepaper.md",
+    "python scripts\\train_tiny_lm_baseline.py MELM_whitepaper.md --tokenizer simple_bpe --steps 2 --sequence-length 32 --embedding-dim 32 --layers 1 --heads 4 --batch-size 2 --out-json reports\\tiny_lm_baseline.json",
+    "python scripts\\run_phase1_report.py",
+    "python scripts\\run_validation_suite.py"
+  ],
+  "tokenizers": [
+    "whitespace",
+    "simple_bpe",
+    "heuristic_morpheme",
+    "byte_patch",
+    "unigram_like"
+  ],
+  "memory_arms": [
+    "rag",
+    "event_memory"
+  ],
+  "training_arms": [
+    "tiny_lm_simple_bpe_smoke"
+  ],
+  "gate": {
+    "name": "event_memory_vs_rag",
+    "minimum_absolute_gain": 0.15
+  }
+}

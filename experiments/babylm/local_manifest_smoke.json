@@ -1,0 +1,19 @@
+{
+  "name": "babylm_local_manifest_smoke",
+  "description": "Build a manifest from a local BabyLM-style corpus and run tokenizer/training smoke probes.",
+  "setup_command": "python scripts\\download_babylm_2026_strict_small.py",
+  "commands": [
+    "python scripts\\profile_corpus_manifest.py --manifest reports\\babylm_2026_strict_small_manifest.json --out-json reports\\babylm_2026_strict_small_profile.json",
+    "python scripts\\run_tokenizer_lm_probe.py --manifest reports\\babylm_2026_strict_small_manifest.json --max-train-bytes 1000000 --max-validation-bytes 500000",
+    "python scripts\\run_tokenizer_decision.py --manifest reports\\babylm_2026_strict_small_manifest.json --max-train-bytes 1000000 --max-validation-bytes 500000",
+    "python scripts\\run_fast_tokenizer_lm_probe.py --manifest reports\\babylm_2026_strict_small_manifest.json --max-train-bytes 1000000 --max-validation-bytes 500000 --vocab-size 4096 --arms hf_bpe,hf_unigram,capped_morpheme --out-json reports\\babylm_2026_fast_tokenizer_sample.json --out-md reports\\babylm_2026_fast_tokenizer_sample.md",
+    "python scripts\\run_fast_tokenizer_lm_probe.py --manifest reports\\babylm_2026_strict_small_manifest.json --vocab-size 8192 --arms hf_bpe,hf_unigram,capped_morpheme --out-json reports\\babylm_2026_fast_tokenizer_full.json --out-md reports\\babylm_2026_fast_tokenizer_full.md",
+    "python scripts\\summarize_fast_tokenizer_decision.py --report reports\\babylm_2026_fast_tokenizer_full.json",
+    "python scripts\\run_tiny_lm_tokenizer_ablation.py --manifest reports\\babylm_2026_strict_small_manifest.json --tokenizers hf_bpe,hf_unigram,capped_morpheme --max-train-bytes 500000 --max-validation-bytes 250000 --steps 10 --sequence-length 64 --embedding-dim 64 --layers 1 --heads 4 --batch-size 8 --max-vocab-size 4096 --pad-vocab-to-max-size --tokenizer-vocab-size 4096 --out-json reports\\babylm_2026_matched_tiny_lm_ablation.json --out-md reports\\babylm_2026_matched_tiny_lm_ablation.md",
+    "python scripts\\summarize_tiny_lm_ablation.py --report reports\\babylm_2026_matched_tiny_lm_ablation.json",
+    "python scripts\\run_tiny_lm_tokenizer_ablation.py --manifest reports\\babylm_2026_strict_small_manifest.json --tokenizers simple_bpe,unigram_like,heuristic_morpheme --max-train-bytes 500000 --max-validation-bytes 250000 --steps 1 --sequence-length 32 --embedding-dim 32 --layers 1 --heads 4 --batch-size 4 --out-json reports\\babylm_2026_sample_tiny_lm_ablation.json --out-md reports\\babylm_2026_sample_tiny_lm_ablation.md"
+  ],
+  "requires_local_data": true,
+  "data_path_placeholder": "local_data\\babylm_2026_strict_small",
+  "gate_note": "Tiny LM smoke results are advisory only; BabyLM-scale promotion requires stable downstream wins."
+}

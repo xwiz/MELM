@@ -1,0 +1,10 @@
+{"category": "positive_direct", "expected_event_id": "sample_e1", "query": "Where did Lila put the rainbow bead?", "schema": "melm.evidence_case.v1", "story_id": "sample_child_dialogue_001"}
+{"category": "positive_temporal_after", "expected_event_id": "sample_e2", "query": "What happened right after Lila put the rainbow bead away?", "schema": "melm.evidence_case.v1", "story_id": "sample_child_dialogue_001"}
+{"category": "positive_witness", "expected_event_id": "sample_e4", "query": "Who saw where the yellow box went?", "schema": "melm.evidence_case.v1", "story_id": "sample_child_dialogue_001"}
+{"category": "positive_causal_source", "expected_event_id": "sample_e2", "query": "What earlier event explains why Rafi knew where the yellow box was?", "schema": "melm.evidence_case.v1", "story_id": "sample_child_dialogue_001"}
+{"category": "positive_direct", "expected_event_id": "sample_e5", "query": "Where did Mina stack the star blocks first?", "schema": "melm.evidence_case.v1", "story_id": "sample_child_dialogue_001"}
+{"category": "positive_temporal_before", "expected_event_id": "sample_e6", "query": "What happened right before Mina rebuilt the star blocks?", "schema": "melm.evidence_case.v1", "story_id": "sample_child_dialogue_001"}
+{"category": "negative_unknown_object", "expected_event_id": null, "query": "Where did Lila hide the silver button?", "schema": "melm.evidence_case.v1", "story_id": "sample_child_dialogue_001"}
+{"category": "negative_wrong_actor", "expected_event_id": null, "query": "Where was the rainbow bead after Rafi moved it?", "schema": "melm.evidence_case.v1", "story_id": "sample_child_dialogue_001"}
+{"category": "negative_underspecified", "expected_event_id": null, "query": "Where did Mina put the thing?", "schema": "melm.evidence_case.v1", "story_id": "sample_child_dialogue_001"}
+{"category": "negative_unknown_event", "expected_event_id": null, "query": "Who explained the missing robot?", "schema": "melm.evidence_case.v1", "story_id": "sample_child_dialogue_001"}

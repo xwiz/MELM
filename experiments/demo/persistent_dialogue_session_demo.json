@@ -1,0 +1,21 @@
+{
+  "name": "persistent_dialogue_session_demo",
+  "description": "Reloadable JSONL-backed persistent dialogue session over explicit event memory.",
+  "source_gate": "reports\\memory_integration_gate.json",
+  "commands": [
+    "python scripts\\run_persistent_session_demo.py --reset --out-json reports\\persistent_dialogue_session_demo.json --out-md reports\\persistent_dialogue_session_demo.md"
+  ],
+  "current_decision": "session_persistence_passes_reload_fixture",
+  "result": {
+    "events": 12,
+    "cases": 15,
+    "accuracy": 1.0,
+    "positive_recall": 1.0,
+    "negative_abstention": 1.0,
+    "answer_rate": 0.6667
+  },
+  "caveats": [
+    "The session is JSONL-backed and deterministic, not yet an interactive child-facing UI.",
+    "Seed data is still the authored fixture; next validation should use transcript-derived/noisy sessions."
+  ]
+}

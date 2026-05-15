@@ -1,0 +1,200 @@
+{"category": "direct", "expected_event_id": "s000_e1", "query": "Where did Maya put the red cup 0?", "schema": "melm.episodic_case.v1"}
+{"category": "temporal_after", "expected_event_id": "s000_e2", "query": "What happened right after Maya put the red cup 0 down?", "schema": "melm.episodic_case.v1"}
+{"category": "direct", "expected_event_id": "s000_e3", "query": "What did Maya look for before snack time?", "schema": "melm.episodic_case.v1"}
+{"category": "witness", "expected_event_id": "s000_e4", "query": "Who told Maya where the red cup 0 was?", "schema": "melm.episodic_case.v1"}
+{"category": "temporal_before", "expected_event_id": "s000_e3", "query": "What happened right before Nora told Maya where the red cup 0 was?", "schema": "melm.episodic_case.v1"}
+{"category": "causal_source", "expected_event_id": "s000_e1", "query": "What earlier event explains why Nora knew where the red cup 0 was?", "schema": "melm.episodic_case.v1"}
+{"category": "entity_conflict", "expected_event_id": "s000_e5", "query": "What changed where the red cup 0 was later?", "schema": "melm.episodic_case.v1"}
+{"category": "entity_conflict_before_move", "expected_event_id": "s000_e1", "query": "Where was the red cup 0 before Leo moved it later?", "schema": "melm.episodic_case.v1"}
+{"category": "direct", "expected_event_id": "s001_e1", "query": "Where did Leo put the blue book 1?", "schema": "melm.episodic_case.v1"}
+{"category": "temporal_after", "expected_event_id": "s001_e2", "query": "What happened right after Leo put the blue book 1 down?", "schema": "melm.episodic_case.v1"}
+{"category": "direct", "expected_event_id": "s001_e3", "query": "What did Leo look for before snack time?", "schema": "melm.episodic_case.v1"}
+{"category": "witness", "expected_event_id": "s001_e4", "query": "Who told Leo where the blue book 1 was?", "schema": "melm.episodic_case.v1"}
+{"category": "temporal_before", "expected_event_id": "s001_e3", "query": "What happened right before Sam told Leo where the blue book 1 was?", "schema": "melm.episodic_case.v1"}
+{"category": "causal_source", "expected_event_id": "s001_e1", "query": "What earlier event explains why Sam knew where the blue book 1 was?", "schema": "melm.episodic_case.v1"}
+{"category": "entity_conflict", "expected_event_id": "s001_e5", "query": "What changed where the blue book 1 was later?", "schema": "melm.episodic_case.v1"}
+{"category": "entity_conflict_before_move", "expected_event_id": "s001_e1", "query": "Where was the blue book 1 before Nora moved it later?", "schema": "melm.episodic_case.v1"}
+{"category": "direct", "expected_event_id": "s002_e1", "query": "Where did Nora put the green key 2?", "schema": "melm.episodic_case.v1"}
+{"category": "temporal_after", "expected_event_id": "s002_e2", "query": "What happened right after Nora put the green key 2 down?", "schema": "melm.episodic_case.v1"}
+{"category": "direct", "expected_event_id": "s002_e3", "query": "What did Nora look for before snack time?", "schema": "melm.episodic_case.v1"}
+{"category": "witness", "expected_event_id": "s002_e4", "query": "Who told Nora where the green key 2 was?", "schema": "melm.episodic_case.v1"}
+{"category": "temporal_before", "expected_event_id": "s002_e3", "query": "What happened right before Iris told Nora where the green key 2 was?", "schema": "melm.episodic_case.v1"}
+{"category": "causal_source", "expected_event_id": "s002_e1", "query": "What earlier event explains why Iris knew where the green key 2 was?", "schema": "melm.episodic_case.v1"}
+{"category": "entity_conflict", "expected_event_id": "s002_e5", "query": "What changed where the green key 2 was later?", "schema": "melm.episodic_case.v1"}
+{"category": "entity_conflict_before_move", "expected_event_id": "s002_e1", "query": "Where was the green key 2 before Sam moved it later?", "schema": "melm.episodic_case.v1"}
+{"category": "direct", "expected_event_id": "s003_e1", "query": "Where did Sam put the yellow ball 3?", "schema": "melm.episodic_case.v1"}
+{"category": "temporal_after", "expected_event_id": "s003_e2", "query": "What happened right after Sam put the yellow ball 3 down?", "schema": "melm.episodic_case.v1"}
+{"category": "direct", "expected_event_id": "s003_e3", "query": "What did Sam look for before snack time?", "schema": "melm.episodic_case.v1"}
+{"category": "witness", "expected_event_id": "s003_e4", "query": "Who told Sam where the yellow ball 3 was?", "schema": "melm.episodic_case.v1"}
+{"category": "temporal_before", "expected_event_id": "s003_e3", "query": "What happened right before Owen told Sam where the yellow ball 3 was?", "schema": "melm.episodic_case.v1"}
+{"category": "causal_source", "expected_event_id": "s003_e1", "query": "What earlier event explains why Owen knew where the yellow ball 3 was?", "schema": "melm.episodic_case.v1"}
+{"category": "entity_conflict", "expected_event_id": "s003_e5", "query": "What changed where the yellow ball 3 was later?", "schema": "melm.episodic_case.v1"}
+{"category": "entity_conflict_before_move", "expected_event_id": "s003_e1", "query": "Where was the yellow ball 3 before Iris moved it later?", "schema": "melm.episodic_case.v1"}
+{"category": "direct", "expected_event_id": "s004_e1", "query": "Where did Iris put the silver spoon 4?", "schema": "melm.episodic_case.v1"}
+{"category": "temporal_after", "expected_event_id": "s004_e2", "query": "What happened right after Iris put the silver spoon 4 down?", "schema": "melm.episodic_case.v1"}
+{"category": "direct", "expected_event_id": "s004_e3", "query": "What did Iris look for before snack time?", "schema": "melm.episodic_case.v1"}
+{"category": "witness", "expected_event_id": "s004_e4", "query": "Who told Iris where the silver spoon 4 was?", "schema": "melm.episodic_case.v1"}
+{"category": "temporal_before", "expected_event_id": "s004_e3", "query": "What happened right before Maya told Iris where the silver spoon 4 was?", "schema": "melm.episodic_case.v1"}
+{"category": "causal_source", "expected_event_id": "s004_e1", "query": "What earlier event explains why Maya knew where the silver spoon 4 was?", "schema": "melm.episodic_case.v1"}
+{"category": "entity_conflict", "expected_event_id": "s004_e5", "query": "What changed where the silver spoon 4 was later?", "schema": "melm.episodic_case.v1"}
+{"category": "entity_conflict_before_move", "expected_event_id": "s004_e1", "query": "Where was the silver spoon 4 before Owen moved it later?", "schema": "melm.episodic_case.v1"}
+{"category": "direct", "expected_event_id": "s005_e1", "query": "Where did Owen put the paper map 5?", "schema": "melm.episodic_case.v1"}
+{"category": "temporal_after", "expected_event_id": "s005_e2", "query": "What happened right after Owen put the paper map 5 down?", "schema": "melm.episodic_case.v1"}
+{"category": "direct", "expected_event_id": "s005_e3", "query": "What did Owen look for before snack time?", "schema": "melm.episodic_case.v1"}
+{"category": "witness", "expected_event_id": "s005_e4", "query": "Who told Owen where the paper map 5 was?", "schema": "melm.episodic_case.v1"}
+{"category": "temporal_before", "expected_event_id": "s005_e3", "query": "What happened right before Leo told Owen where the paper map 5 was?", "schema": "melm.episodic_case.v1"}
+{"category": "causal_source", "expected_event_id": "s005_e1", "query": "What earlier event explains why Leo knew where the paper map 5 was?", "schema": "melm.episodic_case.v1"}
+{"category": "entity_conflict", "expected_event_id": "s005_e5", "query": "What changed where the paper map 5 was later?", "schema": "melm.episodic_case.v1"}
+{"category": "entity_conflict_before_move", "expected_event_id": "s005_e1", "query": "Where was the paper map 5 before Maya moved it later?", "schema": "melm.episodic_case.v1"}
+{"category": "direct", "expected_event_id": "s006_e1", "query": "Where did Maya put the red cup 6?", "schema": "melm.episodic_case.v1"}
+{"category": "temporal_after", "expected_event_id": "s006_e2", "query": "What happened right after Maya put the red cup 6 down?", "schema": "melm.episodic_case.v1"}
+{"category": "direct", "expected_event_id": "s006_e3", "query": "What did Maya look for before snack time?", "schema": "melm.episodic_case.v1"}
+{"category": "witness", "expected_event_id": "s006_e4", "query": "Who told Maya where the red cup 6 was?", "schema": "melm.episodic_case.v1"}
+{"category": "temporal_before", "expected_event_id": "s006_e3", "query": "What happened right before Nora told Maya where the red cup 6 was?", "schema": "melm.episodic_case.v1"}
+{"category": "causal_source", "expected_event_id": "s006_e1", "query": "What earlier event explains why Nora knew where the red cup 6 was?", "schema": "melm.episodic_case.v1"}
+{"category": "entity_conflict", "expected_event_id": "s006_e5", "query": "What changed where the red cup 6 was later?", "schema": "melm.episodic_case.v1"}
+{"category": "entity_conflict_before_move", "expected_event_id": "s006_e1", "query": "Where was the red cup 6 before Leo moved it later?", "schema": "melm.episodic_case.v1"}
+{"category": "direct", "expected_event_id": "s007_e1", "query": "Where did Leo put the blue book 7?", "schema": "melm.episodic_case.v1"}
+{"category": "temporal_after", "expected_event_id": "s007_e2", "query": "What happened right after Leo put the blue book 7 down?", "schema": "melm.episodic_case.v1"}
+{"category": "direct", "expected_event_id": "s007_e3", "query": "What did Leo look for before snack time?", "schema": "melm.episodic_case.v1"}
+{"category": "witness", "expected_event_id": "s007_e4", "query": "Who told Leo where the blue book 7 was?", "schema": "melm.episodic_case.v1"}
+{"category": "temporal_before", "expected_event_id": "s007_e3", "query": "What happened right before Sam told Leo where the blue book 7 was?", "schema": "melm.episodic_case.v1"}
+{"category": "causal_source", "expected_event_id": "s007_e1", "query": "What earlier event explains why Sam knew where the blue book 7 was?", "schema": "melm.episodic_case.v1"}
+{"category": "entity_conflict", "expected_event_id": "s007_e5", "query": "What changed where the blue book 7 was later?", "schema": "melm.episodic_case.v1"}
+{"category": "entity_conflict_before_move", "expected_event_id": "s007_e1", "query": "Where was the blue book 7 before Nora moved it later?", "schema": "melm.episodic_case.v1"}
+{"category": "direct", "expected_event_id": "s008_e1", "query": "Where did Nora put the green key 8?", "schema": "melm.episodic_case.v1"}
+{"category": "temporal_after", "expected_event_id": "s008_e2", "query": "What happened right after Nora put the green key 8 down?", "schema": "melm.episodic_case.v1"}
+{"category": "direct", "expected_event_id": "s008_e3", "query": "What did Nora look for before snack time?", "schema": "melm.episodic_case.v1"}
+{"category": "witness", "expected_event_id": "s008_e4", "query": "Who told Nora where the green key 8 was?", "schema": "melm.episodic_case.v1"}
+{"category": "temporal_before", "expected_event_id": "s008_e3", "query": "What happened right before Iris told Nora where the green key 8 was?", "schema": "melm.episodic_case.v1"}
+{"category": "causal_source", "expected_event_id": "s008_e1", "query": "What earlier event explains why Iris knew where the green key 8 was?", "schema": "melm.episodic_case.v1"}
+{"category": "entity_conflict", "expected_event_id": "s008_e5", "query": "What changed where the green key 8 was later?", "schema": "melm.episodic_case.v1"}
+{"category": "entity_conflict_before_move", "expected_event_id": "s008_e1", "query": "Where was the green key 8 before Sam moved it later?", "schema": "melm.episodic_case.v1"}
+{"category": "direct", "expected_event_id": "s009_e1", "query": "Where did Sam put the yellow ball 9?", "schema": "melm.episodic_case.v1"}
+{"category": "temporal_after", "expected_event_id": "s009_e2", "query": "What happened right after Sam put the yellow ball 9 down?", "schema": "melm.episodic_case.v1"}
+{"category": "direct", "expected_event_id": "s009_e3", "query": "What did Sam look for before snack time?", "schema": "melm.episodic_case.v1"}
+{"category": "witness", "expected_event_id": "s009_e4", "query": "Who told Sam where the yellow ball 9 was?", "schema": "melm.episodic_case.v1"}
+{"category": "temporal_before", "expected_event_id": "s009_e3", "query": "What happened right before Owen told Sam where the yellow ball 9 was?", "schema": "melm.episodic_case.v1"}
+{"category": "causal_source", "expected_event_id": "s009_e1", "query": "What earlier event explains why Owen knew where the yellow ball 9 was?", "schema": "melm.episodic_case.v1"}
+{"category": "entity_conflict", "expected_event_id": "s009_e5", "query": "What changed where the yellow ball 9 was later?", "schema": "melm.episodic_case.v1"}
+{"category": "entity_conflict_before_move", "expected_event_id": "s009_e1", "query": "Where was the yellow ball 9 before Iris moved it later?", "schema": "melm.episodic_case.v1"}
+{"category": "direct", "expected_event_id": "s010_e1", "query": "Where did Iris put the silver spoon 10?", "schema": "melm.episodic_case.v1"}
+{"category": "temporal_after", "expected_event_id": "s010_e2", "query": "What happened right after Iris put the silver spoon 10 down?", "schema": "melm.episodic_case.v1"}
+{"category": "direct", "expected_event_id": "s010_e3", "query": "What did Iris look for before snack time?", "schema": "melm.episodic_case.v1"}
+{"category": "witness", "expected_event_id": "s010_e4", "query": "Who told Iris where the silver spoon 10 was?", "schema": "melm.episodic_case.v1"}
+{"category": "temporal_before", "expected_event_id": "s010_e3", "query": "What happened right before Maya told Iris where the silver spoon 10 was?", "schema": "melm.episodic_case.v1"}
+{"category": "causal_source", "expected_event_id": "s010_e1", "query": "What earlier event explains why Maya knew where the silver spoon 10 was?", "schema": "melm.episodic_case.v1"}
+{"category": "entity_conflict", "expected_event_id": "s010_e5", "query": "What changed where the silver spoon 10 was later?", "schema": "melm.episodic_case.v1"}
+{"category": "entity_conflict_before_move", "expected_event_id": "s010_e1", "query": "Where was the silver spoon 10 before Owen moved it later?", "schema": "melm.episodic_case.v1"}
+{"category": "direct", "expected_event_id": "s011_e1", "query": "Where did Owen put the paper map 11?", "schema": "melm.episodic_case.v1"}
+{"category": "temporal_after", "expected_event_id": "s011_e2", "query": "What happened right after Owen put the paper map 11 down?", "schema": "melm.episodic_case.v1"}
+{"category": "direct", "expected_event_id": "s011_e3", "query": "What did Owen look for before snack time?", "schema": "melm.episodic_case.v1"}
+{"category": "witness", "expected_event_id": "s011_e4", "query": "Who told Owen where the paper map 11 was?", "schema": "melm.episodic_case.v1"}
+{"category": "temporal_before", "expected_event_id": "s011_e3", "query": "What happened right before Leo told Owen where the paper map 11 was?", "schema": "melm.episodic_case.v1"}
+{"category": "causal_source", "expected_event_id": "s011_e1", "query": "What earlier event explains why Leo knew where the paper map 11 was?", "schema": "melm.episodic_case.v1"}
+{"category": "entity_conflict", "expected_event_id": "s011_e5", "query": "What changed where the paper map 11 was later?", "schema": "melm.episodic_case.v1"}
+{"category": "entity_conflict_before_move", "expected_event_id": "s011_e1", "query": "Where was the paper map 11 before Maya moved it later?", "schema": "melm.episodic_case.v1"}
+{"category": "direct", "expected_event_id": "s012_e1", "query": "Where did Maya put the red cup 12?", "schema": "melm.episodic_case.v1"}
+{"category": "temporal_after", "expected_event_id": "s012_e2", "query": "What happened right after Maya put the red cup 12 down?", "schema": "melm.episodic_case.v1"}
+{"category": "direct", "expected_event_id": "s012_e3", "query": "What did Maya look for before snack time?", "schema": "melm.episodic_case.v1"}
+{"category": "witness", "expected_event_id": "s012_e4", "query": "Who told Maya where the red cup 12 was?", "schema": "melm.episodic_case.v1"}
+{"category": "temporal_before", "expected_event_id": "s012_e3", "query": "What happened right before Nora told Maya where the red cup 12 was?", "schema": "melm.episodic_case.v1"}
+{"category": "causal_source", "expected_event_id": "s012_e1", "query": "What earlier event explains why Nora knew where the red cup 12 was?", "schema": "melm.episodic_case.v1"}
+{"category": "entity_conflict", "expected_event_id": "s012_e5", "query": "What changed where the red cup 12 was later?", "schema": "melm.episodic_case.v1"}
+{"category": "entity_conflict_before_move", "expected_event_id": "s012_e1", "query": "Where was the red cup 12 before Leo moved it later?", "schema": "melm.episodic_case.v1"}
+{"category": "direct", "expected_event_id": "s013_e1", "query": "Where did Leo put the blue book 13?", "schema": "melm.episodic_case.v1"}
+{"category": "temporal_after", "expected_event_id": "s013_e2", "query": "What happened right after Leo put the blue book 13 down?", "schema": "melm.episodic_case.v1"}
+{"category": "direct", "expected_event_id": "s013_e3", "query": "What did Leo look for before snack time?", "schema": "melm.episodic_case.v1"}
+{"category": "witness", "expected_event_id": "s013_e4", "query": "Who told Leo where the blue book 13 was?", "schema": "melm.episodic_case.v1"}
+{"category": "temporal_before", "expected_event_id": "s013_e3", "query": "What happened right before Sam told Leo where the blue book 13 was?", "schema": "melm.episodic_case.v1"}
+{"category": "causal_source", "expected_event_id": "s013_e1", "query": "What earlier event explains why Sam knew where the blue book 13 was?", "schema": "melm.episodic_case.v1"}
+{"category": "entity_conflict", "expected_event_id": "s013_e5", "query": "What changed where the blue book 13 was later?", "schema": "melm.episodic_case.v1"}
+{"category": "entity_conflict_before_move", "expected_event_id": "s013_e1", "query": "Where was the blue book 13 before Nora moved it later?", "schema": "melm.episodic_case.v1"}
+{"category": "direct", "expected_event_id": "s014_e1", "query": "Where did Nora put the green key 14?", "schema": "melm.episodic_case.v1"}
+{"category": "temporal_after", "expected_event_id": "s014_e2", "query": "What happened right after Nora put the green key 14 down?", "schema": "melm.episodic_case.v1"}
+{"category": "direct", "expected_event_id": "s014_e3", "query": "What did Nora look for before snack time?", "schema": "melm.episodic_case.v1"}
+{"category": "witness", "expected_event_id": "s014_e4", "query": "Who told Nora where the green key 14 was?", "schema": "melm.episodic_case.v1"}
+{"category": "temporal_before", "expected_event_id": "s014_e3", "query": "What happened right before Iris told Nora where the green key 14 was?", "schema": "melm.episodic_case.v1"}
+{"category": "causal_source", "expected_event_id": "s014_e1", "query": "What earlier event explains why Iris knew where the green key 14 was?", "schema": "melm.episodic_case.v1"}
+{"category": "entity_conflict", "expected_event_id": "s014_e5", "query": "What changed where the green key 14 was later?", "schema": "melm.episodic_case.v1"}
+{"category": "entity_conflict_before_move", "expected_event_id": "s014_e1", "query": "Where was the green key 14 before Sam moved it later?", "schema": "melm.episodic_case.v1"}
+{"category": "direct", "expected_event_id": "s015_e1", "query": "Where did Sam put the yellow ball 15?", "schema": "melm.episodic_case.v1"}
+{"category": "temporal_after", "expected_event_id": "s015_e2", "query": "What happened right after Sam put the yellow ball 15 down?", "schema": "melm.episodic_case.v1"}
+{"category": "direct", "expected_event_id": "s015_e3", "query": "What did Sam look for before snack time?", "schema": "melm.episodic_case.v1"}
+{"category": "witness", "expected_event_id": "s015_e4", "query": "Who told Sam where the yellow ball 15 was?", "schema": "melm.episodic_case.v1"}
+{"category": "temporal_before", "expected_event_id": "s015_e3", "query": "What happened right before Owen told Sam where the yellow ball 15 was?", "schema": "melm.episodic_case.v1"}
+{"category": "causal_source", "expected_event_id": "s015_e1", "query": "What earlier event explains why Owen knew where the yellow ball 15 was?", "schema": "melm.episodic_case.v1"}
+{"category": "entity_conflict", "expected_event_id": "s015_e5", "query": "What changed where the yellow ball 15 was later?", "schema": "melm.episodic_case.v1"}
+{"category": "entity_conflict_before_move", "expected_event_id": "s015_e1", "query": "Where was the yellow ball 15 before Iris moved it later?", "schema": "melm.episodic_case.v1"}
+{"category": "direct", "expected_event_id": "s016_e1", "query": "Where did Iris put the silver spoon 16?", "schema": "melm.episodic_case.v1"}
+{"category": "temporal_after", "expected_event_id": "s016_e2", "query": "What happened right after Iris put the silver spoon 16 down?", "schema": "melm.episodic_case.v1"}
+{"category": "direct", "expected_event_id": "s016_e3", "query": "What did Iris look for before snack time?", "schema": "melm.episodic_case.v1"}
+{"category": "witness", "expected_event_id": "s016_e4", "query": "Who told Iris where the silver spoon 16 was?", "schema": "melm.episodic_case.v1"}
+{"category": "temporal_before", "expected_event_id": "s016_e3", "query": "What happened right before Maya told Iris where the silver spoon 16 was?", "schema": "melm.episodic_case.v1"}
+{"category": "causal_source", "expected_event_id": "s016_e1", "query": "What earlier event explains why Maya knew where the silver spoon 16 was?", "schema": "melm.episodic_case.v1"}
+{"category": "entity_conflict", "expected_event_id": "s016_e5", "query": "What changed where the silver spoon 16 was later?", "schema": "melm.episodic_case.v1"}
+{"category": "entity_conflict_before_move", "expected_event_id": "s016_e1", "query": "Where was the silver spoon 16 before Owen moved it later?", "schema": "melm.episodic_case.v1"}
+{"category": "direct", "expected_event_id": "s017_e1", "query": "Where did Owen put the paper map 17?", "schema": "melm.episodic_case.v1"}
+{"category": "temporal_after", "expected_event_id": "s017_e2", "query": "What happened right after Owen put the paper map 17 down?", "schema": "melm.episodic_case.v1"}
+{"category": "direct", "expected_event_id": "s017_e3", "query": "What did Owen look for before snack time?", "schema": "melm.episodic_case.v1"}
+{"category": "witness", "expected_event_id": "s017_e4", "query": "Who told Owen where the paper map 17 was?", "schema": "melm.episodic_case.v1"}
+{"category": "temporal_before", "expected_event_id": "s017_e3", "query": "What happened right before Leo told Owen where the paper map 17 was?", "schema": "melm.episodic_case.v1"}
+{"category": "causal_source", "expected_event_id": "s017_e1", "query": "What earlier event explains why Leo knew where the paper map 17 was?", "schema": "melm.episodic_case.v1"}
+{"category": "entity_conflict", "expected_event_id": "s017_e5", "query": "What changed where the paper map 17 was later?", "schema": "melm.episodic_case.v1"}
+{"category": "entity_conflict_before_move", "expected_event_id": "s017_e1", "query": "Where was the paper map 17 before Maya moved it later?", "schema": "melm.episodic_case.v1"}
+{"category": "direct", "expected_event_id": "s018_e1", "query": "Where did Maya put the red cup 18?", "schema": "melm.episodic_case.v1"}
+{"category": "temporal_after", "expected_event_id": "s018_e2", "query": "What happened right after Maya put the red cup 18 down?", "schema": "melm.episodic_case.v1"}
+{"category": "direct", "expected_event_id": "s018_e3", "query": "What did Maya look for before snack time?", "schema": "melm.episodic_case.v1"}
+{"category": "witness", "expected_event_id": "s018_e4", "query": "Who told Maya where the red cup 18 was?", "schema": "melm.episodic_case.v1"}
+{"category": "temporal_before", "expected_event_id": "s018_e3", "query": "What happened right before Nora told Maya where the red cup 18 was?", "schema": "melm.episodic_case.v1"}
+{"category": "causal_source", "expected_event_id": "s018_e1", "query": "What earlier event explains why Nora knew where the red cup 18 was?", "schema": "melm.episodic_case.v1"}
+{"category": "entity_conflict", "expected_event_id": "s018_e5", "query": "What changed where the red cup 18 was later?", "schema": "melm.episodic_case.v1"}
+{"category": "entity_conflict_before_move", "expected_event_id": "s018_e1", "query": "Where was the red cup 18 before Leo moved it later?", "schema": "melm.episodic_case.v1"}
+{"category": "direct", "expected_event_id": "s019_e1", "query": "Where did Leo put the blue book 19?", "schema": "melm.episodic_case.v1"}
+{"category": "temporal_after", "expected_event_id": "s019_e2", "query": "What happened right after Leo put the blue book 19 down?", "schema": "melm.episodic_case.v1"}
+{"category": "direct", "expected_event_id": "s019_e3", "query": "What did Leo look for before snack time?", "schema": "melm.episodic_case.v1"}
+{"category": "witness", "expected_event_id": "s019_e4", "query": "Who told Leo where the blue book 19 was?", "schema": "melm.episodic_case.v1"}
+{"category": "temporal_before", "expected_event_id": "s019_e3", "query": "What happened right before Sam told Leo where the blue book 19 was?", "schema": "melm.episodic_case.v1"}
+{"category": "causal_source", "expected_event_id": "s019_e1", "query": "What earlier event explains why Sam knew where the blue book 19 was?", "schema": "melm.episodic_case.v1"}
+{"category": "entity_conflict", "expected_event_id": "s019_e5", "query": "What changed where the blue book 19 was later?", "schema": "melm.episodic_case.v1"}
+{"category": "entity_conflict_before_move", "expected_event_id": "s019_e1", "query": "Where was the blue book 19 before Nora moved it later?", "schema": "melm.episodic_case.v1"}
+{"category": "direct", "expected_event_id": "s020_e1", "query": "Where did Nora put the green key 20?", "schema": "melm.episodic_case.v1"}
+{"category": "temporal_after", "expected_event_id": "s020_e2", "query": "What happened right after Nora put the green key 20 down?", "schema": "melm.episodic_case.v1"}
+{"category": "direct", "expected_event_id": "s020_e3", "query": "What did Nora look for before snack time?", "schema": "melm.episodic_case.v1"}
+{"category": "witness", "expected_event_id": "s020_e4", "query": "Who told Nora where the green key 20 was?", "schema": "melm.episodic_case.v1"}
+{"category": "temporal_before", "expected_event_id": "s020_e3", "query": "What happened right before Iris told Nora where the green key 20 was?", "schema": "melm.episodic_case.v1"}
+{"category": "causal_source", "expected_event_id": "s020_e1", "query": "What earlier event explains why Iris knew where the green key 20 was?", "schema": "melm.episodic_case.v1"}
+{"category": "entity_conflict", "expected_event_id": "s020_e5", "query": "What changed where the green key 20 was later?", "schema": "melm.episodic_case.v1"}
+{"category": "entity_conflict_before_move", "expected_event_id": "s020_e1", "query": "Where was the green key 20 before Sam moved it later?", "schema": "melm.episodic_case.v1"}
+{"category": "direct", "expected_event_id": "s021_e1", "query": "Where did Sam put the yellow ball 21?", "schema": "melm.episodic_case.v1"}
+{"category": "temporal_after", "expected_event_id": "s021_e2", "query": "What happened right after Sam put the yellow ball 21 down?", "schema": "melm.episodic_case.v1"}
+{"category": "direct", "expected_event_id": "s021_e3", "query": "What did Sam look for before snack time?", "schema": "melm.episodic_case.v1"}
+{"category": "witness", "expected_event_id": "s021_e4", "query": "Who told Sam where the yellow ball 21 was?", "schema": "melm.episodic_case.v1"}
+{"category": "temporal_before", "expected_event_id": "s021_e3", "query": "What happened right before Owen told Sam where the yellow ball 21 was?", "schema": "melm.episodic_case.v1"}
+{"category": "causal_source", "expected_event_id": "s021_e1", "query": "What earlier event explains why Owen knew where the yellow ball 21 was?", "schema": "melm.episodic_case.v1"}
+{"category": "entity_conflict", "expected_event_id": "s021_e5", "query": "What changed where the yellow ball 21 was later?", "schema": "melm.episodic_case.v1"}
+{"category": "entity_conflict_before_move", "expected_event_id": "s021_e1", "query": "Where was the yellow ball 21 before Iris moved it later?", "schema": "melm.episodic_case.v1"}
+{"category": "direct", "expected_event_id": "s022_e1", "query": "Where did Iris put the silver spoon 22?", "schema": "melm.episodic_case.v1"}
+{"category": "temporal_after", "expected_event_id": "s022_e2", "query": "What happened right after Iris put the silver spoon 22 down?", "schema": "melm.episodic_case.v1"}
+{"category": "direct", "expected_event_id": "s022_e3", "query": "What did Iris look for before snack time?", "schema": "melm.episodic_case.v1"}
+{"category": "witness", "expected_event_id": "s022_e4", "query": "Who told Iris where the silver spoon 22 was?", "schema": "melm.episodic_case.v1"}
+{"category": "temporal_before", "expected_event_id": "s022_e3", "query": "What happened right before Maya told Iris where the silver spoon 22 was?", "schema": "melm.episodic_case.v1"}
+{"category": "causal_source", "expected_event_id": "s022_e1", "query": "What earlier event explains why Maya knew where the silver spoon 22 was?", "schema": "melm.episodic_case.v1"}
+{"category": "entity_conflict", "expected_event_id": "s022_e5", "query": "What changed where the silver spoon 22 was later?", "schema": "melm.episodic_case.v1"}
+{"category": "entity_conflict_before_move", "expected_event_id": "s022_e1", "query": "Where was the silver spoon 22 before Owen moved it later?", "schema": "melm.episodic_case.v1"}
+{"category": "direct", "expected_event_id": "s023_e1", "query": "Where did Owen put the paper map 23?", "schema": "melm.episodic_case.v1"}
+{"category": "temporal_after", "expected_event_id": "s023_e2", "query": "What happened right after Owen put the paper map 23 down?", "schema": "melm.episodic_case.v1"}
+{"category": "direct", "expected_event_id": "s023_e3", "query": "What did Owen look for before snack time?", "schema": "melm.episodic_case.v1"}
+{"category": "witness", "expected_event_id": "s023_e4", "query": "Who told Owen where the paper map 23 was?", "schema": "melm.episodic_case.v1"}
+{"category": "temporal_before", "expected_event_id": "s023_e3", "query": "What happened right before Leo told Owen where the paper map 23 was?", "schema": "melm.episodic_case.v1"}
+{"category": "causal_source", "expected_event_id": "s023_e1", "query": "What earlier event explains why Leo knew where the paper map 23 was?", "schema": "melm.episodic_case.v1"}
+{"category": "entity_conflict", "expected_event_id": "s023_e5", "query": "What changed where the paper map 23 was later?", "schema": "melm.episodic_case.v1"}
+{"category": "entity_conflict_before_move", "expected_event_id": "s023_e1", "query": "Where was the paper map 23 before Maya moved it later?", "schema": "melm.episodic_case.v1"}
+{"category": "direct", "expected_event_id": "s024_e1", "query": "Where did Maya put the red cup 24?", "schema": "melm.episodic_case.v1"}
+{"category": "temporal_after", "expected_event_id": "s024_e2", "query": "What happened right after Maya put the red cup 24 down?", "schema": "melm.episodic_case.v1"}
+{"category": "direct", "expected_event_id": "s024_e3", "query": "What did Maya look for before snack time?", "schema": "melm.episodic_case.v1"}
+{"category": "witness", "expected_event_id": "s024_e4", "query": "Who told Maya where the red cup 24 was?", "schema": "melm.episodic_case.v1"}
+{"category": "temporal_before", "expected_event_id": "s024_e3", "query": "What happened right before Nora told Maya where the red cup 24 was?", "schema": "melm.episodic_case.v1"}
+{"category": "causal_source", "expected_event_id": "s024_e1", "query": "What earlier event explains why Nora knew where the red cup 24 was?", "schema": "melm.episodic_case.v1"}
+{"category": "entity_conflict", "expected_event_id": "s024_e5", "query": "What changed where the red cup 24 was later?", "schema": "melm.episodic_case.v1"}
+{"category": "entity_conflict_before_move", "expected_event_id": "s024_e1", "query": "Where was the red cup 24 before Leo moved it later?", "schema": "melm.episodic_case.v1"}

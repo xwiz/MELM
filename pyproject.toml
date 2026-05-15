@@ -1,0 +1,19 @@
+[project]
+name = "melm"
+version = "0.1.0"
+description = "Validation-first infrastructure for the Morpheme-Event Language Model research program."
+readme = "melm/README.md"
+requires-python = ">=3.11"
+dependencies = []
+
+[project.optional-dependencies]
+data = ["huggingface-hub>=0.33"]
+tokenizers = ["tokenizers>=0.21"]
+training = ["torch>=2.6"]
+dev = []
+
+[tool.setuptools.packages.find]
+include = ["melm*"]
+
+[tool.pytest.ini_options]
+testpaths = ["tests"]

@@ -1,0 +1,21 @@
+{
+  "name": "entity_tracking_state_integration",
+  "description": "First event/state-memory integration check after the tokenizer small-model stage.",
+  "source_gate": "reports\\babylm_2026_small_model_stage_gate.json",
+  "lm_entity_report": "reports\\babylm_2026_small_model_stage_entity_tracking.json",
+  "commands": [
+    "python scripts\\run_state_assisted_entity_tracking.py --entity-report reports\\babylm_2026_small_model_stage_entity_tracking.json --out-json reports\\babylm_2026_state_assisted_entity_tracking.json --out-md reports\\babylm_2026_state_assisted_entity_tracking.md"
+  ],
+  "current_decision": "state_memory_solves_fast_entity_tracking_fixture",
+  "result": {
+    "tiered_morph_unigram_lm_accuracy": 0.4042,
+    "tiered_morph_unigram_state_assisted_accuracy": 1.0,
+    "tiered_morph_unigram_accuracy_lift": 0.5958,
+    "state_answer_rate": 1.0,
+    "lm_fallbacks": 0
+  },
+  "caveats": [
+    "The BabyLM fast entity-tracking format is highly regular, so this validates the integration path rather than general natural-language parsing.",
+    "The next memory test should use authored dialogue and synthetic episodic fixtures with noisier wording and abstention cases."
+  ]
+}

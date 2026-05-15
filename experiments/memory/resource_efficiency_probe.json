@@ -1,0 +1,17 @@
+{
+  "name": "melm_vs_rag_resource_efficiency",
+  "description": "Local CPU query-time probe comparing the current pure-Python event-memory retriever with plain bag-of-words RAG over the same event list.",
+  "commands": [
+    "python scripts\\run_memory_resource_probe.py --out-json reports\\melm_vs_rag_resource_efficiency.json --out-md reports\\melm_vs_rag_resource_efficiency.md"
+  ],
+  "current_decision": "evidence_efficient_not_cpu_efficient_yet",
+  "result": {
+    "current_python_retriever": "full_scan",
+    "event_memory_resource_conclusion": "not currently way more CPU/RAM efficient than RAG",
+    "event_memory_validation_conclusion": "more evidence/context efficient on current validation tasks"
+  },
+  "caveats": [
+    "This is not an embedded benchmark.",
+    "A Pi-class resource win requires indexed event/state storage or a Rust/C sidecar."
+  ]
+}

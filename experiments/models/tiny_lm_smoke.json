@@ -1,0 +1,10 @@
+{
+  "name": "tiny_lm_smoke",
+  "description": "End-to-end corpus manifest -> tokenizer -> tiny causal LM training smoke test.",
+  "command": "python scripts\\train_tiny_lm_baseline.py MELM_whitepaper.md --tokenizer simple_bpe --steps 5 --sequence-length 48 --embedding-dim 32 --layers 1 --heads 4 --batch-size 4 --out-json reports\\tiny_lm_baseline.json",
+  "purpose": "Validate training orchestration before BabyLM-scale 125M-370M runs.",
+  "not_a_model_claim": true,
+  "expected_outputs": [
+    "reports\\tiny_lm_baseline.json"
+  ]
+}

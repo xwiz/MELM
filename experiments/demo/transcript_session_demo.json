@@ -1,0 +1,29 @@
+{
+  "name": "transcript_session_demo",
+  "description": "Transcript-derived reloadable persistent session evaluated for dialogue evidence, event-memory retrieval, and state resolution.",
+  "source_annotations": "benchmarks\\sample_transcript_annotations.jsonl",
+  "commands": [
+    "python scripts\\run_transcript_session_demo.py --reset --include-sample-distractors --include-sample-noisy-cases --out-json reports\\transcript_session_demo.json --out-md reports\\transcript_session_demo.md"
+  ],
+  "current_decision": "transcript_session_smoke_passes",
+  "result": {
+    "turns": 8,
+    "events": 11,
+    "distractor_events": 4,
+    "evidence_cases": 10,
+    "state_cases": 4,
+    "dialogue_accuracy": 1.0,
+    "positive_recall": 1.0,
+    "negative_abstention": 1.0,
+    "noisy_dialogue_accuracy": 1.0,
+    "noisy_positive_recall": 1.0,
+    "noisy_negative_abstention": 1.0,
+    "event_memory_recall_at_2": 1.0,
+    "rag_recall_at_2": 0.6667,
+    "state_accuracy": 1.0
+  },
+  "caveats": [
+    "This is still a hand-annotated sample transcript with hand-authored distractors.",
+    "Next validation should add multiple transcripts and delayed-session turns."
+  ]
+}

@@ -1,0 +1,15 @@
+{"category": "positive_direct", "expected_event_id": "dialogue1_e1", "query": "Where did Maya tuck the moon sticker?", "schema": "melm.evidence_case.v1", "story_id": "dialogue1"}
+{"category": "positive_temporal_after", "expected_event_id": "dialogue1_e2", "query": "What happened right after Maya tucked away the moon sticker?", "schema": "melm.evidence_case.v1", "story_id": "dialogue1"}
+{"category": "positive_witness", "expected_event_id": "dialogue1_e4", "query": "Who said where the purple lunchbox was?", "schema": "melm.evidence_case.v1", "story_id": "dialogue1"}
+{"category": "positive_causal_source", "expected_event_id": "dialogue1_e2", "query": "What earlier event explains why Sam knew about the purple lunchbox?", "schema": "melm.evidence_case.v1", "story_id": "dialogue1"}
+{"category": "positive_direct", "expected_event_id": "dialogue2_e1", "query": "Where did Nora first build the green block tower?", "schema": "melm.evidence_case.v1", "story_id": "dialogue2"}
+{"category": "positive_temporal_before", "expected_event_id": "dialogue2_e2", "query": "What happened right before Nora rebuilt the green blocks?", "schema": "melm.evidence_case.v1", "story_id": "dialogue2"}
+{"category": "positive_witness", "expected_event_id": "dialogue2_e4", "query": "Who reminded Nora where the first tower had been?", "schema": "melm.evidence_case.v1", "story_id": "dialogue2"}
+{"category": "positive_direct", "expected_event_id": "dialogue3_e1", "query": "Where did Owen put the tiny shell at first?", "schema": "melm.evidence_case.v1", "story_id": "dialogue3"}
+{"category": "positive_entity_conflict", "expected_event_id": "dialogue3_e3", "query": "What changed where the tiny shell was later?", "schema": "melm.evidence_case.v1", "story_id": "dialogue3"}
+{"category": "positive_entity_conflict_before_move", "expected_event_id": "dialogue3_e1", "query": "Where was the tiny shell before Iris moved it?", "schema": "melm.evidence_case.v1", "story_id": "dialogue3"}
+{"category": "negative_unknown_object", "expected_event_id": null, "query": "Where did Maya hide the silver train?", "schema": "melm.evidence_case.v1", "story_id": "dialogue1"}
+{"category": "negative_wrong_actor", "expected_event_id": null, "query": "Where was the moon sticker after Sam moved it?", "schema": "melm.evidence_case.v1", "story_id": "dialogue1"}
+{"category": "negative_underspecified", "expected_event_id": null, "query": "Where did Nora put the thing?", "schema": "melm.evidence_case.v1", "story_id": "dialogue2"}
+{"category": "negative_unknown_event", "expected_event_id": null, "query": "Who explained the missing telescope?", "schema": "melm.evidence_case.v1", "story_id": "dialogue2"}
+{"category": "negative_false_presupposition", "expected_event_id": null, "query": "Where was the tiny shell after Owen moved it to the shelf?", "schema": "melm.evidence_case.v1", "story_id": "dialogue3"}
