@@ -22,5 +22,6 @@ This directory holds project planning and validation documents for the MELM buil
 - `../reports/melm_vs_rag_resource_efficiency.md`: current resource-efficiency comparison against plain RAG.
 - `../reports/babylm_2026_stage_execution_readiness.md`: local GPU/disk preflight, same-shape checkpoint smoke, and resumable-run status.
 - `abstention_strategy.md`: current evidence-admission/abstention stance and open risk.
+- `support_refunds_external_blind_handoff.md`: preregistered handoff and freeze workflow for the external blind support/refunds batch.
 - `validation_report_template.md`: final report skeleton.
 - `../reports/phase1_report.md`: current generated Phase 1 benchmark snapshot.

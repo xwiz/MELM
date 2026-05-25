@@ -12,7 +12,7 @@ ROOT = Path(__file__).resolve().parents[1]
 if str(ROOT) not in sys.path:
     sys.path.insert(0, str(ROOT))
 
-from melm.benchmarks import load_authored_support_refund_dataset
+from melm.benchmarks import load_authored_support_refund_dataset, verify_support_refunds_freeze
 from melm.evaluation import bootstrap_mean_ci, bootstrap_paired_difference_ci
 from melm.guard import evaluate_guard_benchmark
 from melm.memory import SupportMemoryOS, evaluate_memory_os
@@ -25,7 +25,24 @@ def main() -> None:
     parser.add_argument("--bootstrap-samples", type=int, default=1000)
     parser.add_argument("--out-json", default="reports/melm_authored_support_refund_benchmark.json")
     parser.add_argument("--out-md", default="reports/melm_authored_support_refund_benchmark.md")
+    parser.add_argument(
+        "--freeze-manifest",
+        default=None,
+        help="Required for publication-grade external blind runs; verifies dataset SHA-256 before scoring.",
+    )
     args = parser.parse_args()
+
+    freeze_verified = False
+    freeze_manifest = None
+    if args.freeze_manifest:
+        freeze_errors = verify_support_refunds_freeze(args.dataset, args.freeze_manifest)
+        if freeze_errors:
+            print("Freeze manifest verification failed")
+            for error in freeze_errors:
+                print(f"- {error}")
+            raise SystemExit(1)
+        freeze_verified = True
+        freeze_manifest = json.loads(Path(args.freeze_manifest).read_text(encoding="utf-8"))
 
     dataset = load_authored_support_refund_dataset(args.dataset)
     fixture = dataset.fixture
@@ -137,6 +154,9 @@ def main() -> None:
             "memory_temporal_entity": _boolean_confusion(memory_report.predictions, "temporal_entity_correct"),
             "memory_os": _boolean_confusion(memory_report.predictions, "memory_os_correct"),
         },
+        "freeze_manifest_path": args.freeze_manifest,
+        "freeze_verified": freeze_verified,
+        "dataset_sha256": freeze_manifest.get("dataset_sha256") if freeze_manifest else None,
         "authored_batch_gate_passed": (
             not dataset.validation_errors
             and guard_report.gate_passed
@@ -144,14 +164,17 @@ def main() -> None:
         ),
         "publication_grade_ready": (
             externally_blind
+            and freeze_verified
             and not dataset.validation_errors
             and guard_report.gate_passed
             and memory_report.gate_passed
         ),
-        "recommendation": (
-            "freeze_external_blind_batch_and_rerun"
-            if externally_blind and guard_report.gate_passed and memory_report.gate_passed
-            else "use_this_as_seed_and_author_external_blind_batch"
+        "recommendation": _recommendation(
+            externally_blind=externally_blind,
+            freeze_verified=freeze_verified,
+            schema_ok=not dataset.validation_errors,
+            guard_ok=guard_report.gate_passed,
+            memory_ok=memory_report.gate_passed,
         ),
     }
     _write_outputs(payload, Path(args.out_json), Path(args.out_md))
@@ -160,6 +183,7 @@ def main() -> None:
     print(f"- schema_validation_passed={payload['schema_validation_passed']}")
     print(f"- authored_batch_gate_passed={payload['authored_batch_gate_passed']}")
     print(f"- publication_grade_ready={payload['publication_grade_ready']}")
+    print(f"- freeze_verified={payload['freeze_verified']}")
     print(f"- events/facts/turns={payload['events']}/{payload['facts']}/{payload['turns']}")
     print(f"- guard_cases={payload['guard_cases']} gate={guard_report.gate_passed}")
     print(f"- memory_cases={payload['memory_cases']} gate={memory_report.gate_passed}")
@@ -183,6 +207,25 @@ def _boolean_confusion(predictions, field_name: str) -> dict[str, int]:
     }
 
 
+def _recommendation(
+    *,
+    externally_blind: bool,
+    freeze_verified: bool,
+    schema_ok: bool,
+    guard_ok: bool,
+    memory_ok: bool,
+) -> str:
+    if not externally_blind:
+        return "use_this_as_seed_and_author_external_blind_batch"
+    if not freeze_verified:
+        return "freeze_external_blind_batch_and_rerun"
+    if not schema_ok:
+        return "repair_dataset_schema_before_scoring_claims"
+    if guard_ok and memory_ok:
+        return "report_external_blind_results"
+    return "report_external_blind_failure_before_revising"
+
+
 def _write_outputs(payload: dict, json_path: Path, md_path: Path) -> None:
     json_path.parent.mkdir(parents=True, exist_ok=True)
     md_path.parent.mkdir(parents=True, exist_ok=True)
@@ -201,6 +244,8 @@ def _markdown(payload: dict) -> str:
         f"Schema validation passed: `{payload['schema_validation_passed']}`",
         f"Authored batch gate passed: `{payload['authored_batch_gate_passed']}`",
         f"Publication-grade ready: `{payload['publication_grade_ready']}`",
+        f"Freeze verified: `{payload['freeze_verified']}`",
+        f"Dataset SHA-256: `{payload['dataset_sha256']}`",
         f"Recommendation: `{payload['recommendation']}`",
         "",
         f"- Turns/events/facts: `{payload['turns']}` / `{payload['events']}` / `{payload['facts']}`",

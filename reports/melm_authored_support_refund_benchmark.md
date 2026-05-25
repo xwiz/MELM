@@ -4,6 +4,8 @@ Dataset: `benchmarks\support_refunds_authored.jsonl`
 Schema validation passed: `True`
 Authored batch gate passed: `True`
 Publication-grade ready: `False`
+Freeze verified: `False`
+Dataset SHA-256: `None`
 Recommendation: `use_this_as_seed_and_author_external_blind_batch`
 
 - Turns/events/facts: `22` / `56` / `56`

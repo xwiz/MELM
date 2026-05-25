@@ -2665,6 +2665,9 @@
       "incorrect": 0
     }
   },
+  "freeze_manifest_path": null,
+  "freeze_verified": false,
+  "dataset_sha256": null,
   "authored_batch_gate_passed": true,
   "publication_grade_ready": false,
   "recommendation": "use_this_as_seed_and_author_external_blind_batch"

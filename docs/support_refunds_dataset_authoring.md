@@ -73,3 +73,13 @@ not implement MELM Guard or Memory OS. Preferred protocol:
 - freeze the dataset hash before running MELM, vector RAG, and temporal/entity
   RAG scores;
 - report both the internal seed batch and the external blind batch separately.
+
+The current preregistration lives at
+`benchmarks/support_refunds_external_blind_preregistration.json`. Use
+`docs/support_refunds_external_blind_handoff.md` as the handoff checklist. The
+freeze step is enforced by:
+
+```powershell
+python scripts\freeze_support_refund_dataset.py --dataset benchmarks\support_refunds_external_blind.jsonl
+python scripts\run_authored_support_refund_benchmark.py --dataset benchmarks\support_refunds_external_blind.jsonl --freeze-manifest reports\support_refunds_external_blind_freeze_manifest.json
+```
