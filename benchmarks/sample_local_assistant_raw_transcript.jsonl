@@ -1,0 +1,5 @@
+{"role":"user","session_id":"sample_1","content":"My name is Maya and my email is maya@example.com.","expected_answer":"static text must be dropped"}
+{"role":"assistant","session_id":"sample_1","content":"This assistant row is skipped by the importer.","expected_route":"local_answer"}
+{"role":"user","session_id":"sample_1","content":"who are you"}
+{"role":"user","session_id":"sample_2","content":"Call +234-555-0101 tomorrow if I say yes.","expected_route":"device_action"}
+{"role":"user","session_id":"sample_2","content":"what is the weather today?"}

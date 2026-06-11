@@ -2,6 +2,12 @@
 
 This directory will hold experiment configs and run notes.
 
+Active product alignment: experiments should feed `MELM Local Assistant OS
+v0.1` in `../docs/local_assistant_os_mvp_plan.md`. Tokenizer/model work should
+advance bounded local synthesis; memory/dialogue work should advance
+autobiographical memory, evidence budgets, membrane policy, homeostasis, and
+local/tool/action/cloud triage.
+
 Planned groups:
 
 - `babylm`: local BabyLM-style manifest and reproduction configs.
@@ -103,7 +109,7 @@ The transcript-derived persistent session smoke is configured in
 python scripts\run_transcript_session_demo.py --reset --include-sample-distractors --include-sample-noisy-cases
 ```
 
-The current resource-efficiency and morpheme-meaning MVP probes are configured
+The current resource-efficiency and morpheme-meaning validation probes are configured
 in `experiments/memory/resource_efficiency_probe.json` and
 `experiments/semantics/morpheme_meaning_mvp.json`:
 

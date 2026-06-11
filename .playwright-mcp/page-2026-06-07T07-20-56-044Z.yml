@@ -1,0 +1,17 @@
+- main [ref=e2]:
+  - generic [ref=e3]:
+    - heading "MELM Local Assistant OS" [level=1] [ref=e4]
+    - generic [ref=e5]: events 1 | inventory 8
+  - generic [ref=e6]:
+    - article [ref=e10]:
+      - generic [ref=e11]: who are you
+    - article [ref=e12]:
+      - generic [ref=e13]: "I am MELM Local Assistant OS. My purpose is to help the user locally first, safely, privately, and cheaply. I can use personal memory, autobiographical memory, cached weather, and story inventory on this device. My limits are: no broad open-domain generation without cloud or local inventory and no medical diagnosis."
+      - generic [ref=e14]:
+        - generic [ref=e15]: local_answer
+        - generic [ref=e16]: self_model_identity
+      - group [ref=e17]:
+        - generic "Basic NLP -> UOL -> ChatFrame" [ref=e18] [cursor=pointer]
+  - generic [ref=e7]:
+    - textbox "Ask locally" [active] [ref=e8]
+    - button "Send" [ref=e9] [cursor=pointer]

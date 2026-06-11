@@ -1,0 +1,7 @@
+- main [ref=e2]:
+  - generic [ref=e3]:
+    - heading "MELM Local Assistant OS" [level=1] [ref=e4]
+    - generic [ref=e5]: events 0 | inventory 8
+  - generic [ref=e7]:
+    - textbox "Ask locally" [active] [ref=e8]
+    - button "Send" [ref=e9] [cursor=pointer]

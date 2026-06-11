@@ -1,0 +1,30 @@
+{
+  "total": 3,
+  "count": 3,
+  "items": [
+    {
+      "identifier": "westafricanfolkstories00test",
+      "title": "West African Folk Stories for Children",
+      "creator": "Example Collector",
+      "subject": ["Folklore -- West Africa", "Children's stories", "Fables"],
+      "language": "eng",
+      "collection": ["gutenberg", "americana"]
+    },
+    {
+      "identifier": "rainmapbedtimestory00test",
+      "title": "The Rain Map Bedtime Story",
+      "creator": "Example Archivist",
+      "subject": ["Bedtime stories", "Adventure stories", "Listening"],
+      "language": "eng",
+      "collection": ["gutenberg"]
+    },
+    {
+      "identifier": "mechanicaltables00test",
+      "title": "Mechanical Tables",
+      "creator": "Example Engineer",
+      "subject": ["Engineering", "Tables"],
+      "language": "eng",
+      "collection": ["gutenberg"]
+    }
+  ]
+}

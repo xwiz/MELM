@@ -1,0 +1,48 @@
+{
+  "schema_id": "melm.router_lexicon_families.v1",
+  "families": {
+    "media": {
+      "required_terms": [
+        "audio",
+        "lofi",
+        "music",
+        "piano",
+        "radio",
+        "song",
+        "sound",
+        "sounds",
+        "track"
+      ],
+      "allowed_classes": [
+        "media_content",
+        "media_descriptor",
+        "physical_object.instrument",
+        "physical_object.media_source"
+      ]
+    },
+    "story": {
+      "required_terms": [
+        "fable",
+        "fables",
+        "stories",
+        "story",
+        "tale",
+        "tales"
+      ],
+      "allowed_classes": [
+        "narrative_content"
+      ]
+    },
+    "weather": {
+      "required_terms": [
+        "forecast",
+        "rain",
+        "temperature",
+        "weather"
+      ],
+      "allowed_classes": [
+        "weather_phenomenon"
+      ]
+    }
+  }
+}

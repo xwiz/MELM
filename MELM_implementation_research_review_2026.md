@@ -2,7 +2,31 @@
 
 Date: 2026-05-10  
 Updated: 2026-05-15  
-Project reviewed: `MELM_whitepaper.md`, `MELM_whitepaper.docx`, `MELM_collaborators.csv`, and the current validation-first implementation tree.
+Project reviewed: `MELM_whitepaper.md`, the archived legacy Word draft at
+`docs/archive/legacy_MELM_whitepaper_pre_local_assistant_os.docx`, and the
+current validation-first implementation tree.
+
+**Status:** historical de-risking review. This is useful background, but
+`docs/local_assistant_os_mvp_plan.md` is the authoritative product plan.
+If this review's model-first recommendations conflict with the Local Assistant
+OS MVP plan, the OS plan wins unless new measured evidence changes the plan.
+
+## Current Product MVP Alignment
+
+This research review remains useful as a de-risking memo, but the active
+product-shaped MVP direction is now `MELM Local Assistant OS v0.1` in
+`docs/local_assistant_os_mvp_plan.md`.
+
+Read the staged research architecture below as support for the OS kernel:
+
+```text
+baseline/tokenizer/model probes -> bounded local synthesis
+event/state memory probes       -> autobiographical memory + evidence runtime
+guard/runtime probes            -> membrane policy + action gates
+lifecycle/dialogue probes       -> homeostatic state + opportunity planning
+```
+
+It should not be read as a separate plan to build a model-first product.
 
 ## Executive Verdict
 
@@ -10,7 +34,7 @@ The MELM whitepaper has a real thesis worth pursuing: combine better lexical pri
 
 The current plan is too confident in four places:
 
-1. A fully custom morpheme-in/morpheme-out model is likely too much for a six-month MVP.
+1. A fully custom morpheme-in/morpheme-out model is likely too much for a six-month validation release.
 2. EM-LLM is not a drop-in trained event processor for a Mamba backbone; it is mainly a no-finetune wrapper/retrieval method around existing LLMs.
 3. The compute math uses idealized FLOPs and understates data, evaluation, integration, failed runs, and tokenizer/backbone mismatch costs.
 4. The evidence for morphology-aware tokenization is strongest in low-resource and morphologically rich languages; English-only gains are plausible but not guaranteed.
@@ -30,7 +54,8 @@ This repo is no longer documentation-only. It now contains a validation-first ME
 - `docs/`: implementation notes, reproduction instructions, tokenizer strategy, roadmap, and SLM appliance validation notes.
 - `pyproject.toml`: package and test configuration.
 - `MELM_whitepaper.md`: current whitepaper draft.
-- `MELM_collaborators.csv`: outreach/collaborator target list.
+The earlier collaborator lead list is not present in the current repo snapshot;
+if it is restored later, treat it as a lead list, not verified project state.
 
 The review should therefore be read as a research-feasibility and implementation-direction review, not as a claim that no code exists. As of the May 2026 update, the local test suite covers the scaffold and has passed on the current tree.
 
@@ -82,7 +107,7 @@ Recommended MVP simplification:
 
 ### 5. Mamba-3 is promising, but checkpoint availability is a dependency
 
-Mamba-3 exists as a 2026 paper, but the MVP should not depend on Mamba-3 checkpoints being available in the exact 370M-800M form needed. The older `state-spaces/mamba-790m-hf` checkpoint exists, and hybrid alternatives such as Hymba and Nemotron 3 provide design evidence, but Nemotron 3 Super is far too large to serve as a sub-1B warm start.
+Mamba-3 exists as a 2026 paper, but the validation/model track should not depend on Mamba-3 checkpoints being available in the exact 370M-800M form needed. The older `state-spaces/mamba-790m-hf` checkpoint exists, and hybrid alternatives such as Hymba and Nemotron 3 provide design evidence, but Nemotron 3 Super is far too large to serve as a sub-1B warm start.
 
 Recommended wording:
 
@@ -102,7 +127,7 @@ Use budget bands:
 
 ### 7. "Five-year-old conversational competence" needs a narrower operational definition
 
-The current benchmark target bundles vocabulary, conversation, theory of mind, counterfactuals, narrative sequencing, and episodic memory. That is a lot. The MVP should define a testable subset:
+The current benchmark target bundles vocabulary, conversation, theory of mind, counterfactuals, narrative sequencing, and episodic memory. That is a lot. The validation target should define a testable subset:
 
 - Age-appropriate vocabulary and grammar.
 - Multi-turn consistency over controlled stories.
@@ -113,7 +138,10 @@ The current benchmark target bundles vocabulary, conversation, theory of mind, c
 
 Do not claim human-like five-year-old competence from isolated language tests.
 
-## Best Practical Architecture For MVP
+## Best Practical Research Architecture For Validation
+
+This section is a research validation ladder, not a product plan. Promote only
+the pieces that strengthen the Local Assistant OS kernel.
 
 ### MELM-0: Baseline Lab
 
@@ -281,7 +309,7 @@ Month 5:
 Month 6:
 - Release demo, benchmark report, data pipeline, and model/checkpoint if results are clean.
 
-### 9-12 month version: publishable MELM-MVP
+### 9-12 month version: publishable integrated MELM candidate
 
 Add:
 
@@ -343,9 +371,9 @@ Add an explicit "competing tokenizer-free approaches" section covering BLT, Spac
 
 Add a "checkpoint dependency" note for Mamba-3.
 
-## Collaborator CSV Notes
+## Outreach Notes
 
-The collaborator list is directionally useful. The best first outreach targets are:
+If a collaborator lead list is restored, the best first outreach targets are:
 
 - EM-LLM authors for event segmentation and retrieval sanity checks.
 - BabyLM organizers for evaluation discipline.

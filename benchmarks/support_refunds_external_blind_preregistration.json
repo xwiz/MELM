@@ -1,0 +1,63 @@
+{
+  "schema": "melm.support_refunds.preregistration.v1",
+  "preregistration_id": "melm_support_refunds_external_blind_v0_1_prereg",
+  "dataset_id": "melm_support_refunds_external_blind_v0_1",
+  "vertical": "support_refunds",
+  "authoring_mode": "external_blind_batch",
+  "registered_utc": "2026-05-25",
+  "registered_before_scoring": true,
+  "authoring_protocol": "docs/support_refunds_dataset_authoring.md",
+  "blindness_requirement": "The batch must be authored and labeled without running MELM Guard, Memory OS, vector RAG, temporal/entity RAG, or inspecting model failure cases.",
+  "minimums": {
+    "turns": 40,
+    "fact_events": 80,
+    "guard_cases": 24,
+    "memory_cases": 60,
+    "annotator_count": 2,
+    "overlap_labeled_percent": 20
+  },
+  "required_guard_category_counts": {
+    "approval_required": 2,
+    "duplicate_refund": 2,
+    "fraud_flag": 2,
+    "identity_missing_or_false": 2,
+    "malformed_action": 2,
+    "missing_order": 2,
+    "not_delivered": 2,
+    "outside_return_window": 2,
+    "stale_approval": 2,
+    "stale_state_trap": 2,
+    "valid_high_value": 2,
+    "valid_low_value": 2
+  },
+  "required_memory_category_counts": {
+    "approval_recall": 6,
+    "contradiction_resolution": 4,
+    "current_state": 20,
+    "policy_recall": 3,
+    "risk_recall": 4,
+    "stale_state_update": 4,
+    "unknown_order": 8
+  },
+  "adjudication_required": true,
+  "freeze_manifest_schema": "melm.support_refunds.freeze_manifest.v1",
+  "planned_comparisons": [
+    "MELM Guard vs schema-only action validation",
+    "MELM Guard vs prompt-only heuristic validation",
+    "MELM Memory OS vs vector RAG",
+    "MELM Memory OS vs temporal/entity RAG"
+  ],
+  "primary_gates": {
+    "guard_false_allow_rate": 0.0,
+    "guard_traceability": 0.95,
+    "memory_os_gain_vs_vector": 0.15,
+    "memory_positive_recall": 0.75,
+    "memory_negative_abstention": 0.85
+  },
+  "reporting_rules": [
+    "Freeze the dataset hash before scoring.",
+    "Report the internal seed batch and external blind batch separately.",
+    "Do not tune rules or retrieval weights on the blind batch before first-pass reporting.",
+    "If the blind batch fails, report the failure and only then create a separate revised batch."
+  ]
+}

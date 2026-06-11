@@ -1,0 +1,232 @@
+{
+  "schema": "melm.local_assistant_open_traces.v1",
+  "scenarios": [
+    {
+      "name": "child_local_first_capability_growth",
+      "description": "A child asks identity, weather, stories, safety, media, contact, and self-status questions while the assistant grows local capability from empty caches.",
+      "profile": {
+        "user_name": "Maya",
+        "age": 8,
+        "location": "Lagos",
+        "culture": "Yoruba",
+        "facts": {},
+        "preferences": {
+          "breakfast": "eggs and fruit",
+          "story_theme": "dinosaur folktale"
+        },
+        "health_goals": ["sleep earlier", "walk after school"],
+        "contacts": {},
+        "weekly_weather": {},
+        "story_models": {},
+        "media_library": [],
+        "food_inventory": ["rice", "beans", "eggs", "plantain", "fruit"]
+      },
+      "expectations": {
+        "min_local_resolution_rate": 0.55,
+        "required_intents": ["assistant_identity", "assistant_status", "weather", "story", "common_sense_safety", "media_playback", "social_contact"],
+        "required_routes": ["local_answer", "cached_tool", "device_action", "external_fetch", "cloud_handoff", "clarify"],
+        "required_reason_transitions": [
+          ["weather_cache_miss", "weather_cache_hit"],
+          ["missing_story_model", "local_story_inventory"],
+          ["empty_media_library", "local_media_action"],
+          ["missing_contact", "trusted_contact_action"]
+        ]
+      },
+      "turns": [
+        {
+          "day": 0,
+          "label": "identity",
+          "utterance": "Who are you?"
+        },
+        {
+          "day": 0,
+          "label": "identity_challenge",
+          "utterance": "Wow you don't know who you are?"
+        },
+        {
+          "day": 1,
+          "label": "weather_cold_miss",
+          "utterance": "What is the weather today?",
+          "schedule_refreshes": true,
+          "execute_jobs": true,
+          "min_story_models": 0
+        },
+        {
+          "day": 1,
+          "label": "weather_after_cache",
+          "utterance": "What is the weather today?"
+        },
+        {
+          "day": 1,
+          "label": "school_safety",
+          "utterance": "Should I go to school dressed naked?"
+        },
+        {
+          "day": 1,
+          "label": "story_gap_1",
+          "utterance": "Tell me a story."
+        },
+        {
+          "day": 1,
+          "label": "story_gap_2",
+          "utterance": "Tell me a story."
+        },
+        {
+          "day": 1,
+          "label": "story_gap_3",
+          "utterance": "Tell me a story.",
+          "schedule_refreshes": true,
+          "execute_jobs": true,
+          "min_story_models": 3
+        },
+        {
+          "day": 2,
+          "label": "story_after_inventory",
+          "utterance": "Tell me a story."
+        },
+        {
+          "day": 2,
+          "label": "media_gap",
+          "utterance": "Play a song for me.",
+          "execute_opportunities": ["build_media_index"]
+        },
+        {
+          "day": 2,
+          "label": "media_action",
+          "utterance": "Play calm piano."
+        },
+        {
+          "day": 2,
+          "label": "media_confirm",
+          "utterance": "Yes, play calm piano."
+        },
+        {
+          "day": 3,
+          "label": "contact_gap",
+          "utterance": "I need to talk to someone."
+        },
+        {
+          "day": 3,
+          "label": "contact_setup",
+          "utterance": "Ada is my trusted contact at +234-000-ADA."
+        },
+        {
+          "day": 3,
+          "label": "contact_action",
+          "utterance": "I need to talk to someone."
+        },
+        {
+          "day": 3,
+          "label": "contact_confirm",
+          "utterance": "Yes, call Ada."
+        },
+        {
+          "day": 4,
+          "label": "self_status",
+          "utterance": "What have you done so far?"
+        },
+        {
+          "day": 4,
+          "label": "debug_next_steps",
+          "utterance": "What do you need next?"
+        }
+      ]
+    },
+    {
+      "name": "adult_household_memory_and_offline_boundaries",
+      "description": "An adult uses the assistant across local household memory, routine setup, private-cloud blocking, autobiographical recall, and offline open-domain boundaries.",
+      "profile": {
+        "user_name": "Jordan",
+        "age": 34,
+        "location": "Austin",
+        "culture": "US",
+        "facts": {
+          "job": "nurse"
+        },
+        "preferences": {
+          "music": "focus piano",
+          "breakfast": "oatmeal"
+        },
+        "health_goals": ["reduce caffeine", "walk at lunch"],
+        "contacts": {
+          "sam": "+1-000-SAM"
+        },
+        "weekly_weather": {
+          "today": "hot and dry"
+        },
+        "story_models": {
+          "local_reflection": "{name} finished one careful task in {location} and came home with a better plan."
+        },
+        "media_library": ["focus piano"],
+        "food_inventory": ["oatmeal", "eggs", "salad", "rice"]
+      },
+      "expectations": {
+        "min_local_resolution_rate": 0.63,
+        "required_intents": ["personal_memory", "autobiographical_memory", "meal_suggestion", "health_advice"],
+        "required_routes": ["local_answer", "reject", "clarify"],
+        "required_reason_transitions": [
+          ["personal_memory_empty", "personal_memory_recall"]
+        ]
+      },
+      "turns": [
+        {
+          "day": 0,
+          "label": "routine_gap",
+          "utterance": "What is my morning routine?"
+        },
+        {
+          "day": 0,
+          "label": "routine_setup",
+          "utterance": "My morning routine is coffee, check calendar, then walk."
+        },
+        {
+          "day": 0,
+          "label": "routine_hit",
+          "utterance": "What is my morning routine?"
+        },
+        {
+          "day": 1,
+          "label": "household_gap",
+          "utterance": "What do you know about this household?"
+        },
+        {
+          "day": 1,
+          "label": "household_setup",
+          "utterance": "Our household includes Jordan and Sam, and memory stays local."
+        },
+        {
+          "day": 1,
+          "label": "household_hit",
+          "utterance": "What do you know about this household?"
+        },
+        {
+          "day": 2,
+          "label": "private_cloud_block",
+          "utterance": "Send our previous conversation to the cloud."
+        },
+        {
+          "day": 2,
+          "label": "meal",
+          "utterance": "What do you think I should eat today?"
+        },
+        {
+          "day": 2,
+          "label": "health",
+          "utterance": "What do you think I should do to improve my health?"
+        },
+        {
+          "day": 3,
+          "label": "session_recall",
+          "utterance": "Summarize our recent sessions.",
+          "new_session": true
+        },
+        {
+          "day": 3,
+          "label": "offline_latest_news",
+          "utterance": "Tell me the latest news about Mars.",
+          "network_available": false
+        }
+      ]
+    }
+  ]
+}

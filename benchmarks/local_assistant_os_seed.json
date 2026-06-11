@@ -1,0 +1,151 @@
+{
+  "schema": "melm.local_assistant_os.seed.v1",
+  "description": "Tiny local assistant OS v0.1 seed dataset for Raspberry Pi-class demos.",
+  "user_facts": [
+    {
+      "key": "profile.user_name",
+      "value": "Maya",
+      "source": "seed_profile",
+      "confidence": 1.0,
+      "consent": true,
+      "local_only": true,
+      "cloud_eligible": false,
+      "scope": "private_local"
+    },
+    {
+      "key": "profile.age",
+      "value": "7",
+      "source": "seed_profile",
+      "confidence": 1.0,
+      "consent": true,
+      "local_only": true,
+      "cloud_eligible": false,
+      "scope": "private_local"
+    },
+    {
+      "key": "profile.location",
+      "value": "Lagos",
+      "source": "seed_profile",
+      "confidence": 0.9,
+      "consent": true,
+      "local_only": true,
+      "cloud_eligible": false,
+      "scope": "private_local"
+    },
+    {
+      "key": "profile.culture",
+      "value": "Yoruba",
+      "source": "seed_profile",
+      "confidence": 0.8,
+      "consent": true,
+      "local_only": true,
+      "cloud_eligible": false,
+      "scope": "private_local"
+    },
+    {
+      "key": "facts.favorite_color",
+      "value": "green",
+      "source": "seed_profile",
+      "confidence": 0.85,
+      "consent": true,
+      "local_only": true,
+      "cloud_eligible": false,
+      "scope": "private_local"
+    },
+    {
+      "key": "preferences.music",
+      "value": "calm piano",
+      "source": "seed_profile",
+      "confidence": 0.8,
+      "consent": true,
+      "local_only": true,
+      "cloud_eligible": false,
+      "scope": "private_local"
+    }
+  ],
+  "inventories": [
+    {
+      "kind": "story_model",
+      "item_id": "public_domain_folktale_lagos_age7",
+      "payload": {
+        "title": "Moon Drum Walk",
+        "narrative_frame": "{name} found a talking drum in {location}. The drum taught {name} to share, listen, and come home before the rain."
+      },
+      "source": "local_seed_public_domain_story_frame",
+      "license": "public_domain_story_frame",
+      "tags": ["story", "age:7", "Yoruba", "Lagos"]
+    },
+    {
+      "kind": "weather",
+      "item_id": "today",
+      "payload": {
+        "forecast": "warm with afternoon rain",
+        "location": "Lagos"
+      },
+      "source": "seed_weather_cache",
+      "license": "local_cache",
+      "tags": ["weather", "Lagos"]
+    },
+    {
+      "kind": "weather",
+      "item_id": "tomorrow",
+      "payload": {
+        "forecast": "cloudy and humid",
+        "location": "Lagos"
+      },
+      "source": "seed_weather_cache",
+      "license": "local_cache",
+      "tags": ["weather", "Lagos"]
+    },
+    {
+      "kind": "contact",
+      "item_id": "mom",
+      "payload": {
+        "number": "+234-000-MOM"
+      },
+      "source": "seed_profile",
+      "license": "private_local",
+      "tags": ["contact", "local_only"]
+    },
+    {
+      "kind": "media",
+      "item_id": "calm piano",
+      "payload": {
+        "title": "calm piano"
+      },
+      "source": "seed_media_index",
+      "license": "local_device",
+      "tags": ["media"]
+    },
+    {
+      "kind": "food",
+      "item_id": "rice",
+      "payload": {
+        "name": "rice"
+      },
+      "source": "seed_food_inventory",
+      "license": "local_seed",
+      "tags": ["food"]
+    },
+    {
+      "kind": "food",
+      "item_id": "beans",
+      "payload": {
+        "name": "beans"
+      },
+      "source": "seed_food_inventory",
+      "license": "local_seed",
+      "tags": ["food"]
+    },
+    {
+      "kind": "food",
+      "item_id": "plantain",
+      "payload": {
+        "name": "plantain"
+      },
+      "source": "seed_food_inventory",
+      "license": "local_seed",
+      "tags": ["food"]
+    }
+  ]
+}

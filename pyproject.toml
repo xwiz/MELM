@@ -15,5 +15,8 @@ dev = []
 [tool.setuptools.packages.find]
 include = ["melm*"]
 
+[tool.setuptools.package-data]
+"melm.contracts" = ["*.json"]
+
 [tool.pytest.ini_options]
 testpaths = ["tests"]

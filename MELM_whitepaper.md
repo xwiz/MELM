@@ -3,6 +3,38 @@
 
 **May 2026, revised validation-first edition**
 
+**Status:** supporting research thesis. The product MVP is
+`MELM Local Assistant OS v0.1`; use
+`docs/local_assistant_os_mvp_plan.md` as the authoritative build plan.
+If any model-first, tokenizer-first, or broad chatbot framing in this paper
+conflicts with the OS plan, treat that framing as superseded.
+
+---
+
+## Current Product MVP Alignment
+
+The active product-shaped MVP direction is now `MELM Local Assistant OS v0.1`,
+documented in `docs/local_assistant_os_mvp_plan.md`. This whitepaper remains the
+research thesis and validation ladder. It should not be read as a competing
+product plan.
+
+The product MVP packages the validated MELM ideas as a local assistant OS
+kernel:
+
+```text
+membrane policy
+  + homeostatic state
+  + autobiographical memory
+  + user/self model
+  + opportunity planner
+  + local inventories
+  + budgeted evidence runtime
+  + local/tool/action/cloud triage
+```
+
+Tokenizer, SSM/attention, memory, and dialogue work should advance only when it
+strengthens that local OS substrate or produces falsifying evidence.
+
 ---
 
 ## Abstract
@@ -41,7 +73,7 @@ The project is risky because the evidence is not evenly strong:
 - rule-aware working memory can become brittle if rules are hand-authored, overfit to demos, or extracted without provenance and validation;
 - agent-memory markets are already crowded, so MELM's advantage has to appear specifically in state updates, contradiction handling, and evidence-gated abstention;
 - Mamba-3 is a strong research candidate, but checkpoint and kernel availability are implementation dependencies;
-- a reversible morpheme-in/morpheme-out decoder is a larger engineering task than a first MVP needs;
+- a reversible morpheme-in/morpheme-out decoder is a larger engineering task than a first validation pass needs;
 - a real training program costs more than lower-bound FLOPs imply because evaluation, failed runs, dataloading, optimizer state, integration, and ablations dominate the calendar.
 
 This whitepaper therefore frames MELM as a phased validation ladder:
@@ -52,7 +84,7 @@ This whitepaper therefore frames MELM as a phased validation ladder:
 4. **MELM Language R&D:** a compression hypothesis around morphology, tokenization, and small-backbone sample efficiency.
 5. **MELM Integrated Model:** a later integration hypothesis in which a 125M-370M model absorbs the validated runtime signals; 800M scaling is treated as contingent, not assumed.
 
-The fastest credible outcome is a 90-day external benchmark demo. The six-month outcome is a usable validation release. The publishable integrated MELM-MVP is a 9-12 month target.
+The fastest credible outcome is a 90-day external benchmark demo. The six-month outcome is a usable validation release. A publishable integrated MELM model candidate is a 9-12 month target.
 
 ---
 
@@ -593,7 +625,7 @@ The integrated-model hypothesis becomes worth testing when the runtime milestone
 
 The fastest validation path is not to train a new model first. It is to prove that explicit rules, state, memory, and abstention make existing small models more reliable and cheaper on concrete workflows. Training becomes justified only after that runtime advantage is measurable.
 
-### 8.2 9-12 month publishable MVP
+### 8.2 9-12 month publishable integrated model candidate
 
 Add:
 

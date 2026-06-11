@@ -1,0 +1,71 @@
+{
+  "schema_id": "melm.contract_registry.v1",
+  "contracts": [
+    {
+      "schema_id": "melm.sense_candidate.v1",
+      "path": "sense_candidate.v1.json",
+      "owner": "meaning-core",
+      "producers": ["lexicon source adapters", "definition acquisition"],
+      "consumers": ["lexicon ingestion"],
+      "validator": "melm.contracts.validate_sense_candidate",
+      "compatible_predecessors": [],
+      "failure_behavior": "reject candidate before any lexicon or atlas write",
+      "safety_critical": true
+    },
+    {
+      "schema_id": "melm.semantic_classes.v1",
+      "path": "semantic_classes.v1.json",
+      "owner": "meaning-core",
+      "producers": ["release tooling"],
+      "consumers": ["UOL", "lexicon", "frame registry"],
+      "validator": "melm.contracts.validate_semantic_class_registry",
+      "compatible_predecessors": [],
+      "failure_behavior": "quarantine unknown class IDs and disable affected mapping",
+      "safety_critical": true
+    },
+    {
+      "schema_id": "melm.wn_supersense_map.v1",
+      "path": "wn_supersense_map.v1.json",
+      "owner": "meaning-core",
+      "producers": ["release tooling"],
+      "consumers": ["WordNet adapter"],
+      "validator": "melm.contracts.validate_class_maps",
+      "compatible_predecessors": [],
+      "failure_behavior": "reject seed build",
+      "safety_critical": false
+    },
+    {
+      "schema_id": "melm.verbnet_map.v1",
+      "path": "verbnet_map.v1.json",
+      "owner": "meaning-core",
+      "producers": ["release tooling"],
+      "consumers": ["VerbNet adapter"],
+      "validator": "melm.contracts.validate_class_maps",
+      "compatible_predecessors": [],
+      "failure_behavior": "reject seed build",
+      "safety_critical": false
+    },
+    {
+      "schema_id": "melm.reserved_lexemes.v1",
+      "path": "reserved_lexemes.v1.json",
+      "owner": "kernel/policy",
+      "producers": ["release tooling"],
+      "consumers": ["lexicon ingestion"],
+      "validator": "melm.contracts.validate_reserved_lexemes",
+      "compatible_predecessors": [],
+      "failure_behavior": "reject non-seed acquisition of reserved vocabulary",
+      "safety_critical": true
+    },
+    {
+      "schema_id": "melm.router_lexicon_families.v1",
+      "path": "router_lexicon_families.v1.json",
+      "owner": "kernel/router",
+      "producers": ["release tooling"],
+      "consumers": ["lexicon seed builder", "assistant router"],
+      "validator": "melm.contracts.validate_router_lexicon_families",
+      "compatible_predecessors": [],
+      "failure_behavior": "family remains rule-owned or disabled",
+      "safety_critical": true
+    }
+  ]
+}

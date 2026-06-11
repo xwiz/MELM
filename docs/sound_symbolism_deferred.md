@@ -1,11 +1,12 @@
 # Sound-Symbolism Is Deferred
 
 Sound-symbolism and phonosemantic cues may still be useful for MELM, but they
-are not mature enough to carry the active MVP gate.
+are not mature enough to carry any active product or validation gate.
 
 Current decision:
 
-- do not use encoded sound-symbolism in the active morpheme meaning MVP;
+- do not use encoded sound-symbolism in the active morpheme-meaning validation
+  probe;
 - keep the active corpus focused on higher-confidence roots, productive
   morphemes, compounds, usage definitions, and clarification updates;
 - revisit sound-symbolism only as a separate ablation with explicit false

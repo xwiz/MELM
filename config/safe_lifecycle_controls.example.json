@@ -1,0 +1,28 @@
+{
+  "defaults": {
+    "run_reflection": true
+  },
+  "turns": {
+    "weather_miss": {
+      "schedule_refreshes": true,
+      "execute_jobs": true
+    },
+    "story_refresh": {
+      "schedule_refreshes": true,
+      "execute_jobs": true,
+      "min_story_models": 3
+    },
+    "long_horizon_digest": {
+      "run_reflection": true
+    }
+  },
+  "expectations": {
+    "min_turns": 4,
+    "min_route_kinds": 2,
+    "min_local_resolution_rate": 0.2,
+    "required_priority_signals": false,
+    "required_memory_digest_quality": false,
+    "required_baseline_win": false,
+    "require_unknown_tokens": false
+  }
+}

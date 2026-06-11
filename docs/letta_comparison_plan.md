@@ -15,17 +15,27 @@ What MELM has now:
 - public LoCoMo retrieval and bounded-context benchmark;
 - local appliance JSONL memory store, retrieval, context packing, and extractive
   answers;
+- Local Assistant OS SQLite ledger for events, user facts, self state,
+  opportunities, inventories, jobs, membrane decisions, homeostatic snapshots,
+  and pending actions;
 - Letta Evals-style export pack for LoCoMo.
 
 What MELM does not yet have:
 
 - official Letta agent runs;
 - agent-managed editable memory blocks;
-- database-backed runs/messages/conversations;
+- Letta-style database-backed runs/messages/conversations beyond the current
+  assistant OS ledger;
 - semantic embeddings in the appliance runtime;
-- real local SLM answer generation, which is now the main appliance bottleneck;
+- real local SLM answer generation for open-ended synthesis;
 - tool-use loops and self-directed memory update trajectories;
 - Letta Evals state-inspection graders for memory updates.
+
+For the Local Assistant OS MVP, the central bottleneck is broader than answer
+generation: membrane policy, homeostatic state, autobiographical memory,
+opportunity planning, typed action gates, and bounded local synthesis must work
+together. The current authoritative product plan is
+`docs/local_assistant_os_mvp_plan.md`.
 
 ## Current Evidence
 
@@ -112,9 +122,11 @@ The most plausible MELM wedge is not "more general than Letta." It is:
 > action gating with stronger traceability and lower operational complexity.
 
 The next implementation priority is therefore not another retrieval-only score.
-It is a bounded local answer layer: either a small local model behind the
-existing `MelmAppliance.answer` interface or a structured synthesis module that
-turns cited event/state records into concise, graded answers. Without that,
+For the memory-appliance comparison, MELM still needs a bounded local answer
+layer: either a small local model behind the existing `MelmAppliance.answer`
+interface or a structured synthesis module that turns cited event/state records
+into concise, graded answers. For the assistant-OS product track, that answer
+layer must sit behind explicit membrane and action gates. Without those pieces,
 Letta remains ahead as a complete stateful-agent product even if MELM has
 interesting memory/retrieval mechanics.
 

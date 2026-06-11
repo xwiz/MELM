@@ -30,6 +30,28 @@ Current runnable fixture:
 - `melm.benchmarks.child_language_minimal_pairs_fixture()` provides a tiny grammatical minimal-pair ranking smoke test for saved LM checkpoints.
 - `melm.benchmarks.load_blimp_fast_cases()` adapts local BabyLM 2026 fast-BLiMP JSONL files into the same minimal-pair interface.
 - `benchmarks/morpheme_meaning_mvp.jsonl` provides the first constructed root/morpheme/meaning validation corpus for the full MELM whitepaper idea. Sound-symbolism is deferred from the active gate until it has stronger evidence.
+- `benchmarks/local_media_manifest.json` provides the tiny local media manifest
+  fixture used by `import-media` and the `build_media_index` opportunity path;
+  replace it with a device directory scan for real local files. `pi-smoke`
+  still verifies the scanned-directory path by creating a tiny local media file
+  in its smoke workspace before preparing the typed media action.
+- `benchmarks/local_assistant_transcript_replay.jsonl` provides the authored
+  25-user-turn transcript replay fixture for Local Assistant OS. It intentionally
+  avoids per-turn expected answer/route text and drives the real kernel/store
+  path with Basic NLP -> UOL -> ChatFrame debug mapping, complexity scoring,
+  route diversity, memory-digest quality checks, and a same-turn baseline
+  comparison against static memory-router, thin-tools, cloud-first, and
+  vocabulary-only alternatives.
+- `import-transcript-replay` converts raw local chat JSONL into that replay
+  shape by keeping user rows, redacting obvious private tokens plus optional
+  manual replacements, and stripping any static expected answer/route fields.
+  Imported replay files are calibration material; they do not replace the
+  authored baseline-win gate unless their metadata explicitly requires it.
+- `benchmarks/sample_local_assistant_raw_transcript.jsonl` is a tiny fake raw
+  chat import fixture used by `calibrate-transcript-replay` and the portable
+  bundle self-check. It deliberately includes assistant rows, static expectation
+  fields, and private-looking tokens so the importer has something to strip and
+  redact.
 
 The fixture is intentionally small. Its job is to validate retrieval mechanics before larger generated benchmarks are introduced. The JSONL format for dialogue fixtures is documented in `dialogue_fixture_schema.md`.
 

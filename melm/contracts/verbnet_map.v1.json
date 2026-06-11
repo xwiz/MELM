@@ -1,0 +1,17 @@
+{
+  "schema_id": "melm.verbnet_map.v1",
+  "mappings": {
+    "communication-37.5": "verb.communicate",
+    "contact-17.1": "verb.contact",
+    "consume-39.4": "verb.consume",
+    "create-26.4": "verb.create",
+    "get-13.5.1": "verb.possess",
+    "motion-51.3.2": "verb.move",
+    "play-17.2": "verb.perform_media",
+    "say-37.7": "verb.communicate",
+    "see-30.1": "verb.perceive",
+    "social_interaction-36.1": "verb.social",
+    "sound_emission-43.2": "verb.perform_media",
+    "weather-57": "verb.weather"
+  }
+}

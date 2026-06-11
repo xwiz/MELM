@@ -1,0 +1,31 @@
+{
+  "schema": "melm.local_media_manifest.v1",
+  "description": "Tiny local media metadata manifest for Assistant OS v0.1 demos; users can replace this with a device media folder scan.",
+  "items": [
+    {
+      "title": "Calm Piano",
+      "path": "media/calm_piano.mp3",
+      "kind": "audio",
+      "tags": ["calm", "piano", "focus"],
+      "source": "local_media_manifest",
+      "license": "local_device",
+      "preferred": true
+    },
+    {
+      "title": "Rain Sounds",
+      "path": "media/rain_sounds.mp3",
+      "kind": "audio",
+      "tags": ["rain", "sleep", "calm"],
+      "source": "local_media_manifest",
+      "license": "local_device"
+    },
+    {
+      "title": "Focus Lofi",
+      "path": "media/focus_lofi.mp3",
+      "kind": "audio",
+      "tags": ["focus", "lofi"],
+      "source": "local_media_manifest",
+      "license": "local_device"
+    }
+  ]
+}

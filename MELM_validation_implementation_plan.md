@@ -5,9 +5,32 @@ Target: six-month validation demo
 Primary repo: `C:\Users\Son\cowork\MELM`  
 Parts donor: `C:\dev\nameless_vector`
 
+**Status:** supporting validation track. This document is not the current
+product architecture. Use `docs/local_assistant_os_mvp_plan.md` for the
+authoritative Local Assistant OS v0.1 plan.
+If any older workstream here competes with the OS kernel, keep it as background
+until it produces evidence that directly strengthens the MVP plan.
+
+## Current Product MVP Alignment
+
+The active product-shaped MVP is `MELM Local Assistant OS v0.1`, documented in
+`docs/local_assistant_os_mvp_plan.md`. This implementation plan remains the
+validation track; it does not supersede the Local Assistant OS plan.
+
+Validation work should now feed the assistant OS kernel directly:
+
+```text
+MELM Guard            -> MembranePolicy and typed action gates
+MELM Memory OS        -> autobiographical memory and budgeted evidence runtime
+state/dialogue probes -> HomeostaticState and lifecycle evaluation
+tokenizer/SLM work    -> bounded local synthesis behind the OS gates
+```
+
 ## 1. Objective
 
-Build a validation-first MELM prototype that can prove or falsify the core morpheme-event hypothesis before committing to a custom 800M model.
+Build a validation-first MELM prototype that can prove or falsify the core
+morpheme-event hypothesis while feeding evidence into the Local Assistant OS
+kernel before committing to a custom 800M model.
 
 The implementation must answer three questions:
 
@@ -15,7 +38,9 @@ The implementation must answer three questions:
 2. Does structured event memory beat ordinary RAG on controlled episodic recall at the same retrieval budget?
 3. Does the best 125M-370M model plus event memory improve child-level dialogue and episodic consistency without degrading ordinary language quality?
 
-The six-month target is a reproducible demo and validation report. The 9-12 month target is a publishable 800M MELM-MVP only if the gates pass.
+The six-month target is a reproducible assistant-OS-centered demo and validation
+report. The 9-12 month target is a publishable 800M integrated MELM candidate
+only if the OS, memory, tokenizer, and small-model gates pass.
 
 ## 2. Repository Structure
 
@@ -236,7 +261,7 @@ By the end of six months, the repo should contain:
 - model configs and training logs for attempted baselines;
 - final validation report.
 
-Current Month 1 execution status:
+Current execution status, carried forward into the Local Assistant OS plan:
 
 - tokenizer harness implemented with BPE, Unigram-like, morphology heuristic, and byte/patch baselines;
 - event-memory, abstention, state-grounding, and state-resolution probes implemented;
@@ -264,7 +289,7 @@ Current Month 1 execution status:
 - transcript-derived persistent session smoke passes on the sample annotation fixture after reload with 4 distractor events: 100.00% regular dialogue evidence accuracy, 100.00% paraphrased/noisy dialogue evidence accuracy, 100.00% state accuracy, and 100.00% event-memory recall@2 versus 66.67% RAG recall@2.
 - current Python event memory is evidence/context efficient but not yet CPU/RAM superior to RAG because both retrievers scan the full event list; a Pi-class win requires indexed memory or a Rust/C sidecar;
 - sound-symbolism has been removed from the active MVP gate and deferred as a separate research question because the thesis is not mature enough yet;
-- expanded morpheme/root/meaning MVP corpus and deterministic inference harness pass 22/22 novel-word cases and 6/6 utterance-routing cases over constructed high-confidence morpheme/root examples.
+- expanded morpheme/root/meaning validation corpus and deterministic inference harness pass 22/22 novel-word cases and 6/6 utterance-routing cases over constructed high-confidence morpheme/root examples.
 
 The final result is acceptable if it clearly states either:
 

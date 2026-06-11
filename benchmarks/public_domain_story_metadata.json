@@ -1,0 +1,58 @@
+{
+  "schema": "melm.public_domain_story_metadata.v1",
+  "description": "Small metadata-only public-domain-style story inventory fixture for Assistant OS v0.1.",
+  "items": [
+    {
+      "item_id": "pg_moon_drum_lagos_age7",
+      "title": "Moon Drum Walk",
+      "source": "project_gutenberg_catalog_metadata",
+      "source_url": "https://www.gutenberg.org/ebooks/offline_catalogs.html",
+      "license": "public_domain_story_frame",
+      "age_min": 5,
+      "age_max": 8,
+      "topics": ["folktale", "music", "kindness", "bedtime"],
+      "cultures": ["Yoruba", "Lagos"],
+      "summary": "A child follows a talking drum through a rainy city and learns to listen before acting.",
+      "narrative_frame": "{name} found a talking drum in {location}. The drum taught {name} to share, listen, and come home before the rain."
+    },
+    {
+      "item_id": "pg_tortoise_questions_age7",
+      "title": "The Tortoise Who Asked First",
+      "source": "project_gutenberg_catalog_metadata",
+      "source_url": "https://www.gutenberg.org/ebooks/offline_catalogs.html",
+      "license": "public_domain_story_frame",
+      "age_min": 5,
+      "age_max": 9,
+      "topics": ["animal", "folktale", "questions", "patience"],
+      "cultures": ["West Africa"],
+      "summary": "A small tortoise solves large problems by asking careful questions.",
+      "narrative_frame": "{name} met a tiny tortoise who solved big problems by asking good questions before rushing."
+    },
+    {
+      "item_id": "ia_bedtime_rain_map_age7",
+      "title": "The Rain Map",
+      "source": "internet_archive_item_search_and_metadata",
+      "source_url": "https://doc-tools.readthedocs.io/en/ia-test-gsod/metadata.html",
+      "license": "public_domain_story_frame",
+      "age_min": 6,
+      "age_max": 9,
+      "topics": ["bedtime", "rain", "adventure", "listening"],
+      "cultures": ["Lagos"],
+      "summary": "A bedtime map appears during the rain and rewards careful listening.",
+      "narrative_frame": "When the rain tapped the roof in {location}, {name} found a map that only appeared after bedtime prayers and careful listening."
+    },
+    {
+      "item_id": "ia_star_school_age7",
+      "title": "The Star School",
+      "source": "internet_archive_item_search_and_metadata",
+      "source_url": "https://doc-tools.readthedocs.io/en/ia-test-gsod/item-search-apis.html",
+      "license": "public_domain_story_frame",
+      "age_min": 7,
+      "age_max": 10,
+      "topics": ["school", "stars", "curiosity", "science"],
+      "cultures": ["global"],
+      "summary": "A child discovers that stars can be studied patiently from a schoolyard.",
+      "narrative_frame": "At school, {name} noticed one bright star before sunset and learned that curiosity grows when questions are written down."
+    }
+  ]
+}

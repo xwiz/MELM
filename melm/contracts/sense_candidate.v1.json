@@ -1,0 +1,110 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "melm.sense_candidate.v1",
+  "type": "object",
+  "additionalProperties": false,
+  "required": [
+    "schema_id",
+    "lemma",
+    "language",
+    "pos",
+    "source",
+    "definition",
+    "semantic_class_candidates",
+    "safety",
+    "suggested_status",
+    "confidence_prior"
+  ],
+  "properties": {
+    "schema_id": {"const": "melm.sense_candidate.v1"},
+    "batch_id": {"type": "string"},
+    "lemma": {"type": "string", "minLength": 1},
+    "language": {"type": "string", "minLength": 2},
+    "pos": {"enum": ["noun", "verb", "adjective", "adverb", "other"]},
+    "source": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["provenance", "source_ref", "license"],
+      "properties": {
+        "provenance": {
+          "enum": [
+            "seed_authored",
+            "wordnet",
+            "wiktextract",
+            "verbnet",
+            "user_taught",
+            "offline_dictionary",
+            "cloud_lookup",
+            "inferred"
+          ]
+        },
+        "source_ref": {"type": "string", "minLength": 1},
+        "retrieved_at": {"type": "string"},
+        "license": {"type": "string", "minLength": 1}
+      }
+    },
+    "definition": {"type": "string", "minLength": 1},
+    "genus_lemma": {"type": "string", "minLength": 1},
+    "semantic_class_candidates": {
+      "type": "array",
+      "minItems": 1,
+      "items": {
+        "type": "object",
+        "additionalProperties": false,
+        "required": ["class_id", "method", "confidence"],
+        "properties": {
+          "class_id": {"type": "string", "minLength": 1},
+          "method": {
+            "enum": [
+              "supersense_map",
+              "genus_walk",
+              "verbnet_map",
+              "llm_assigned",
+              "seed_authored"
+            ]
+          },
+          "confidence": {"type": "number", "minimum": 0, "maximum": 1}
+        }
+      }
+    },
+    "argument_template_id": {"type": "string"},
+    "forms": {
+      "type": "array",
+      "items": {
+        "type": "object",
+        "additionalProperties": false,
+        "required": ["surface", "morph_features", "provenance"],
+        "properties": {
+          "surface": {"type": "string", "minLength": 1},
+          "morph_features": {"type": "string"},
+          "provenance": {"type": "string", "minLength": 1}
+        }
+      }
+    },
+    "frequency_rank": {"type": ["integer", "null"], "minimum": 0},
+    "relations": {
+      "type": "array",
+      "items": {
+        "type": "object",
+        "additionalProperties": false,
+        "required": ["relation", "target_lemma"],
+        "properties": {
+          "relation": {"type": "string", "minLength": 1},
+          "target_lemma": {"type": "string", "minLength": 1},
+          "target_sense_ref": {"type": "string"}
+        }
+      }
+    },
+    "safety": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["reserved_conflict", "policy_term_overlap"],
+      "properties": {
+        "reserved_conflict": {"type": "boolean"},
+        "policy_term_overlap": {"type": "boolean"}
+      }
+    },
+    "suggested_status": {"enum": ["active", "dormant", "quarantined"]},
+    "confidence_prior": {"type": "number", "minimum": 0, "maximum": 1}
+  }
+}
