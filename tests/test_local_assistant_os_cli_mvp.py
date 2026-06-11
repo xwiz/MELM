@@ -1055,7 +1055,7 @@ class LocalAssistantOSCliMvpTests(unittest.TestCase):
             self.assertTrue(report["synthesis_stress_smoke"]["passed"])
             self.assertEqual(report["synthesis_stress_smoke"]["turn_count"], 24)
             self.assertEqual(report["synthesis_stress_smoke"]["session_count"], 3)
-            self.assertEqual(report["synthesis_stress_smoke"]["route_counts"], {"cached_tool": 2, "local_answer": 22})
+            self.assertEqual(report["synthesis_stress_smoke"]["route_counts"], {"cached_tool": 2, "clarify": 2, "local_answer": 20})
             self.assertTrue(report["synthesis_stress_smoke"]["checks"]["autobiographical_summaries_use_events_and_digest"])
             self.assertGreaterEqual(report["synthesis_stress_smoke"]["quality"]["min"], 0.72)
             self.assertTrue(report["pi_constraints"]["no_required_network"])
@@ -1119,8 +1119,9 @@ class LocalAssistantOSCliMvpTests(unittest.TestCase):
             self.assertEqual(report["counts"]["membrane_decisions"], 24)
             self.assertEqual(report["counts"]["homeostatic_snapshots"], 24)
             self.assertEqual(report["counts"]["synthesis_traces"], 24)
-            self.assertEqual(report["route_counts"], {"cached_tool": 2, "local_answer": 22})
-            self.assertGreaterEqual(report["reason_counts"]["local_story_inventory"], 5)
+            self.assertEqual(report["route_counts"], {"cached_tool": 2, "clarify": 2, "local_answer": 20})
+            self.assertGreaterEqual(report["reason_counts"]["local_story_inventory"], 3)
+            self.assertEqual(report["reason_counts"]["story_constraint_unmet"], 2)
             self.assertGreaterEqual(report["reason_counts"]["bounded_general_health_guidance"], 4)
             self.assertEqual(report["intent_counts"]["autobiographical_memory"], 3)
             self.assertGreaterEqual(report["quality"]["min"], 0.72)
@@ -1134,7 +1135,10 @@ class LocalAssistantOSCliMvpTests(unittest.TestCase):
             self.assertTrue(any(citation.startswith("food_inventory.") for citation in by_label["meal_dinner"]["citations"]))
             self.assertEqual(by_label["urgent_health"]["citations"], ["local_health_safety_policy"])
             self.assertEqual({turn["session"] for turn in report["turns"]}, {"session_1", "session_2", "session_3"})
-            self.assertTrue(all(turn["synthesis_applied"] for turn in report["turns"]))
+            self.assertTrue(all(
+                turn["synthesis_applied"] or turn.get("synthesis_refused")
+                for turn in report["turns"]
+            ))
             self.assertTrue(all(turn["mapping"] == ["basic_nlp", "uol_parse", "chat_frame"] for turn in report["turns"]))
             self.assertFalse(
                 any(

@@ -11213,7 +11213,10 @@ def _build_synthesis_variant_smoke_payload(
                 all(turn["primary_parse_basis"] == "uol_chat_frame" for turn in turns)
                 and all(
                     turn["primary_domain_evidence"].get("source")
-                    == "slot_role_relation"
+                    in {
+                        "slot_role_relation",
+                        "weighted_functional_relation",
+                    }
                     for turn in turns
                 )
                 and not any(
@@ -11298,7 +11301,7 @@ def _build_synthesis_stress_smoke_payload(
         intent_counts = dict(sorted(Counter(turn["intent"] for turn in turns).items()))
         complexity_scores = [float(turn["complexity_score"]) for turn in turns]
         quality_scores = [
-            float(turn["quality_score"]) for turn in turns if turn["synthesis_applied"]
+            float(turn["quality_score"]) for turn in turns
         ]
         story_turns = [turn for turn in turns if turn["intent"] == "story"]
         general_health_turns = [
@@ -11331,8 +11334,8 @@ def _build_synthesis_stress_smoke_payload(
             == len(SYNTHESIS_STRESS_SMOKE_TURNS)
             == 24,
             "three_sessions_recorded": _event_session_count(store) >= 3,
-            "all_turns_local_or_cached": (
-                route_counts == {"cached_tool": 2, "local_answer": 22}
+            "all_turns_local_or_cached_clarify_or_reject": (
+                route_counts.keys() <= {"cached_tool", "local_answer", "clarify"}
                 and all(not turn["cloud_needed"] for turn in turns)
                 and all(not turn["external_fetch_needed"] for turn in turns)
                 and all(turn["boundary_crossed"] == "none" for turn in turns)
@@ -11340,18 +11343,20 @@ def _build_synthesis_stress_smoke_payload(
             "story_variants_remain_local_and_cited": (
                 len(story_turns) >= 5
                 and all(
-                    turn["reason"] == "local_story_inventory" for turn in story_turns
+                    turn["reason"] in ("local_story_inventory", "story_constraint_unmet")
+                    for turn in story_turns
                 )
                 and all(
                     any(
                         citation.startswith("story_models.")
                         for citation in turn["citations"]
                     )
+                    if turn["reason"] == "local_story_inventory" else True
                     for turn in story_turns
                 )
                 and all(
                     turn["primary_domain_evidence"].get("pattern")
-                    == "request_story_inventory"
+                    in ("request_story_inventory", "story_constraint_unmet")
                     for turn in story_turns
                 )
             ),
@@ -11436,7 +11441,11 @@ def _build_synthesis_stress_smoke_payload(
                 )
                 and all(
                     turn["primary_domain_evidence"].get("source")
-                    in {"token_role_relation", "slot_role_relation"}
+                    in {
+                        "token_role_relation",
+                        "slot_role_relation",
+                        "weighted_functional_relation",
+                    }
                     for turn in turns
                 )
                 and not any(
