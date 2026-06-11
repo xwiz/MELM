@@ -7424,6 +7424,7 @@ def _build_v01_audit_payload() -> dict:
     started = perf_counter()
     plan_path = ROOT / "docs" / "local_assistant_os_mvp_plan_v2.md"
     legacy_plan_path = ROOT / "docs" / "local_assistant_os_mvp_plan.md"
+    archived_legacy_path = ROOT / "docs" / "archive" / "local_assistant_os_mvp_plan.md"
     root_readme = ROOT / "README.md"
     cli_path = ROOT / "scripts" / "local_assistant_os_cli.py"
     router_tests_path = ROOT / "tests" / "test_local_assistant_router_mvp.py"
@@ -7436,7 +7437,11 @@ def _build_v01_audit_payload() -> dict:
     legacy_plan_text = (
         legacy_plan_path.read_text(encoding="utf-8")
         if legacy_plan_path.exists()
-        else ""
+        else (
+            archived_legacy_path.read_text(encoding="utf-8")
+            if archived_legacy_path.exists()
+            else ""
+        )
     )
     v01_gate_text = f"{plan_text}\n{legacy_plan_text}"
     readme_text = (
