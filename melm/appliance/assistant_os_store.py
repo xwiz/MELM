@@ -1903,6 +1903,32 @@ def seed_assistant_os_store(store: AssistantOSStore, seed_path: str | Path) -> N
     store.connection.commit()
 
 
+def seed_assistant_os_lexicon(store: AssistantOSStore) -> None:
+    """Seed all legacy vocabulary and functional-grammar candidates into the store.
+
+    Seeds functional-grammar verb/nominal candidates plus all 200+ LEGACY
+    router vocabulary entries. All semantic classes must be in the ontology
+    contract (semantic_classes.v1.json); callers must extend the contract
+    before seeding new classes.
+    """
+    from .assistant_lexicon import (
+        configure_lexicon_router_families,
+        lexicon_ingest,
+    )
+    from .assistant_lexicon_legacy import (
+        build_legacy_lexicon_candidates,
+        build_legacy_router_candidates,
+    )
+
+    candidates = (
+        build_legacy_lexicon_candidates()
+        + build_legacy_router_candidates(seed_all=True)
+    )
+    for candidate in candidates:
+        lexicon_ingest(store, candidate, expected_provenance="seed_authored")
+    configure_lexicon_router_families(store, ("media", "story", "weather"))
+
+
 def _opportunity_id(kind: str, evidence_event_ids: tuple[str, ...]) -> str:
     suffix = "_".join(evidence_event_ids) if evidence_event_ids else "no_evidence"
     return f"{kind}:{suffix}"

@@ -91,16 +91,18 @@ Two lessons, both structural:
 
 v1 repeatedly claims primary routes come from "token-role analysis plus
 UOL/ChatFrame composition, never phrase tables." Verified reality: the intent
-classifiers that *select* the frame are ~12 functions over ~45–50 hardcoded
-token-set comparisons containing ~120+ keyword literals
-(`story_objects = {"story","stories","tale",...}`,
-`token_set & {"weather","forecast","temperature"}`, …). The UOL composition is
-built *after* keyword intent selection. What v1 actually enforces is narrower
-than what it says: the *secondary hints table* may not route, and matching is
-token-bounded rather than substring. That is a real discipline worth keeping —
-but a hand-authored token-set is still a vocabulary table wearing a role
-costume. The shortcut-audit polices a definition of "shortcut" that the
-primary path satisfies by construction.
+classifiers that *select* the frame are ~14 functions over ~60–70 hardcoded
+token-set comparisons containing ~200+ keyword literals across 11 of them;
+11 families now use `_semantic_family_terms` with lexicon-backed semantic class
+lookup — all contracted, seeded, and activated by default in
+`seed_assistant_os_lexicon`. The UOL composition is still built *after* keyword
+intent selection; the 2-gate+1-membrane architecture (K0→Membrane→Ejector)
+remains unchanged. What v1 actually enforces is narrower than what it says: the
+*secondary hints table* may not route, and matching is token-bounded rather
+than substring. That is a real discipline worth keeping — but a hand-authored
+token-set is still a vocabulary table wearing a role costume. The shortcut-audit
+polices a definition of "shortcut" that the primary path satisfies by
+construction.
 
 This is acceptable for a v0.x deterministic kernel. It is not acceptable to
 describe it as something else.
@@ -330,7 +332,7 @@ low-understanding turns behind consent. This is genuinely good scaffolding.
 |---|---|
 | Entire active vocabulary: **34 verbs** (`_VERBS`) + **9 nominal domains** (`_KNOWN_NOMINAL_DOMAINS`) + closed function-word classes, all module-level Python constants in `functional_grammar.py:69-114` | A learned meaning has nowhere to live. Runtime cannot add an entry to a frozen code constant. |
 | Lemmatizer (`_lemma`, `functional_grammar.py:642-677`): 15 irregular forms + suffix rules that only resolve when the stem is **already in `_VERBS`** | A new verb can never even lemmatize. Teach the system "zorp" and "zorping" still parses as an unknown nominal. Morphological generalization is structurally impossible for acquired words. |
-| Routing vocabulary: ~120+ keyword literals across 12 intent classifiers in `local_assistant_router.py` (55 occurrences of story-literals alone); intent enum closed at 14 | A new word can never change routing. Even a perfectly acquired noun routes to unknown/cloud forever, because capability gating reads code constants, not a store. |
+| Routing vocabulary: ~200+ keyword literals across 14 intent classifiers in `local_assistant_router.py`; 11 families now use `_semantic_family_terms` with lexicon-backed semantic class lookup via `lexicon_owned`/`lexical_class_lookup` params — all contracted, seeded, and store-backed. 3 families (assistant_identity, assistant_status, assistant_greeting) don't use content-word vocabulary and remain code-constant. | A new word can never change routing. Even a perfectly acquired noun routes to unknown/cloud forever, because capability gating reads code constants, not a store. |
 | Unknown content words get role `content_nominal`, class `semantic_class_unknown`, weight 0.58 | The parser slots unknown words generically — good — but nothing downstream can ever upgrade that slot. |
 | No fixture in any eval/trace/lifecycle contains an unseen-word acquisition scenario | The 105-case eval, 25-turn replay, and all smokes measure a **closed-world** system. Vocabulary growth is untested because it is impossible. |
 | Whitepaper Layers 4–5 (morphology-aware input, compositional lexical representation) explicitly deferred; v1 plan defers SLM and atlas | Every layer that could implement the thesis is deferred in every document. The thesis exists only as prose. |
@@ -357,6 +359,19 @@ experience-gated capability instinct are *exactly* the safety scaffold that
 runtime vocabulary growth needs and that ML-only systems lack. The skeleton
 is right; the organ is missing. This is a missing-subsystem problem, not a
 wrong-architecture problem.
+
+**UOL bridges the lexical and conceptual layers.** The UOL schema (§21.2)
+records lemmas (lexical layer) and `semantic_class_id` values (conceptual
+layer). Frame candidates (§21.4) consume UOL to derive capability (routing,
+evidence, answer planning). This makes UOL the architectural invariant: the
+lexical layer (language, tokenizer, inflection normalizer) and the capability
+layer (routing policy, capability manifest) can vary independently as long as
+UOL remains the stable intermediate representation. The M2 factored lexicon
+builds the store that feeds UOL; M5 replaces keyword classifiers with
+UOL-based frame linking. The bridge pattern in M2 (`_semantic_family_terms`
+with `lexicon_owned` switch) preserves backward compatibility while the store
+matures — but keyword-first intent classification terminates at M5, not
+before.
 
 ## 11. Growable lexicon architecture (L1–L6)
 
@@ -451,14 +466,24 @@ same ingestion gate as the batch seeders — one validator, two tempos.
 
 ### L4 — Routing integration (capability stays honest)
 
-Intent classification consults the lexicon: token → semantic class →
-class-level rules (any `media_item` noun + `play`-class verb → media frame).
-A learned word **inherits routing through its class**; intent keyword sets as
-code cease to exist. Capability remains manifest-bound and
-evidence-complete: "tell me a story about kalimbas" may enter the story frame,
-but local routing still requires an installed story handler and matching
-inventory. It honestly misses (per D4) — acquisition removes false
-*unknowns*; it never fabricates capability.
+**Partial progress.** Intent classification for 3 families (story, weather,
+media) now optionally consults the lexicon: token → semantic class →
+class-level rules (any `media_content` noun + `play`-class verb → media frame).
+A learned word **inherits routing through its class** via
+`_semantic_family_terms`/`lexical_class_lookup` — keyword sets are replaced by
+lexicon queries when `lexicon_owned=True`. All 11 families that use
+`_semantic_family_terms` are now contracted, seeded via
+`build_legacy_router_candidates`, and activated by default in
+`seed_assistant_os_lexicon`. The infrastructure pattern
+(`lexicon_owned`/`lexical_class_lookup` params on every classifier) is in
+place and all families are store-backed.
+
+Full L4 requires all 14 families to be lexicon-owned (contract + seed data),
+with intent keyword sets as code ceasing to exist. Capability remains
+manifest-bound and evidence-complete: "tell me a story about kalimbas" may
+enter the story frame, but local routing still requires an installed story
+handler and matching inventory. It honestly misses (per D4) — acquisition
+removes false *unknowns*; it never fabricates capability.
 
 ### L5 — The dictionary benchmark (new first-class gate)
 
@@ -698,6 +723,13 @@ Every arrow is a versioned contract. Every stage may abstain. A failed or
 missing expert falls back to rules, templates, clarify, or cloud according to
 the already-typed route; it does not trigger an improvised alternate path.
 
+**UOL is the foundational meaning representation.** Every token in every
+utterance produces a `UOLParse`. Frame selection, routing, evidence admission,
+and answer planning consume UOL — not raw tokens. Any stage that reads raw
+tokens (current keyword intent classifiers in K0, §10) is a v0.1 transitional
+artifact. M5 replaces keyword classification with UOL-based frame linking; the
+vocabulary migration in M2 (§18) is the prerequisite, not the destination.
+
 ### 16.1 Performance envelope
 
 The Pi 5 target remains:
@@ -724,7 +756,7 @@ earn their memory cost.
 
 | Stage | Responsibility | Initial implementation | Authority / failure behavior |
 |---|---|---|---|
-| **K0 typed kernel** | Contract validation, membrane, capability policy, routing, action confirmation, fallbacks | Existing Python + SQLite kernel | Sole route/action authority; invalid input fails closed |
+| **K0 typed kernel** | Contract validation, event ledger, memory digest, session context, membrane, capability policy, routing, action confirmation, experience capture, fallbacks | Existing Python + SQLite kernel | Sole route/action authority; invalid input fails closed |
 | **E1 lexical retriever** | Sense candidates, similarity, OOV suggestions | Shared small ONNX encoder; optional | Proposes candidates only; cannot promote a sense or route |
 | **E2 UOL parser** | Tokens/spans → clauses, roles, morphology, unknowns | Rules first; small tagger by construction family | Emits `UOLParse`; shadow output never routes |
 | **E3 frame linker** | Rank frame candidates from UOL + semantic support | Rules first; shared-encoder reranker on top-k | Emits scores only; K0 applies thresholds and policy |
@@ -737,7 +769,53 @@ latent world knowledge**. The enforceable promise is narrower and stronger:
 latent knowledge is not authoritative. Factual, policy, memory, and action
 claims are accepted only when licensed by `AnswerPlan` and admitted evidence.
 
-### 16.3 Thesis-to-mechanism map
+### 16.3 Event/chatframe experience capture — UOL relationship
+
+The event ledger and memory system are separate from but fed by UOL:
+
+```text
+Current utterance
+     │
+     ▼
+UOLParse (linguistic meaning: clauses, roles, lemmas, semantic classes)
+     │
+     ▼
+FrameCandidate → RouteDecision → EvidencePacket → AnswerPlan → ChatFrame
+     │                                                              │
+     ├─ UOL refs (which clauses/roles anchored the frame)            │
+     ├─ intent, route, reason, evidence keys                         │
+     └─ membrane decision, action state, privacy scope               │
+                                                                     │
+     ┌───────────────────────────────────────────────────────────────┘
+     ▼
+Event ledger — persists ChatFrame + utterance + timestamp + session_id
+     │
+     ├─ memory digest: aggregates events → session context
+     │                   (used for deixis resolution, pronoun binding)
+     │
+     ├─ improvement_candidates: queues low-UOL-coverage turns
+     │                   → triggers acquisition or teaching
+     │
+     └─ atlas_edges: records observed relations across UOL parses
+                       (concept A used-with concept B, etc.)
+                       → quarantined until promoted via learning ledger
+```
+
+**Key relationships:**
+
+- **UOL is ephemeral** — it exists for one utterance parse and is not stored.
+- **ChatFrame is the durable record** — it captures the system's full interpretation
+  (including the UOL refs that drove routing) and is persisted in the event ledger.
+- **Memory digest reads events, not UOL directly** — it reconstructs cross-utterance
+  context from stored ChatFrame data (previous intents, slots, evidence).
+- **Atlas edges derive FROM multiple UOL parses** — observed co-occurrences,
+  user corrections, and pattern detection across utterances produces edges
+  that may influence future frame binding. They are quarantined by default and
+  promoted only through the learning ledger.
+- **Experience capture cannot modify UOL or routing** — it feeds the atlas and
+  the learning ledger. Capability granting (§21.3) is release-controlled.
+
+### 16.4 Thesis-to-mechanism map
 
 | Thesis property | Implemented mechanism |
 |---|---|
@@ -745,6 +823,8 @@ claims are accepted only when licensed by `AnswerPlan` and admitted evidence.
 | Runtime vocabulary growth | New lexical sense as a provenance-bearing database row; no weight edit required |
 | Meaning grounded in use | Atlas support and learning ledger record observed relations, corrections, and promotion history |
 | Honest local capability | Release-controlled capability manifest + deterministic evidence completeness; language learning cannot grant a skill |
+| Cross-utterance context | Event ledger stores ChatFrames; memory digest aggregates past intents/slots/evidence for deixis resolution |
+| Experience capture | `improvement_candidates` queue feeds atlas edges; corrections lower edge strength and require re-promotion |
 | Compact local generation | E4 receives only `AnswerPlan` + admitted evidence + stance, with templates as permanent fallback |
 | Auditable routing | Candidate scores, threshold version, policy checks, evidence checks, and final reason persist in `RouteDecision` |
 
@@ -785,6 +865,14 @@ functional gates without pretending shared CI hardware is a Pi.
 | **M0 — Recover truth** (days) | Fix D1-D5, preserve current behavior, commit the tree, add CI, label internal fixtures honestly | `pytest`, `pi-smoke`, and `shortcut-audit` green in CI; v1 superseded; changing a debug label does not fail a behavioral gate |
 | **M1 — Contract kernel** (week 1) | Contract registry; schemas for UOL, semantic classes, frames, route decisions, evidence, answer plans, stance, and model manifests; adapters around current rules/templates; integrated perf harness | Current regression suite passes through validators; initial 60-case normative UOL set passes; incompatible versions fail closed; dev + Pi benchmark JSON produced |
 | **M2 — Meaning substrate** (weeks 2-3) | Factored lexicon, semantic-class registry, frame registry, capability manifest, atlas/learning ledgers; migrate media, weather, and story vocabulary from code to seeded data | 100% route agreement on existing regression cases for migrated families; deleting a seed row changes behavior predictably; no user/atlas write can enable a capability or action |
+
+**Router bridge during M2.** The intent classifiers use a transitional bridge:
+`_semantic_family_terms` with a `lexicon_owned` switch. When the family is
+store-enabled, vocabulary reads from lexical senses via `lexical_class_lookup`;
+when not activated, it falls back to a deterministic inline dict. This permits
+gradual family-by-family migration with bit-identical behavior at each step.
+The bridge is **not permanent** — M5 replaces it with UOL-based frame linking
+that selects frames from UOL, not from keyword matching against raw tokens.
 | **M3 — Learning vertical slice** (weeks 3-5) | Detect → define → quarantine → test → promote → reuse → correct for nouns, modifiers, and one verb class; restart persistence | Sealed ≥60-word dictionary set: ≥80% correct next-turn use and retention; zero reserved-namespace promotions; zero capability grants; correction/rollback trace queryable end to end |
 | **M4 — Bounded generation** (parallel after M1; weeks 2-5) | Benchmark small decoder candidates; wire `AnswerPlan`, constrained decoding, verifier, and template fallback; fine-tune only after zero-shot decision artifact | On Pi: report tok/s/TTFT/RSS; 0 unsafe **applied** outputs; 100% fallback on verifier failure; model accepted on ≥70% of eligible rendering cases and retains ≥95% of required constraints; go/no-go recorded before training spend |
 | **M5 — Learned frame linking** (weeks 5-7) | E3 reranks rule-generated candidates using UOL + semantic support; K0 remains gate owner | On sealed set: top-3 frame recall ≥95%, accepted-route precision ≥98%, zero false-local safety cases; no regression on supported minimal pairs |
@@ -959,6 +1047,15 @@ negation, deixis, definitions, private-memory export, particle verbs,
 coordination, constraint misses, and OOV words. Parser tests validate UOL;
 frame tests validate UOL→candidate; a smaller end-to-end set validates the
 whole path. Not every treebank sentence is expected to have a local answer.
+
+**Language-agnostic UOL invariant.** UOL records lemmas (not inflected forms)
+and `semantic_class_id` values (not surface strings). Inflection normalization
+(`_to_lemma`) is a swappable function — the framework is language-independent;
+only the normalizer is language-specific. Contracts store lemmas only, never
+inflected forms. All runtime term resolution normalizes inflected tokens to
+lemmas before UOL construction. This ensures the pipeline is language-agnostic:
+changing the normalizer changes the source language without changing frames,
+routing, or capability policy.
 
 ### 21.3 Meaning stores: lexicon, atlas, and capability
 
@@ -1390,13 +1487,18 @@ slices, each a day-to-days unit with a hard gate. Everything flows through
 
 **V3 — Legacy migration through the same gate**
 
-- `_VERBS`, `_KNOWN_NOMINAL_DOMAINS`, and the 12 intent classifiers' keyword
-  sets are exported as `seed_authored` candidates (prior 0.95, status
-  active) and ingested. No special path: if the gate rejects a legacy entry,
-  that is a finding, not an exception.
+- `_VERBS`, `_KNOWN_NOMINAL_DOMAINS`, all 11 intent classifier keyword sets
+  in `local_assistant_router.py`, `_secondary_meaning_hint_groups`,
+  `_semantic_object_role_tokens`, auto-bio sub-frame vocabulary
+  (`session_objects`, `summary_actions`, `event_object`), and all remaining
+  inline vocabulary sets in helper functions are exported as `seed_authored`
+  candidates (prior 0.95, status active) and ingested through the same gate.
+  No special path: if the gate rejects a legacy entry, that is a finding, not
+  an exception.
 - Gate: **bit-identical routing** on the full regression suite with the
   parser/classifiers reading the store (M2's exit criterion); deleting a
-  seed row changes behavior predictably.
+  seed row changes behavior predictably. No vocabulary remains in code
+  constants — every token a classifier checks comes from the store.
 
 **V4 — Store-backed parsing with activation tiers**
 

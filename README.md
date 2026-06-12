@@ -52,6 +52,29 @@ ChatFrame transitions, then backed by tests and trace evidence.
 
 The foundational order is:
 
+## Quickstart
+
+```powershell
+# bootstrap the runtime database (seeds profile, story inventory, weather, media, lexicon)
+python -m melm bootstrap-runtime --reset --json
+
+# interactive CLI chat (type 'exit' to quit)
+python -m melm chat
+
+# or one-shot
+python -m melm ask --utterance "Tell me a story."
+
+# or browser UI at http://127.0.0.1:8771
+python -m melm serve
+
+# --- if python -m melm is not available ---
+python scripts\local_assistant_os_cli.py bootstrap-runtime --reset --json
+python scripts\local_assistant_os_cli.py chat
+```
+
+No external dependencies required (stdlib Python 3.11+ and SQLite only).
+No GPU, no network, no ML framework, no vector database.
+
 ```text
 tokens
 -> weighted functional roles and ranked predicates

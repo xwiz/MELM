@@ -15,13 +15,14 @@ from __future__ import annotations
 
 import re
 from dataclasses import dataclass, field
-from typing import Any, Callable, Literal
+from typing import Any, Literal
 
 from .functional_grammar import (
     FunctionalParse,
     functional_frame_kind,
     parse_functional_relations,
 )
+from .assistant_lexicon_legacy import build_legacy_in_memory_lexicon
 
 AssistantIntent = Literal[
     "assistant_identity",
@@ -254,13 +255,8 @@ class OnDeviceAssistantRouter:
     def __init__(
         self,
         profile: LocalAssistantProfile | None = None,
-        *,
-        lexical_class_lookup: Callable[[str], frozenset[str]] | None = None,
-        lexicon_owned_families: frozenset[str] = frozenset(),
     ) -> None:
         self.profile = profile or LocalAssistantProfile()
-        self.lexical_class_lookup = lexical_class_lookup
-        self.lexicon_owned_families = lexicon_owned_families
 
     def handle(self, utterance: str) -> AssistantDecision:
         text = _normalize(utterance)
@@ -269,8 +265,6 @@ class OnDeviceAssistantRouter:
             text,
             tokens,
             trusted_contact_names=tuple(self.profile.contacts),
-            lexical_class_lookup=self.lexical_class_lookup,
-            lexicon_owned_families=self.lexicon_owned_families,
         )
         if intent == "personal_memory" and _is_private_cloud_export_request(
             text, tokens
@@ -797,7 +791,6 @@ def compare_assistant_mvp_directions(
 
 def compare_assistant_strategy_reports_for_utterances(
     utterances: tuple[str, ...] | list[str],
-    *,
     profile: LocalAssistantProfile | None = None,
     memory_strategy_name: str = LOCAL_STATE_ROUTER_BASELINE,
 ) -> tuple[AssistantStrategyReport, ...]:
@@ -908,7 +901,6 @@ def _classify_intent_for_secondary_lexical_baseline(text: str) -> AssistantInten
 def _cloud(
     utterance: str,
     intent: AssistantIntent,
-    *,
     reason: str,
     privacy_exposure: bool = True,
 ) -> AssistantDecision:
@@ -933,7 +925,6 @@ def _render_story_frame(frame: str, *, name: str, location: str, culture: str) -
 
 def choose_local_meal(
     foods: tuple[str, ...] | list[str],
-    *,
     preferences: dict[str, str] | None = None,
     weather: str = "",
     utterance: str = "",
@@ -1018,7 +1009,6 @@ def _weather_suggests_warm_food(weather: str) -> bool:
 
 def _food_inventory_score(
     food: str,
-    *,
     index: int,
     preference_text: str,
     scope: str,
@@ -1070,7 +1060,6 @@ def _food_tags(food: str) -> set[str]:
 
 def _meal_reason_tags(
     selected: tuple[str, ...],
-    *,
     scope: str,
     warm_weather: bool,
     preference_text: str,
@@ -1117,31 +1106,25 @@ def _is_private_cloud_export_request(text: str, tokens: tuple[str, ...]) -> bool
     return _has_private_context_frame(tokens)
 
 
-def _has_private_context_frame(tokens: tuple[str, ...]) -> bool:
+def _has_private_context_frame(
+    tokens: tuple[str, ...],
+) -> bool:
     token_set = set(tokens)
-    owned_memory_subject = bool(
-        token_set
-        & {
-            "mom",
-            "contact",
-            "job",
-            "trip",
-            "routine",
-            "accessibility",
-            "preference",
-            "age",
-            "child",
-            "son",
-            "daughter",
-            "kid",
-            "school",
-            "household",
-            "family",
-            "profile",
-            "location",
-            "conversation",
-        }
+    private_terms = _semantic_family_terms(
+        tokens,
+        semantic_classes={
+            "social_relation",
+            "personal_attribute",
+            "child_relation",
+            "household_concept",
+            "routine_concept",
+            "public_place",
+            "autobiographical_event",
+        },
+
+
     )
+    owned_memory_subject = bool(private_terms)
     favorite_color = {"favorite", "color"} <= token_set
     health_goal = {"health", "goal"} <= token_set or {"health", "goals"} <= token_set
     public_profile = {"public", "profile"} <= token_set
@@ -1168,7 +1151,6 @@ def _has_private_context_frame(tokens: tuple[str, ...]) -> bool:
 
 def _private_cloud_evidence_keys(
     text: str,
-    *,
     trusted_contact_names: tuple[str, ...] = (),
 ) -> tuple[str, ...]:
     tokens = _tokenize(text)
@@ -1383,10 +1365,8 @@ def _classify_intent(text: str) -> AssistantIntent:
 def _classify_intent_from_uol_slots(
     text: str,
     tokens: tuple[str, ...],
-    *,
     trusted_contact_names: tuple[str, ...] = (),
-    lexical_class_lookup: Callable[[str], frozenset[str]] | None = None,
-    lexicon_owned_families: frozenset[str] = frozenset(),
+
 ) -> AssistantIntent:
     functional_parse = parse_functional_relations(tokens, question_mark="?" in text)
     if _is_assistant_identity_request(text, tokens):
@@ -1396,8 +1376,7 @@ def _classify_intent_from_uol_slots(
     if _is_story_request(
         text,
         tokens,
-        lexical_class_lookup=lexical_class_lookup,
-        lexicon_owned="story" in lexicon_owned_families,
+
     ) and (
         functional_parse is None
         or functional_parse.speech_act in {"request", "yes_no_question", "wh_question"}
@@ -1406,30 +1385,51 @@ def _classify_intent_from_uol_slots(
     if _is_weather_request(
         text,
         tokens,
-        lexical_class_lookup=lexical_class_lookup,
-        lexicon_owned="weather" in lexicon_owned_families,
+
     ):
         return "weather"
-    if _is_common_sense_safety_request(text, tokens):
+    if _is_common_sense_safety_request(
+        text,
+        tokens,
+
+    ):
         return "common_sense_safety"
     if _is_media_request(
         text,
         tokens,
-        lexical_class_lookup=lexical_class_lookup,
-        lexicon_owned="media" in lexicon_owned_families,
+
     ):
         return "media_playback"
-    if _is_health_advice_request(text, tokens):
+    if _is_health_advice_request(
+        text,
+        tokens,
+
+    ):
         return "health_advice"
     if _is_social_contact_request(
-        text, tokens, trusted_contact_names=trusted_contact_names
+        text,
+        tokens,
+        trusted_contact_names=trusted_contact_names,
+
     ):
         return "social_contact"
-    if _is_personal_memory_frame(text, tokens):
+    if _is_personal_memory_frame(
+        text,
+        tokens,
+
+    ):
         return "personal_memory"
-    if _is_autobiographical_debug_request(text, tokens):
+    if _is_autobiographical_debug_request(
+        text,
+        tokens,
+
+    ):
         return "autobiographical_memory"
-    if _is_meal_suggestion_request(text, tokens):
+    if _is_meal_suggestion_request(
+        text,
+        tokens,
+
+    ):
         return "meal_suggestion"
     functional_kind = functional_frame_kind(functional_parse)
     if functional_kind in {
@@ -1457,17 +1457,12 @@ def _is_assistant_status_request(
 def _is_story_request(
     text: str,
     tokens: tuple[str, ...],
-    *,
-    lexical_class_lookup: Callable[[str], frozenset[str]] | None = None,
-    lexicon_owned: bool = False,
 ) -> bool:
     token_set = set(tokens)
     story_objects = _semantic_family_terms(
         tokens,
-        fallback={"story", "stories", "tale", "tales", "fable", "fables"},
         semantic_classes={"narrative_content"},
-        lexical_class_lookup=lexical_class_lookup,
-        lexicon_owned=lexicon_owned,
+
     )
     if not token_set & story_objects:
         return False
@@ -1545,19 +1540,23 @@ def _available_story_inventory_label(story_models: dict[str, str]) -> str:
 def _is_weather_request(
     text: str,
     tokens: tuple[str, ...],
-    *,
-    lexical_class_lookup: Callable[[str], frozenset[str]] | None = None,
-    lexicon_owned: bool = False,
+
+
+
 ) -> bool:
     token_set = set(tokens)
     weather_terms = _semantic_family_terms(
         tokens,
-        fallback={"weather", "forecast", "temperature", "rain"},
         semantic_classes={"weather_phenomenon"},
-        lexical_class_lookup=lexical_class_lookup,
-        lexicon_owned=lexicon_owned,
+
+
     )
-    if _is_weather_concept_question(tokens, weather_terms=weather_terms):
+    if _is_weather_concept_question(
+        tokens,
+        weather_terms=weather_terms,
+
+
+    ):
         return False
     weather_object = bool(
         token_set & weather_terms & {"weather", "forecast", "temperature"}
@@ -1574,51 +1573,64 @@ def _is_weather_request(
 
 def _is_weather_concept_question(
     tokens: tuple[str, ...],
-    *,
     weather_terms: set[str] | None = None,
+
+
+
 ) -> bool:
     token_set = set(tokens)
-    if _weather_observation_context(tokens):
+    if _weather_observation_context(
+        tokens,
+
+    ):
         return False
     weather_terms = weather_terms or {"weather", "forecast", "temperature"}
     concept_terms = {
-        "define",
-        "explain",
-        "mean",
-        "means",
-        "work",
-        "works",
-        "system",
-        "systems",
+        "define", "explain", "mean", "means",
+        "system", "systems",
     }
     return bool(
         token_set & weather_terms
         and (
             token_set & concept_terms
+            or token_set & {"work", "works"}
             or _is_bare_domain_definition_question(tokens, weather_terms)
             or tokens[:1] in {("how",), ("why",)}
         )
     )
 
 
+_IN_MEMORY_LEXICON: dict[str, frozenset[str]] = build_legacy_in_memory_lexicon()
+
+
+def replace_in_memory_lexicon(
+    lexicon: dict[str, frozenset[str]],
+) -> None:
+    _IN_MEMORY_LEXICON.clear()
+    _IN_MEMORY_LEXICON.update(lexicon)
+
+
 def _semantic_family_terms(
     tokens: tuple[str, ...],
-    *,
-    fallback: set[str],
     semantic_classes: set[str],
-    lexical_class_lookup: Callable[[str], frozenset[str]] | None,
-    lexicon_owned: bool,
 ) -> set[str]:
-    if not lexicon_owned:
-        return set(tokens) & fallback
-    if lexical_class_lookup is None:
-        return set()
-    return {token for token in tokens if lexical_class_lookup(token) & semantic_classes}
+    return {
+        token
+        for token in tokens
+        if _IN_MEMORY_LEXICON.get(token, frozenset()) & semantic_classes
+    }
 
 
-def _weather_observation_context(tokens: tuple[str, ...]) -> bool:
-    token_set = set(tokens)
-    if token_set & {"today", "tomorrow", "outside", "now", "tonight", "week", "weekly"}:
+def _weather_observation_context(
+    tokens: tuple[str, ...],
+) -> bool:
+    time_terms = _semantic_family_terms(
+        tokens,
+        semantic_classes={"temporal_descriptor", "public_place"},
+
+
+    )
+    if time_terms:
         return True
     live_weather_sequences = (
         ("the", "weather"),
@@ -1656,25 +1668,38 @@ def _story_request_question(text: str, tokens: tuple[str, ...]) -> bool:
     return False
 
 
-def _is_common_sense_safety_request(text: str, tokens: tuple[str, ...]) -> bool:
+def _is_common_sense_safety_request(
+    text: str,
+    tokens: tuple[str, ...],
+
+
+
+) -> bool:
     token_set = set(tokens)
+    clothing_terms = _semantic_family_terms(
+        tokens,
+        semantic_classes={"clothing_item"},
+
+
+    )
+    public_context = _semantic_family_terms(
+        tokens,
+        semantic_classes={"public_place"},
+
+
+    )
+    undress_terms = _semantic_family_terms(
+        tokens,
+        semantic_classes={"undress_state"},
+
+
+    )
     safety_frame = (
         _is_question_like(text, tokens)
         or _is_request_like(tokens)
-        or bool(
-            token_set
-            & {
-                "go",
-                "going",
-                "wear",
-                "dress",
-                "dressed",
-                "school",
-                "class",
-                "outside",
-                "public",
-            }
-        )
+        or bool(token_set & {"go", "going"})
+        or clothing_terms
+        or public_context
     )
     safety_subject_or_context = bool(
         token_set
@@ -1685,78 +1710,64 @@ def _is_common_sense_safety_request(text: str, tokens: tuple[str, ...]) -> bool:
             "go",
             "going",
             "walk",
-            "wear",
-            "dress",
-            "dressed",
-            "school",
-            "class",
-            "outside",
-            "public",
         }
-    )
-    if token_set & {"naked", "undressed"}:
+    ) or clothing_terms or public_context
+    if undress_terms:
         return safety_frame and safety_subject_or_context
     if {"without", "clothes"} <= token_set:
         return safety_frame and safety_subject_or_context
     if not safety_frame:
         return False
-    clothing_terms = {"wear", "clothes", "coat", "raincoat", "dress", "dressed"}
-    public_context = {"school", "class", "outside", "public"}
-    return bool(token_set & clothing_terms and token_set & public_context)
+    return bool(clothing_terms and public_context)
 
 
-def _is_health_advice_request(text: str, tokens: tuple[str, ...]) -> bool:
+def _is_health_advice_request(
+    text: str,
+    tokens: tuple[str, ...],
+
+
+
+) -> bool:
     token_set = set(tokens)
-    health_terms = {
-        "health",
-        "healthy",
-        "healthier",
-        "wellness",
-    }
-    care_terms = {
-        "doctor",
-        "diagnose",
-        "rash",
-        "medicine",
-        "medication",
-        "fever",
-        "sick",
-        "ill",
-        "pain",
-    }
+    health_terms = _semantic_family_terms(
+        tokens,
+        semantic_classes={"health_domain"},
+
+
+    )
+    care_terms = _semantic_family_terms(
+        tokens,
+        semantic_classes={"health_condition"},
+
+
+    )
     if _has_urgent_health_frame(tokens):
         return True
+    advice_terms = _semantic_family_terms(
+        tokens,
+        semantic_classes={"advice_action"},
+
+
+    )
     advice_frame = (
         _is_question_like(text, tokens)
         or _is_request_like(tokens)
-        or bool(token_set & {"advice", "advise", "help", "improve"})
+        or bool(advice_terms)
     )
     if not advice_frame:
         return False
     personal_context = bool(token_set & {"i", "me", "my", "myself"})
     health_action_context = bool(
-        token_set
-        & {
-            "advice",
-            "advise",
-            "better",
-            "do",
-            "goals",
-            "goal",
-            "help",
-            "improve",
-            "sleep",
-            "take",
-            "see",
-        }
+        advice_terms
+        or token_set & {"better", "do", "goals", "goal", "sleep", "take", "see"}
     )
     health_question_context = tokens[:1] in {("how",), ("should",)} or (
         tokens[:1] in {("what",), ("can",), ("could",)}
         and (personal_context or health_action_context)
     )
-    if token_set & health_terms:
+    if health_terms:
         return personal_context or health_action_context or health_question_context
-    if token_set & care_terms:
+    if care_terms:
         return personal_context or health_action_context
     return False
 
@@ -1764,18 +1775,44 @@ def _is_health_advice_request(text: str, tokens: tuple[str, ...]) -> bool:
 def _is_social_contact_request(
     text: str,
     tokens: tuple[str, ...] | None = None,
-    *,
     trusted_contact_names: tuple[str, ...] = (),
+
+
+
 ) -> bool:
     token_tuple = tokens or _tokenize(text)
     token_set = set(token_tuple)
+    contact_terms = _semantic_family_terms(
+        token_tuple,
+        semantic_classes={"contact_action"},
+
+
+    )
+    talk_terms = _semantic_family_terms(
+        token_tuple,
+        semantic_classes={"communication_action"},
+
+
+    )
+    target_terms = _semantic_family_terms(
+        token_tuple,
+        semantic_classes={"social_relation"},
+
+
+    )
     if token_tuple[:1] in {("call",), ("phone",), ("ring",)}:
         return _has_contact_target(
-            token_tuple, trusted_contact_names=trusted_contact_names
+            token_tuple,
+            trusted_contact_names=trusted_contact_names,
+    
+    
         )
-    if token_set & {"call", "ring"} and _is_request_like(token_tuple):
+    if contact_terms and _is_request_like(token_tuple):
         return _has_contact_target(
-            token_tuple, trusted_contact_names=trusted_contact_names
+            token_tuple,
+            trusted_contact_names=trusted_contact_names,
+    
+    
         )
     if (
         "phone" in token_set
@@ -1783,19 +1820,22 @@ def _is_social_contact_request(
         and _is_request_like(token_tuple)
     ):
         return _has_contact_target(
-            token_tuple, trusted_contact_names=trusted_contact_names
+            token_tuple,
+            trusted_contact_names=trusted_contact_names,
+    
+    
         )
     if "reach" in token_set and _has_contact_target(
         token_tuple,
         trusted_contact_names=trusted_contact_names,
+
+
     ):
         return True
-    talk_terms = {"talk", "talking", "speak", "speaking"}
-    target_terms = {"someone", "person", "caregiver", "contact", "adult", "mom", "dad"}
     return bool(
-        token_set & talk_terms
+        talk_terms
         and (
-            token_set & target_terms
+            target_terms
             or _matched_trusted_contact_name(token_tuple, trusted_contact_names)
         )
         and (
@@ -1807,25 +1847,19 @@ def _is_social_contact_request(
 
 def _has_contact_target(
     tokens: tuple[str, ...],
-    *,
     trusted_contact_names: tuple[str, ...] = (),
+
+
+
 ) -> bool:
-    target_terms = {
-        "someone",
-        "person",
-        "caregiver",
-        "contact",
-        "adult",
-        "mom",
-        "dad",
-        "sister",
-        "brother",
-        "daughter",
-        "son",
-        "child",
-    }
+    relation_terms = _semantic_family_terms(
+        tokens,
+        semantic_classes={"social_relation", "child_relation"},
+
+
+    )
     return bool(
-        set(tokens) & target_terms
+        relation_terms
         or _matched_trusted_contact_name(tokens, trusted_contact_names)
     )
 
@@ -1844,36 +1878,63 @@ def _phone_is_contact_action(tokens: tuple[str, ...]) -> bool:
     return False
 
 
-def _is_personal_memory_frame(text: str, tokens: tuple[str, ...]) -> bool:
+def _is_personal_memory_frame(
+    text: str,
+    tokens: tuple[str, ...],
+
+
+
+) -> bool:
     token_set = set(tokens)
     if _is_private_cloud_export_request(text, tokens):
         return True
-    if _is_child_memory_request(tokens):
+    if _is_child_memory_request(
+        tokens,
+
+
+    ):
         return True
+    memory_cognition = _semantic_family_terms(
+        tokens,
+        semantic_classes={"memory_recall"},
+
+
+    )
     memory_frame = (
         _is_question_like(text, tokens)
         or _is_request_like(tokens)
-        or bool(token_set & {"know", "remember", "recall", "forget"})
+        or bool(memory_cognition)
     )
-    if _is_routine_memory_request(tokens):
+    if _is_routine_memory_request(
+        tokens,
+
+
+    ):
         owned_or_recalled = bool(
             token_set & {"my", "our", "me", "i"}
-            or token_set & {"know", "remember", "recall"}
+            or memory_cognition
             or _about_targets_self(tokens)
         )
         return memory_frame and owned_or_recalled
-    if _is_household_memory_request(tokens):
+    if _is_household_memory_request(
+        tokens,
+
+
+    ):
         owned_or_recalled = bool(
             token_set & {"my", "our", "we", "us", "this"}
-            or token_set & {"memory", "know", "remember", "recall"}
-            or _is_device_user_memory_question(tokens)
+            or memory_cognition
+            or _is_device_user_memory_question(
+                tokens,
+        
+        
+            )
         )
         return memory_frame and owned_or_recalled
     if {"who", "am", "i"} <= token_set:
         return True
-    recall_terms = {"remember", "know", "recall"}
     first_person_targets = {"me", "my", "myself", "i"}
-    if token_set & recall_terms and token_set & first_person_targets:
+    if memory_cognition and token_set & first_person_targets:
         return True
     return _about_targets_self(tokens)
 
@@ -1892,7 +1953,11 @@ def _about_targets_self(tokens: tuple[str, ...]) -> bool:
 
 
 def _is_autobiographical_debug_request(
-    text: str, tokens: tuple[str, ...] | None = None
+    text: str,
+    tokens: tuple[str, ...] | None = None,
+
+
+
 ) -> bool:
     token_tuple = tokens or _tokenize(text)
     token_set = set(token_tuple)
@@ -1904,35 +1969,31 @@ def _is_autobiographical_debug_request(
         return True
     if _autobiographical_latest_event_frame(text, token_tuple):
         return True
-    event_objects = {
-        "conversation",
-        "conversations",
-        "session",
-        "sessions",
-        "question",
-        "questions",
-        "answer",
-        "answers",
-    }
-    recall_actions = {
-        "talk",
-        "talked",
-        "ask",
-        "asked",
-        "answer",
-        "answered",
-        "summarize",
-        "recap",
-        "happened",
-    }
-    temporal_scope = {"earlier", "previous", "recent", "last", "past"}
+    event_objects = _semantic_family_terms(
+        token_tuple,
+        semantic_classes={"autobiographical_event"},
+
+
+    )
+    recall_actions = _semantic_family_terms(
+        token_tuple,
+        semantic_classes={"autobiographical_action"},
+
+
+    )
+    temporal_scope = _semantic_family_terms(
+        token_tuple,
+        semantic_classes={"temporal_descriptor"},
+
+
+    )
     shared_context = bool(
         token_set & {"we", "our"}
-        and token_set & {"talk", "talked", "conversation", "conversations"}
+        and (token_set & {"talk", "talked", "conversation", "conversations"})
     )
     return bool(
-        (token_set & event_objects or shared_context)
-        and (token_set & recall_actions or token_set & temporal_scope)
+        (event_objects or shared_context)
+        and (recall_actions or temporal_scope)
     )
 
 
@@ -2002,32 +2063,21 @@ def _autobiographical_latest_event_frame(text: str, tokens: tuple[str, ...]) -> 
 def _is_media_request(
     text: str,
     tokens: tuple[str, ...],
-    *,
-    lexical_class_lookup: Callable[[str], frozenset[str]] | None = None,
-    lexicon_owned: bool = False,
+
+
+
 ) -> bool:
     token_set = set(tokens)
     media_objects = _semantic_family_terms(
         tokens,
-        fallback={
-            "song",
-            "music",
-            "piano",
-            "radio",
-            "lofi",
-            "audio",
-            "track",
-            "sound",
-            "sounds",
-        },
         semantic_classes={
             "media_content",
             "media_descriptor",
             "physical_object.instrument",
             "physical_object.media_source",
         },
-        lexical_class_lookup=lexical_class_lookup,
-        lexicon_owned=lexicon_owned,
+
+
     )
     media_action = bool(token_set & {"play", "start"})
     if media_action and token_set & media_objects:
@@ -2037,10 +2087,21 @@ def _is_media_request(
     return False
 
 
-def _is_meal_suggestion_request(text: str, tokens: tuple[str, ...]) -> bool:
+def _is_meal_suggestion_request(
+    text: str,
+    tokens: tuple[str, ...],
+
+
+
+) -> bool:
     token_set = set(tokens)
-    food_terms = {"eat", "food", "lunch", "dinner", "breakfast", "meal", "cook"}
-    if not token_set & food_terms:
+    food_terms = _semantic_family_terms(
+        tokens,
+        semantic_classes={"food_item"},
+
+
+    )
+    if not food_terms:
         return False
     if _meal_request_is_direct_suggestion(tokens):
         return True
@@ -3455,7 +3516,6 @@ def _personal_memory_object_from_text(text: str, tokens: tuple[str, ...]) -> str
 
 def _contact_object_from_tokens(
     tokens: tuple[str, ...],
-    *,
     trusted_contact_names: tuple[str, ...] = (),
 ) -> str:
     trusted_contact = _matched_trusted_contact_name(tokens, trusted_contact_names)
@@ -4172,48 +4232,107 @@ def _is_broad_personal_memory_request(tokens: tuple[str, ...]) -> bool:
     return False
 
 
-def _is_routine_memory_request(tokens: tuple[str, ...]) -> bool:
+def _is_routine_memory_request(
+    tokens: tuple[str, ...],
+
+
+
+) -> bool:
     token_set = set(tokens)
-    if token_set & {"routine", "schedule", "morning", "bedtime"}:
+    routine_terms = _semantic_family_terms(
+        tokens,
+        semantic_classes={"routine_concept"},
+
+
+    )
+    if routine_terms:
         return True
-    return bool({"school", "day"} <= token_set or {"work", "day"} <= token_set)
+    day_terms = _semantic_family_terms(
+        tokens,
+        semantic_classes={"temporal_descriptor"},
 
 
-def _is_household_memory_request(tokens: tuple[str, ...]) -> bool:
-    token_set = set(tokens)
-    if token_set & {"household", "family"}:
-        return True
-    if {"shared", "device"} <= token_set:
-        return True
-    return _is_device_user_memory_question(tokens)
-
-
-def _is_device_user_memory_question(tokens: tuple[str, ...]) -> bool:
-    token_set = set(tokens)
+    )
     return bool(
-        "who" in token_set
-        and token_set & {"use", "uses", "using"}
-        and token_set & {"device", "assistant"}
+        ({"school"} & day_terms or {"work"} & day_terms)
+        and {"day"} & day_terms
     )
 
 
-def _is_child_memory_request(tokens: tuple[str, ...]) -> bool:
+def _is_household_memory_request(
+    tokens: tuple[str, ...],
+
+
+
+) -> bool:
     token_set = set(tokens)
-    child_terms = {
-        "child",
-        "kid",
-        "son",
-        "daughter",
-        "child's",
-        "kid's",
-        "son's",
-        "daughter's",
-    }
-    if not token_set & child_terms:
+    household_terms = _semantic_family_terms(
+        tokens,
+        semantic_classes={"household_concept"},
+
+
+    )
+    if household_terms:
+        return True
+    owner_terms = _semantic_family_terms(
+        tokens,
+        semantic_classes={"owner_concept", "hardware_entity"},
+
+
+    )
+    if len(owner_terms) >= 2:
+        return True
+    return _is_device_user_memory_question(
+        tokens,
+
+
+    )
+
+
+def _is_device_user_memory_question(
+    tokens: tuple[str, ...],
+
+
+
+) -> bool:
+    token_set = set(tokens)
+    action_terms = _semantic_family_terms(
+        tokens,
+        semantic_classes={"action_verb"},
+
+
+    )
+    hardware_terms = _semantic_family_terms(
+        tokens,
+        semantic_classes={"hardware_entity"},
+
+
+    )
+    return bool(
+        "who" in token_set
+        and action_terms
+        and hardware_terms
+    )
+
+
+def _is_child_memory_request(
+    tokens: tuple[str, ...],
+
+
+
+) -> bool:
+    token_set = set(tokens)
+    child_terms = _semantic_family_terms(
+        tokens,
+        semantic_classes={"child_relation"},
+
+
+    )
+    if not child_terms:
         return False
-    possessive_child = bool(token_set & {"child's", "kid's", "son's", "daughter's"})
-    owned_child = bool(token_set & {"my", "our"} and token_set & child_terms)
-    about_child = bool("about" in token_set and token_set & child_terms)
+    possessive_child = bool(child_terms & {"child's", "kid's", "son's", "daughter's"})
+    owned_child = bool(token_set & {"my", "our"} and child_terms)
+    about_child = bool("about" in token_set and child_terms)
     return possessive_child or owned_child or about_child
 
 

@@ -17,10 +17,6 @@ from .assistant_inventory import (
     story_items_to_inventory_rows,
 )
 from .assistant_os_store import AssistantOSStore
-from .assistant_lexicon import (
-    lexical_classes_for_term,
-    load_lexicon_router_families,
-)
 from .assistant_synthesis import BoundedLocalSynthesizer, BoundedSynthesisResult
 from .local_assistant_router import (
     AssistantDecision,
@@ -31,6 +27,7 @@ from .local_assistant_router import (
     compose_autobiographical_memory_frame,
     compose_assistant_status_frame,
     parse_assistant_debug_frame,
+    replace_in_memory_lexicon,
 )
 
 
@@ -204,6 +201,7 @@ class AssistantOSKernel:
             ]
             self.executed_jobs = self.store.load_executed_jobs()
             self._persist_profile_and_self_model()
+            self._rebuild_router_lexicon_cache()
 
     def handle(self, utterance: str) -> AssistantDecision:
         decision = self.decide(utterance)
@@ -271,20 +269,8 @@ class AssistantOSKernel:
             if synthesis.applied:
                 return replace(autobiographical_recall, answer=synthesis.answer)
             return autobiographical_recall
-        lexical_lookup = None
-        lexicon_owned_families = frozenset()
-        if self.store is not None:
-            lexicon_owned_families = load_lexicon_router_families(self.store)
-            lexical_cache: dict[str, frozenset[str]] = {}
-
-            def lexical_lookup(term: str) -> frozenset[str]:
-                if term not in lexical_cache:
-                    lexical_cache[term] = lexical_classes_for_term(self.store, term)
-                return lexical_cache[term]
         decision = OnDeviceAssistantRouter(
             self.profile,
-            lexical_class_lookup=lexical_lookup,
-            lexicon_owned_families=lexicon_owned_families,
         ).handle(utterance)
         membrane = MembranePolicy().evaluate(decision, fact_privacy=self._fact_privacy_index())
         if not membrane.allowed:
@@ -1097,6 +1083,29 @@ class AssistantOSKernel:
     @staticmethod
     def _self_model_from_profile(profile: LocalAssistantProfile) -> SelfModel:
         return self_model_from_profile(profile)
+
+    def _rebuild_router_lexicon_cache(self) -> None:
+        rows = self.store.connection.execute(
+            """
+            SELECT l.normalized_lemma, s.semantic_class_id
+            FROM lexemes AS l
+            JOIN lexical_senses AS s ON s.lexeme_id = l.lexeme_id
+            WHERE s.status = 'active'
+            """
+        ).fetchall()
+        if rows:
+            from collections import defaultdict
+            lexicon: dict[str, set[str]] = defaultdict(set)
+            for row in rows:
+                lemma = str(row["normalized_lemma"])
+                class_id = str(row["semantic_class_id"])
+                lexicon[lemma].add(class_id)
+            replace_in_memory_lexicon(
+                {k: frozenset(v) for k, v in lexicon.items()}
+            )
+            return
+        from .assistant_lexicon_legacy import build_legacy_in_memory_lexicon
+        replace_in_memory_lexicon(build_legacy_in_memory_lexicon())
 
     def _persist_profile_and_self_model(self) -> None:
         if self.store is None:

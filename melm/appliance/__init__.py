@@ -134,6 +134,7 @@ from .assistant_os_store import (
     StoredInventoryJob,
     StoredAssistantEvent,
     initialize_assistant_os_database,
+    seed_assistant_os_lexicon,
     seed_assistant_os_store,
 )
 from .assistant_lexicon import (
@@ -348,6 +349,7 @@ __all__ = [
     "run_child_capability_probe",
     "run_child_context_budget_probe",
     "run_realistic_assistant_lifecycle_probe",
+    "seed_assistant_os_lexicon",
     "seed_assistant_os_store",
     "media_items_to_inventory_rows",
     "schedule_inventory_refreshes",

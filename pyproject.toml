@@ -12,6 +12,9 @@ tokenizers = ["tokenizers>=0.21"]
 training = ["torch>=2.6"]
 dev = []
 
+[project.scripts]
+melm = "melm.__main__:main"
+
 [tool.setuptools.packages.find]
 include = ["melm*"]
 

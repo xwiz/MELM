@@ -24,7 +24,7 @@ def main() -> int:
     args = parser.parse_args()
 
     output = write_legacy_lexicon_candidates(args.out)
-    candidates = build_legacy_lexicon_candidates() + build_legacy_router_candidates()
+    candidates = build_legacy_lexicon_candidates() + build_legacy_router_candidates(seed_all=True)
     print(
         json.dumps(
             {
