@@ -288,13 +288,13 @@ def acquire_definition(
         if not word or not rest:
             continue
 
-        definition = _clean_definition(rest, word)
+        definition = _clean_definition(rest)
         genus_lemma = _extract_genus_lemma(rest)
 
         reserved, policy = _controlled_lexemes()
         lemma_lower = word.lower()
         candidates_confidence = _compute_class_candidates(
-            store, genus_lemma, definition, default_pos,
+            store, genus_lemma, default_pos,
         )
 
         candidate = {
@@ -327,12 +327,9 @@ def acquire_definition(
     return None
 
 
-def _clean_definition(rest: str, lemma: str) -> str:
+def _clean_definition(rest: str) -> str:
     """Build a cleaned definition string from the predicate."""
-    cleaned = rest.strip().rstrip(".!?")
-    if cleaned.lower().startswith(("a ", "an ")):
-        return cleaned
-    return cleaned
+    return rest.strip().rstrip(".!?")
 
 
 def _extract_genus_lemma(rest: str) -> str:
@@ -350,7 +347,6 @@ def _extract_genus_lemma(rest: str) -> str:
 def _compute_class_candidates(
     store: AssistantOSStore,
     genus_lemma: str,
-    definition: str,
     pos: str,
 ) -> list[dict[str, object]]:
     """Look up genus in the lexicon to produce semantic-class candidates.
@@ -418,7 +414,7 @@ def offline_definition_lookup(
                 continue
 
             candidate = _build_dictionary_candidate(
-                store, entry, normalized_word, timestamp,
+                store, entry, timestamp,
             )
             if candidate is None:
                 continue
@@ -439,7 +435,6 @@ def offline_definition_lookup(
 def _build_dictionary_candidate(
     store: AssistantOSStore,
     entry: dict[str, object],
-    normalized_word: str,
     timestamp: str,
 ) -> dict[str, object] | None:
     """Build a ``sense_candidate.v1`` dict from a single dictionary JSON entry."""
@@ -447,6 +442,8 @@ def _build_dictionary_candidate(
     if not lemma:
         return None
     pos = str(entry.get("pos", "noun")).strip().lower()
+    if pos not in {"noun", "verb", "adjective", "adverb", "other"}:
+        pos = "noun"
     definition = str(entry.get("definition", "")).strip()
     if not definition:
         return None
@@ -455,7 +452,7 @@ def _build_dictionary_candidate(
         genus_lemma = _extract_genus_lemma(definition)
 
     candidates_confidence = _compute_class_candidates(
-        store, genus_lemma, definition, pos,
+        store, genus_lemma, pos,
     )
     reserved, policy = _controlled_lexemes()
     lemma_lower = lemma.lower()
