@@ -374,6 +374,114 @@ def _compute_class_candidates(
     ]
 
 
+def offline_definition_lookup(
+    store: AssistantOSStore,
+    word: str,
+    *,
+    dictionary_path: str,
+    recorded_at: str | None = None,
+) -> list[LexiconIngestResult]:
+    """Look up *word* in a local JSONL dictionary and ingest through the gate.
+
+    Each JSONL line must be a JSON object with at minimum ``lemma`` and
+    ``definition`` fields.  Optional fields: ``pos`` (default ``"noun"``),
+    ``genus_lemma`` (auto-extracted from definition if absent).
+
+    Every candidate is ingested with ``provenance=offline_dictionary``,
+    ``suggested_status=quarantined``, and ``confidence_prior=0.70`` per
+    the ``sense_candidate.v1`` contract policy for this source.
+
+    Returns a list of ``LexiconIngestResult`` — one per matching dictionary
+    entry successfully ingested.  Entries that fail contract validation are
+    silently rejected (the ingestion gate records them).
+    """
+    normalized_word = _normalize_term(word)
+    if not normalized_word:
+        return []
+    timestamp = recorded_at or _timestamp()
+    results: list[LexiconIngestResult] = []
+
+    try:
+        fh = open(dictionary_path, "r", encoding="utf-8")
+    except OSError:
+        return []
+    with fh:
+        for raw_line in fh:
+            line = raw_line.strip()
+            if not line:
+                continue
+            try:
+                entry = json.loads(line)
+            except json.JSONDecodeError:
+                continue
+            if str(entry.get("lemma", "")).strip().lower() != normalized_word:
+                continue
+
+            candidate = _build_dictionary_candidate(
+                store, entry, normalized_word, timestamp,
+            )
+            if candidate is None:
+                continue
+            try:
+                result = lexicon_ingest(
+                    store,
+                    candidate,
+                    expected_provenance="offline_dictionary",
+                    recorded_at=timestamp,
+                )
+                results.append(result)
+            except ContractValidationError:
+                pass
+
+    return results
+
+
+def _build_dictionary_candidate(
+    store: AssistantOSStore,
+    entry: dict[str, object],
+    normalized_word: str,
+    timestamp: str,
+) -> dict[str, object] | None:
+    """Build a ``sense_candidate.v1`` dict from a single dictionary JSON entry."""
+    lemma = str(entry.get("lemma", "")).strip()
+    if not lemma:
+        return None
+    pos = str(entry.get("pos", "noun")).strip().lower()
+    definition = str(entry.get("definition", "")).strip()
+    if not definition:
+        return None
+    genus_lemma = str(entry.get("genus_lemma", "")).strip()
+    if not genus_lemma:
+        genus_lemma = _extract_genus_lemma(definition)
+
+    candidates_confidence = _compute_class_candidates(
+        store, genus_lemma, definition, pos,
+    )
+    reserved, policy = _controlled_lexemes()
+    lemma_lower = lemma.lower()
+
+    return {
+        "schema_id": "melm.sense_candidate.v1",
+        "lemma": lemma,
+        "language": str(entry.get("language", "en")),
+        "pos": pos,
+        "source": {
+            "provenance": "offline_dictionary",
+            "source_ref": f"offline_dict:{lemma_lower}:{pos}",
+            "license": str(entry.get("license", "open_source")),
+        },
+        "definition": definition,
+        "genus_lemma": genus_lemma,
+        "semantic_class_candidates": candidates_confidence,
+        "safety": {
+            "reserved_conflict": lemma_lower in reserved,
+            "policy_term_overlap": lemma_lower in policy,
+        },
+        "suggested_status": "quarantined",
+        "confidence_prior": 0.70,
+    }
+
+
 def lookup_lexical_senses(
     store: AssistantOSStore,
     term: str,

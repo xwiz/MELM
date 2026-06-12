@@ -2,6 +2,8 @@ import tempfile
 from pathlib import Path
 import unittest
 
+import json
+
 from melm.appliance import (
     acquire_definition,
     AssistantOSStore,
@@ -9,6 +11,7 @@ from melm.appliance import (
     lexicon_ingest,
     lookup_lexical_senses,
     lookup_lexical_senses_tiered,
+    offline_definition_lookup,
 )
 from melm.contracts import ContractValidationError
 
@@ -541,6 +544,246 @@ class AcquireDefinitionMvpTests(unittest.TestCase):
                     (result.sense_id,),
                 ).fetchone()
                 self.assertEqual(provenance["provenance"], "user_taught")
+            finally:
+                store.close()
+
+
+class OfflineDefinitionLookupMvpTests(unittest.TestCase):
+    """Tests for the offline dictionary lookup channel."""
+
+    def _seed_genus(self, store, term="instrument", class_id="physical_object.instrument"):
+        return lexicon_ingest(
+            store,
+            {
+                "schema_id": "melm.sense_candidate.v1",
+                "lemma": term,
+                "language": "en",
+                "pos": "noun",
+                "source": {"provenance": "seed_authored",
+                           "source_ref": f"test:{term}",
+                           "license": "test"},
+                "definition": f"a test {class_id}",
+                "semantic_class_candidates": [{"class_id": class_id,
+                                               "method": "seed_authored",
+                                               "confidence": 0.95}],
+                "safety": {"reserved_conflict": False, "policy_term_overlap": False},
+                "suggested_status": "active",
+                "confidence_prior": 0.95,
+            },
+            expected_provenance="seed_authored",
+        )
+
+    def _write_jsonl(self, tmp: Path, entries: list[dict]) -> Path:
+        path = tmp / "dictionary.jsonl"
+        with open(path, "w", encoding="utf-8") as f:
+            for entry in entries:
+                f.write(json.dumps(entry) + "\n")
+        return path
+
+    def test_ingests_single_entry_as_quarantined(self) -> None:
+        with tempfile.TemporaryDirectory() as tmp:
+            store = AssistantOSStore(Path(tmp) / "assistant.sqlite")
+            try:
+                self._seed_genus(store)
+                dict_path = self._write_jsonl(
+                    Path(tmp),
+                    [{"lemma": "kalimba", "definition": "a musical instrument"}],
+                )
+                results = offline_definition_lookup(
+                    store, "kalimba", dictionary_path=str(dict_path),
+                )
+                self.assertEqual(len(results), 1)
+                self.assertEqual(results[0].status, "quarantined")
+                senses = lookup_lexical_senses(
+                    store, "kalimba", statuses=("quarantined",),
+                )
+                self.assertEqual(len(senses), 1)
+            finally:
+                store.close()
+
+    def test_empty_jsonl_returns_empty_list(self) -> None:
+        with tempfile.TemporaryDirectory() as tmp:
+            store = AssistantOSStore(Path(tmp) / "assistant.sqlite")
+            try:
+                dict_path = self._write_jsonl(Path(tmp), [])
+                results = offline_definition_lookup(
+                    store, "anything", dictionary_path=str(dict_path),
+                )
+                self.assertEqual(results, [])
+            finally:
+                store.close()
+
+    def test_non_matching_lemma_returns_empty(self) -> None:
+        with tempfile.TemporaryDirectory() as tmp:
+            store = AssistantOSStore(Path(tmp) / "assistant.sqlite")
+            try:
+                dict_path = self._write_jsonl(
+                    Path(tmp),
+                    [{"lemma": "piano", "definition": "a musical instrument"}],
+                )
+                results = offline_definition_lookup(
+                    store, "kalimba", dictionary_path=str(dict_path),
+                )
+                self.assertEqual(results, [])
+            finally:
+                store.close()
+
+    def test_missing_dictionary_returns_empty(self) -> None:
+        with tempfile.TemporaryDirectory() as tmp:
+            store = AssistantOSStore(Path(tmp) / "assistant.sqlite")
+            try:
+                results = offline_definition_lookup(
+                    store, "kalimba", dictionary_path=str(Path(tmp) / "nonexistent.jsonl"),
+                )
+                self.assertEqual(results, [])
+            finally:
+                store.close()
+
+    def test_empty_word_returns_empty(self) -> None:
+        with tempfile.TemporaryDirectory() as tmp:
+            store = AssistantOSStore(Path(tmp) / "assistant.sqlite")
+            try:
+                dict_path = self._write_jsonl(
+                    Path(tmp),
+                    [{"lemma": "kalimba", "definition": "an instrument"}],
+                )
+                results = offline_definition_lookup(
+                    store, "", dictionary_path=str(dict_path),
+                )
+                self.assertEqual(results, [])
+            finally:
+                store.close()
+
+    def test_provenance_is_offline_dictionary(self) -> None:
+        with tempfile.TemporaryDirectory() as tmp:
+            store = AssistantOSStore(Path(tmp) / "assistant.sqlite")
+            try:
+                self._seed_genus(store)
+                dict_path = self._write_jsonl(
+                    Path(tmp),
+                    [{"lemma": "kalimba", "definition": "a musical instrument"}],
+                )
+                results = offline_definition_lookup(
+                    store, "kalimba", dictionary_path=str(dict_path),
+                )
+                self.assertEqual(len(results), 1)
+                prov = store.connection.execute(
+                    "SELECT provenance FROM lexical_provenance WHERE sense_id=?",
+                    (results[0].sense_id,),
+                ).fetchone()
+                self.assertEqual(prov["provenance"], "offline_dictionary")
+            finally:
+                store.close()
+
+    def test_extracts_genus_from_definition(self) -> None:
+        with tempfile.TemporaryDirectory() as tmp:
+            store = AssistantOSStore(Path(tmp) / "assistant.sqlite")
+            try:
+                self._seed_genus(store)
+                dict_path = self._write_jsonl(
+                    Path(tmp),
+                    [{"lemma": "xylophone", "definition": "a musical instrument"}],
+                )
+                results = offline_definition_lookup(
+                    store, "xylophone", dictionary_path=str(dict_path),
+                )
+                self.assertEqual(len(results), 1)
+                sense = lookup_lexical_senses(
+                    store, "xylophone", statuses=("quarantined",),
+                )
+                self.assertEqual(len(sense), 1)
+                self.assertEqual(sense[0]["semantic_class_id"], "physical_object.instrument")
+            finally:
+                store.close()
+
+    def test_missing_genus_results_in_abstract_fallback_class(self) -> None:
+        with tempfile.TemporaryDirectory() as tmp:
+            store = AssistantOSStore(Path(tmp) / "assistant.sqlite")
+            try:
+                dict_path = self._write_jsonl(
+                    Path(tmp),
+                    [{"lemma": "zzzztoken", "definition": "a made-up thing"}],
+                )
+                results = offline_definition_lookup(
+                    store, "zzzztoken", dictionary_path=str(dict_path),
+                )
+                self.assertEqual(len(results), 0)
+            finally:
+                store.close()
+
+    def test_reserved_word_triggers_rejection_not_silent_skip(self) -> None:
+        with tempfile.TemporaryDirectory() as tmp:
+            store = AssistantOSStore(Path(tmp) / "assistant.sqlite")
+            try:
+                self._seed_genus(store)
+                dict_path = self._write_jsonl(
+                    Path(tmp),
+                    [{"lemma": "weather", "definition": "a meteorological phenomenon"}],
+                )
+                results = offline_definition_lookup(
+                    store, "weather", dictionary_path=str(dict_path),
+                )
+                self.assertEqual(len(results), 0)
+            finally:
+                store.close()
+
+    def test_multiple_entries_for_same_lemma_all_attempt_ingestion(self) -> None:
+        with tempfile.TemporaryDirectory() as tmp:
+            store = AssistantOSStore(Path(tmp) / "assistant.sqlite")
+            try:
+                self._seed_genus(store)
+                dict_path = self._write_jsonl(
+                    Path(tmp),
+                    [
+                        {"lemma": "bass", "definition": "a musical instrument"},
+                        {"lemma": "bass", "definition": "a type of fish"},
+                    ],
+                )
+                results = offline_definition_lookup(
+                    store, "bass", dictionary_path=str(dict_path),
+                )
+                self.assertGreaterEqual(len(results), 1)
+            finally:
+                store.close()
+
+    def test_confidence_prior_is_0_70(self) -> None:
+        with tempfile.TemporaryDirectory() as tmp:
+            store = AssistantOSStore(Path(tmp) / "assistant.sqlite")
+            try:
+                self._seed_genus(store)
+                dict_path = self._write_jsonl(
+                    Path(tmp),
+                    [{"lemma": "sitar", "definition": "a musical instrument"}],
+                )
+                results = offline_definition_lookup(
+                    store, "sitar", dictionary_path=str(dict_path),
+                )
+                self.assertEqual(len(results), 1)
+                sense = lookup_lexical_senses(
+                    store, "sitar", statuses=("quarantined",),
+                )
+                self.assertAlmostEqual(sense[0]["confidence"], 0.72, places=2)
+            finally:
+                store.close()
+
+    def test_genus_lemma_on_entry_overrides_auto_extraction(self) -> None:
+        with tempfile.TemporaryDirectory() as tmp:
+            store = AssistantOSStore(Path(tmp) / "assistant.sqlite")
+            try:
+                self._seed_genus(store, "tool", "abstract")
+                dict_path = self._write_jsonl(
+                    Path(tmp),
+                    [{"lemma": "kalimba", "definition": "a musical instrument",
+                      "genus_lemma": "tool"}],
+                )
+                results = offline_definition_lookup(
+                    store, "kalimba", dictionary_path=str(dict_path),
+                )
+                self.assertEqual(len(results), 1)
+                sense = lookup_lexical_senses(
+                    store, "kalimba", statuses=("quarantined",),
+                )
+                self.assertEqual(sense[0]["semantic_class_id"], "abstract")
             finally:
                 store.close()
 

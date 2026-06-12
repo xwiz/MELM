@@ -148,6 +148,7 @@ from .assistant_lexicon import (
     load_lexicon_router_families,
     lookup_lexical_senses,
     lookup_lexical_senses_tiered,
+    offline_definition_lookup,
     TieredLexicalLookup,
     validate_lexicon_router_families,
 )
@@ -310,6 +311,7 @@ __all__ = [
     "acquire_definition",
     "benchmark_lexicon_lookup",
     "build_lexicon_seed",
+    "offline_definition_lookup",
     "build_legacy_lexicon_candidates",
     "build_legacy_router_candidates",
     "compare_assistant_mvp_directions",
