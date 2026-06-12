@@ -3,6 +3,7 @@ from pathlib import Path
 import unittest
 
 from melm.appliance import (
+    acquire_definition,
     AssistantOSStore,
     benchmark_lexicon_lookup,
     lexicon_ingest,
@@ -404,6 +405,142 @@ class AssistantLexiconMvpTests(unittest.TestCase):
                 self.assertEqual(report.dormant_hits, 10)
                 self.assertEqual(report.misses, 10)
                 self.assertGreaterEqual(report.max_ms, report.p95_ms)
+            finally:
+                store.close()
+
+
+class AcquireDefinitionMvpTests(unittest.TestCase):
+    """Tests for the user-teaching definition acquisition channel."""
+
+    def _seed_genus(self, store, term="instrument", class_id="physical_object.instrument"):
+        return _ingest(
+            store,
+            _candidate(term, class_id, provenance="seed_authored",
+                       safety={"reserved_conflict": False, "policy_term_overlap": False},
+                       confidence=0.95),
+        )
+
+    def test_copula_definition_ingests_as_quarantined_sense(self) -> None:
+        with tempfile.TemporaryDirectory() as tmp:
+            store = AssistantOSStore(Path(tmp) / "assistant.sqlite")
+            try:
+                self._seed_genus(store)
+                result = acquire_definition(store, "a kalimba is a musical instrument")
+                self.assertIsNotNone(result)
+                self.assertFalse(result.duplicate_candidate)
+                self.assertTrue(result.created_lexeme)
+                self.assertTrue(result.created_sense)
+                self.assertEqual(result.status, "quarantined")
+
+                senses = lookup_lexical_senses(store, "kalimba", statuses=("quarantined",))
+                self.assertEqual(len(senses), 1)
+                self.assertEqual(senses[0]["semantic_class_id"], "physical_object.instrument")
+                self.assertEqual(senses[0]["status"], "quarantined")
+            finally:
+                store.close()
+
+    def test_copula_definition_normalizes_through_gate(self) -> None:
+        with tempfile.TemporaryDirectory() as tmp:
+            store = AssistantOSStore(Path(tmp) / "assistant.sqlite")
+            try:
+                self._seed_genus(store)
+                result = acquire_definition(store, "A Kalimba is a musical instrument!")
+                self.assertIsNotNone(result)
+                self.assertEqual(result.status, "quarantined")
+                senses = lookup_lexical_senses(store, "kalimba", statuses=("quarantined",))
+                self.assertEqual(len(senses), 1)
+            finally:
+                store.close()
+
+    def test_means_pattern_ingests(self) -> None:
+        with tempfile.TemporaryDirectory() as tmp:
+            store = AssistantOSStore(Path(tmp) / "assistant.sqlite")
+            try:
+                self._seed_genus(store)
+                result = acquire_definition(store, "xylophone means a musical instrument")
+                self.assertIsNotNone(result)
+                self.assertTrue(result.created_lexeme)
+                self.assertEqual(result.status, "quarantined")
+            finally:
+                store.close()
+
+    def test_non_matching_utterance_returns_none(self) -> None:
+        with tempfile.TemporaryDirectory() as tmp:
+            store = AssistantOSStore(Path(tmp) / "assistant.sqlite")
+            try:
+                result = acquire_definition(store, "hello, how are you?")
+                self.assertIsNone(result)
+            finally:
+                store.close()
+
+    def test_empty_utterance_returns_none(self) -> None:
+        with tempfile.TemporaryDirectory() as tmp:
+            store = AssistantOSStore(Path(tmp) / "assistant.sqlite")
+            try:
+                result = acquire_definition(store, "")
+                self.assertIsNone(result)
+                result = acquire_definition(store, "   ")
+                self.assertIsNone(result)
+            finally:
+                store.close()
+
+    def test_unresolved_genus_raises_validation_error(self) -> None:
+        with tempfile.TemporaryDirectory() as tmp:
+            store = AssistantOSStore(Path(tmp) / "assistant.sqlite")
+            try:
+                with self.assertRaisesRegex(Exception, "unresolved genus"):
+                    acquire_definition(store, "a kalimba is a zzzznotaword")
+            finally:
+                store.close()
+
+    def test_reserved_word_raises_on_acquire(self) -> None:
+        with tempfile.TemporaryDirectory() as tmp:
+            store = AssistantOSStore(Path(tmp) / "assistant.sqlite")
+            try:
+                self._seed_genus(store)
+                with self.assertRaisesRegex(Exception, "reserved|is reserved"):
+                    acquire_definition(store, "a weather is a natural phenomenon")
+            finally:
+                store.close()
+
+    def test_genus_with_multiple_classes_uses_all_as_candidates(self) -> None:
+        with tempfile.TemporaryDirectory() as tmp:
+            store = AssistantOSStore(Path(tmp) / "assistant.sqlite")
+            try:
+                _ingest(
+                    store,
+                    _candidate("bass", "physical_object.instrument",
+                               provenance="seed_authored",
+                               safety={"reserved_conflict": False, "policy_term_overlap": False},
+                               confidence=0.95, status="dormant"),
+                )
+                _ingest(
+                    store,
+                    _candidate("bass", "living_thing.animal",
+                               source_ref="wordnet:bass:animal",
+                               provenance="seed_authored",
+                               safety={"reserved_conflict": False, "policy_term_overlap": False},
+                               confidence=0.95, status="dormant"),
+                )
+                result = acquire_definition(store, "a kalimba is a bass")
+                self.assertIsNotNone(result)
+                senses = lookup_lexical_senses(store, "kalimba", statuses=("quarantined",))
+                self.assertEqual(len(senses), 1)
+            finally:
+                store.close()
+
+    def test_provenance_is_user_taught(self) -> None:
+        with tempfile.TemporaryDirectory() as tmp:
+            store = AssistantOSStore(Path(tmp) / "assistant.sqlite")
+            try:
+                self._seed_genus(store)
+                result = acquire_definition(store, "a kalimba is a musical instrument")
+                self.assertIsNotNone(result)
+                provenance = store.connection.execute(
+                    "SELECT provenance FROM lexical_provenance WHERE sense_id=?",
+                    (result.sense_id,),
+                ).fetchone()
+                self.assertEqual(provenance["provenance"], "user_taught")
             finally:
                 store.close()
 

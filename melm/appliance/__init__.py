@@ -138,6 +138,7 @@ from .assistant_os_store import (
     seed_assistant_os_store,
 )
 from .assistant_lexicon import (
+    acquire_definition,
     benchmark_lexicon_lookup,
     configure_lexicon_router_families,
     lexical_classes_for_term,
@@ -306,6 +307,7 @@ __all__ = [
     "assess_response_integrity",
     "assistant_direction_examples",
     "build_assistant_os_dashboard",
+    "acquire_definition",
     "benchmark_lexicon_lookup",
     "build_lexicon_seed",
     "build_legacy_lexicon_candidates",

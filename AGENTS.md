@@ -1,5 +1,5 @@
 ## Goal
-- Migrate vocabulary from code constants (inline sets, LEGACY_ROUTER_TERM_CLASSES) to the factored lexicon store, replacing the transitional `_semantic_family_terms` bridge with a direct store-backed lookup. Build the M2 meaning substrate per the MVP v2 plan: factored lexicon store, semantic-class registry, ingestion gate, and legacy seed migration with bit-identical routing. Verify 112/112 tests pass with zero regressions.
+- Migrate vocabulary from code constants (inline sets, LEGACY_ROUTER_TERM_CLASSES) to the factored lexicon store, replacing the transitional `_semantic_family_terms` bridge with a direct store-backed lookup. Build the M2 meaning substrate per the MVP v2 plan: factored lexicon store, semantic-class registry, ingestion gate, and legacy seed migration with bit-identical routing. Build the M3 learning vertical slice: runtime vocabulary acquisition channels (user-teaching, cloud lookup) with quarantine/promote/rollback lifecycle.
 
 ## Constraints & Preferences
 - All claims must be reproducible by a command on the current tree.
@@ -31,12 +31,13 @@
 - **V3: 15 missing content-word terms added to `LEGACY_ROUTER_TERM_CLASSES`** — `bleeding`, `breathe`, `emergency`, `export`, `faint`, `name`, `poison`, `recommend`, `report`, `see`, `send`, `share`, `suggest`, `take`, `upload` — from inline classifier sets. `play`, `start` omitted (already seeded via FG verb path as non-routing `action` class). Pre-existing duplicate `goals: goal_concept` removed.
 - **V3: `build_legacy_in_memory_lexicon()` extracted** — in `assistant_lexicon_legacy.py`. `LEGACY_ROUTER_TERM_CLASSES` refs removed from `local_assistant_router.py` (module init) and `assistant_os_kernel.py` (cache fallback). Constant now only referenced inside `assistant_lexicon_legacy.py` — single provenance source.
 - **All 126 related tests pass (86 subtests)** — lexicon, seed, legacy, store, kernel, router, and inventory importers. Pre-existing failures: `test_assistant_authority_mvp.py` (`AnswerPlan` import), `test_cli_pi_bundle` (missing `docs/local_assistant_os_mvp_plan.md`).
+- **M3: `acquire_definition(store, utterance)` built** — user-teaching acquisition channel. Detects copula-definition frames ("a kalimba is a small thumb piano") and meaning frames ("X means Y"), parses lemma/genus/definition, walks genus through lexicon for semantic class candidates, ingests via `lexicon_ingest` as `provenance=user_taught`, `status=quarantined`, `confidence_prior=0.60`. 9 new tests cover copula, means, normalization, empty, non-matching, unresolved genus, reserved-word rejection, polysemous genus, and provenance verification.
 
 ### In Progress
 - *(none)*
 
 ### Blocked
-- *(none — contract extension unblocked the full seed path)*
+- *(none)*
 
 ## Key Decisions
 - **In-memory cache is always rebuilt** — `_rebuild_router_lexicon_cache` always replaces `_IN_MEMORY_LEXICON`. Store has data → store data. Store empty → LEGACY baseline. This eliminates test pollution across kernels.
@@ -48,11 +49,14 @@
 - **Centralized dicts are not scattered hacks** — `_secondary_meaning_hint_groups`, `_semantic_object_role_tokens` are per-intent alias blocks for UOL composition, not scattered inline sets.
 
 ## Next Steps
-1. **Build ingestion gate** for runtime vocabulary acquisition (M3 scope) — `acquire_definition`, `build_definition_sense_candidate`, user-taught provenance pipeline.
+1. **Build ingestion gate** for runtime vocabulary acquisition (M3 scope) — DONE: `acquire_definition` built with 9 tests.
 2. **Clean up CLI script** — remove stale imports (`acquire_definition`, `build_definition_sense_candidate`) that were added in a prior M3 stub session but never deployed. ✓
 3. **Remove `LEGACY_ROUTER_TERM_CLASSES`** as module-load cache builder — DONE: extracted `build_legacy_in_memory_lexicon()`; constant is now only referenced inside `assistant_lexicon_legacy.py`.
 4. **Expand `_to_lemma`** for language-agnostic inflection normalization (post-M2).
 5. **Build UOL-based frame linking** to replace keyword classifiers (M5 scope).
+6. **Build offline dictionary lookup** — bundled Wiktextract/WordNet-derived JSONL lookup for words not acquired via user teaching (M3 scope).
+7. **Build membrane-gated cloud lookup** — strict-JSON LLM prompt for word definitions, emitting sense_candidate.v1 (M3 scope).
+8. **Build kalimba end-to-end fixture** — teach → quarantine → minimal pairs → promote → reuse after restart → correct → rollback (M3 gate).
 
 ## Critical Context
 - **132/132 related tests pass** (86 subtests) — contracts, lexicon, seed, legacy, store, kernel, router, and inventory importers.
@@ -72,6 +76,6 @@
 - **`melm/appliance/assistant_os_kernel.py`** — `_rebuild_router_lexicon_cache` (line ~1087): always rebuilds — store data when rows exist, LEGACY reset when empty.
 - **`melm/appliance/assistant_os_store.py`** — `seed_assistant_os_lexicon` (line ~1906): seeds FG + router candidates (all 35 classes). No `ContractValidationError` catch.
 - **`melm/appliance/assistant_lexicon_legacy.py`** — `LEGACY_ROUTER_TERM_CLASSES` (~200+ entries, 35 classes). `build_legacy_router_candidates(seed_all=True)` exports all entries.
-- **`melm/appliance/assistant_lexicon.py`** — `lexicon_ingest` (all 35 LEGACY classes now valid), `configure_lexicon_router_families`.
+- **`melm/appliance/assistant_lexicon.py`** — `lexicon_ingest` (all 35 LEGACY classes now valid), `configure_lexicon_router_families`, `acquire_definition` (user-teaching acquisition channel with regex-based definition frame detection, genus_walk class candidates, quarantine-by-default).
 - **`melm/contracts/semantic_classes.v1.json`** — 89 class IDs (61 original + 28 LEGACY routing labels).
 - **`scripts/local_assistant_os_cli.py`** — bootstrap calls `seed_assistant_os_lexicon(store)` after database init.

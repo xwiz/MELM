@@ -216,6 +216,164 @@ def lexicon_ingest(
         raise
 
 
+# Patterns for detecting user-teaching definition frames.
+# Group "word" captures the defined term (lemma).
+# Group "rest" captures the predicate (definition text).
+_DEFINITION_PATTERNS: list[tuple[re.Pattern, str]] = [
+    # "a kalimba is a small thumb piano"
+    (re.compile(
+        r"^a\s+(?P<word>[a-z0-9']+)\s+is\s+(?:a|an)\s+(?P<rest>.+)$",
+        re.IGNORECASE,
+    ), "noun"),
+    # "kalimba is a thumb piano"
+    (re.compile(
+        r"^(?P<word>[a-z0-9']+)\s+is\s+(?:a|an)\s+(?P<rest>.+)$",
+        re.IGNORECASE,
+    ), "noun"),
+    # "X means Y"
+    (re.compile(
+        r"^(?P<word>[a-z0-9']+)\s+means\s+(?P<rest>.+)$",
+        re.IGNORECASE,
+    ), "verb"),
+    # "X are Y" — plural copula
+    (re.compile(
+        r"^(?P<word>[a-z0-9']+)\s+are\s+(?:a|an)\s+(?P<rest>.+)$",
+        re.IGNORECASE,
+    ), "noun"),
+]
+
+# Words to filter when extracting genus from definition rest.
+_GENUS_SKIP: frozenset[str] = frozenset({
+    "a", "an", "the", "of", "in", "on", "at", "to", "for", "with",
+    "by", "from", "as", "that", "which", "who", "and", "or", "but",
+    "is", "are", "was", "were", "be", "been", "being", "have", "has",
+    "had", "do", "does", "did", "will", "would", "can", "could",
+    "shall", "should", "may", "might", "must", "not", "no", "nor",
+    "very", "quite", "rather", "some", "any", "many", "much", "few",
+    "little", "all", "each", "every", "both", "neither", "either",
+    "this", "that", "these", "those", "it", "its", "they", "them",
+    "their", "what", "when", "where", "why", "how", "there",
+})
+
+
+def acquire_definition(
+    store: AssistantOSStore,
+    utterance: str,
+    *,
+    event_id: str | None = None,
+    recorded_at: str | None = None,
+) -> LexiconIngestResult | None:
+    """Parse a user-teaching definition utterance and ingest through the gate.
+
+    Detects copula-definition frames (e.g. "a kalimba is a small thumb piano")
+    and meaning frames (e.g. "X means Y"), builds a ``sense_candidate.v1``
+    with ``provenance=user_taught``, and ingests via ``lexicon_ingest``.
+
+    Returns the ``LexiconIngestResult`` on success, or ``None`` when the
+    utterance does not match any definition pattern.
+    """
+    stripped = utterance.strip()
+    if not stripped:
+        return None
+    tokens = _normalize_term(stripped)
+    if not tokens:
+        return None
+
+    for pattern, default_pos in _DEFINITION_PATTERNS:
+        m = pattern.match(stripped)
+        if not m:
+            continue
+        word = _normalize_term(m.group("word"))
+        rest = m.group("rest").strip()
+        if not word or not rest:
+            continue
+
+        definition = _clean_definition(rest, word)
+        genus_lemma = _extract_genus_lemma(rest)
+
+        reserved, policy = _controlled_lexemes()
+        lemma_lower = word.lower()
+        candidates_confidence = _compute_class_candidates(
+            store, genus_lemma, definition, default_pos,
+        )
+
+        candidate = {
+            "schema_id": "melm.sense_candidate.v1",
+            "lemma": word,
+            "language": "en",
+            "pos": default_pos,
+            "source": {
+                "provenance": "user_taught",
+                "source_ref": event_id or f"user_taught:{lemma_lower}:{_timestamp()}",
+                "license": "user_provided",
+            },
+            "definition": definition,
+            "genus_lemma": genus_lemma,
+            "semantic_class_candidates": candidates_confidence,
+            "safety": {
+                "reserved_conflict": lemma_lower in reserved,
+                "policy_term_overlap": lemma_lower in policy,
+            },
+            "suggested_status": "quarantined",
+            "confidence_prior": 0.60,
+        }
+        return lexicon_ingest(
+            store,
+            candidate,
+            expected_provenance="user_taught",
+            recorded_at=recorded_at,
+        )
+
+    return None
+
+
+def _clean_definition(rest: str, lemma: str) -> str:
+    """Build a cleaned definition string from the predicate."""
+    cleaned = rest.strip().rstrip(".!?")
+    if cleaned.lower().startswith(("a ", "an ")):
+        return cleaned
+    return cleaned
+
+
+def _extract_genus_lemma(rest: str) -> str:
+    """Extract the genus (head noun) from a definition predicate.
+
+    Takes the last content word from the rest phrase.
+    """
+    words = _normalize_term(rest).split()
+    for word in reversed(words):
+        if word not in _GENUS_SKIP:
+            return word
+    return words[-1] if words else ""
+
+
+def _compute_class_candidates(
+    store: AssistantOSStore,
+    genus_lemma: str,
+    definition: str,
+    pos: str,
+) -> list[dict[str, object]]:
+    """Look up genus in the lexicon to produce semantic-class candidates.
+
+    Returns at least one candidate to satisfy ``sense_candidate.v1`` schema
+    requirements.  The ingestion gate's genus-resolved check will reject
+    unresolvable genera for ``user_taught`` provenance.
+    """
+    if not genus_lemma:
+        return [{"class_id": "abstract", "method": "genus_walk", "confidence": 0.01}]
+    classes = lexical_classes_for_term(store, genus_lemma, statuses=("active", "dormant"))
+    if not classes:
+        return [{"class_id": "abstract", "method": "genus_walk", "confidence": 0.01}]
+    return [
+        {
+            "class_id": cls,
+            "method": "genus_walk",
+            "confidence": 0.72 if pos == "noun" else 0.60,
+        }
+        for cls in sorted(classes)
+    ]
+
+
 def lookup_lexical_senses(
     store: AssistantOSStore,
     term: str,
