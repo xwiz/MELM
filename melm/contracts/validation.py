@@ -139,7 +139,7 @@ def validate_contract_registry(payload: dict[str, Any]) -> None:
             load_contract_json(artifact_path)
 
 
-def _semantic_class_ids() -> set[str]:
+def load_semantic_class_ids() -> set[str]:
     payload = load_contract_json("semantic_classes.v1.json")
     validate_semantic_class_registry(payload)
     return {str(item["class_id"]) for item in payload["classes"]}
@@ -181,7 +181,7 @@ def validate_semantic_class_registry(payload: dict[str, Any]) -> None:
 
 
 def validate_class_maps() -> None:
-    class_ids = _semantic_class_ids()
+    class_ids = load_semantic_class_ids()
     for name in ("wn_supersense_map.v1.json", "verbnet_map.v1.json"):
         payload = load_contract_json(name)
         mappings = payload.get("mappings")
@@ -212,7 +212,7 @@ def validate_router_lexicon_families(payload: dict[str, Any]) -> None:
     families = payload.get("families")
     if not isinstance(families, dict) or not families:
         _fail("$.families", "must be a non-empty object")
-    class_ids = _semantic_class_ids()
+    class_ids = load_semantic_class_ids()
     reserved = load_contract_json("reserved_lexemes.v1.json")
     validate_reserved_lexemes(reserved)
     reserved_terms = set(reserved["lexemes"])
@@ -251,7 +251,7 @@ def validate_sense_candidate(candidate: dict[str, Any]) -> None:
     schema = registry.load_schema("melm.sense_candidate.v1")
     _validate_schema(candidate, schema)
 
-    class_ids = _semantic_class_ids()
+    class_ids = load_semantic_class_ids()
     unknown = sorted(
         {
             str(item["class_id"])

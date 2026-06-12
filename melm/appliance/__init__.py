@@ -140,6 +140,7 @@ from .assistant_os_store import (
 from .assistant_lexicon import (
     acquire_definition,
     benchmark_lexicon_lookup,
+    cloud_definition_lookup,
     configure_lexicon_router_families,
     lexical_classes_for_term,
     LexiconIngestResult,

@@ -1,6 +1,7 @@
 import tempfile
 from pathlib import Path
 import unittest
+from unittest.mock import patch
 
 import json
 
@@ -8,6 +9,7 @@ from melm.appliance import (
     acquire_definition,
     AssistantOSStore,
     benchmark_lexicon_lookup,
+    cloud_definition_lookup,
     lexicon_ingest,
     lookup_lexical_senses,
     lookup_lexical_senses_tiered,
@@ -782,6 +784,319 @@ class OfflineDefinitionLookupMvpTests(unittest.TestCase):
                 self.assertEqual(len(results), 1)
                 sense = lookup_lexical_senses(
                     store, "kalimba", statuses=("quarantined",),
+                )
+                self.assertEqual(sense[0]["semantic_class_id"], "abstract")
+            finally:
+                store.close()
+
+
+class _MockResponse:
+    """Minimal file-like object that simulates ``urlopen`` context."""
+
+    def __init__(self, data: bytes) -> None:
+        self._data = data
+
+    def read(self) -> bytes:
+        return self._data
+
+    def __enter__(self):
+        return self
+
+    def __exit__(self, *args: object) -> None:
+        pass
+
+
+class CloudDefinitionLookupMvpTests(unittest.TestCase):
+    """Tests for the cloud LLM definition lookup channel."""
+
+    def _seed_genus(self, store, term="instrument", class_id="physical_object.instrument"):
+        return lexicon_ingest(
+            store,
+            {
+                "schema_id": "melm.sense_candidate.v1",
+                "lemma": term,
+                "language": "en",
+                "pos": "noun",
+                "source": {"provenance": "seed_authored",
+                           "source_ref": f"test:{term}",
+                           "license": "test"},
+                "definition": f"a test {class_id}",
+                "semantic_class_candidates": [{"class_id": class_id,
+                                               "method": "seed_authored",
+                                               "confidence": 0.95}],
+                "safety": {"reserved_conflict": False, "policy_term_overlap": False},
+                "suggested_status": "active",
+                "confidence_prior": 0.95,
+            },
+            expected_provenance="seed_authored",
+        )
+
+    @staticmethod
+    def _mock_llm_response(candidate: dict) -> _MockResponse:
+        """Build a mock HTTP response simulating an LLM chat completion."""
+        body = json.dumps({
+            "choices": [{"message": {"content": json.dumps(candidate)}}],
+        }).encode("utf-8")
+        return _MockResponse(body)
+
+    def _seed_instrument(self, store):
+        return self._seed_genus(store, term="instrument", class_id="physical_object.instrument")
+
+    def test_ingests_valid_response_as_quarantined(self) -> None:
+        with tempfile.TemporaryDirectory() as tmp:
+            store = AssistantOSStore(Path(tmp) / "assistant.sqlite")
+            try:
+                self._seed_instrument(store)
+                with patch("melm.appliance.assistant_lexicon.urlopen",
+                           return_value=self._mock_llm_response({
+                               "lemma": "kalimba",
+                               "pos": "noun",
+                               "definition": "a small thumb piano",
+                               "genus_lemma": "instrument",
+                               "semantic_class_candidates": [
+                                   {"class_id": "physical_object.instrument",
+                                    "confidence": 0.85},
+                               ],
+                           })):
+                    results = cloud_definition_lookup(
+                        store, "kalimba",
+                        api_key="test-key",
+                        endpoint="https://test.example.com/v1/chat/completions",
+                    )
+                self.assertEqual(len(results), 1)
+                self.assertEqual(results[0].status, "quarantined")
+                senses = lookup_lexical_senses(
+                    store, "kalimba", statuses=("quarantined",),
+                )
+                self.assertEqual(len(senses), 1)
+            finally:
+                store.close()
+
+    def test_provenance_is_cloud_lookup(self) -> None:
+        with tempfile.TemporaryDirectory() as tmp:
+            store = AssistantOSStore(Path(tmp) / "assistant.sqlite")
+            try:
+                self._seed_instrument(store)
+                with patch("melm.appliance.assistant_lexicon.urlopen",
+                           return_value=self._mock_llm_response({
+                               "lemma": "kalimba",
+                               "pos": "noun",
+                               "definition": "a small thumb piano",
+                               "genus_lemma": "instrument",
+                               "semantic_class_candidates": [
+                                   {"class_id": "physical_object.instrument",
+                                    "confidence": 0.85},
+                               ],
+                           })):
+                    results = cloud_definition_lookup(
+                        store, "kalimba",
+                        api_key="test-key",
+                    )
+                self.assertEqual(len(results), 1)
+                prov = store.connection.execute(
+                    "SELECT provenance FROM lexical_provenance WHERE sense_id=?",
+                    (results[0].sense_id,),
+                ).fetchone()
+                self.assertEqual(prov["provenance"], "cloud_lookup")
+            finally:
+                store.close()
+
+    def test_confidence_prior_is_0_50(self) -> None:
+        with tempfile.TemporaryDirectory() as tmp:
+            store = AssistantOSStore(Path(tmp) / "assistant.sqlite")
+            try:
+                self._seed_instrument(store)
+                with patch("melm.appliance.assistant_lexicon.urlopen",
+                           return_value=self._mock_llm_response({
+                               "lemma": "kalimba",
+                               "pos": "noun",
+                               "definition": "a small thumb piano",
+                               "genus_lemma": "instrument",
+                               "semantic_class_candidates": [
+                                   {"class_id": "physical_object.instrument",
+                                    "confidence": 0.30},
+                               ],
+                           })):
+                    results = cloud_definition_lookup(
+                        store, "kalimba",
+                        api_key="test-key",
+                    )
+                self.assertEqual(len(results), 1)
+                sense = lookup_lexical_senses(
+                    store, "kalimba", statuses=("quarantined",),
+                )
+                self.assertEqual(sense[0]["confidence"], 0.50)
+            finally:
+                store.close()
+
+    def test_method_is_llm_assigned(self) -> None:
+        with tempfile.TemporaryDirectory() as tmp:
+            store = AssistantOSStore(Path(tmp) / "assistant.sqlite")
+            try:
+                self._seed_instrument(store)
+                with patch("melm.appliance.assistant_lexicon.urlopen",
+                           return_value=self._mock_llm_response({
+                               "lemma": "kalimba",
+                               "pos": "noun",
+                               "definition": "a small thumb piano",
+                               "genus_lemma": "instrument",
+                               "semantic_class_candidates": [
+                                   {"class_id": "physical_object.instrument",
+                                    "confidence": 0.85},
+                               ],
+                           })):
+                    results = cloud_definition_lookup(
+                        store, "kalimba",
+                        api_key="test-key",
+                    )
+                self.assertEqual(len(results), 1)
+                # Method is implicitly verified by schema validation —
+                # cloud_lookup provenance only allows "llm_assigned" method.
+                # Confirm the sense was created with the expected class.
+                sense = lookup_lexical_senses(
+                    store, "kalimba", statuses=("quarantined",),
+                )
+                self.assertEqual(sense[0]["semantic_class_id"], "physical_object.instrument")
+            finally:
+                store.close()
+
+    def test_network_error_returns_empty_list(self) -> None:
+        with tempfile.TemporaryDirectory() as tmp:
+            store = AssistantOSStore(Path(tmp) / "assistant.sqlite")
+            try:
+                self._seed_genus(store)
+                with patch("melm.appliance.assistant_lexicon.urlopen",
+                           side_effect=OSError("connection refused")):
+                    results = cloud_definition_lookup(
+                        store, "kalimba",
+                        api_key="test-key",
+                    )
+                self.assertEqual(results, [])
+            finally:
+                store.close()
+
+    def test_malformed_llm_response_returns_empty_list(self) -> None:
+        with tempfile.TemporaryDirectory() as tmp:
+            store = AssistantOSStore(Path(tmp) / "assistant.sqlite")
+            try:
+                self._seed_genus(store)
+                with patch("melm.appliance.assistant_lexicon.urlopen",
+                           return_value=_MockResponse(b"not-json-at-all")):
+                    results = cloud_definition_lookup(
+                        store, "kalimba",
+                        api_key="test-key",
+                    )
+                self.assertEqual(results, [])
+            finally:
+                store.close()
+
+    def test_missing_content_in_response_returns_empty_list(self) -> None:
+        with tempfile.TemporaryDirectory() as tmp:
+            store = AssistantOSStore(Path(tmp) / "assistant.sqlite")
+            try:
+                self._seed_genus(store)
+                body = json.dumps({
+                    "choices": [{"message": {"content": ""}}],
+                }).encode("utf-8")
+                with patch("melm.appliance.assistant_lexicon.urlopen",
+                           return_value=_MockResponse(body)):
+                    results = cloud_definition_lookup(
+                        store, "kalimba",
+                        api_key="test-key",
+                    )
+                self.assertEqual(results, [])
+            finally:
+                store.close()
+
+    def test_empty_word_returns_empty_list(self) -> None:
+        with tempfile.TemporaryDirectory() as tmp:
+            store = AssistantOSStore(Path(tmp) / "assistant.sqlite")
+            try:
+                self._seed_genus(store)
+                with patch("melm.appliance.assistant_lexicon.urlopen",
+                           return_value=self._mock_llm_response({
+                               "lemma": "kalimba",
+                               "pos": "noun",
+                               "definition": "an instrument",
+                           })):
+                    results = cloud_definition_lookup(
+                        store, "",
+                        api_key="test-key",
+                    )
+                self.assertEqual(results, [])
+            finally:
+                store.close()
+
+    def test_reserved_word_triggers_rejection(self) -> None:
+        with tempfile.TemporaryDirectory() as tmp:
+            store = AssistantOSStore(Path(tmp) / "assistant.sqlite")
+            try:
+                self._seed_genus(store)
+                with patch("melm.appliance.assistant_lexicon.urlopen",
+                           return_value=self._mock_llm_response({
+                               "lemma": "weather",
+                               "pos": "noun",
+                               "definition": "a meteorological phenomenon",
+                               "genus_lemma": "phenomenon",
+                               "semantic_class_candidates": [
+                                   {"class_id": "weather_phenomenon",
+                                    "confidence": 0.90},
+                               ],
+                           })):
+                    results = cloud_definition_lookup(
+                        store, "weather",
+                        api_key="test-key",
+                    )
+                self.assertEqual(results, [])
+            finally:
+                store.close()
+
+    def test_no_llm_classes_falls_back_to_abstract(self) -> None:
+        with tempfile.TemporaryDirectory() as tmp:
+            store = AssistantOSStore(Path(tmp) / "assistant.sqlite")
+            try:
+                with patch("melm.appliance.assistant_lexicon.urlopen",
+                           return_value=self._mock_llm_response({
+                               "lemma": "zzzztoken",
+                               "pos": "noun",
+                               "definition": "a made-up thing",
+                               "semantic_class_candidates": [],
+                           })):
+                    results = cloud_definition_lookup(
+                        store, "zzzztoken",
+                        api_key="test-key",
+                    )
+                self.assertEqual(len(results), 1)
+                sense = lookup_lexical_senses(
+                    store, "zzzztoken", statuses=("quarantined",),
+                )
+                self.assertEqual(sense[0]["semantic_class_id"], "abstract")
+            finally:
+                store.close()
+
+    def test_unknown_class_ids_filtered_from_llm_response(self) -> None:
+        with tempfile.TemporaryDirectory() as tmp:
+            store = AssistantOSStore(Path(tmp) / "assistant.sqlite")
+            try:
+                with patch("melm.appliance.assistant_lexicon.urlopen",
+                           return_value=self._mock_llm_response({
+                               "lemma": "phantasm",
+                               "pos": "noun",
+                               "definition": "a ghostly apparition",
+                               "semantic_class_candidates": [
+                                   {"class_id": "nonexistent_class",
+                                    "confidence": 0.95},
+                                   {"class_id": "abstract",
+                                    "confidence": 0.60},
+                               ],
+                           })):
+                    results = cloud_definition_lookup(
+                        store, "phantasm",
+                        api_key="test-key",
+                    )
+                self.assertEqual(len(results), 1)
+                sense = lookup_lexical_senses(
+                    store, "phantasm", statuses=("quarantined",),
                 )
                 self.assertEqual(sense[0]["semantic_class_id"], "abstract")
             finally:

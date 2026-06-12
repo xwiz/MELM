@@ -8,10 +8,13 @@ import json
 import re
 from time import perf_counter
 from typing import Any
+from urllib.error import URLError
+from urllib.request import Request, urlopen
 
 from melm.contracts import (
     ContractValidationError,
     load_contract_json,
+    load_semantic_class_ids,
     validate_reserved_lexemes,
     validate_router_lexicon_families,
     validate_sense_candidate,
@@ -477,6 +480,189 @@ def _build_dictionary_candidate(
         "suggested_status": "quarantined",
         "confidence_prior": 0.70,
     }
+
+
+# ── Cloud LLM lookup channel ────────────────────────────────────────────────
+
+_CLOUD_LOOKUP_SYSTEM_PROMPT = (
+    "You are a dictionary service. Output valid JSON only, "
+    "conforming to the provided melm.sense_candidate.v1 schema. "
+    "No markdown wrapping."
+)
+_DEFAULT_CLOUD_ENDPOINT = "https://api.openai.com/v1/chat/completions"
+_DEFAULT_CLOUD_MODEL = "gpt-4o-mini"
+
+
+def _build_cloud_lookup_payload(
+    word: str,
+    pos_hint: str = "noun",
+    *,
+    model: str = _DEFAULT_CLOUD_MODEL,
+    class_ids: list[str] | None = None,
+) -> dict[str, object]:
+    """Build the chat-completions payload for a cloud definition lookup."""
+    if class_ids is None:
+        class_ids = sorted(load_semantic_class_ids())
+    return {
+        "model": model,
+        "messages": [
+            {
+                "role": "system",
+                "content": _CLOUD_LOOKUP_SYSTEM_PROMPT,
+            },
+            {
+                "role": "user",
+                "content": json.dumps({
+                    "word": word,
+                    "pos_hint": pos_hint,
+                    "class_enum": class_ids,
+                }, ensure_ascii=False),
+            },
+        ],
+        "temperature": 0.1,
+    }
+
+
+def _call_chat_completion(
+    endpoint: str,
+    api_key: str,
+    payload: dict[str, object],
+    *,
+    timeout: float = 30.0,
+) -> dict[str, object] | None:
+    """POST *payload* to an OpenAI-compatible chat-completions endpoint."""
+    body = json.dumps(payload, ensure_ascii=False).encode("utf-8")
+    request = Request(
+        endpoint,
+        data=body,
+        headers={
+            "Content-Type": "application/json",
+            "Authorization": f"Bearer {api_key}",
+        },
+        method="POST",
+    )
+    try:
+        with urlopen(request, timeout=timeout) as response:
+            return dict(json.loads(response.read().decode("utf-8")))
+    except (OSError, URLError, json.JSONDecodeError, ValueError):
+        return None
+
+
+def _extract_candidate_from_llm_response(
+    response: dict[str, object],
+    word: str,
+    pos_hint: str,
+) -> dict[str, object] | None:
+    """Parse a ``sense_candidate.v1`` dict from an LLM chat-completion response."""
+    try:
+        choices = response["choices"]
+        if not choices:
+            return None
+        message = choices[0]["message"]
+        content = message["content"]
+        parsed = json.loads(content)
+    except (KeyError, IndexError, json.JSONDecodeError, TypeError):
+        return None
+    lemma = str(parsed.get("lemma", word)).strip()
+    if not lemma:
+        return None
+    pos = str(parsed.get("pos", pos_hint)).strip().lower()
+    if pos not in {"noun", "verb", "adjective", "adverb", "other"}:
+        pos = pos_hint
+    definition = str(parsed.get("definition", "")).strip()
+    if not definition:
+        return None
+    genus_lemma = str(parsed.get("genus_lemma", "")).strip()
+    llm_classes = parsed.get("semantic_class_candidates")
+    if not isinstance(llm_classes, list) or not llm_classes:
+        llm_classes = []
+    known_ids = load_semantic_class_ids()
+    candidates: list[dict[str, object]] = []
+    for c in llm_classes:
+        cid = str(c.get("class_id", ""))
+        conf = float(c.get("confidence", 0.50))
+        if cid in known_ids:
+            candidates.append({
+                "class_id": cid,
+                "method": "llm_assigned",
+                "confidence": max(0.0, min(1.0, conf)),
+            })
+    if not candidates:
+        candidates.append({
+            "class_id": "abstract",
+            "method": "llm_assigned",
+            "confidence": 0.50,
+        })
+    reserved, policy = _controlled_lexemes()
+    lemma_lower = lemma.lower()
+    result: dict[str, object] = {
+        "schema_id": "melm.sense_candidate.v1",
+        "lemma": lemma,
+        "language": str(parsed.get("language", "en")),
+        "pos": pos,
+        "source": {
+            "provenance": "cloud_lookup",
+            "source_ref": f"cloud_lookup:{lemma_lower}:{pos}",
+            "retrieved_at": _timestamp(),
+            "license": "llm_generated",
+        },
+        "definition": definition,
+        "semantic_class_candidates": candidates,
+        "safety": {
+            "reserved_conflict": lemma_lower in reserved,
+            "policy_term_overlap": lemma_lower in policy,
+        },
+        "suggested_status": "quarantined",
+        "confidence_prior": 0.50,
+    }
+    if genus_lemma:
+        result["genus_lemma"] = genus_lemma
+    return result
+
+
+def cloud_definition_lookup(
+    store: AssistantOSStore,
+    word: str,
+    *,
+    api_key: str,
+    endpoint: str = _DEFAULT_CLOUD_ENDPOINT,
+    model: str = _DEFAULT_CLOUD_MODEL,
+    pos_hint: str = "noun",
+    timeout: float = 30.0,
+    recorded_at: str | None = None,
+) -> list[LexiconIngestResult]:
+    """Look up *word* via a cloud LLM and ingest through the gate.
+
+    Sends a dictionary-service prompt to an OpenAI-compatible chat-completions
+    endpoint.  Builds a ``sense_candidate.v1`` with
+    ``provenance=cloud_lookup``, ``suggested_status=quarantined``, and
+    ``confidence_prior=0.50`` (per the contract policy for this provenance),
+    then ingests via ``lexicon_ingest``.
+
+    Network errors, malformed responses, and contract validation failures are
+    silently swallowed (return ``[]``).
+    """
+    normalized = _normalize_term(word)
+    if not normalized:
+        return []
+    timestamp = recorded_at or _timestamp()
+    payload = _build_cloud_lookup_payload(normalized, pos_hint, model=model)
+    raw = _call_chat_completion(endpoint, api_key, payload, timeout=timeout)
+    if raw is None:
+        return []
+    candidate = _extract_candidate_from_llm_response(raw, normalized, pos_hint)
+    if candidate is None:
+        return []
+    try:
+        result = lexicon_ingest(
+            store,
+            candidate,
+            expected_provenance="cloud_lookup",
+            recorded_at=timestamp,
+        )
+        return [result]
+    except ContractValidationError:
+        return []
 
 
 def lookup_lexical_senses(
