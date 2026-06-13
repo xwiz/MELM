@@ -10,10 +10,12 @@ from melm.appliance import (
     AssistantOSStore,
     benchmark_lexicon_lookup,
     cloud_definition_lookup,
+    lexical_classes_for_term,
     lexicon_ingest,
     lookup_lexical_senses,
     lookup_lexical_senses_tiered,
     offline_definition_lookup,
+    set_lexical_sense_status,
 )
 from melm.contracts import ContractValidationError
 
@@ -1099,6 +1101,109 @@ class CloudDefinitionLookupMvpTests(unittest.TestCase):
                     store, "phantasm", statuses=("quarantined",),
                 )
                 self.assertEqual(sense[0]["semantic_class_id"], "abstract")
+            finally:
+                store.close()
+
+
+class KalimbaEndToEndLifecycleMvpTests(unittest.TestCase):
+    """End-to-end lifecycle fixture for the M3 vocabulary acquisition gate.
+
+    Tests the full teach → quarantine → promote → restart → rollback cycle
+    using the word *kalimba* (a genuine under-documented instrument) to
+    exercise every stage of the runtime acquisition pipeline.
+    """
+
+    def _seed_genus(self, store, term="instrument", class_id="physical_object.instrument"):
+        return lexicon_ingest(
+            store,
+            {
+                "schema_id": "melm.sense_candidate.v1",
+                "lemma": term,
+                "language": "en",
+                "pos": "noun",
+                "source": {"provenance": "seed_authored",
+                           "source_ref": f"test:{term}",
+                           "license": "test"},
+                "definition": f"a test {class_id}",
+                "semantic_class_candidates": [{"class_id": class_id,
+                                               "method": "seed_authored",
+                                               "confidence": 0.95}],
+                "safety": {"reserved_conflict": False, "policy_term_overlap": False},
+                "suggested_status": "active",
+                "confidence_prior": 0.95,
+            },
+            expected_provenance="seed_authored",
+        )
+
+    def test_teach_quarantine_promote_restart_rollback(self) -> None:
+        with tempfile.TemporaryDirectory() as tmp:
+            path = Path(tmp) / "assistant.sqlite"
+            store = AssistantOSStore(path)
+            try:
+                self._seed_genus(store)
+
+                # 1. TEACH — acquire definition of a new word
+                result = acquire_definition(
+                    store, "a kalimba is a musical instrument",
+                )
+                self.assertIsNotNone(result)
+                self.assertEqual(result.status, "quarantined")
+
+                # Verify quarantined — visible only with explicit status filter
+                senses = lookup_lexical_senses(
+                    store, "kalimba", statuses=("quarantined",),
+                )
+                self.assertEqual(len(senses), 1)
+                sense_id = senses[0]["sense_id"]
+
+                # Not visible in active-only lookup (routing gate)
+                active = lexical_classes_for_term(store, "kalimba")
+                self.assertEqual(active, frozenset())
+
+                # 2. PROMOTE — quarantined → active
+                set_lexical_sense_status(store, sense_id, "active")
+                promoted = lookup_lexical_senses(
+                    store, "kalimba", statuses=("active",),
+                )
+                self.assertEqual(len(promoted), 1)
+                self.assertEqual(promoted[0]["semantic_class_id"], "physical_object.instrument")
+
+                # Now visible in active-only lookup (routing picks it up)
+                active = lexical_classes_for_term(store, "kalimba")
+                self.assertIn("physical_object.instrument", active)
+
+                # 3. REOPEN — simulate restart
+                store.close()
+                store = AssistantOSStore(path)
+                self._seed_genus(store)
+
+                # Promoted sense survives restart
+                persisted = lookup_lexical_senses(
+                    store, "kalimba", statuses=("active",),
+                )
+                self.assertEqual(len(persisted), 1)
+                active = lexical_classes_for_term(store, "kalimba")
+                self.assertIn("physical_object.instrument", active)
+
+                # 4. CORRECT — re-teach merges into same sense
+                correct = acquire_definition(
+                    store, "a kalimba is a hand-held instrument",
+                )
+                self.assertIsNotNone(correct)
+                self.assertEqual(correct.sense_id, sense_id)
+                self.assertEqual(correct.status, "active")
+
+                # 5. ROLLBACK — active → quarantined
+                set_lexical_sense_status(store, sense_id, "quarantined")
+                rolled = lookup_lexical_senses(
+                    store, "kalimba", statuses=("quarantined",),
+                )
+                self.assertEqual(len(rolled), 1)
+
+                # No longer visible for routing
+                active = lexical_classes_for_term(store, "kalimba")
+                self.assertEqual(active, frozenset())
+
             finally:
                 store.close()
 

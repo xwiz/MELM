@@ -1237,6 +1237,37 @@ def _more_active_status(current: str, proposed: str) -> str:
     return current if STATUS_RANK[current] >= STATUS_RANK[proposed] else proposed
 
 
+VALID_SENSE_STATUSES = frozenset({"quarantined", "dormant", "active"})
+
+
+def set_lexical_sense_status(
+    store: AssistantOSStore,
+    sense_id: str,
+    new_status: str,
+) -> None:
+    """Set the status of a lexical sense.
+
+    Updates the ``status`` column on ``lexical_senses`` for the given
+    *sense_id*.  The caller is responsible for the status transition's
+    semantic validity — this function accepts any value in
+    ``VALID_SENSE_STATUSES``.
+
+    Raises ``ContractValidationError`` if *sense_id* does not exist or
+    *new_status* is not one of ``quarantined``, ``dormant``, ``active``.
+    """
+    if new_status not in VALID_SENSE_STATUSES:
+        raise ContractValidationError(
+            f"$.status: {new_status!r} is not a valid sense status"
+        )
+    _sense_row(store, sense_id)
+    now = _timestamp()
+    with store.connection:
+        store.connection.execute(
+            "UPDATE lexical_senses SET status=?, updated_at=? WHERE sense_id=?",
+            (new_status, now, sense_id),
+        )
+
+
 def _candidate_hash(candidate: dict[str, Any]) -> str:
     payload = json.dumps(candidate, ensure_ascii=True, sort_keys=True, separators=(",", ":"))
     return hashlib.sha256(payload.encode("utf-8")).hexdigest()

@@ -30,9 +30,11 @@
 - **`import_transcript_replay_fixture` restored in CLI imports** — accidentally removed during M3 stub cleanup; function was called inside a `try/except Exception` block in `_build_event_ledger_calibration_payload`, causing a silent `NameError` that made calibration checks return `passed=False`. Fix verified: `test_cli_api_session_smoke_can_execute_configured_real_actions` passes.
 - **V3: 15 missing content-word terms added to `LEGACY_ROUTER_TERM_CLASSES`** — `bleeding`, `breathe`, `emergency`, `export`, `faint`, `name`, `poison`, `recommend`, `report`, `see`, `send`, `share`, `suggest`, `take`, `upload` — from inline classifier sets. `play`, `start` omitted (already seeded via FG verb path as non-routing `action` class). Pre-existing duplicate `goals: goal_concept` removed.
 - **V3: `build_legacy_in_memory_lexicon()` extracted** — in `assistant_lexicon_legacy.py`. `LEGACY_ROUTER_TERM_CLASSES` refs removed from `local_assistant_router.py` (module init) and `assistant_os_kernel.py` (cache fallback). Constant now only referenced inside `assistant_lexicon_legacy.py` — single provenance source.
-- **All 126 related tests pass (86 subtests)** — lexicon, seed, legacy, store, kernel, router, and inventory importers. Pre-existing failures: `test_assistant_authority_mvp.py` (`AnswerPlan` import), `test_cli_pi_bundle` (missing `docs/local_assistant_os_mvp_plan.md`).
 - **M3: `acquire_definition(store, utterance)` built** — user-teaching acquisition channel. Detects copula-definition frames ("a kalimba is a small thumb piano") and meaning frames ("X means Y"), parses lemma/genus/definition, walks genus through lexicon for semantic class candidates, ingests via `lexicon_ingest` as `provenance=user_taught`, `status=quarantined`, `confidence_prior=0.60`. 9 new tests cover copula, means, normalization, empty, non-matching, unresolved genus, reserved-word rejection, polysemous genus, and provenance verification.
 - **M3: `offline_definition_lookup(store, word, *, dictionary_path)` built** — offline dictionary channel. Reads a line-delimited JSONL dictionary file, matches entries by lemma, builds `sense_candidate.v1` with `genus_lemma` extracted from the definition (or explicit on the entry), walks genus through the store-backed lexicon for class candidates, and ingests via `lexicon_ingest` as `provenance=offline_dictionary`, `status=quarantined`, `confidence_prior=0.70`. 10 new tests cover single entry, missing file, non-matching lemma, empty input, provenance verification, genus extraction, reserved-word rejection, polysemous entries, confidence prior, and explicit genus override.
+- **M3: `cloud_definition_lookup(store, word, *, api_key, endpoint, model, pos_hint, timeout)` built** — cloud LLM definition lookup channel. Sends an OpenAI-compatible chat-completions request with a dictionary-service system prompt that includes the full 89-class semantic-class enum. Parses the LLM response into `sense_candidate.v1` with `provenance=cloud_lookup`, `status=quarantined`, `confidence_prior=0.50`, `method=llm_assigned` (per contract policy). `genus_lemma` omitted when empty (not in schema required list). Unknown `class_id` values from the LLM are filtered; empty candidates fall back to `abstract` at 0.50. Network errors, malformed JSON, and `ContractValidationError` are silently swallowed (return `[]`). Uses `urllib.request` (project stdlib convention). 11 tests cover valid ingestion, provenance, confidence prior, `llm_assigned` method, network error, malformed response, empty content, empty word, reserved-word rejection, abstract fallback, and unknown-class filtering.
+- **`load_semantic_class_ids()` made public** — previously `_semantic_class_ids` private function in `contracts/validation.py`. Renamed and exported from `melm.contracts`.
+- **Code cleanup during M3 review**: `_clean_definition` simplified (removed dead branch and unused `lemma` param). `_compute_class_candidates` cleaned (removed unused `definition` param). `_build_dictionary_candidate` cleaned (removed unused `normalized_word` param). `_build_dictionary_candidate` guards against empty/invalid `pos`. `offline_definition_lookup` catches `OSError` for missing files. `_extract_candidate_from_llm_response` simplified (removed dead early candidate dict).
 
 ### In Progress
 - *(none)*
@@ -48,28 +50,26 @@
 - **Grammar/structural logic stays inline** — `_story_request_question`, `_is_question_like`, `_is_request_like`, auto-bio sub-frames, `_identity_composition` helpers, `_private_cloud_evidence_keys`, `_food_tags` are patterns, not vocabulary lookups.
 - **Contracts store lemmas only** — language-agnostic invariant per the plan. Inflection normalization out of scope for M2.
 - **Centralized dicts are not scattered hacks** — `_secondary_meaning_hint_groups`, `_semantic_object_role_tokens` are per-intent alias blocks for UOL composition, not scattered inline sets.
+- **`genus_lemma` omitted when empty** — `_extract_candidate_from_llm_response` conditionally includes `genus_lemma` only when non-empty, since `sense_candidate.v1` has `minLength: 1` on the field but it's not in `required`.
+- **`cloud_lookup` uses `urllib.request` directly** — no new dependencies. Matches project convention (`assistant_weather.py`, `assistant_inventory.py`).
+- **API key/endpoint/model are function parameters** — no existing API key management infrastructure in the codebase. The caller (CLI, kernel, or test) provides these explicitly.
 
 ## Next Steps
-1. **Build ingestion gate** for runtime vocabulary acquisition (M3 scope) — DONE: `acquire_definition` built with 9 tests.
-2. **Clean up CLI script** — remove stale imports (`acquire_definition`, `build_definition_sense_candidate`) that were added in a prior M3 stub session but never deployed. ✓
-3. **Remove `LEGACY_ROUTER_TERM_CLASSES`** as module-load cache builder — DONE: extracted `build_legacy_in_memory_lexicon()`; constant is now only referenced inside `assistant_lexicon_legacy.py`.
-4. **Expand `_to_lemma`** for language-agnostic inflection normalization (post-M2).
-5. **Build UOL-based frame linking** to replace keyword classifiers (M5 scope).
-6. **Build offline dictionary lookup** — bundled Wiktextract/WordNet-derived JSONL lookup for words not acquired via user teaching (M3 scope).
-7. **Build membrane-gated cloud lookup** — strict-JSON LLM prompt for word definitions, emitting sense_candidate.v1 (M3 scope).
-8. **Build kalimba end-to-end fixture** — teach → quarantine → minimal pairs → promote → reuse after restart → correct → rollback (M3 gate).
+1. **Build kalimba end-to-end fixture** — teach → quarantine → minimal pairs → promote → reuse after restart → correct → rollback (M3 gate).
 
 ## Critical Context
-- **132/132 related tests pass** (86 subtests) — contracts, lexicon, seed, legacy, store, kernel, router, and inventory importers.
+- **95/95 related tests pass** (15 subtests) — contracts, lexicon, seed, legacy, store, kernel. 2 pre-existing failures unrelated to this work: `test_assistant_authority_mvp.py` (`AnswerPlan` import), `test_cli_pi_bundle_builds_portable_self_checked_bundle` (missing `docs/local_assistant_os_mvp_plan.md`).
 - **`_rebuild_router_lexicon_cache`** — always rebuilds. Store data → store cache. Empty store → LEGACY cache. Fixes test isolation.
 - **`_IN_MEMORY_LEXICON`** — `dict[str, frozenset[str]]`, term→classes. Built from LEGACY at module load. Replaced at kernel init via `_rebuild_router_lexicon_cache()`.
 - **`_semantic_family_terms(tokens, *, semantic_classes)`** — no other parameters. Always reads `_IN_MEMORY_LEXICON`.
 - **`OnDeviceAssistantRouter.__init__(self, profile=None)`** — no lexicon params.
-- **`seed_assistant_os_lexicon(store)`** — seeds all 246 candidates (43 FG + 203 router) with 35 semantic classes. Called from bootstrap. Removed `ContractValidationError` catch since all classes are now valid.
+- **`seed_assistant_os_lexicon(store)`** — seeds all 246+ candidates (43 FG + 203 router + 15 V3) with 35 semantic classes. Called from bootstrap.
 - **89 semantic classes** in `semantic_classes.v1.json` (61 original + 28 LEGACY-internal).
 - **Store cache is a superset of LEGACY cache** — all 203 LEGACY terms present with identical class membership. 21 extra FG-only terms add classes that no classifier checks (bit-identical routing).
 - **`_is_weather_concept_question` uses hardcoded concept set** — structural patterns, not vocabulary lookup.
 - **Deletion test works** — deleting a seeded lexeme from the store and creating a new kernel removes the term from the cache.
+- **`offline_definition_lookup`** catches `OSError` for missing files. `cloud_definition_lookup` catches `OSError`/`URLError`/`json.JSONDecodeError` for network failures. Both silently return `[]` on error.
+- **`cloud_definition_lookup`** uses `urllib.request` directly (project convention). Adds no new dependencies. API key, endpoint, and model are function parameters (no existing API key management in codebase).
 - **2 pre-existing test failures** (unrelated to this work): `test_assistant_authority_mvp.py` (`AnswerPlan` import), `test_cli_pi_bundle_builds_portable_self_checked_bundle` (missing `docs/local_assistant_os_mvp_plan.md`).
 
 ## Relevant Files
@@ -77,6 +77,8 @@
 - **`melm/appliance/assistant_os_kernel.py`** — `_rebuild_router_lexicon_cache` (line ~1087): always rebuilds — store data when rows exist, LEGACY reset when empty.
 - **`melm/appliance/assistant_os_store.py`** — `seed_assistant_os_lexicon` (line ~1906): seeds FG + router candidates (all 35 classes). No `ContractValidationError` catch.
 - **`melm/appliance/assistant_lexicon_legacy.py`** — `LEGACY_ROUTER_TERM_CLASSES` (~200+ entries, 35 classes). `build_legacy_router_candidates(seed_all=True)` exports all entries.
-- **`melm/appliance/assistant_lexicon.py`** — `lexicon_ingest` (all 35 LEGACY classes now valid), `configure_lexicon_router_families`, `acquire_definition` (user-teaching acquisition channel with regex-based definition frame detection, genus_walk class candidates, quarantine-by-default).
+- **`melm/appliance/assistant_lexicon.py`** — `lexicon_ingest` (all 35 LEGACY classes now valid), `configure_lexicon_router_families`, `acquire_definition` (user-teaching with regex-based copula/meaning detection), `offline_definition_lookup` (JSONL dictionary channel), `cloud_definition_lookup` (LLM chat-completions channel with `_build_cloud_lookup_payload`, `_call_chat_completion`, `_extract_candidate_from_llm_response`).
+- **`melm/appliance/__init__.py`** — exports `acquire_definition`, `offline_definition_lookup`, `cloud_definition_lookup`, `seed_assistant_os_lexicon`.
 - **`melm/contracts/semantic_classes.v1.json`** — 89 class IDs (61 original + 28 LEGACY routing labels).
-- **`scripts/local_assistant_os_cli.py`** — bootstrap calls `seed_assistant_os_lexicon(store)` after database init.
+- **`melm/contracts/validation.py`** — `load_semantic_class_ids()` (public), `validate_sense_candidate` with `cloud_lookup` policy: `quarantined`, ≤0.50, `llm_assigned`.
+- **`tests/test_assistant_lexicon_mvp.py`** — 44 tests total (12 original + 9 acquire_definition + 10 offline_dictionary + 11 cloud_definition + 2 refactoring). Covers all M2–M3 ingestion paths.

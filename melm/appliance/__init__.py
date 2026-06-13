@@ -141,6 +141,7 @@ from .assistant_lexicon import (
     acquire_definition,
     benchmark_lexicon_lookup,
     cloud_definition_lookup,
+    set_lexical_sense_status,
     configure_lexicon_router_families,
     lexical_classes_for_term,
     LexiconIngestResult,
