@@ -36,7 +36,8 @@
       "intent": "common_sense_safety",
       "family": "common_sense_safety",
       "activation": {
-        "required_classes": ["clothing_item", "public_place", "undress_state"],
+        "required_classes": ["undress_state"],
+        "required_all_classes": ["clothing_item", "public_place"],
         "optional_classes": [],
         "exclude_classes": [],
         "action_tokens": ["go", "going", "walk"]

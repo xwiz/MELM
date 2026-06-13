@@ -79,11 +79,15 @@ class FrameLinker:
         components: dict[str, float] = {}
 
         required_classes: list[str] = [str(c) for c in act.get("required_classes", [])]
+        required_all: list[str] = [str(c) for c in act.get("required_all_classes", [])]
         optional_classes: list[str] = [str(c) for c in act.get("optional_classes", [])]
         exclude_classes: list[str] = [str(c) for c in act.get("exclude_classes", [])]
         action_tokens: list[str] = [str(t) for t in act.get("action_tokens", [])]
 
         required = self._match_required_classes(token_set, required_classes, lexicon)
+        required_and = self._match_required_all_classes(token_set, required_all, lexicon)
+        # Use MAX of OR-gate and AND-gate
+        required = max(required, required_and)
         components["required"] = round(required, 4)
 
         if exclude_classes:
@@ -106,6 +110,25 @@ class FrameLinker:
         score = required + optional + action + structure - exclude_penalty
         score = max(0.0, min(1.0, score))
         return score, components
+
+    def _match_required_all_classes(
+        self,
+        token_set: set[str],
+        required_all: list[str],
+        lexicon: dict[str, frozenset[str]],
+    ) -> float:
+        """Return _WEIGHT_REQUIRED only when EVERY listed class is present (AND gate)."""
+        if not required_all:
+            return 0.0
+        for cls in required_all:
+            found = False
+            for token in token_set:
+                if token in lexicon and cls in lexicon[token]:
+                    found = True
+                    break
+            if not found:
+                return 0.0
+        return _WEIGHT_REQUIRED
 
     def _match_required_classes(
         self,

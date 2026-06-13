@@ -341,7 +341,7 @@ def validate_frame_templates(payload: dict[str, Any]) -> None:
         activation = item.get("activation", {})
         if not isinstance(activation, dict):
             _fail(f"{path}.activation", "must be an object")
-        for cls_list_key in ("required_classes", "optional_classes", "exclude_classes"):
+        for cls_list_key in ("required_classes", "required_all_classes", "optional_classes", "exclude_classes"):
             raw = activation.get(cls_list_key, [])
             if not isinstance(raw, list) or any(not isinstance(c, str) for c in raw):
                 _fail(f"{path}.activation.{cls_list_key}", "must be an array of strings")

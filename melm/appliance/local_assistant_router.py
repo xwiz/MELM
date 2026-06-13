@@ -1619,6 +1619,7 @@ _FRAME_LINKER_CONFIRMATION_MARGIN = 0.20
 _FRAME_LINKER_MIGRATED_INTENTS: frozenset[str] = frozenset({
     "weather", "story", "media_playback",
     "autobiographical_memory", "meal_suggestion",
+    "common_sense_safety",
 })
 _FRAME_LINKER: FrameLinker | None = None
 
@@ -1794,7 +1795,11 @@ def _is_common_sense_safety_request(
         return safety_frame and safety_subject_or_context
     if not safety_frame:
         return False
-    return bool(clothing_terms and public_context)
+    return _classify_from_frame_linker(
+        text, tokens, "common_sense_safety",
+        collector_classes=frozenset({"clothing_item", "public_place", "undress_state"}),
+        use_margin=False,
+    )
 
 
 def _is_health_advice_request(
