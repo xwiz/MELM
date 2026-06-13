@@ -828,6 +828,81 @@ Event ledger — persists ChatFrame + utterance + timestamp + session_id
 | Compact local generation | E4 receives only `AnswerPlan` + admitted evidence + stance, with templates as permanent fallback |
 | Auditable routing | Candidate scores, threshold version, policy checks, evidence checks, and final reason persist in `RouteDecision` |
 
+### 16.5 Entity store — unified person/object/event model
+
+User facts, inventories, contacts, and event instances all describe the same
+thing: **entities with typed slots**. A single store replaces the fragmented
+`user_facts` + `inventories` + `membrane_decisions` pattern:
+
+```
+class_schemas                   entities                     entity_slots
+┌──────────────────────┐       ┌──────────────────────┐     ┌──────────────────────┐
+│ semantic_class_id PK │──┐    │ entity_id PK         │     │ slot_id PK           │
+│ parent_class_id      │  │    │ kind (person|event    │──┬──│ entity_id FK         │
+│ label                │  ├────│   |place|object|self) │  │  │ slot_name            │
+│ base_entity_kind     │  │    │ label                 │  │  │ value_json           │
+│ description          │  │    │ semantic_class_id FK  │  │  │ slot_state (filled|  │
+└──────────────────────┘  │    │ canonical_lemma       │  │  │   asked_but_empty|   │
+                          │    │ updated_at            │  │  │   unknown_entity|    │
+class_schema_slots        │    └──────────────────────┘  │  │   unknown|inferred)  │
+┌──────────────────────┐  │    entity_relations         │  │  │ provenance           │
+│ slot_id PK           │  │    ┌──────────────────────┐ │  │  └──────────────────────┘
+│ semantic_class_id FK ├──┘    │ relation_id PK       │ │  │
+│ slot_name            │       │ entity_id FK         ├──┘  │
+│ value_type           │       │ relation (member_of|  │     │
+│ required             │       │   located_at|created_by│    │
+│ description          │       │ target_entity_id FK   │     │
+└──────────────────────┘       │ provenance           │     │
+                               │ strength             │     │
+                               └──────────────────────┘     │
+```
+
+**Entity kinds:**
+- `person` — a known person (contacts, family, friends, user-self)
+- `event_type` — a class of recurring events (competition, holiday, appointment)
+- `event_instance` — a specific occurrence (World Cup 2026, tomorrow's meeting)
+- `place` — a known location
+- `object` — a physical or digital object (device, appliance, document)
+- `personal_experience` — a chat session or past interaction (for memory retrieval)
+- `self` — the user (for facts about the user, migrated from `user_facts`)
+
+**Event class hierarchy:**
+- `event` — base class. Slots: `start_time`, `end_time`, `periodicity`, `location`
+- `competition` — inherits from `event`. Additional slots: `winner`, `participants`,
+  `score`, `ranking`
+
+Class hierarchy is stored in `class_schemas.parent_class_id`. Slot definitions
+for each class are in `class_schema_slots`, enabling template validation and
+schema-driven entity creation.
+
+**Frame slot states apply to `entity_slots.slot_state`:**
+- `filled` — value is known and populated
+- `asked_but_empty` — the system asked but the user didn't know
+- `unknown_entity` — the entity exists but this slot is unknown
+- `unknown` — neither entity nor slot resolved
+- `inferred` — value derived from context, needs confirmation
+
+When the frame linker matches a frame with unfilled slots, it reports the slot
+state so synthesis can generate frame-aware "I don't know" responses instead of
+generic refusal.
+
+**Entity relations enable cross-entity queries:**
+- `member_of` — entity belongs to a group (person → family, event → championship)
+- `located_at` — event or person at a place
+- `created_by` — event or object created by a person
+- `participated_in` — person participated in an event
+- `owns` — person owns an object
+
+**Migration path:**
+1. `user_facts` rows → `entities WHERE kind='self'` + `entity_slots`
+2. Contact inventory rows → `entities WHERE kind='person'`
+3. User preferences → `entity_slots ON entities.kind='self'`
+4. Event instances → `entities WHERE kind='event_instance'`
+
+This unifies the query path: every entity question ("what's your mom's name",
+"when is the competition", "what do I like for breakfast") resolves through the
+same store interface.
+
 ## 17. Data, training, and artifact discipline
 
 1. **Freeze contracts before datasets.** Every row records the UOL, semantic

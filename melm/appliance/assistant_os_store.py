@@ -53,6 +53,48 @@ class StoredInventoryJob:
     payload: dict[str, Any]
 
 
+@dataclass(frozen=True)
+class StoredEntity:
+    entity_id: str
+    kind: str
+    label: str
+    semantic_class_id: str
+    canonical_lemma: str
+    created_at: str
+    updated_at: str
+
+
+@dataclass(frozen=True)
+class StoredEntitySlot:
+    slot_id: str
+    entity_id: str
+    slot_name: str
+    value_json: str
+    slot_state: str
+    provenance: str
+    updated_at: str
+
+
+@dataclass(frozen=True)
+class StoredEntityRelation:
+    relation_id: str
+    entity_id: str
+    relation: str
+    target_entity_id: str
+    provenance: str
+    strength: float
+    created_at: str
+
+
+@dataclass(frozen=True)
+class ClassSchemaDef:
+    semantic_class_id: str
+    parent_class_id: str | None
+    label: str
+    base_entity_kind: str
+    description: str
+
+
 class AssistantOSStore:
     """Small SQLite ledger for assistant memory, policy, state, and inventory."""
 
@@ -336,6 +378,62 @@ class AssistantOSStore:
                 created_at TEXT NOT NULL
             );
 
+            CREATE TABLE IF NOT EXISTS class_schemas (
+                semantic_class_id TEXT PRIMARY KEY,
+                parent_class_id TEXT,
+                label TEXT NOT NULL,
+                base_entity_kind TEXT NOT NULL DEFAULT 'thing',
+                description TEXT NOT NULL DEFAULT '',
+                updated_at TEXT NOT NULL DEFAULT '',
+                FOREIGN KEY(parent_class_id) REFERENCES class_schemas(semantic_class_id)
+            );
+
+            CREATE TABLE IF NOT EXISTS class_schema_slots (
+                slot_id TEXT PRIMARY KEY,
+                semantic_class_id TEXT NOT NULL,
+                slot_name TEXT NOT NULL,
+                value_type TEXT NOT NULL DEFAULT 'text',
+                required INTEGER NOT NULL DEFAULT 0,
+                description TEXT NOT NULL DEFAULT '',
+                FOREIGN KEY(semantic_class_id) REFERENCES class_schemas(semantic_class_id),
+                UNIQUE(semantic_class_id, slot_name)
+            );
+
+            CREATE TABLE IF NOT EXISTS entities (
+                entity_id TEXT PRIMARY KEY,
+                kind TEXT NOT NULL,
+                label TEXT NOT NULL,
+                semantic_class_id TEXT NOT NULL DEFAULT '',
+                canonical_lemma TEXT NOT NULL DEFAULT '',
+                created_at TEXT NOT NULL,
+                updated_at TEXT NOT NULL
+            );
+
+            CREATE TABLE IF NOT EXISTS entity_slots (
+                slot_id TEXT PRIMARY KEY,
+                entity_id TEXT NOT NULL,
+                slot_name TEXT NOT NULL,
+                value_json TEXT NOT NULL,
+                slot_state TEXT NOT NULL DEFAULT 'filled',
+                provenance TEXT NOT NULL DEFAULT 'unknown',
+                updated_at TEXT NOT NULL,
+                UNIQUE(entity_id, slot_name),
+                FOREIGN KEY(entity_id) REFERENCES entities(entity_id)
+            );
+
+            CREATE TABLE IF NOT EXISTS entity_relations (
+                relation_id TEXT PRIMARY KEY,
+                entity_id TEXT NOT NULL,
+                relation TEXT NOT NULL,
+                target_entity_id TEXT NOT NULL,
+                provenance TEXT NOT NULL DEFAULT 'unknown',
+                strength REAL NOT NULL DEFAULT 1.0,
+                created_at TEXT NOT NULL,
+                UNIQUE(entity_id, relation, target_entity_id),
+                FOREIGN KEY(entity_id) REFERENCES entities(entity_id),
+                FOREIGN KEY(target_entity_id) REFERENCES entities(entity_id)
+            );
+
             CREATE INDEX IF NOT EXISTS idx_events_intent_route
                 ON events(intent, route);
             CREATE INDEX IF NOT EXISTS idx_events_created_at
@@ -372,12 +470,27 @@ class AssistantOSStore:
                 ON lexical_provenance(sense_id);
             CREATE INDEX IF NOT EXISTS idx_lexical_relations_sense
                 ON lexical_relation_candidates(sense_id, status);
+            CREATE INDEX IF NOT EXISTS idx_class_schemas_parent
+                ON class_schemas(parent_class_id);
+            CREATE INDEX IF NOT EXISTS idx_entities_kind
+                ON entities(kind);
+            CREATE INDEX IF NOT EXISTS idx_entities_semantic_class
+                ON entities(semantic_class_id);
+            CREATE INDEX IF NOT EXISTS idx_entity_slots_entity
+                ON entity_slots(entity_id);
+            CREATE INDEX IF NOT EXISTS idx_entity_slots_state
+                ON entity_slots(slot_state);
+            CREATE INDEX IF NOT EXISTS idx_entity_relations_entity
+                ON entity_relations(entity_id);
+            CREATE INDEX IF NOT EXISTS idx_entity_relations_relation
+                ON entity_relations(relation);
             """
         )
         self._ensure_event_link_columns()
         self._ensure_event_provenance_columns()
         self._ensure_event_semantic_classes_column()
         self._ensure_user_fact_policy_columns()
+        self._ensure_entity_tables()
         self.connection.execute(
             """
             INSERT INTO metadata(key, value) VALUES (?, ?)
@@ -594,6 +707,134 @@ class AssistantOSStore:
             media_library=media,
             food_inventory=food,
         )
+
+    def add_entity(
+        self,
+        entity_id: str,
+        kind: str,
+        label: str,
+        semantic_class_id: str = "",
+        canonical_lemma: str = "",
+    ) -> None:
+        now = _now()
+        self.connection.execute(
+            """
+            INSERT OR IGNORE INTO entities(
+                entity_id, kind, label, semantic_class_id, canonical_lemma,
+                created_at, updated_at
+            )
+            VALUES (?, ?, ?, ?, ?, ?, ?)
+            """,
+            (entity_id, kind, label, semantic_class_id, canonical_lemma, now, now),
+        )
+
+    def get_entity(self, entity_id: str) -> StoredEntity | None:
+        row = self.connection.execute(
+            "SELECT * FROM entities WHERE entity_id = ?", (entity_id,)
+        ).fetchone()
+        if row is None:
+            return None
+        return StoredEntity(
+            entity_id=str(row["entity_id"]),
+            kind=str(row["kind"]),
+            label=str(row["label"]),
+            semantic_class_id=str(row["semantic_class_id"]),
+            canonical_lemma=str(row["canonical_lemma"]),
+            created_at=str(row["created_at"]),
+            updated_at=str(row["updated_at"]),
+        )
+
+    def find_entities(self, kind: str = "", semantic_class_id: str = "") -> list[StoredEntity]:
+        clauses = []
+        params: list[str] = []
+        if kind:
+            clauses.append("kind = ?")
+            params.append(kind)
+        if semantic_class_id:
+            clauses.append("semantic_class_id = ?")
+            params.append(semantic_class_id)
+        where = " AND ".join(clauses) if clauses else "1"
+        rows = self.connection.execute(
+            f"SELECT * FROM entities WHERE {where} ORDER BY label",
+            params,
+        ).fetchall()
+        return [
+            StoredEntity(
+                entity_id=str(r["entity_id"]),
+                kind=str(r["kind"]),
+                label=str(r["label"]),
+                semantic_class_id=str(r["semantic_class_id"]),
+                canonical_lemma=str(r["canonical_lemma"]),
+                created_at=str(r["created_at"]),
+                updated_at=str(r["updated_at"]),
+            )
+            for r in rows
+        ]
+
+    def set_entity_slot(
+        self,
+        entity_id: str,
+        slot_name: str,
+        value: Any,
+        slot_state: str = "filled",
+        provenance: str = "unknown",
+    ) -> None:
+        now = _now()
+        self.connection.execute(
+            """
+            INSERT INTO entity_slots(
+                slot_id, entity_id, slot_name, value_json, slot_state, provenance, updated_at
+            )
+            VALUES (?, ?, ?, ?, ?, ?, ?)
+            ON CONFLICT(entity_id, slot_name)
+            DO UPDATE SET value_json=excluded.value_json,
+                          slot_state=excluded.slot_state,
+                          provenance=excluded.provenance,
+                          updated_at=excluded.updated_at
+            """,
+            (f"{entity_id}:{slot_name}", entity_id, slot_name, _json(value), slot_state, provenance, now),
+        )
+
+    def get_entity_slots(self, entity_id: str) -> list[StoredEntitySlot]:
+        rows = self.connection.execute(
+            "SELECT * FROM entity_slots WHERE entity_id = ? ORDER BY slot_name",
+            (entity_id,),
+        ).fetchall()
+        return [
+            StoredEntitySlot(
+                slot_id=str(r["slot_id"]),
+                entity_id=str(r["entity_id"]),
+                slot_name=str(r["slot_name"]),
+                value_json=str(r["value_json"]),
+                slot_state=str(r["slot_state"]),
+                provenance=str(r["provenance"]),
+                updated_at=str(r["updated_at"]),
+            )
+            for r in rows
+        ]
+
+    def get_entity_slot(self, entity_id: str, slot_name: str) -> StoredEntitySlot | None:
+        row = self.connection.execute(
+            "SELECT * FROM entity_slots WHERE entity_id = ? AND slot_name = ?",
+            (entity_id, slot_name),
+        ).fetchone()
+        if row is None:
+            return None
+        return StoredEntitySlot(
+            slot_id=str(row["slot_id"]),
+            entity_id=str(row["entity_id"]),
+            slot_name=str(row["slot_name"]),
+            value_json=str(row["value_json"]),
+            slot_state=str(row["slot_state"]),
+            provenance=str(row["provenance"]),
+            updated_at=str(row["updated_at"]),
+        )
+
+    def delete_entity(self, entity_id: str) -> None:
+        self.connection.execute("DELETE FROM entity_slots WHERE entity_id = ?", (entity_id,))
+        self.connection.execute("DELETE FROM entity_relations WHERE entity_id = ?", (entity_id,))
+        self.connection.execute("DELETE FROM entity_relations WHERE target_entity_id = ?", (entity_id,))
+        self.connection.execute("DELETE FROM entities WHERE entity_id = ?", (entity_id,))
 
     def upsert_user_fact(
         self,
@@ -1742,6 +1983,11 @@ class AssistantOSStore:
             "lexical_provenance",
             "lexical_relation_candidates",
             "lexicon_ingestions",
+            "class_schemas",
+            "class_schema_slots",
+            "entities",
+            "entity_slots",
+            "entity_relations",
         }:
             raise ValueError(f"unsupported table: {table}")
         row = self.connection.execute(f"SELECT COUNT(*) AS count FROM {table}").fetchone()
@@ -1770,6 +2016,11 @@ class AssistantOSStore:
                 "lexical_provenance",
                 "lexical_relation_candidates",
                 "lexicon_ingestions",
+                "class_schemas",
+                "class_schema_slots",
+                "entities",
+                "entity_slots",
+                "entity_relations",
             )
         }
 
@@ -1828,6 +2079,74 @@ class AssistantOSStore:
             UPDATE user_facts
             SET cloud_eligible=0
             WHERE local_only=1 OR consent=0
+            """
+        )
+
+    def _ensure_entity_tables(self) -> None:
+        rows = self.connection.execute("PRAGMA table_info(entities)").fetchall()
+        columns = {str(row["name"]) for row in rows}
+        if columns:
+            return
+        self.connection.executescript(
+            """
+            CREATE TABLE IF NOT EXISTS class_schemas (
+                semantic_class_id TEXT PRIMARY KEY,
+                parent_class_id TEXT,
+                label TEXT NOT NULL,
+                base_entity_kind TEXT NOT NULL DEFAULT 'thing',
+                description TEXT NOT NULL DEFAULT '',
+                updated_at TEXT NOT NULL DEFAULT '',
+                FOREIGN KEY(parent_class_id) REFERENCES class_schemas(semantic_class_id)
+            );
+            CREATE TABLE IF NOT EXISTS class_schema_slots (
+                slot_id TEXT PRIMARY KEY,
+                semantic_class_id TEXT NOT NULL,
+                slot_name TEXT NOT NULL,
+                value_type TEXT NOT NULL DEFAULT 'text',
+                required INTEGER NOT NULL DEFAULT 0,
+                description TEXT NOT NULL DEFAULT '',
+                FOREIGN KEY(semantic_class_id) REFERENCES class_schemas(semantic_class_id),
+                UNIQUE(semantic_class_id, slot_name)
+            );
+            CREATE TABLE IF NOT EXISTS entities (
+                entity_id TEXT PRIMARY KEY,
+                kind TEXT NOT NULL,
+                label TEXT NOT NULL,
+                semantic_class_id TEXT NOT NULL DEFAULT '',
+                canonical_lemma TEXT NOT NULL DEFAULT '',
+                created_at TEXT NOT NULL,
+                updated_at TEXT NOT NULL
+            );
+            CREATE TABLE IF NOT EXISTS entity_slots (
+                slot_id TEXT PRIMARY KEY,
+                entity_id TEXT NOT NULL,
+                slot_name TEXT NOT NULL,
+                value_json TEXT NOT NULL,
+                slot_state TEXT NOT NULL DEFAULT 'filled',
+                provenance TEXT NOT NULL DEFAULT 'unknown',
+                updated_at TEXT NOT NULL,
+                UNIQUE(entity_id, slot_name),
+                FOREIGN KEY(entity_id) REFERENCES entities(entity_id)
+            );
+            CREATE TABLE IF NOT EXISTS entity_relations (
+                relation_id TEXT PRIMARY KEY,
+                entity_id TEXT NOT NULL,
+                relation TEXT NOT NULL,
+                target_entity_id TEXT NOT NULL,
+                provenance TEXT NOT NULL DEFAULT 'unknown',
+                strength REAL NOT NULL DEFAULT 1.0,
+                created_at TEXT NOT NULL,
+                UNIQUE(entity_id, relation, target_entity_id),
+                FOREIGN KEY(entity_id) REFERENCES entities(entity_id),
+                FOREIGN KEY(target_entity_id) REFERENCES entities(entity_id)
+            );
+            CREATE INDEX IF NOT EXISTS idx_class_schemas_parent ON class_schemas(parent_class_id);
+            CREATE INDEX IF NOT EXISTS idx_entities_kind ON entities(kind);
+            CREATE INDEX IF NOT EXISTS idx_entities_semantic_class ON entities(semantic_class_id);
+            CREATE INDEX IF NOT EXISTS idx_entity_slots_entity ON entity_slots(entity_id);
+            CREATE INDEX IF NOT EXISTS idx_entity_slots_state ON entity_slots(slot_state);
+            CREATE INDEX IF NOT EXISTS idx_entity_relations_entity ON entity_relations(entity_id);
+            CREATE INDEX IF NOT EXISTS idx_entity_relations_relation ON entity_relations(relation);
             """
         )
 
@@ -1917,6 +2236,114 @@ def seed_assistant_os_store(store: AssistantOSStore, seed_path: str | Path) -> N
             tags=tuple(str(tag) for tag in item.get("tags", [])),
         )
     store.connection.commit()
+
+
+def seed_class_schemas(store: AssistantOSStore) -> None:
+    """Seed the event class hierarchy and base entity class schemas."""
+    existing = store.connection.execute(
+        "SELECT semantic_class_id FROM class_schemas LIMIT 1"
+    ).fetchone()
+    if existing is not None:
+        return
+    now = _now()
+    base_classes = (
+        ("entity", None, "Entity", "thing", "Base class for all entities"),
+        ("person", "entity", "Person", "person", "A known person"),
+        ("event", "entity", "Event", "event_type", "A class of recurring events"),
+        ("place", "entity", "Place", "place", "A known location"),
+        ("object", "entity", "Object", "object", "A physical or digital object"),
+    )
+    store.connection.executemany(
+        "INSERT INTO class_schemas(semantic_class_id, parent_class_id, label, base_entity_kind, description, updated_at) VALUES (?, ?, ?, ?, ?, ?)",
+        [(sid, pid, lbl, bk, desc, now) for sid, pid, lbl, bk, desc in base_classes],
+    )
+    subclass_data = (
+        ("competition", "event", "Competition", "event_type", "A competitive event with winners and participants"),
+    )
+    store.connection.executemany(
+        "INSERT INTO class_schemas(semantic_class_id, parent_class_id, label, base_entity_kind, description, updated_at) VALUES (?, ?, ?, ?, ?, ?)",
+        [(sid, pid, lbl, bk, desc, now) for sid, pid, lbl, bk, desc in subclass_data],
+    )
+    slot_data = (
+        ("entity", "label", "text", 1, "Canonical display label"),
+        ("person", "name", "text", 1, "Full name of the person"),
+        ("person", "phone", "text", 0, "Phone number"),
+        ("person", "email", "text", 0, "Email address"),
+        ("person", "relationship", "text", 0, "Relationship to user"),
+        ("event", "start_time", "text", 1, "Start time or date"),
+        ("event", "end_time", "text", 0, "End time or date"),
+        ("event", "location", "text", 0, "Location reference"),
+        ("event", "periodicity", "text", 0, "Recurrence pattern"),
+        ("competition", "winner", "text", 0, "Winner of the competition"),
+        ("competition", "participants", "json", 0, "List of participants"),
+        ("competition", "score", "text", 0, "Score or result"),
+        ("competition", "ranking", "text", 0, "Final ranking"),
+        ("place", "address", "text", 0, "Street address"),
+        ("place", "description", "text", 0, "Description of the place"),
+        ("object", "owner", "text", 0, "Owner of the object"),
+        ("object", "description", "text", 0, "Description of the object"),
+        ("object", "location", "text", 0, "Where the object is"),
+    )
+    store.connection.executemany(
+        "INSERT INTO class_schema_slots(semantic_class_id, slot_name, value_type, required, description) VALUES (?, ?, ?, ?, ?)",
+        slot_data,
+    )
+    store.connection.execute(
+        "INSERT INTO class_schemas(semantic_class_id, parent_class_id, label, base_entity_kind, description, updated_at) VALUES (?, ?, ?, ?, ?, ?)",
+        ("personal_experience", "entity", "PersonalExperience", "personal_experience", "A chat session or past interaction", now),
+    )
+
+
+def migrate_contacts_to_entities(store: AssistantOSStore) -> int:
+    """Port contacts from inventories table to entities WHERE kind='person'.
+
+    Reads all inventory rows with kind='contact' and creates person entities
+    with name and phone slots. Idempotent — skips contacts that already have
+    an entity row. Returns count of newly migrated contacts.
+    """
+    contacts = store.load_inventory("contact")
+    migrated = 0
+    for item_id, payload in contacts.items():
+        entity_id = f"contact:{item_id}"
+        existing = store.get_entity(entity_id)
+        if existing is not None:
+            continue
+        phone = str(payload.get("number", "")) if isinstance(payload, dict) else str(payload)
+        store.add_entity(entity_id, "person", str(item_id), "person")
+        store.set_entity_slot(entity_id, "name", str(item_id), provenance="migrated")
+        if phone:
+            store.set_entity_slot(entity_id, "phone", phone, provenance="migrated")
+        migrated += 1
+    if migrated:
+        store.connection.commit()
+    return migrated
+
+
+def migrate_self_facts_to_entities(store: AssistantOSStore) -> int:
+    """Port user_facts into entity_slots on entities WHERE kind='self'.
+
+    Creates a single 'self' entity if it doesn't exist, then ports each
+    non-revoked user_fact key->value as an entity_slot. Returns count of
+    slots created.
+    """
+    existing_self = store.get_entity("self")
+    if existing_self is None:
+        store.add_entity("self", "self", "Self", "person")
+    rows = store.connection.execute(
+        "SELECT key, value FROM user_facts WHERE consent=1 ORDER BY key"
+    ).fetchall()
+    created = 0
+    for row in rows:
+        key = str(row["key"])
+        value = str(row["value"])
+        existing_slot = store.get_entity_slot("self", key)
+        if existing_slot is not None:
+            continue
+        store.set_entity_slot("self", key, value, provenance="migrated")
+        created += 1
+    if created:
+        store.connection.commit()
+    return created
 
 
 def seed_assistant_os_lexicon(store: AssistantOSStore) -> None:

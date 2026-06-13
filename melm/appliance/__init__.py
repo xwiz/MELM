@@ -135,7 +135,10 @@ from .assistant_os_store import (
     StoredAssistantEvent,
     initialize_assistant_os_database,
     seed_assistant_os_lexicon,
+    seed_class_schemas,
     seed_assistant_os_store,
+    migrate_contacts_to_entities,
+    migrate_self_facts_to_entities,
 )
 from .assistant_lexicon import (
     acquire_definition,
@@ -357,6 +360,9 @@ __all__ = [
     "run_realistic_assistant_lifecycle_probe",
     "seed_assistant_os_lexicon",
     "seed_assistant_os_store",
+    "seed_class_schemas",
+    "migrate_contacts_to_entities",
+    "migrate_self_facts_to_entities",
     "media_items_to_inventory_rows",
     "schedule_inventory_refreshes",
     "story_items_to_inventory_rows",

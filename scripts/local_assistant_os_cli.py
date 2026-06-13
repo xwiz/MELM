@@ -165,6 +165,9 @@ from melm.appliance import (  # noqa: E402
     run_transcript_replay_suite,
     schedule_inventory_refreshes,
     seed_assistant_os_lexicon,
+    seed_class_schemas,
+    migrate_contacts_to_entities,
+    migrate_self_facts_to_entities,
     self_model_from_profile,
     story_items_to_inventory_rows,
     weather_items_to_inventory_rows,
@@ -2509,7 +2512,10 @@ def _bootstrap_runtime(args) -> None:
     started = perf_counter()
     datasets = _required_dataset_report(args.seed)
     store = initialize_assistant_os_database(args.db, seed_path=args.seed)
+    seed_class_schemas(store)
     seed_assistant_os_lexicon(store)
+    migrate_contacts_to_entities(store)
+    migrate_self_facts_to_entities(store)
     profile = store.load_profile(LocalAssistantProfile())
     media_results = []
     if not args.skip_media_import:

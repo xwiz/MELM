@@ -27,6 +27,7 @@ from .local_assistant_router import (
     compose_autobiographical_memory_frame,
     compose_assistant_status_frame,
     parse_assistant_debug_frame,
+    rebuild_entity_lexicon_index,
     replace_in_memory_lexicon,
 )
 
@@ -1107,9 +1108,11 @@ class AssistantOSKernel:
             replace_in_memory_lexicon(
                 {k: frozenset(v) for k, v in lexicon.items()}
             )
+            rebuild_entity_lexicon_index(self.store)
             return
         from .assistant_lexicon_legacy import build_legacy_in_memory_lexicon
         replace_in_memory_lexicon(build_legacy_in_memory_lexicon())
+        rebuild_entity_lexicon_index(self.store)
 
     def _persist_profile_and_self_model(self) -> None:
         if self.store is None:
