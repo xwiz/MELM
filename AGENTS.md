@@ -37,7 +37,7 @@
 - **M3: `set_lexical_sense_status` built** — promote/rollback API.
 - **M3: Kalimba e2e fixture** — teach→promote→rollback lifecycle.
 - **M4: `semantic_classes_activated` in events** — collector, column, event field, queries.
-- **M5: 8 classifiers migrated** to `_classify_from_frame_linker`: weather, story, media_playback, autobiographical_memory, meal_suggestion, common_sense_safety, social_contact, health_advice.
+- **M5: 9 classifiers migrated** to `_classify_from_frame_linker`: weather, story, media_playback, autobiographical_memory, meal_suggestion, common_sense_safety, social_contact, health_advice, personal_memory.
 - **`required_all_classes` AND-gate** added to frame linker and validation.
 - **Entity architecture documented** in §16.5 of MVP plan — unified entities, entity_slots, entity_relations, class_schemas, class_schema_slots, event class hierarchy, frame slot states.
 - **4 new entity tables** — `class_schemas`, `class_schema_slots`, `entities`, `entity_slots`, `entity_relations` added to `initialize()` DDL.
@@ -59,6 +59,7 @@
 - **`slot_bindings` populated in frame templates** — `social_contact` binds `["name", "phone"]`; `personal_memory` binds `["self_facts"]`. All others use `[]` (empty).
 - **`slot_bindings` validated in `validate_frame_templates()`** — must be array of strings.
 - **`_resolve_slot_states` helper** — kernel resolves slot states from entity store for `social_contact` (looks up person entities matching tokens) and `personal_memory` (checks self entity fact existence). Wired into `decide()` after router returns.
+- **personal_memory migrated** — last classifier delegated to frame linker. Structural gates kept (child/routine/household sub-patterns use possessive/contextual logic beyond lexical class matching); `memory_cognition`+first_person lexical path delegated to `_classify_from_frame_linker`. `personal_memory` NOT added to `_FRAME_LINKER_MIGRATED_INTENTS` (prevents bare `memory_recall` word matches like "remember" → personal_memory).
 
 ### In Progress
 - *(none)*
@@ -66,7 +67,7 @@
 ### Blocked
 - `test_assistant_authority_mvp.py` — `AnswerPlan` not importable (pre-existing).
 - `test_cli_pi_bundle_builds_portable_self_checked_bundle` — bundle builds but self-check smokes fail deeper (pre-existing).
-- **personal_memory** — remaining 1 classifier not migrated (needs slot-state awareness or memory-digest integration). Slot state infrastructure now in place via `_resolve_slot_states` — migration blocked by structural gate complexity (child/routine/household sub-patterns need frame linker pattern support beyond lexical class matching).
+- **personal_memory** — remaining sub-patterns (child/routine/household) kept as structural gates use possessive/contextual logic beyond frame linker's lexical class matching.
 
 ## Key Decisions
 - **Entity architecture**: unified `entities` table with `kind` discriminator. Persons are `kind='person'`. Events are `kind='event_type'`/`kind='event_instance'`. Slot values in `entity_slots`. Relations in `entity_relations`. Class hierarchy defines valid slots via `class_schemas` + `class_schema_slots`.
@@ -84,11 +85,11 @@
 - `cloud_lookup` uses `urllib.request` directly (project convention), no new dependencies.
 
 ## Next Steps
-1. **Migrate remaining 1 classifier** (personal_memory) — sub-patterns (child/routine/household) use possessive forms and data availability checks; slot-state infrastructure now in place, but frame linker needs pattern matching beyond lexical classes.
+1. **Migrate remaining 1 classifier** (personal_memory) — sub-patterns (child/routine/household) kept as structural gates use possessive/contextual logic beyond frame linker's lexical class matching. Memory cognition+first person path now delegated to frame linker.
 
 ## Critical Context
 - **579 tests pass**: frame_linker (27), router (54, 71 subtests), eval (4, 105/105 cases), lexicon (54), entity (51), lifecycle (2), eval (4), lifecycle integration (1), CLI (rest).
-- **8/9 classifiers migrated** to frame linker. 1 blocked (personal_memory).
+- **8/9 classifiers migrated** to frame linker. 1 partial (personal_memory — structural gates kept, memory_cognition+first_person delegated to frame linker).
 - **`_FRAME_LINKER_MIGRATED_INTENTS`**: 8 intents — weather, story, media_playback, autobiographical_memory, meal_suggestion, common_sense_safety, social_contact, health_advice.
 - **89 semantic classes** in `semantic_classes.v1.json`.
 - **4 new entity tables**: `class_schemas`, `class_schema_slots`, `entities`, `entity_slots`, `entity_relations`.
@@ -100,7 +101,7 @@
 - **Slot state infrastructure**: `SLOT_STATE_*` constants (5 states), `slot_states` on `FrameCandidate` + `AssistantDecision`, `slot_bindings` in templates (validated), `_resolve_slot_states` in kernel for `social_contact` and `personal_memory` intents.
 
 ## Relevant Files
-- **`melm/appliance/local_assistant_router.py`** — 8 migrated classifiers, `_classify_from_frame_linker`, `_FRAME_LINKER_MIGRATED_INTENTS`, `AssistantDecision` with `slot_states` field.
+- **`melm/appliance/local_assistant_router.py`** — 9 migrated classifiers, `_classify_from_frame_linker`, `_FRAME_LINKER_MIGRATED_INTENTS`, `AssistantDecision` with `slot_states` field.
 - **`melm/appliance/assistant_frame_linker.py`** — `_match_required_all_classes` AND-gate, `SLOT_STATE_*` constants, `FrameCandidate` with `slot_states` field.
 - **`melm/appliance/assistant_os_kernel.py`** — `_rebuild_router_lexicon_cache` calls `rebuild_entity_lexicon_index`, `_resolve_slot_states` helper wired into `decide()`.
 - **`melm/contracts/frame_templates.v1.json`** — templates with `required_all_classes` and `slot_bindings` arrays.

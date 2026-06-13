@@ -2048,7 +2048,10 @@ def _is_personal_memory_frame(
         return True
     first_person_targets = {"me", "my", "myself", "i"}
     if memory_cognition and token_set & first_person_targets:
-        return True
+        return _classify_from_frame_linker(
+            text, tokens, "personal_memory",
+            collector_classes=frozenset({"memory_recall", "personal_attribute", "child_relation", "social_relation"}),
+        )
     return _about_targets_self(tokens)
 
 
