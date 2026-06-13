@@ -1,15 +1,17 @@
 ## Goal
-- Migrate vocabulary from code constants (inline sets, LEGACY_ROUTER_TERM_CLASSES) to the factored lexicon store, replacing the transitional `_semantic_family_terms` bridge with a direct store-backed lookup. Build the M2 meaning substrate per the MVP v2 plan: factored lexicon store, semantic-class registry, ingestion gate, and legacy seed migration with bit-identical routing. Build the M3 learning vertical slice: runtime vocabulary acquisition channels (user-teaching, cloud lookup) with quarantine/promote/rollback lifecycle.
+- Migrate vocabulary from code constants (inline sets, LEGACY_ROUTER_TERM_CLASSES) to the factored lexicon store, replacing the transitional `_semantic_family_terms` bridge with a direct store-backed lookup. Build the M2 meaning substrate per the MVP v2 plan: factored lexicon store, semantic-class registry, ingestion gate, and legacy seed migration with bit-identical routing. Build the M3 learning vertical slice: runtime vocabulary acquisition channels (user-teaching, cloud lookup) with quarantine/promote/rollback lifecycle. Build the unified entity system (entities, entity_slots, entity_relations, class_schemas) replacing user_facts/inventories as the single store for all people, events, objects, and their attributes — documented in §16.5 of the MVP plan.
 
 ## Constraints & Preferences
 - All claims must be reproducible by a command on the current tree.
 - `docs/local_assistant_os_mvp_plan_v2.md` is the authoritative execution plan.
-- Behavioral gates must assert observable effects, not debug-label strings.
+- Behavioral gates assert observable effects, not debug-label strings.
 - Tests use reproducible PRNG seeds for deterministic output.
 - Conversation dialog expectations reflect **current** routing behavior, not aspirational.
 - Context resolution is handled at the conversation management layer, not in the stateless classifier chain.
-- The architecture must be language-agnostic — inflection normalization is a swappable function, contracts store lemmas only (no inflected forms). UOL is the foundational meaning representation; everything else is built on it.
+- Architecture must be language-agnostic — inflection normalization is a swappable function, contracts store lemmas only. UOL is the foundational meaning representation; everything else is built on it.
 - The `_semantic_family_terms` bridge is transitional — M5 replaces keyword classifiers with UOL-based frame linking. Do not treat the bridge as permanent architecture.
+- **Entity architecture**: all things (persons, events, places, objects) share a unified `entities` table with `kind` discriminator. Slot values live in `entity_slots`. Relations between entities live in `entity_relations`. Semantic classes define what slots entities of that class can have (`class_schemas` + `class_schema_slots`).
+- **Event class hierarchy**: `event` is an entity class with `kind='event_type'` or `kind='event_instance'`. Competition inherits from event. Chat sessions are personal-experience events (`kind='personal_experience'`).
 
 ## Progress
 ### Done
@@ -22,91 +24,87 @@
 - **`_is_weather_concept_question` reverted to hardcoded set** — concept terms ("define", "explain", "system") are grammatical/structural patterns, not vocabulary.
 - **`build_legacy_router_candidates(seed_all=True)`** — exports ALL 200+ `LEGACY_ROUTER_TERM_CLASSES` entries.
 - **`write_legacy_lexicon_candidates` uses `seed_all=True`** — legacy export includes all router vocabulary.
-- **`seed_assistant_os_lexicon(store)` created** — in `assistant_os_store.py`; seeds all 246 candidates (43 FG + 203 router) into the store.
+- **`seed_assistant_os_lexicon(store)` created** — seeds all 246 candidates (43 FG + 203 router) into the store.
 - **`seed_assistant_os_lexicon` called from bootstrap** — `_bootstrap_runtime` seeds the store right after `initialize_assistant_os_database`. The kernel then rebuilds the in-memory cache from store data at init.
-- **`semantic_classes.v1.json` extended with all 28 LEGACY-internal classes** — `personal_attribute`, `social_relation`, `child_relation`, `health_condition`, `evaluative_expression`, `advice_action`, `contact_action`, `communication_action`, `movement_action`, `memory_recall`, `autobiographical_event`, `autobiographical_action`, `owner_concept`, `temporal_descriptor`, `request_softener`, `social_greeting`, `action_verb`, `hardware_entity`, `definition_request`, `abstract_concept`, `goal_concept`, `household_concept`, `routine_concept`, `public_place`, `undress_state`, `clothing_item`, `health_domain`, `wellness_activity`. Formal ontology now has 89 classes.
-- **Bit-identical routing verified** — store-backed cache is a superset of LEGACY cache: all 203 LEGACY terms present with identical class assignments. 21 extra FG-only terms enrich the cache but their classes (`verb.communicate`, `verb.move`, `verb.consume`, `verb.create`, `person`, `abstract`, `verb.social`, `verb.change`, `verb.stative`, `cognition`, `action`) are never checked by any classifier.
-- **`seed_assistant_os_lexicon` exported** from `melm/appliance/__init__.py`.
-- **`import_transcript_replay_fixture` restored in CLI imports** — accidentally removed during M3 stub cleanup; function was called inside a `try/except Exception` block in `_build_event_ledger_calibration_payload`, causing a silent `NameError` that made calibration checks return `passed=False`. Fix verified: `test_cli_api_session_smoke_can_execute_configured_real_actions` passes.
-- **V3: 15 missing content-word terms added to `LEGACY_ROUTER_TERM_CLASSES`** — `bleeding`, `breathe`, `emergency`, `export`, `faint`, `name`, `poison`, `recommend`, `report`, `see`, `send`, `share`, `suggest`, `take`, `upload` — from inline classifier sets. `play`, `start` omitted (already seeded via FG verb path as non-routing `action` class). Pre-existing duplicate `goals: goal_concept` removed.
-- **V3: `build_legacy_in_memory_lexicon()` extracted** — in `assistant_lexicon_legacy.py`. `LEGACY_ROUTER_TERM_CLASSES` refs removed from `local_assistant_router.py` (module init) and `assistant_os_kernel.py` (cache fallback). Constant now only referenced inside `assistant_lexicon_legacy.py` — single provenance source.
-- **M3: `acquire_definition(store, utterance)` built** — user-teaching acquisition channel. Detects copula-definition frames ("a kalimba is a small thumb piano") and meaning frames ("X means Y"), parses lemma/genus/definition, walks genus through lexicon for semantic class candidates, ingests via `lexicon_ingest` as `provenance=user_taught`, `status=quarantined`, `confidence_prior=0.60`. 9 new tests cover copula, means, normalization, empty, non-matching, unresolved genus, reserved-word rejection, polysemous genus, and provenance verification.
-- **M3: `offline_definition_lookup(store, word, *, dictionary_path)` built** — offline dictionary channel. Reads a line-delimited JSONL dictionary file, matches entries by lemma, builds `sense_candidate.v1` with `genus_lemma` extracted from the definition (or explicit on the entry), walks genus through the store-backed lexicon for class candidates, and ingests via `lexicon_ingest` as `provenance=offline_dictionary`, `status=quarantined`, `confidence_prior=0.70`. 10 new tests cover single entry, missing file, non-matching lemma, empty input, provenance verification, genus extraction, reserved-word rejection, polysemous entries, confidence prior, and explicit genus override.
-- **M3: `cloud_definition_lookup(store, word, *, api_key, endpoint, model, pos_hint, timeout)` built** — cloud LLM definition lookup channel. Sends an OpenAI-compatible chat-completions request with a dictionary-service system prompt that includes the full 89-class semantic-class enum. Parses the LLM response into `sense_candidate.v1` with `provenance=cloud_lookup`, `status=quarantined`, `confidence_prior=0.50`, `method=llm_assigned` (per contract policy). `genus_lemma` omitted when empty (not in schema required list). Unknown `class_id` values from the LLM are filtered; empty candidates fall back to `abstract` at 0.50. Network errors, malformed JSON, and `ContractValidationError` are silently swallowed (return `[]`). Uses `urllib.request` (project stdlib convention). 11 tests cover valid ingestion, provenance, confidence prior, `llm_assigned` method, network error, malformed response, empty content, empty word, reserved-word rejection, abstract fallback, and unknown-class filtering.
-- **`load_semantic_class_ids()` made public** — previously `_semantic_class_ids` private function in `contracts/validation.py`. Renamed and exported from `melm.contracts`.
-- **Code cleanup during M3 review**: `_clean_definition` simplified (removed dead branch and unused `lemma` param). `_compute_class_candidates` cleaned (removed unused `definition` param). `_build_dictionary_candidate` cleaned (removed unused `normalized_word` param). `_build_dictionary_candidate` guards against empty/invalid `pos`. `offline_definition_lookup` catches `OSError` for missing files. `_extract_candidate_from_llm_response` simplified (removed dead early candidate dict).
-- **M3: `set_lexical_sense_status(store, sense_id, new_status)` built** — promote/rollback API for lexical sense status. Accepts any value in `VALID_SENSE_STATUSES` (`{"quarantined", "dormant", "active"}`). Uses `with store.connection:` to ensure SQLite transaction commits (critical: implicit transactions are rolled back on `connection.close()`). Raises `ContractValidationError` for invalid status or unknown `sense_id`.
-- **M3: Kalimba e2e fixture** — `test_teach_quarantine_promote_restart_rollback` exercises teach (acquire_definition, quarantined) → promote to active → routing visibility via `lexical_classes_for_term` → reopen store verifying persistence → correction merge into same sense → rollback to quarantined removing routing visibility.
+- **`semantic_classes.v1.json` extended with all 28 LEGACY-internal classes** — 89 total classes.
+- **Bit-identical routing verified** — store-backed cache is a superset of LEGACY cache.
+- **`import_transcript_replay_fixture` restored** — fix verified: `test_cli_api_session_smoke_can_execute_configured_real_actions` passes.
+- **V3: 15 missing content-word terms added** to `LEGACY_ROUTER_TERM_CLASSES`.
+- **V3: `build_legacy_in_memory_lexicon()` extracted** — constant now only referenced in `assistant_lexicon_legacy.py`.
+- **M3: `acquire_definition` built** — user-teaching channel with copula-detection.
+- **M3: `offline_definition_lookup` built** — JSONL dictionary channel.
+- **M3: `cloud_definition_lookup` built** — LLM chat-completions channel.
+- **M3: `set_lexical_sense_status` built** — promote/rollback API.
+- **M3: Kalimba e2e fixture** — teach→promote→rollback lifecycle.
+- **M4: `semantic_classes_activated` in events** — collector, column, event field, queries.
+- **M5: 8 classifiers migrated** to `_classify_from_frame_linker`: weather, story, media_playback, autobiographical_memory, meal_suggestion, common_sense_safety, social_contact, health_advice.
+- **`required_all_classes` AND-gate** added to frame linker and validation.
+- **Entity architecture documented** in §16.5 of MVP plan — unified entities, entity_slots, entity_relations, class_schemas, class_schema_slots, event class hierarchy, frame slot states.
+- **4 new entity tables** — `class_schemas`, `class_schema_slots`, `entities`, `entity_slots`, `entity_relations` added to `initialize()` DDL.
+- **`StoredEntity`, `StoredEntitySlot`, `StoredEntityRelation`, `ClassSchemaDef` dataclasses** added to store.
+- **`seed_class_schemas(store)` built** — seeds event class hierarchy (entity→person, event, place, object; competition→event) with slot definitions.
+- **`_ensure_entity_tables` migration** — creates tables for existing stores.
+- **Entity CRUD methods** — `add_entity`, `get_entity`, `find_entities`, `set_entity_slot`, `get_entity_slots`, `get_entity_slot`, `delete_entity`.
+- **`seed_class_schemas` exported** from `__init__.py` and wired into CLI bootstrap.
+- **Review fixes applied** — `ClassSchemaDef.parent_class_id` changed to `str | None`; `seed_class_schemas` uses `None` for root parent; `count()` and `table_counts()` include entity tables; `seed_class_schemas` added to `__all__`; `count()` `if` statement `:` restored.
+- **36 entity tests** — schema creation, migration, seeding, CRUD, slot states, class hierarchy, entity relations, FK enforcement, `count()` whitelist, restart persistence, frozen dataclass invariance.
+- **Contacts ported to entities** — `migrate_contacts_to_entities(store)` reads `inventories WHERE kind='contact'`, creates `entities WHERE kind='person'` with name + phone slots. Entity ID prefixed `contact:<item_id>`. Idempotent — skips already-migrated contacts.
+- **Self facts ported to entities** — `migrate_self_facts_to_entities(store)` creates `entity_id='self'` if absent, then ports non-revoked `user_facts` key→value into `entity_slots`. Idempotent per-fact.
+- **8 migration tests** — contacts migrate correctly, empty inventory, no-number contact, idempotent re-run; self-facts migrate correctly, skip revoked facts, idempotent.
+- **Migrations wired into CLI bootstrap** — called after `seed_class_schemas` in `_bootstrap_runtime`.
 
 ### In Progress
 - *(none)*
 
 ### Blocked
-- *(none)*
+- `test_assistant_authority_mvp.py` — `AnswerPlan` not importable (pre-existing).
+- `test_cli_pi_bundle_builds_portable_self_checked_bundle` — bundle builds but self-check smokes fail deeper (pre-existing).
+- **personal_memory** — remaining 1 classifier not migrated (needs slot-state awareness or memory-digest integration).
 
 ## Key Decisions
-- **In-memory cache is always rebuilt** — `_rebuild_router_lexicon_cache` always replaces `_IN_MEMORY_LEXICON`. Store has data → store data. Store empty → LEGACY baseline. This eliminates test pollution across kernels.
-- **`seed_assistant_os_lexicon` runs in bootstrap** — after contract extension, all 35 LEGACY classes are valid, so the store can be fully seeded. The kernel replaces the LEGACY cache with store data at init.
-- **`LEGACY_ROUTER_TERM_CLASSES` retained** for seed generation and module-load cache init. Direct router tests (`OnDeviceAssistantRouter(profile)`) still read the LEGACY cache at import time, preserving backward compat.
-- **Concept-level terms stay as structural patterns** — `_is_weather_concept_question` uses hardcoded `{"define", "explain", "mean", "means", "system", "systems"}` even if `definition_request`/`abstract_concept` were seeded. These are grammatical/structural, not vocabulary.
-- **Grammar/structural logic stays inline** — `_story_request_question`, `_is_question_like`, `_is_request_like`, auto-bio sub-frames, `_identity_composition` helpers, `_private_cloud_evidence_keys`, `_food_tags` are patterns, not vocabulary lookups.
-- **Contracts store lemmas only** — language-agnostic invariant per the plan. Inflection normalization out of scope for M2.
-- **Centralized dicts are not scattered hacks** — `_secondary_meaning_hint_groups`, `_semantic_object_role_tokens` are per-intent alias blocks for UOL composition, not scattered inline sets.
-- **`genus_lemma` omitted when empty** — `_extract_candidate_from_llm_response` conditionally includes `genus_lemma` only when non-empty, since `sense_candidate.v1` has `minLength: 1` on the field but it's not in `required`.
-- **`cloud_lookup` uses `urllib.request` directly** — no new dependencies. Matches project convention (`assistant_weather.py`, `assistant_inventory.py`).
-- **API key/endpoint/model are function parameters** — no existing API key management infrastructure in the codebase. The caller (CLI, kernel, or test) provides these explicitly.
-- **M4: `semantic_classes_activated` added to `AssistantDecision`** — `frozenset[str]` field (default `frozenset()`) on the frozen dataclass. Captured during `handle()` via a module-level collector.
-- **M4: `set_semantic_class_collector()`/`_SEMANTIC_CLASS_COLLECTOR`** — module-level collector in `local_assistant_router.py`. `_semantic_family_terms` updates the collector whenever it finds matching tokens. `handle()` resets before routing, reads after, injects into decision via `dataclasses.replace`.
-- **M4: `handle()` refactored** — routing logic extracted to `_route_impl()`. `handle()` wraps it with collector setup/teardown. `_classify_intent_from_uol_slots` test updated to inspect `_route_impl` source.
-- **M4: `semantic_classes_activated_json` column** — added to `events` table DDL and migration helper `_ensure_event_semantic_classes_column()`. Called from store init after provenance columns.
-- **M4: `record_turn` accepts `semantic_classes_activated`** — stored as sorted JSON tuple. Defaults to `frozenset()`.
-- **M4: `StoredAssistantEvent.semantic_classes_activated`** — new `frozenset[str]` field. Serialized/deserialized via `_json()` in `load_events`.
-- **M4: `_event_memory_record` includes `semantic_classes_activated`** — all SELECT queries (`query_event_memory`, `query_recent_session_memory`, `build_memory_digest`) now include `semantic_classes_activated_json`.
-- **M4: `AssistantMemoryEvent.semantic_classes_activated`** — added to kernel's in-memory event type. Wired through `_remember`, `record_turn`, and `load_events` init mapping.
-- **M4: 6 new tests** — `test_semantic_family_terms_activates_collector`, `test_router_handle_injects_activated_classes`, `test_activated_semantic_classes_persisted_in_store`, `test_activated_semantic_classes_in_query_event_memory`, `test_migration_adds_semantic_classes_column`, `test_migration_is_idempotent`.
-- **Genus extraction fix** — `_GENUS_PP_MARKERS` added; `_extract_genus_lemma` uses PP-aware backwards scan (skips PP objects before returning head noun). Fixes "piano from africa" → "piano" instead of "africa".
-- **`_copy_latest_turn` fixed** — now passes `semantic_classes_activated` (parsed from `semantic_classes_activated_json`) to `record_turn`. Eval tests pass without data loss.
-- **3 new adversarial tests** — `test_genus_extracts_head_noun_before_pp`, `test_homonym_creates_separate_sense_per_class`, `test_all_reserved_lexemes_rejected_on_acquire` (parameterized over all 55 reserved/policy lexemes).
-- **M5: Weather frame linker migration** — `_is_weather_request` uses `_classify_from_frame_linker`. Requires top-candidate status + concept gate pre-filter. Fixes false negative "What is the weather?" → `weather`.
-- **M5: Story frame linker migration** — `_is_story_request` uses `_classify_from_frame_linker` with action-token gating for bit-identical routing. Frame linker's top-candidate check prevents preemption by higher-scoring intents.
-- **M5: Media playback frame linker migration** — `_is_media_request` uses `_classify_from_frame_linker` with action-token gating. "play something with sounds" special case preserved. Bare required-class matches (e.g., "hi-fi audio") blocked by strict `>` threshold check.
-- **M5: Autobiographical memory frame linker migration** — `_is_autobiographical_debug_request` uses `_classify_from_frame_linker` for the lexical fallback path. Structural gates (question/command, long_horizon, session_summary, latest_event sub-frames) preserved in place. Shared context path ("we/our" + "talk/talked/conversation") retained as special case because "talk" (present tense) is `communication_action`, not `autobiographical_action`.
-- **M5: Meal suggestion frame linker migration** — `_is_meal_suggestion_request` uses `_classify_from_frame_linker` for the final lexical check. Structural gates (food_terms, direct_suggestion first-token bypass, user_choice_frame) preserved in place.
-- **M5: Common sense safety frame linker migration** — `_is_common_sense_safety_request` uses `_classify_from_frame_linker` for the main path (clothing_item AND public_place via `required_all_classes`). Undress and "without+clothes" structural gates preserved in place.
-- **`_classify_from_frame_linker` top-candidate fix** — `candidates[0].frame_id == frame_id` prevents preemption. Fallback uses `score > threshold` (strict) for migrated intents to block bare required-class matches.
-- **D1: `PI_BUNDLE_STATIC_FILES` updated** — removed legacy `local_assistant_os_mvp_plan.md` (renamed to `_v2`). Bundle self-check still fails on deeper smoke issues (pre-existing).
-- **Test count: 85 pass** — frame_linker (27), router (54, 71 subtests), eval (4, 105/105 cases). Pi-bundle and authority tests are pre-existing failures.
+- **Entity architecture**: unified `entities` table with `kind` discriminator. Persons are `kind='person'`. Events are `kind='event_type'`/`kind='event_instance'`. Slot values in `entity_slots`. Relations in `entity_relations`. Class hierarchy defines valid slots via `class_schemas` + `class_schema_slots`.
+- **Event class hierarchy**: `competition` inherits from `event`. Slots defined on the class, not per entity. Frame slot states (`filled`, `asked_but_empty`, `unknown_entity`, `unknown`, `inferred`) enable intelligent "I don't know" responses.
+- **Migration path**: `user_facts` → `entities WHERE kind='self'` + `entity_slots`; contacts → `entities WHERE kind='person'`.
+- In-memory cache is always rebuilt — store data when rows exist, LEGACY reset when empty.
+- Migrated frame-linker intents require top-candidate status (`candidates[0].frame_id == frame_id`) to prevent preemption.
+- Fallback uses strict `>` for migrated intents to block bare required-class matches.
+- Weather concept gate retained for "what is weather?" → `open_domain`.
+- Action tokens checked early in story, media, and autobiographical migrations for bit-identical routing.
+- Concept-level terms and grammar/structural logic stay as hardcoded patterns, not vocabulary lookups.
+- **Talk-based social_contact path uses multi-candidate check** — the contact_action path uses `_classify_from_frame_linker` (strict top-candidate), but the talk+need/help/please path checks all candidates for a passing social_contact score. This prevents preemption by alphabetical tie-breaker when health_advice matches via "help" → advice_action.
+- Contracts store lemmas only — language-agnostic invariant per the plan.
+- `cloud_lookup` uses `urllib.request` directly (project convention), no new dependencies.
 
 ## Next Steps
-1. **M0 — commit tree, set up CI** — needed before more M5 work per plan ordering. (D1 gate whitelist already fixed; PI_BUNDLE_STATIC_FILES updated.)
-2. **M5: UOL-based frame linking** — replace keyword classifiers with contract-driven frame templates backed by the factored lexicon. Weather, story, media_playback, autobiographical_memory, meal_suggestion, and common_sense_safety migrated. `required_all_classes` AND-gate added to template system. Remaining: health_advice, social_contact, personal_memory (complex AND-gate + personal-pronoun + external-param logic — require further template system extension).
+1. **M0 — commit tree, set up CI** — needed before more M5 work per plan ordering.
+2. **Migrate remaining 1 classifier** (personal_memory) — social_contact and health_advice migrated in this session. personal_memory needs slot-state awareness or memory-digest integration.
+3. **Wire frame linker slot states into `FrameCandidate`** — report fill state for synthesis (larger architectural change, needed for memory and entity-aware "I don't know" synthesis).
 
 ## Critical Context
-- **85 tests pass** — frame_linker (27), router (54, 71 subtests), eval (4, 105/105 cases). 2 pre-existing failures unrelated to this work: `test_assistant_authority_mvp.py` (`AnswerPlan` import), `test_cli_pi_bundle_builds_portable_self_checked_bundle` (missing `docs/local_assistant_os_mvp_plan.md` — bundle builds but self-check smokes fail deeper). Pre-existing test pollution: router tests fail when run after legacy tests due to `_IN_MEMORY_LEXICON` global mutable state (isolated files pass).
-- **`_rebuild_router_lexicon_cache`** — always rebuilds. Store data → store cache. Empty store → LEGACY cache. Fixes test isolation.
-- **`_IN_MEMORY_LEXICON`** — `dict[str, frozenset[str]]`, term→classes. Built from LEGACY at module load. Replaced at kernel init via `_rebuild_router_lexicon_cache()`.
-- **`_semantic_family_terms(tokens, *, semantic_classes)`** — no parameters beyond `tokens`, `semantic_classes`. Always reads `_IN_MEMORY_LEXICON`. Updates `_SEMANTIC_CLASS_COLLECTOR` when matches found.
-- **`OnDeviceAssistantRouter.__init__(self, profile=None)`** — no lexicon params.
-- **`seed_assistant_os_lexicon(store)`** — seeds all 246+ candidates (43 FG + 203 router + 15 V3) with 35 semantic classes. Called from bootstrap.
-- **89 semantic classes** in `semantic_classes.v1.json` (61 original + 28 LEGACY-internal).
-- **Store cache is a superset of LEGACY cache** — all 203 LEGACY terms present with identical class membership. 21 extra FG-only terms add classes that no classifier checks (bit-identical routing).
-- **`_is_weather_concept_question` uses hardcoded concept set** — structural patterns, not vocabulary lookup.
-- **Migrated frame-linker intents require top-candidate status** — `_classify_from_frame_linker` checks `candidates[0].frame_id == frame_id`, not just `any()` above threshold. Prevents preemption by higher-scoring frames.
-- **Fallback uses strict `>` for migrated intents** — bare required-class matches ("hi-fi audio" → `media_playback`) blocked by `score > threshold` check in fallback. Migrated classifiers already require action tokens or structure; this prevents the weaker fallback path from catching what the old classifier wouldn't.
-- **Deletion test works** — deleting a seeded lexeme from the store and creating a new kernel removes the term from the cache.
-- **M4: `_SEMANTIC_CLASS_COLLECTOR` is module-level** — `_semantic_family_terms` updates it when matches found. `handle()` sets up/teardown via `set_semantic_class_collector()`. This avoids changing the 28 existing call sites that call `_semantic_family_terms`.
-- **`offline_definition_lookup`** catches `OSError` for missing files. `cloud_definition_lookup` catches `OSError`/`URLError`/`json.JSONDecodeError` for network failures. Both silently return `[]` on error.
-- **`cloud_definition_lookup`** uses `urllib.request` directly (project convention). Adds no new dependencies. API key, endpoint, and model are function parameters (no existing API key management in codebase).
-- **`set_lexical_sense_status`** uses `with store.connection:` to ensure SQLite transaction commits (critical: implicit transactions are rolled back on `connection.close()`).
-- **2 pre-existing test failures** (unrelated to this work): `test_assistant_authority_mvp.py` (`AnswerPlan` import), `test_cli_pi_bundle_builds_portable_self_checked_bundle` (missing `docs/local_assistant_os_mvp_plan.md` — bundle builds but self-check smokes fail deeper).
+- **579 tests pass**: frame_linker (27), router (54, 71 subtests), eval (4, 105/105 cases), lexicon (54), entity (51), lifecycle (2), eval (4), lifecycle integration (1), CLI (rest).
+- **8/9 classifiers migrated** to frame linker. 1 blocked (personal_memory).
+- **`_FRAME_LINKER_MIGRATED_INTENTS`**: 8 intents — weather, story, media_playback, autobiographical_memory, meal_suggestion, common_sense_safety, social_contact, health_advice.
+- **89 semantic classes** in `semantic_classes.v1.json`.
+- **4 new entity tables**: `class_schemas`, `class_schema_slots`, `entities`, `entity_slots`, `entity_relations`.
+- **`seed_class_schemas`** seeds: entity (base), person, event, place, object, competition, personal_experience — with slot definitions for each.
+- **Entity CRUD**: `add_entity`, `get_entity`, `find_entities`, `set_entity_slot`, `get_entity_slots`, `get_entity_slot`, `delete_entity`.
+- **Migration functions**: `migrate_contacts_to_entities(store)` — ports inventory contacts to person entities (idempotent). `migrate_self_facts_to_entities(store)` — ports user_facts to self entity slots (idempotent). Both wired into CLI bootstrap.
+- **2 pre-existing failures**: authority test (`AnswerPlan` import), bundle test (deeper smoke issues).
+- **Pre-existing test pollution**: router tests fail when run after legacy tests due to `_IN_MEMORY_LEXICON` global mutable state.
 
 ## Relevant Files
-- **`melm/appliance/local_assistant_router.py`** — `_semantic_family_terms` (line ~1616): no params beyond `tokens`, `semantic_classes`. `_IN_MEMORY_LEXICON` (line ~1603): built from LEGACY at module load. `replace_in_memory_lexicon()`: replaces cache. `_is_weather_concept_question` (line ~1574): hardcoded concept set. `set_semantic_class_collector()`: activates/deactivates module-level `_SEMANTIC_CLASS_COLLECTOR` for M4 event indexing. `_is_autobiographical_debug_request` (line ~2028): migrated to frame linker with question gate + sub-frames + shared_context special case. `_is_meal_suggestion_request` (line ~2161): migrated to frame linker with user_choice_frame gate. `_is_common_sense_safety_request` (line ~1747): migrated with `required_all_classes` AND-gate. `_FRAME_LINKER_MIGRATED_INTENTS` (line ~1619): now includes 6 intents.
-- **`melm/appliance/assistant_os_kernel.py`** — `_rebuild_router_lexicon_cache` (line ~1087): always rebuilds — store data when rows exist, LEGACY reset when empty.
-- **`melm/appliance/assistant_os_store.py`** — `seed_assistant_os_lexicon` (line ~1906): seeds FG + router candidates (all 35 classes). No `ContractValidationError` catch. `StoredAssistantEvent` (line ~27): includes `semantic_classes_activated: frozenset[str]`. `record_turn`: accepts `semantic_classes_activated` param. `_ensure_event_semantic_classes_column`: migration for existing stores.
-- **`melm/appliance/assistant_lexicon_legacy.py`** — `LEGACY_ROUTER_TERM_CLASSES` (~200+ entries, 35 classes). `build_legacy_router_candidates(seed_all=True)` exports all entries.
-- **`melm/appliance/assistant_lexicon.py`** — `lexicon_ingest` (all 35 LEGACY classes now valid), `configure_lexicon_router_families`, `acquire_definition` (user-teaching with regex-based copula/meaning detection), `offline_definition_lookup` (JSONL dictionary channel), `cloud_definition_lookup` (LLM chat-completions channel with `_build_cloud_lookup_payload`, `_call_chat_completion`, `_extract_candidate_from_llm_response`). `_GENUS_SKIP` (line ~249), `_GENUS_PP_MARKERS` (line ~264): prepositions marking trailing PP boundaries. `_extract_genus_lemma` (line ~348): PP-aware backwards scan.
-- **`melm/appliance/__init__.py`** — exports `acquire_definition`, `offline_definition_lookup`, `cloud_definition_lookup`, `seed_assistant_os_lexicon`.
-- **`melm/appliance/assistant_frame_linker.py`** — `_match_required_all_classes` (AND-gate) added alongside `_match_required_classes` (OR-gate). MAX semantics: template scores `_WEIGHT_REQUIRED` if ANY required class OR ALL required_all classes match.
-- **`melm/contracts/validation.py`** — `load_semantic_class_ids()` (public), `validate_sense_candidate` with `cloud_lookup` policy: `quarantined`, ≤0.50, `llm_assigned`.
-- **`tests/test_assistant_lexicon_mvp.py`** — 44 tests total (12 original + 9 acquire_definition + 10 offline_dictionary + 11 cloud_definition + 2 refactoring). Covers all M2–M3 ingestion paths.
+- **`melm/appliance/local_assistant_router.py`** — 8 migrated classifiers, `_classify_from_frame_linker`, `_FRAME_LINKER_MIGRATED_INTENTS`.
+- **`melm/appliance/assistant_frame_linker.py`** — `_match_required_all_classes` AND-gate.
+- **`melm/contracts/frame_templates.v1.json`** — templates with `required_all_classes`.
+- **`melm/contracts/validation.py`** — `validate_frame_templates`, `load_semantic_class_ids()`.
+- **`melm/appliance/assistant_os_store.py`** — entity DDL (class_schemas, class_schema_slots, entities, entity_slots, entity_relations), `seed_class_schemas`, `StoredEntity`/`StoredEntitySlot`/`StoredEntityRelation`/`ClassSchemaDef` dataclasses, entity CRUD methods, `_ensure_entity_tables` migration.
+- **`melm/appliance/assistant_os_kernel.py`** — `_rebuild_router_lexicon_cache` now calls `rebuild_entity_lexicon_index` after store-backed or legacy rebuild.
+- **`melm/appliance/local_assistant_router.py`** — `_semantic_family_terms` with bigram compound token detection. `rebuild_entity_lexicon_index(store)` injects entity labels into `_IN_MEMORY_LEXICON`.
+- **`melm/appliance/__init__.py`** — exports `acquire_definition`, `offline_definition_lookup`, `cloud_definition_lookup`, `seed_assistant_os_lexicon`, `seed_class_schemas`, `migrate_contacts_to_entities`, `migrate_self_facts_to_entities`.
+- **`scripts/local_assistant_os_cli.py`** — bootstrap imports `seed_class_schemas` and calls it.
+- **`docs/local_assistant_os_mvp_plan_v2.md`** — §16.5 Entity store architecture.
+- **`tests/test_assistant_frame_linker_mvp.py`** — 27 frame linker tests.
+- **`tests/test_local_assistant_router_mvp.py`** — 54 router tests.
+- **`tests/test_assistant_lexicon_mvp.py`** — 54 lexicon tests.
+- **`tests/test_assistant_os_eval_mvp.py`** — 4 eval tests (105/105 cases).
+- **`tests/test_entity_architecture_mvp.py`** — 51 entity tests (schema, migration, seeding, CRUD, slot states, relations, count whitelist, contacts migration, self-facts migration, entity lexicon index).
