@@ -1619,7 +1619,8 @@ _FRAME_LINKER_CONFIRMATION_MARGIN = 0.20
 _FRAME_LINKER_MIGRATED_INTENTS: frozenset[str] = frozenset({
     "weather", "story", "media_playback",
     "autobiographical_memory", "meal_suggestion",
-    "common_sense_safety",
+    "common_sense_safety", "social_contact",
+    "health_advice",
 })
 _FRAME_LINKER: FrameLinker | None = None
 
@@ -1684,18 +1685,58 @@ def _semantic_family_terms(
     tokens: tuple[str, ...],
     semantic_classes: set[str],
 ) -> set[str]:
-    result = {
-        token
-        for token in tokens
-        if _IN_MEMORY_LEXICON.get(token, frozenset()) & semantic_classes
-    }
+    result: set[str] = set()
+    skip_next = False
+    for i, token in enumerate(tokens):
+        if skip_next:
+            skip_next = False
+            continue
+        if i + 1 < len(tokens):
+            compound = f"{token}_{tokens[i + 1]}"
+            if _IN_MEMORY_LEXICON.get(compound, frozenset()) & semantic_classes:
+                result.add(compound)
+                skip_next = True
+                continue
+        if _IN_MEMORY_LEXICON.get(token, frozenset()) & semantic_classes:
+            result.add(token)
     if result and _SEMANTIC_CLASS_COLLECTOR is not None:
-        # Record only the classes actually matched by the result tokens.
         matched_classes: set[str] = set()
-        for token in result:
-            matched_classes.update(_IN_MEMORY_LEXICON.get(token, frozenset()) & semantic_classes)
+        for term in result:
+            matched_classes.update(_IN_MEMORY_LEXICON.get(term, frozenset()) & semantic_classes)
         _SEMANTIC_CLASS_COLLECTOR.update(matched_classes)
     return result
+
+
+def rebuild_entity_lexicon_index(
+    store: Any,
+) -> None:
+    """Inject entity labels into _IN_MEMORY_LEXICON for entity-aware routing.
+
+    Reads entities WHERE kind IN ('person', 'place', 'object', 'event_type') and
+    injects their label (and canonical_lemma, if different) into _IN_MEMORY_LEXICON
+    with the entity's semantic_class_id. Multi-word labels are injected as
+    underscore-joined compound keys for bigram matching in _semantic_family_terms.
+    """
+    rows = store.connection.execute(
+        """
+        SELECT e.label, e.canonical_lemma, e.semantic_class_id
+        FROM entities e
+        WHERE e.kind IN ('person', 'place', 'object', 'event_type', 'event_instance')
+        """
+    ).fetchall()
+    for row in rows:
+        label = str(row["label"]).strip().lower()
+        lemma = str(row["canonical_lemma"]).strip().lower() if row["canonical_lemma"] else ""
+        class_id = str(row["semantic_class_id"])
+        if not class_id:
+            continue
+        terms: set[str] = {label}
+        if lemma and lemma != label:
+            terms.add(lemma)
+        for term in terms:
+            for t in (term, term.replace(" ", "_")):
+                existing = _IN_MEMORY_LEXICON.get(t, frozenset())
+                _IN_MEMORY_LEXICON[t] = frozenset(existing | {class_id})
 
 
 def _weather_observation_context(
@@ -1824,6 +1865,8 @@ def _is_health_advice_request(
     )
     if _has_urgent_health_frame(tokens):
         return True
+    if not health_terms and not care_terms:
+        return False
     advice_terms = _semantic_family_terms(
         tokens,
         semantic_classes={"advice_action"},
@@ -1846,13 +1889,13 @@ def _is_health_advice_request(
         tokens[:1] in {("what",), ("can",), ("could",)}
         and (personal_context or health_action_context)
     )
-    if health_terms:
-        return personal_context or health_action_context or health_question_context
-    if care_terms:
-        return personal_context or health_action_context
-    return False
-
-
+    if not (personal_context or health_action_context or health_question_context):
+        return False
+    return _classify_from_frame_linker(
+        text, tokens, "health_advice",
+        collector_classes=frozenset({"health_domain", "health_condition", "advice_action"}),
+        use_margin=False,
+    )
 def _is_social_contact_request(
     text: str,
     tokens: tuple[str, ...] | None = None,
@@ -1860,72 +1903,60 @@ def _is_social_contact_request(
 
 
 
+
 ) -> bool:
     token_tuple = tokens or _tokenize(text)
     token_set = set(token_tuple)
-    contact_terms = _semantic_family_terms(
+    # Phone is ambiguous — only treat as contact action in verb context
+    if "phone" in token_set and not _phone_is_contact_action(token_tuple):
+        return False
+    # Need a person target to prevent false positives like "call the meeting"
+    if not _has_contact_target(token_tuple, trusted_contact_names=trusted_contact_names):
+        return False
+    # Contact-action tokens with a target are social contact requests
+    contact_action_tokens = token_set & {"call", "phone", "ring", "reach"}
+    contact_actions = _semantic_family_terms(
         token_tuple,
         semantic_classes={"contact_action"},
 
 
+
     )
+    if contact_actions:
+        # Require action tokens or request/question structure to prevent bare
+        # matches like "send contact to the cloud" → social_contact.
+        if not (contact_action_tokens or _is_request_like(token_tuple) or _is_question_like(text, token_tuple)):
+            return False
+        return _classify_from_frame_linker(
+            text, token_tuple, "social_contact",
+            collector_classes=frozenset({"contact_action", "communication_action", "social_relation"}),
+            use_margin=False,
+        )
+    # Talk-based requests need structural context
     talk_terms = _semantic_family_terms(
         token_tuple,
         semantic_classes={"communication_action"},
 
 
+
     )
-    target_terms = _semantic_family_terms(
+    if not talk_terms:
+        return False
+    if not (token_set & {"need", "help", "please"} or _is_question_like(text, token_tuple)):
+        return False
+    # Check if social_contact scores above threshold among any candidate
+    # (not just top — health_advice can tie alphabetically).
+    linker = _get_frame_linker()
+    candidates = linker.score(
         token_tuple,
-        semantic_classes={"social_relation"},
-
-
+        _IN_MEMORY_LEXICON,
+        is_question_like=_is_question_like(text, token_tuple),
+        is_request_like=_is_request_like(token_tuple),
     )
-    if token_tuple[:1] in {("call",), ("phone",), ("ring",)}:
-        return _has_contact_target(
-            token_tuple,
-            trusted_contact_names=trusted_contact_names,
-    
-    
-        )
-    if contact_terms and _is_request_like(token_tuple):
-        return _has_contact_target(
-            token_tuple,
-            trusted_contact_names=trusted_contact_names,
-    
-    
-        )
-    if (
-        "phone" in token_set
-        and _phone_is_contact_action(token_tuple)
-        and _is_request_like(token_tuple)
-    ):
-        return _has_contact_target(
-            token_tuple,
-            trusted_contact_names=trusted_contact_names,
-    
-    
-        )
-    if "reach" in token_set and _has_contact_target(
-        token_tuple,
-        trusted_contact_names=trusted_contact_names,
-
-
-    ):
-        return True
-    return bool(
-        talk_terms
-        and (
-            target_terms
-            or _matched_trusted_contact_name(token_tuple, trusted_contact_names)
-        )
-        and (
-            token_set & {"need", "help", "please"}
-            or _is_question_like(text, token_tuple)
-        )
-    )
-
-
+    for c in candidates:
+        if c.frame_id == "social_contact" and c.score >= c.threshold:
+            return True
+    return False
 def _has_contact_target(
     tokens: tuple[str, ...],
     trusted_contact_names: tuple[str, ...] = (),
