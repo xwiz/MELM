@@ -1616,7 +1616,10 @@ _IN_MEMORY_LEXICON: dict[str, frozenset[str]] = build_legacy_in_memory_lexicon()
 _FRAME_LINKER_CONFIRMATION_MARGIN = 0.20
 # Intents whose old keyword classifier has been replaced by the frame linker.
 # Add a family here after validating its template produces correct results.
-_FRAME_LINKER_MIGRATED_INTENTS: frozenset[str] = frozenset({"weather", "story", "media_playback"})
+_FRAME_LINKER_MIGRATED_INTENTS: frozenset[str] = frozenset({
+    "weather", "story", "media_playback",
+    "autobiographical_memory", "meal_suggestion",
+})
 _FRAME_LINKER: FrameLinker | None = None
 
 
@@ -2042,32 +2045,29 @@ def _is_autobiographical_debug_request(
         return True
     if _autobiographical_latest_event_frame(text, token_tuple):
         return True
-    event_objects = _semantic_family_terms(
-        token_tuple,
-        semantic_classes={"autobiographical_event"},
-
-
-    )
-    recall_actions = _semantic_family_terms(
-        token_tuple,
-        semantic_classes={"autobiographical_action"},
-
-
-    )
-    temporal_scope = _semantic_family_terms(
-        token_tuple,
-        semantic_classes={"temporal_descriptor"},
-
-
-    )
-    shared_context = bool(
+    # Frame linker handles the main lexical path (event + action/temporal).
+    if _classify_from_frame_linker(
+        text, token_tuple, "autobiographical_memory",
+        collector_classes=frozenset({
+            "autobiographical_event", "autobiographical_action", "temporal_descriptor"}),
+        use_margin=False,
+    ):
+        return True
+    # Shared context path: "talk" (present tense) is communication_action, not
+    # autobiographical_action, so the frame linker misses it.
+    if (
         token_set & {"we", "our"}
         and (token_set & {"talk", "talked", "conversation", "conversations"})
-    )
-    return bool(
-        (event_objects or shared_context)
-        and (recall_actions or temporal_scope)
-    )
+    ):
+        if _semantic_family_terms(
+            token_tuple, semantic_classes={"autobiographical_action"},
+
+        ) or _semantic_family_terms(
+            token_tuple, semantic_classes={"temporal_descriptor"},
+
+        ):
+            return True
+    return False
 
 
 def _autobiographical_question_or_command(text: str, tokens: tuple[str, ...]) -> bool:
@@ -2165,7 +2165,6 @@ def _is_meal_suggestion_request(
 
 
 ) -> bool:
-    token_set = set(tokens)
     food_terms = _semantic_family_terms(
         tokens,
         semantic_classes={"food_item"},
@@ -2178,14 +2177,11 @@ def _is_meal_suggestion_request(
         return True
     if not _meal_request_has_user_choice_frame(text, tokens):
         return False
-    meal_action_context = bool(
-        token_set & {"eat", "cook", "have", "suggest", "recommend"}
+    return _classify_from_frame_linker(
+        text, tokens, "meal_suggestion",
+        collector_classes=frozenset({"food_item"}),
+        use_margin=False,
     )
-    suggestion_question = _is_question_like(text, tokens) and bool(
-        token_set
-        & {"should", "could", "can", "eat", "cook", "have", "suggest", "recommend"}
-    )
-    return meal_action_context and suggestion_question
 
 
 def _meal_request_is_direct_suggestion(tokens: tuple[str, ...]) -> bool:
