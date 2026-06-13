@@ -67,17 +67,19 @@
 - **Genus extraction fix** — `_GENUS_PP_MARKERS` added; `_extract_genus_lemma` uses PP-aware backwards scan (skips PP objects before returning head noun). Fixes "piano from africa" → "piano" instead of "africa".
 - **`_copy_latest_turn` fixed** — now passes `semantic_classes_activated` (parsed from `semantic_classes_activated_json`) to `record_turn`. Eval tests pass without data loss.
 - **3 new adversarial tests** — `test_genus_extracts_head_noun_before_pp`, `test_homonym_creates_separate_sense_per_class`, `test_all_reserved_lexemes_rejected_on_acquire` (parameterized over all 55 reserved/policy lexemes).
-- **M5: Weather frame linker migration** — `_is_weather_request` now uses `_classify_from_frame_linker` with `use_margin=False` (bare template threshold) instead of the old keyword-based classifier. Requires the target frame to be the **top-scoring** candidate (not just any candidate above threshold) to prevent preemption by higher-scoring intents like `media_playback`. Concept gate (`_is_weather_concept_question`) pre-filters "what is weather?" → `open_domain`. Fixes false negative "What is the weather?" → `weather`.
-- **`_classify_from_frame_linker` top-candidate fix** — changed from `any(c.frame_id == frame_id and c.score >= c.threshold)` to `candidates[0].frame_id == frame_id`. Prevents migrated intents from over-matching when a better-scoring frame exists.
-- **D1: `PI_BUNDLE_STATIC_FILES` updated** — removed `docs/local_assistant_os_mvp_plan.md` (renamed to `_v2`). Bundle self-check still fails on deeper smoke issues (pre-existing).
-- **Test count: 85 pass** — frame_linker (27), router (54), eval (4, 105/105 cases). Pi-bundle and authority tests are pre-existing failures.
+- **M5: Weather frame linker migration** — `_is_weather_request` uses `_classify_from_frame_linker`. Requires top-candidate status + concept gate pre-filter. Fixes false negative "What is the weather?" → `weather`.
+- **M5: Story frame linker migration** — `_is_story_request` uses `_classify_from_frame_linker` with action-token gating for bit-identical routing. Frame linker's top-candidate check prevents preemption by higher-scoring intents.
+- **M5: Media playback frame linker migration** — `_is_media_request` uses `_classify_from_frame_linker` with action-token gating. "play something with sounds" special case preserved. Bare required-class matches (e.g., "hi-fi audio") blocked by strict `>` threshold check.
+- **`_classify_from_frame_linker` top-candidate fix** — `candidates[0].frame_id == frame_id` prevents preemption. Fallback uses `score > threshold` (strict) for migrated intents to block bare required-class matches.
+- **D1: `PI_BUNDLE_STATIC_FILES` updated** — removed legacy `local_assistant_os_mvp_plan.md` (renamed to `_v2`). Bundle self-check still fails on deeper smoke issues (pre-existing).
+- **Test count: 85 pass** — frame_linker (27), router (54, 71 subtests), eval (4, 105/105 cases). Pi-bundle and authority tests are pre-existing failures.
 
 ## Next Steps
 1. **M0 — commit tree, set up CI** — needed before more M5 work per plan ordering. (D1 gate whitelist already fixed; PI_BUNDLE_STATIC_FILES updated.)
-2. **M5: UOL-based frame linking** — replace keyword classifiers (story, media, etc.) with contract-driven frame templates backed by the factored lexicon.
+2. **M5: UOL-based frame linking** — replace keyword classifiers with contract-driven frame templates backed by the factored lexicon. Weather, story, and media_playback migrated. Remaining: common_sense_safety, health_advice, social_contact, personal_memory, autobiographical_memory, meal_suggestion.
 
 ## Critical Context
-- **85 tests pass** — frame_linker (27), router (54), eval (4, 105/105 cases). 2 pre-existing failures unrelated to this work: `test_assistant_authority_mvp.py` (`AnswerPlan` import), `test_cli_pi_bundle_builds_portable_self_checked_bundle` (missing `docs/local_assistant_os_mvp_plan.md` — bundle builds but self-check smokes fail deeper). Pre-existing test pollution: router tests fail when run after legacy tests due to `_IN_MEMORY_LEXICON` global mutable state (isolated files pass).
+- **85 tests pass** — frame_linker (27), router (54, 71 subtests), eval (4, 105/105 cases). 2 pre-existing failures unrelated to this work: `test_assistant_authority_mvp.py` (`AnswerPlan` import), `test_cli_pi_bundle_builds_portable_self_checked_bundle` (missing `docs/local_assistant_os_mvp_plan.md` — bundle builds but self-check smokes fail deeper). Pre-existing test pollution: router tests fail when run after legacy tests due to `_IN_MEMORY_LEXICON` global mutable state (isolated files pass).
 - **`_rebuild_router_lexicon_cache`** — always rebuilds. Store data → store cache. Empty store → LEGACY cache. Fixes test isolation.
 - **`_IN_MEMORY_LEXICON`** — `dict[str, frozenset[str]]`, term→classes. Built from LEGACY at module load. Replaced at kernel init via `_rebuild_router_lexicon_cache()`.
 - **`_semantic_family_terms(tokens, *, semantic_classes)`** — no parameters beyond `tokens`, `semantic_classes`. Always reads `_IN_MEMORY_LEXICON`. Updates `_SEMANTIC_CLASS_COLLECTOR` when matches found.
@@ -87,6 +89,7 @@
 - **Store cache is a superset of LEGACY cache** — all 203 LEGACY terms present with identical class membership. 21 extra FG-only terms add classes that no classifier checks (bit-identical routing).
 - **`_is_weather_concept_question` uses hardcoded concept set** — structural patterns, not vocabulary lookup.
 - **Migrated frame-linker intents require top-candidate status** — `_classify_from_frame_linker` checks `candidates[0].frame_id == frame_id`, not just `any()` above threshold. Prevents preemption by higher-scoring frames.
+- **Fallback uses strict `>` for migrated intents** — bare required-class matches ("hi-fi audio" → `media_playback`) blocked by `score > threshold` check in fallback. Migrated classifiers already require action tokens or structure; this prevents the weaker fallback path from catching what the old classifier wouldn't.
 - **Deletion test works** — deleting a seeded lexeme from the store and creating a new kernel removes the term from the cache.
 - **M4: `_SEMANTIC_CLASS_COLLECTOR` is module-level** — `_semantic_family_terms` updates it when matches found. `handle()` sets up/teardown via `set_semantic_class_collector()`. This avoids changing the 28 existing call sites that call `_semantic_family_terms`.
 - **`offline_definition_lookup`** catches `OSError` for missing files. `cloud_definition_lookup` catches `OSError`/`URLError`/`json.JSONDecodeError` for network failures. Both silently return `[]` on error.

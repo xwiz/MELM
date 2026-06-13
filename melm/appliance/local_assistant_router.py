@@ -1458,7 +1458,10 @@ def _classify_intent_from_uol_slots(
     if candidates:
         top = candidates[0]
         if top.frame_id in _FRAME_LINKER_MIGRATED_INTENTS:
-            return top.intent
+            # Migrated intents require a non-required contribution
+            # (structure, action, or optional) to prevent bare
+            # required-class matches like "hi-fi audio" -> media_playback.
+            return top.intent if top.score > top.threshold else "unknown"
         if top.score >= top.threshold + _FRAME_LINKER_CONFIRMATION_MARGIN:
             return top.intent
     return "unknown"
@@ -1481,15 +1484,16 @@ def _is_story_request(
     tokens: tuple[str, ...],
 ) -> bool:
     token_set = set(tokens)
-    story_objects = _semantic_family_terms(
-        tokens,
-        semantic_classes={"narrative_content"},
-
-    )
-    if not token_set & story_objects:
-        return False
+    # Action tokens are effectively required for story (old classifier invariants).
+    # Check here for early exit rather than calling the linker at all.
     story_actions = {"tell", "read", "make", "give"}
-    return bool(token_set & story_actions) or _story_request_question(text, tokens)
+    if not (token_set & story_actions) and not _story_request_question(text, tokens):
+        return False
+    return _classify_from_frame_linker(
+        text, tokens, "story",
+        collector_classes=frozenset({"narrative_content"}),
+        use_margin=False,
+    )
 
 
 _STORY_CONSTRAINT_STOPWORDS = {
@@ -1612,7 +1616,7 @@ _IN_MEMORY_LEXICON: dict[str, frozenset[str]] = build_legacy_in_memory_lexicon()
 _FRAME_LINKER_CONFIRMATION_MARGIN = 0.20
 # Intents whose old keyword classifier has been replaced by the frame linker.
 # Add a family here after validating its template produces correct results.
-_FRAME_LINKER_MIGRATED_INTENTS: frozenset[str] = frozenset({"weather"})
+_FRAME_LINKER_MIGRATED_INTENTS: frozenset[str] = frozenset({"weather", "story", "media_playback"})
 _FRAME_LINKER: FrameLinker | None = None
 
 
@@ -2128,32 +2132,30 @@ def _autobiographical_latest_event_frame(text: str, tokens: tuple[str, ...]) -> 
     user_or_assistant_context = bool(token_set & {"i", "my", "me", "we", "our", "you"})
     return latest_scope and event_object and user_or_assistant_context
 
-
 def _is_media_request(
     text: str,
     tokens: tuple[str, ...],
 
 
 
+
 ) -> bool:
     token_set = set(tokens)
-    media_objects = _semantic_family_terms(
-        tokens,
-        semantic_classes={
-            "media_content",
-            "media_descriptor",
+    media_action = bool(token_set & {"play", "start"})
+    if not media_action:
+        return False
+    # "play something with sounds" special case — "something" isn't in media classes.
+    if "something" in token_set and token_set & {"sound", "sounds"}:
+        return True
+    return _classify_from_frame_linker(
+        text, tokens, "media_playback",
+        collector_classes=frozenset({
+            "media_content", "media_descriptor",
             "physical_object.instrument",
             "physical_object.media_source",
-        },
-
-
+        }),
+        use_margin=False,
     )
-    media_action = bool(token_set & {"play", "start"})
-    if media_action and token_set & media_objects:
-        return True
-    if media_action and "something" in token_set and token_set & {"sound", "sounds"}:
-        return True
-    return False
 
 
 def _is_meal_suggestion_request(
