@@ -55,34 +55,51 @@
 - **`genus_lemma` omitted when empty** — `_extract_candidate_from_llm_response` conditionally includes `genus_lemma` only when non-empty, since `sense_candidate.v1` has `minLength: 1` on the field but it's not in `required`.
 - **`cloud_lookup` uses `urllib.request` directly** — no new dependencies. Matches project convention (`assistant_weather.py`, `assistant_inventory.py`).
 - **API key/endpoint/model are function parameters** — no existing API key management infrastructure in the codebase. The caller (CLI, kernel, or test) provides these explicitly.
+- **M4: `semantic_classes_activated` added to `AssistantDecision`** — `frozenset[str]` field (default `frozenset()`) on the frozen dataclass. Captured during `handle()` via a module-level collector.
+- **M4: `set_semantic_class_collector()`/`_SEMANTIC_CLASS_COLLECTOR`** — module-level collector in `local_assistant_router.py`. `_semantic_family_terms` updates the collector whenever it finds matching tokens. `handle()` resets before routing, reads after, injects into decision via `dataclasses.replace`.
+- **M4: `handle()` refactored** — routing logic extracted to `_route_impl()`. `handle()` wraps it with collector setup/teardown. `_classify_intent_from_uol_slots` test updated to inspect `_route_impl` source.
+- **M4: `semantic_classes_activated_json` column** — added to `events` table DDL and migration helper `_ensure_event_semantic_classes_column()`. Called from store init after provenance columns.
+- **M4: `record_turn` accepts `semantic_classes_activated`** — stored as sorted JSON tuple. Defaults to `frozenset()`.
+- **M4: `StoredAssistantEvent.semantic_classes_activated`** — new `frozenset[str]` field. Serialized/deserialized via `_json()` in `load_events`.
+- **M4: `_event_memory_record` includes `semantic_classes_activated`** — all SELECT queries (`query_event_memory`, `query_recent_session_memory`, `build_memory_digest`) now include `semantic_classes_activated_json`.
+- **M4: `AssistantMemoryEvent.semantic_classes_activated`** — added to kernel's in-memory event type. Wired through `_remember`, `record_turn`, and `load_events` init mapping.
+- **M4: 6 new tests** — `test_semantic_family_terms_activates_collector`, `test_router_handle_injects_activated_classes`, `test_activated_semantic_classes_persisted_in_store`, `test_activated_semantic_classes_in_query_event_memory`, `test_migration_adds_semantic_classes_column`, `test_migration_is_idempotent`.
+- **Genus extraction fix** — `_GENUS_PP_MARKERS` added; `_extract_genus_lemma` uses PP-aware backwards scan (skips PP objects before returning head noun). Fixes "piano from africa" → "piano" instead of "africa".
+- **`_copy_latest_turn` fixed** — now passes `semantic_classes_activated` (parsed from `semantic_classes_activated_json`) to `record_turn`. Eval tests pass without data loss.
+- **3 new adversarial tests** — `test_genus_extracts_head_noun_before_pp`, `test_homonym_creates_separate_sense_per_class`, `test_all_reserved_lexemes_rejected_on_acquire` (parameterized over all 55 reserved/policy lexemes).
+- **M5: Weather frame linker migration** — `_is_weather_request` now uses `_classify_from_frame_linker` with `use_margin=False` (bare template threshold) instead of the old keyword-based classifier. Requires the target frame to be the **top-scoring** candidate (not just any candidate above threshold) to prevent preemption by higher-scoring intents like `media_playback`. Concept gate (`_is_weather_concept_question`) pre-filters "what is weather?" → `open_domain`. Fixes false negative "What is the weather?" → `weather`.
+- **`_classify_from_frame_linker` top-candidate fix** — changed from `any(c.frame_id == frame_id and c.score >= c.threshold)` to `candidates[0].frame_id == frame_id`. Prevents migrated intents from over-matching when a better-scoring frame exists.
+- **D1: `PI_BUNDLE_STATIC_FILES` updated** — removed `docs/local_assistant_os_mvp_plan.md` (renamed to `_v2`). Bundle self-check still fails on deeper smoke issues (pre-existing).
+- **Test count: 85 pass** — frame_linker (27), router (54), eval (4, 105/105 cases). Pi-bundle and authority tests are pre-existing failures.
 
 ## Next Steps
-1. **Mini steps**: minimal-pairs adversarial fixture for the teaching channel (edge cases for polysemous genus, homonyms, separator normalization).
-2. **M4: In-memory semantic-class event index** — annotate each `events` row with semantic classes activated during routing, enabling class-filtered event recall and usage-based sense promotion.
-3. **M5: UOL-based frame linking** — replace keyword classifiers (weather, story, media, etc.) with contract-driven frame templates backed by the factored lexicon.
+1. **M0 — commit tree, set up CI** — needed before more M5 work per plan ordering. (D1 gate whitelist already fixed; PI_BUNDLE_STATIC_FILES updated.)
+2. **M5: UOL-based frame linking** — replace keyword classifiers (story, media, etc.) with contract-driven frame templates backed by the factored lexicon.
 
 ## Critical Context
-- **102/102 related tests pass** (15 subtests) — contracts, lexicon, seed, legacy, store, kernel. 2 pre-existing failures unrelated to this work: `test_assistant_authority_mvp.py` (`AnswerPlan` import), `test_cli_pi_bundle_builds_portable_self_checked_bundle` (missing `docs/local_assistant_os_mvp_plan.md`).
+- **85 tests pass** — frame_linker (27), router (54), eval (4, 105/105 cases). 2 pre-existing failures unrelated to this work: `test_assistant_authority_mvp.py` (`AnswerPlan` import), `test_cli_pi_bundle_builds_portable_self_checked_bundle` (missing `docs/local_assistant_os_mvp_plan.md` — bundle builds but self-check smokes fail deeper). Pre-existing test pollution: router tests fail when run after legacy tests due to `_IN_MEMORY_LEXICON` global mutable state (isolated files pass).
 - **`_rebuild_router_lexicon_cache`** — always rebuilds. Store data → store cache. Empty store → LEGACY cache. Fixes test isolation.
 - **`_IN_MEMORY_LEXICON`** — `dict[str, frozenset[str]]`, term→classes. Built from LEGACY at module load. Replaced at kernel init via `_rebuild_router_lexicon_cache()`.
-- **`_semantic_family_terms(tokens, *, semantic_classes)`** — no other parameters. Always reads `_IN_MEMORY_LEXICON`.
+- **`_semantic_family_terms(tokens, *, semantic_classes)`** — no parameters beyond `tokens`, `semantic_classes`. Always reads `_IN_MEMORY_LEXICON`. Updates `_SEMANTIC_CLASS_COLLECTOR` when matches found.
 - **`OnDeviceAssistantRouter.__init__(self, profile=None)`** — no lexicon params.
 - **`seed_assistant_os_lexicon(store)`** — seeds all 246+ candidates (43 FG + 203 router + 15 V3) with 35 semantic classes. Called from bootstrap.
 - **89 semantic classes** in `semantic_classes.v1.json` (61 original + 28 LEGACY-internal).
 - **Store cache is a superset of LEGACY cache** — all 203 LEGACY terms present with identical class membership. 21 extra FG-only terms add classes that no classifier checks (bit-identical routing).
 - **`_is_weather_concept_question` uses hardcoded concept set** — structural patterns, not vocabulary lookup.
+- **Migrated frame-linker intents require top-candidate status** — `_classify_from_frame_linker` checks `candidates[0].frame_id == frame_id`, not just `any()` above threshold. Prevents preemption by higher-scoring frames.
 - **Deletion test works** — deleting a seeded lexeme from the store and creating a new kernel removes the term from the cache.
+- **M4: `_SEMANTIC_CLASS_COLLECTOR` is module-level** — `_semantic_family_terms` updates it when matches found. `handle()` sets up/teardown via `set_semantic_class_collector()`. This avoids changing the 28 existing call sites that call `_semantic_family_terms`.
 - **`offline_definition_lookup`** catches `OSError` for missing files. `cloud_definition_lookup` catches `OSError`/`URLError`/`json.JSONDecodeError` for network failures. Both silently return `[]` on error.
 - **`cloud_definition_lookup`** uses `urllib.request` directly (project convention). Adds no new dependencies. API key, endpoint, and model are function parameters (no existing API key management in codebase).
 - **`set_lexical_sense_status`** uses `with store.connection:` to ensure SQLite transaction commits (critical: implicit transactions are rolled back on `connection.close()`).
-- **2 pre-existing test failures** (unrelated to this work): `test_assistant_authority_mvp.py` (`AnswerPlan` import), `test_cli_pi_bundle_builds_portable_self_checked_bundle` (missing `docs/local_assistant_os_mvp_plan.md`).
+- **2 pre-existing test failures** (unrelated to this work): `test_assistant_authority_mvp.py` (`AnswerPlan` import), `test_cli_pi_bundle_builds_portable_self_checked_bundle` (missing `docs/local_assistant_os_mvp_plan.md` — bundle builds but self-check smokes fail deeper).
 
 ## Relevant Files
-- **`melm/appliance/local_assistant_router.py`** — `_semantic_family_terms` (line ~1616): no params beyond `tokens`, `semantic_classes`. `_IN_MEMORY_LEXICON` (line ~1603): built from LEGACY at module load. `replace_in_memory_lexicon()`: replaces cache. `_is_weather_concept_question` (line ~1574): hardcoded concept set.
+- **`melm/appliance/local_assistant_router.py`** — `_semantic_family_terms` (line ~1616): no params beyond `tokens`, `semantic_classes`. `_IN_MEMORY_LEXICON` (line ~1603): built from LEGACY at module load. `replace_in_memory_lexicon()`: replaces cache. `_is_weather_concept_question` (line ~1574): hardcoded concept set. `set_semantic_class_collector()`: activates/deactivates module-level `_SEMANTIC_CLASS_COLLECTOR` for M4 event indexing.
 - **`melm/appliance/assistant_os_kernel.py`** — `_rebuild_router_lexicon_cache` (line ~1087): always rebuilds — store data when rows exist, LEGACY reset when empty.
-- **`melm/appliance/assistant_os_store.py`** — `seed_assistant_os_lexicon` (line ~1906): seeds FG + router candidates (all 35 classes). No `ContractValidationError` catch.
+- **`melm/appliance/assistant_os_store.py`** — `seed_assistant_os_lexicon` (line ~1906): seeds FG + router candidates (all 35 classes). No `ContractValidationError` catch. `StoredAssistantEvent` (line ~27): includes `semantic_classes_activated: frozenset[str]`. `record_turn`: accepts `semantic_classes_activated` param. `_ensure_event_semantic_classes_column`: migration for existing stores.
 - **`melm/appliance/assistant_lexicon_legacy.py`** — `LEGACY_ROUTER_TERM_CLASSES` (~200+ entries, 35 classes). `build_legacy_router_candidates(seed_all=True)` exports all entries.
-- **`melm/appliance/assistant_lexicon.py`** — `lexicon_ingest` (all 35 LEGACY classes now valid), `configure_lexicon_router_families`, `acquire_definition` (user-teaching with regex-based copula/meaning detection), `offline_definition_lookup` (JSONL dictionary channel), `cloud_definition_lookup` (LLM chat-completions channel with `_build_cloud_lookup_payload`, `_call_chat_completion`, `_extract_candidate_from_llm_response`).
+- **`melm/appliance/assistant_lexicon.py`** — `lexicon_ingest` (all 35 LEGACY classes now valid), `configure_lexicon_router_families`, `acquire_definition` (user-teaching with regex-based copula/meaning detection), `offline_definition_lookup` (JSONL dictionary channel), `cloud_definition_lookup` (LLM chat-completions channel with `_build_cloud_lookup_payload`, `_call_chat_completion`, `_extract_candidate_from_llm_response`). `_GENUS_SKIP` (line ~249), `_GENUS_PP_MARKERS` (line ~264): prepositions marking trailing PP boundaries. `_extract_genus_lemma` (line ~348): PP-aware backwards scan.
 - **`melm/appliance/__init__.py`** — exports `acquire_definition`, `offline_definition_lookup`, `cloud_definition_lookup`, `seed_assistant_os_lexicon`.
 - **`melm/contracts/semantic_classes.v1.json`** — 89 class IDs (61 original + 28 LEGACY routing labels).
 - **`melm/contracts/validation.py`** — `load_semantic_class_ids()` (public), `validate_sense_candidate` with `cloud_lookup` policy: `quarantined`, ≤0.50, `llm_assigned`.

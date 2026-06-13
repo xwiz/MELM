@@ -36,6 +36,7 @@ class StoredAssistantEvent:
     reason: str
     cloud_needed: bool
     evidence_keys: tuple[str, ...]
+    semantic_classes_activated: frozenset[str] = frozenset()
     capture_surface: str = ""
     capture_source: str = ""
 
@@ -110,6 +111,7 @@ class AssistantOSStore:
                 local_memory_used INTEGER NOT NULL,
                 capture_surface TEXT NOT NULL DEFAULT '',
                 capture_source TEXT NOT NULL DEFAULT '',
+                semantic_classes_activated_json TEXT NOT NULL DEFAULT '[]',
                 evidence_keys_json TEXT NOT NULL,
                 created_at TEXT NOT NULL
             );
@@ -374,6 +376,7 @@ class AssistantOSStore:
         )
         self._ensure_event_link_columns()
         self._ensure_event_provenance_columns()
+        self._ensure_event_semantic_classes_column()
         self._ensure_user_fact_policy_columns()
         self.connection.execute(
             """
@@ -729,6 +732,7 @@ class AssistantOSStore:
         homeostasis: dict[str, Any],
         capture_surface: str = "",
         capture_source: str = "",
+        semantic_classes_activated: frozenset[str] = frozenset(),
     ) -> None:
         now = _now()
         session_id = self._current_session_id()
@@ -739,10 +743,10 @@ class AssistantOSStore:
                 event_id, session_id, previous_event_id, next_event_id,
                 utterance, intent, route, reason, answer, cloud_needed,
                 external_fetch_needed, device_action, local_memory_used,
-                capture_surface, capture_source,
+                capture_surface, capture_source, semantic_classes_activated_json,
                 evidence_keys_json, created_at
             )
-            VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
+            VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
             """,
             (
                 event_id,
@@ -760,6 +764,7 @@ class AssistantOSStore:
                 int(local_memory_used),
                 str(capture_surface),
                 str(capture_source),
+                _json(tuple(sorted(semantic_classes_activated))),
                 _json(tuple(evidence_keys)),
                 now,
             ),
@@ -1118,7 +1123,7 @@ class AssistantOSStore:
             """
             SELECT event_id, session_id, previous_event_id, next_event_id,
                    utterance, intent, route, reason, cloud_needed, evidence_keys_json,
-                   capture_surface, capture_source
+                   capture_surface, capture_source, semantic_classes_activated_json
             FROM events
             ORDER BY rowid
             """
@@ -1135,6 +1140,9 @@ class AssistantOSStore:
                 reason=str(row["reason"]),
                 cloud_needed=bool(row["cloud_needed"]),
                 evidence_keys=tuple(str(item) for item in _loads(row["evidence_keys_json"], default=[])),
+                semantic_classes_activated=frozenset(
+                    str(item) for item in _loads(row["semantic_classes_activated_json"], default=[])
+                ),
                 capture_surface=str(row["capture_surface"]),
                 capture_source=str(row["capture_source"]),
             )
@@ -1186,7 +1194,7 @@ class AssistantOSStore:
             SELECT rowid, event_id, session_id, previous_event_id, next_event_id,
                    utterance, intent, route, reason, answer, cloud_needed,
                    external_fetch_needed, device_action, local_memory_used,
-                   evidence_keys_json, created_at
+                   evidence_keys_json, semantic_classes_activated_json, created_at
             FROM events
             {where_sql}
             ORDER BY rowid DESC
@@ -1242,7 +1250,7 @@ class AssistantOSStore:
                 SELECT rowid, event_id, session_id, previous_event_id, next_event_id,
                        utterance, intent, route, reason, answer, cloud_needed,
                        external_fetch_needed, device_action, local_memory_used,
-                       evidence_keys_json, created_at
+                       evidence_keys_json, semantic_classes_activated_json, created_at
                 FROM events
                 WHERE session_id=?
                 ORDER BY rowid DESC
@@ -1345,7 +1353,7 @@ class AssistantOSStore:
                 SELECT rowid, event_id, session_id, previous_event_id, next_event_id,
                        utterance, intent, route, reason, answer, cloud_needed,
                        external_fetch_needed, device_action, local_memory_used,
-                       evidence_keys_json, created_at
+                       evidence_keys_json, semantic_classes_activated_json, created_at
                 FROM events
                 WHERE session_id=?
                 ORDER BY rowid DESC
@@ -1797,6 +1805,14 @@ class AssistantOSStore:
             if column not in columns:
                 self.connection.execute(statement)
 
+    def _ensure_event_semantic_classes_column(self) -> None:
+        rows = self.connection.execute("PRAGMA table_info(events)").fetchall()
+        columns = {str(row["name"]) for row in rows}
+        if "semantic_classes_activated_json" not in columns:
+            self.connection.execute(
+                "ALTER TABLE events ADD COLUMN semantic_classes_activated_json TEXT NOT NULL DEFAULT '[]'"
+            )
+
     def _ensure_user_fact_policy_columns(self) -> None:
         rows = self.connection.execute("PRAGMA table_info(user_facts)").fetchall()
         columns = {str(row["name"]) for row in rows}
@@ -1995,6 +2011,12 @@ def _event_memory_record(row: sqlite3.Row, *, event_ids: set[str]) -> dict[str, 
         "device_action": bool(row["device_action"]),
         "local_memory_used": bool(row["local_memory_used"]),
         "evidence_keys": tuple(str(item) for item in _loads(row["evidence_keys_json"], default=[])),
+        "semantic_classes_activated": tuple(
+            sorted(
+                str(item)
+                for item in _loads(row["semantic_classes_activated_json"], default=[])
+            )
+        ),
         "created_at": str(row["created_at"]),
     }
 

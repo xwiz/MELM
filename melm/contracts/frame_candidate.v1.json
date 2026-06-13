@@ -1,0 +1,32 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "melm.frame_candidate.v1",
+  "type": "object",
+  "additionalProperties": false,
+  "required": [
+    "schema_id",
+    "frame_id",
+    "intent",
+    "family",
+    "score",
+    "score_components",
+    "threshold"
+  ],
+  "properties": {
+    "schema_id": {"const": "melm.frame_candidate.v1"},
+    "frame_id": {"type": "string", "minLength": 1},
+    "intent": {"type": "string", "minLength": 1},
+    "family": {"type": "string", "minLength": 1},
+    "score": {"type": "number", "minimum": 0.0, "maximum": 1.0},
+    "score_components": {
+      "type": "object",
+      "additionalProperties": {"type": "number"},
+      "minProperties": 1
+    },
+    "slot_bindings": {
+      "type": "object",
+      "additionalProperties": {"type": "string"}
+    },
+    "threshold": {"type": "number", "minimum": 0.0, "maximum": 1.0}
+  }
+}

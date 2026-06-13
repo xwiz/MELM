@@ -258,6 +258,16 @@ _GENUS_SKIP: frozenset[str] = frozenset({
     "their", "what", "when", "where", "why", "how", "there",
 })
 
+# Prepositions and relativisers that introduce trailing prepositional phrases.
+# When walking backwards, a word in this set signals that the following word
+# (preceding in forward order) is the PP object, not the head noun.
+_GENUS_PP_MARKERS: frozenset[str] = frozenset({
+    "of", "from", "in", "on", "at", "to", "for", "with", "by",
+    "as", "like", "such", "including", "about", "into", "through",
+    "during", "without", "against", "between", "under", "over",
+    "that", "which", "who", "whose", "whom", "where", "when",
+})
+
 
 def acquire_definition(
     store: AssistantOSStore,
@@ -338,12 +348,29 @@ def _clean_definition(rest: str) -> str:
 def _extract_genus_lemma(rest: str) -> str:
     """Extract the genus (head noun) from a definition predicate.
 
-    Takes the last content word from the rest phrase.
+    Walks backwards from the end.  Content words that follow a
+    PP-marking preposition (possibly with intervening skip words)
+    are treated as PP objects and skipped; the first content word
+    found before any PP boundary is the head.
     """
     words = _normalize_term(rest).split()
-    for word in reversed(words):
+    i = len(words) - 1
+    while i >= 0:
+        word = words[i]
         if word not in _GENUS_SKIP:
+            # Scan backwards across any skip words to detect a PP marker.
+            pp_boundary = False
+            for j in range(i - 1, -1, -1):
+                if words[j] in _GENUS_PP_MARKERS:
+                    pp_boundary = True
+                    i = j - 1
+                    break
+                if words[j] not in _GENUS_SKIP:
+                    break
+            if pp_boundary:
+                continue
             return word
+        i -= 1
     return words[-1] if words else ""
 
 

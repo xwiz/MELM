@@ -66,6 +66,28 @@
       "compatible_predecessors": [],
       "failure_behavior": "family remains rule-owned or disabled",
       "safety_critical": true
+    },
+    {
+      "schema_id": "melm.frame_templates.v1",
+      "path": "frame_templates.v1.json",
+      "owner": "kernel/router",
+      "producers": ["release tooling"],
+      "consumers": ["frame linker"],
+      "validator": "melm.contracts.validate_frame_templates",
+      "compatible_predecessors": [],
+      "failure_behavior": "frame activation degrades to fallback intent selection",
+      "safety_critical": true
+    },
+    {
+      "schema_id": "melm.capability_manifest.v1",
+      "path": "default_capability_manifest.v1.json",
+      "owner": "kernel/router",
+      "producers": ["release tooling"],
+      "consumers": ["frame linker"],
+      "validator": "melm.contracts.validate_capability_manifest",
+      "compatible_predecessors": [],
+      "failure_behavior": "all families assumed installed",
+      "safety_critical": false
     }
   ]
 }

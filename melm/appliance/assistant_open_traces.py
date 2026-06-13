@@ -1312,6 +1312,8 @@ def _primary_uol_debug_maps_are_not_secondary_phrase_routes(results: list[OpenTr
             if result.route in LOCAL_OR_DEVICE_ROUTES:
                 return False
             continue
+        if str(primary.get("source", "")) == "weighted_functional_relation":
+            continue
         if (
             frame_registry != "melm.assistant_frame_registry.v1"
             or not frame_id

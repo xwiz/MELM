@@ -1,0 +1,133 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "melm.frame_templates.v1",
+  "schema_id": "melm.frame_templates.v1",
+  "templates": {
+    "story": {
+      "frame_id": "story",
+      "intent": "story",
+      "family": "story",
+      "activation": {
+        "required_classes": ["narrative_content"],
+        "optional_classes": [],
+        "exclude_classes": [],
+        "action_tokens": ["tell", "read", "make", "give"]
+      },
+      "slot_bindings": {},
+      "threshold": 0.40,
+      "priority": 3
+    },
+    "weather": {
+      "frame_id": "weather",
+      "intent": "weather",
+      "family": "weather",
+      "activation": {
+        "required_classes": ["weather_phenomenon"],
+        "optional_classes": ["temporal_descriptor", "public_place"],
+        "exclude_classes": ["definition_request", "abstract_concept"],
+        "action_tokens": []
+      },
+      "slot_bindings": {},
+      "threshold": 0.40,
+      "priority": 4
+    },
+    "common_sense_safety": {
+      "frame_id": "common_sense_safety",
+      "intent": "common_sense_safety",
+      "family": "common_sense_safety",
+      "activation": {
+        "required_classes": ["clothing_item", "public_place", "undress_state"],
+        "optional_classes": [],
+        "exclude_classes": [],
+        "action_tokens": ["go", "going", "walk"]
+      },
+      "slot_bindings": {},
+      "threshold": 0.40,
+      "priority": 5
+    },
+    "media_playback": {
+      "frame_id": "media_playback",
+      "intent": "media_playback",
+      "family": "media_playback",
+      "activation": {
+        "required_classes": ["media_content", "media_descriptor", "physical_object.instrument", "physical_object.media_source"],
+        "optional_classes": [],
+        "exclude_classes": [],
+        "action_tokens": ["play", "start"]
+      },
+      "slot_bindings": {},
+      "threshold": 0.40,
+      "priority": 6
+    },
+    "health_advice": {
+      "frame_id": "health_advice",
+      "intent": "health_advice",
+      "family": "health_advice",
+      "activation": {
+        "required_classes": ["health_domain", "health_condition", "advice_action"],
+        "optional_classes": [],
+        "exclude_classes": [],
+        "action_tokens": ["better", "do", "sleep", "take", "see"]
+      },
+      "slot_bindings": {},
+      "threshold": 0.40,
+      "priority": 7
+    },
+    "social_contact": {
+      "frame_id": "social_contact",
+      "intent": "social_contact",
+      "family": "social_contact",
+      "activation": {
+        "required_classes": ["contact_action", "communication_action", "social_relation"],
+        "optional_classes": [],
+        "exclude_classes": [],
+        "action_tokens": ["call", "phone", "ring", "reach"]
+      },
+      "slot_bindings": {},
+      "threshold": 0.40,
+      "priority": 8
+    },
+    "personal_memory": {
+      "frame_id": "personal_memory",
+      "intent": "personal_memory",
+      "family": "personal_memory",
+      "activation": {
+        "required_classes": ["memory_recall"],
+        "optional_classes": ["routine_concept", "household_concept", "owner_concept", "hardware_entity", "child_relation", "action_verb", "personal_attribute", "social_relation"],
+        "exclude_classes": [],
+        "action_tokens": ["remember", "recall", "forget"]
+      },
+      "slot_bindings": {},
+      "threshold": 0.30,
+      "priority": 9
+    },
+    "autobiographical_memory": {
+      "frame_id": "autobiographical_memory",
+      "intent": "autobiographical_memory",
+      "family": "autobiographical_memory",
+      "activation": {
+        "required_classes": ["autobiographical_event", "autobiographical_action"],
+        "optional_classes": ["temporal_descriptor"],
+        "exclude_classes": [],
+        "action_tokens": ["summarize", "recap", "show", "list", "tell"]
+      },
+      "slot_bindings": {},
+      "threshold": 0.40,
+      "priority": 10
+    },
+    "meal_suggestion": {
+      "frame_id": "meal_suggestion",
+      "intent": "meal_suggestion",
+      "family": "meal_suggestion",
+      "activation": {
+        "required_classes": ["food_item"],
+        "optional_classes": [],
+        "exclude_classes": [],
+        "action_tokens": ["eat", "cook", "have", "suggest", "recommend"]
+      },
+      "slot_bindings": {},
+      "threshold": 0.40,
+      "priority": 11
+    }
+  }
+}

@@ -605,7 +605,7 @@ class LocalAssistantRouterMvpTests(unittest.TestCase):
         self.assertIn("_classify_intent_for_secondary_lexical_baseline", source)
 
     def test_private_cloud_policy_runs_after_uol_personal_memory_frame(self) -> None:
-        source = inspect.getsource(router_module.OnDeviceAssistantRouter.handle)
+        source = inspect.getsource(router_module.OnDeviceAssistantRouter._route_impl)
 
         self.assertLess(
             source.index("_classify_intent_from_uol_slots"),

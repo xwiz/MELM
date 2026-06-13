@@ -10,6 +10,14 @@ from typing import Any
 
 CONTRACT_ROOT = Path(__file__).resolve().parent
 
+_KNOWN_INTENTS = {
+    "assistant_identity", "assistant_status", "story", "weather",
+    "common_sense_safety", "media_playback", "health_advice",
+    "personal_memory", "autobiographical_memory", "meal_suggestion",
+    "social_contact", "social_greeting", "assistant_behavior",
+    "personal_goal_advice", "open_domain",
+}
+
 
 class ContractValidationError(ValueError):
     """Raised when a contract artifact or payload violates its contract."""
@@ -310,3 +318,62 @@ def validate_sense_candidate(candidate: dict[str, Any]) -> None:
             "$.semantic_class_candidates",
             f"{provenance} cannot use mapping methods: {', '.join(invalid_methods)}",
         )
+
+
+def validate_frame_templates(payload: dict[str, Any]) -> None:
+    if payload.get("schema_id") != "melm.frame_templates.v1":
+        _fail("$.schema_id", "must equal 'melm.frame_templates.v1'")
+    templates = payload.get("templates")
+    if not isinstance(templates, dict) or not templates:
+        _fail("$.templates", "must be a non-empty object")
+    class_ids = load_semantic_class_ids()
+    for fid, item in templates.items():
+        path = f"$.templates.{fid}"
+        if not isinstance(item, dict):
+            _fail(path, "must be an object")
+        for key in ("frame_id", "intent", "family", "activation", "threshold", "priority"):
+            if key not in item:
+                _fail(path, f"missing required property {key!r}")
+        if str(item.get("frame_id")) != fid:
+            _fail(f"{path}.frame_id", f"must equal template key {fid!r}")
+        if str(item.get("intent")) not in _KNOWN_INTENTS:
+            _fail(f"{path}.intent", f"unknown intent {item.get('intent')!r}")
+        activation = item.get("activation", {})
+        if not isinstance(activation, dict):
+            _fail(f"{path}.activation", "must be an object")
+        for cls_list_key in ("required_classes", "optional_classes", "exclude_classes"):
+            raw = activation.get(cls_list_key, [])
+            if not isinstance(raw, list) or any(not isinstance(c, str) for c in raw):
+                _fail(f"{path}.activation.{cls_list_key}", "must be an array of strings")
+            if cls_list_key == "required_classes" and not raw:
+                _fail(f"{path}.activation.required_classes", "must be a non-empty array")
+            unknown = sorted(set(raw) - class_ids)
+            if unknown:
+                _fail(
+                    f"{path}.activation.{cls_list_key}",
+                    f"unknown semantic classes: {', '.join(unknown)}",
+                )
+        threshold = item.get("threshold")
+        if not isinstance(threshold, (int, float)) or not 0 <= threshold <= 1:
+            _fail(f"{path}.threshold", "must be in [0, 1]")
+
+
+def validate_capability_manifest(payload: dict[str, Any]) -> None:
+    if payload.get("schema_id") != "melm.capability_manifest.v1":
+        _fail("$.schema_id", "must equal 'melm.capability_manifest.v1'")
+    families = payload.get("families")
+    if not isinstance(families, dict) or not families:
+        _fail("$.families", "must be a non-empty object")
+    for family, item in families.items():
+        path = f"$.families.{family}"
+        if not isinstance(item, dict):
+            _fail(path, "must be an object")
+        for key in ("installed", "handler"):
+            if key not in item:
+                _fail(path, f"missing required property {key!r}")
+        if family not in _KNOWN_INTENTS:
+            _fail(path, f"unknown family {family!r}")
+        if not isinstance(item["installed"], bool):
+            _fail(f"{path}.installed", "must be a boolean")
+        if not isinstance(item["handler"], str) or not item["handler"]:
+            _fail(f"{path}.handler", "must be a non-empty string")

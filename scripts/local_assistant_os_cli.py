@@ -239,7 +239,6 @@ PI_BUNDLE_STATIC_FILES = (
     DEFAULT_HOST_ACTION_CONFIG_EXAMPLE,
     DEFAULT_SAFE_LIFECYCLE_CONTROLS_EXAMPLE,
     Path("docs/README.md"),
-    Path("docs/local_assistant_os_mvp_plan.md"),
     Path("docs/local_assistant_os_mvp_plan_v2.md"),
     Path("docs/roadmap.md"),
     Path("benchmarks/local_assistant_os_seed.json"),

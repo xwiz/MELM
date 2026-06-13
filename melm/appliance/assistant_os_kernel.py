@@ -92,6 +92,7 @@ class AssistantMemoryEvent:
     reason: str
     cloud_needed: bool
     evidence_keys: tuple[str, ...]
+    semantic_classes_activated: frozenset[str] = frozenset()
 
 
 @dataclass(frozen=True)
@@ -196,6 +197,7 @@ class AssistantOSKernel:
                     reason=item.reason,
                     cloud_needed=item.cloud_needed,
                     evidence_keys=item.evidence_keys,
+                    semantic_classes_activated=item.semantic_classes_activated,
                 )
                 for item in self.store.load_events()
             ]
@@ -417,6 +419,7 @@ class AssistantOSKernel:
             reason=decision.reason,
             cloud_needed=decision.cloud_needed,
             evidence_keys=decision.evidence_keys,
+            semantic_classes_activated=decision.semantic_classes_activated,
         )
         self.events.append(event)
         if decision.reason == "consent_revoked_user_fact":
@@ -445,6 +448,7 @@ class AssistantOSKernel:
                 homeostasis=asdict(homeostasis),
                 capture_surface=self.capture_surface,
                 capture_source=self.capture_source,
+                semantic_classes_activated=decision.semantic_classes_activated,
             )
             if self.last_synthesis is not None and _synthesis_matches_decision(self.last_synthesis, decision):
                 self.store.record_synthesis_trace(

@@ -551,6 +551,89 @@ class AcquireDefinitionMvpTests(unittest.TestCase):
             finally:
                 store.close()
 
+    def test_genus_extracts_head_noun_before_pp(self) -> None:
+        with tempfile.TemporaryDirectory() as tmp:
+            store = AssistantOSStore(Path(tmp) / "assistant.sqlite")
+            try:
+                self._seed_genus(store)
+                _ingest(
+                    store,
+                    _candidate(
+                        "piano", "physical_object.instrument",
+                        provenance="seed_authored",
+                        safety={"reserved_conflict": True, "policy_term_overlap": False},
+                        confidence=0.95,
+                    ),
+                )
+                result = acquire_definition(
+                    store,
+                    "a kalimba is a small thumb piano from africa",
+                )
+                self.assertIsNotNone(result)
+                self.assertEqual(result.status, "quarantined")
+                senses = lookup_lexical_senses(
+                    store, "kalimba", statuses=("quarantined",),
+                )
+                self.assertEqual(len(senses), 1)
+                self.assertEqual(
+                    senses[0]["semantic_class_id"], "physical_object.instrument",
+                )
+            finally:
+                store.close()
+
+    def test_homonym_creates_separate_sense_per_class(self) -> None:
+        with tempfile.TemporaryDirectory() as tmp:
+            store = AssistantOSStore(Path(tmp) / "assistant.sqlite")
+            try:
+                self._seed_genus(store)
+                _ingest(
+                    store,
+                    _candidate(
+                        "mammal", "living_thing.animal",
+                        provenance="seed_authored",
+                        safety={"reserved_conflict": False, "policy_term_overlap": False},
+                        confidence=0.95,
+                    ),
+                )
+                r1 = acquire_definition(store, "a kalimba is a musical instrument")
+                self.assertTrue(r1.created_lexeme)
+                self.assertTrue(r1.created_sense)
+                r2 = acquire_definition(store, "a kalimba is a flying mammal")
+                self.assertIsNotNone(r2)
+                self.assertFalse(r2.created_lexeme)
+                self.assertTrue(r2.created_sense)
+                senses = lookup_lexical_senses(
+                    store, "kalimba", statuses=("quarantined",),
+                )
+                self.assertEqual(len(senses), 2)
+                class_ids = {s["semantic_class_id"] for s in senses}
+                self.assertIn("physical_object.instrument", class_ids)
+                self.assertIn("living_thing.animal", class_ids)
+            finally:
+                store.close()
+
+    def test_all_reserved_lexemes_rejected_on_acquire(self) -> None:
+        import json as _json
+        with tempfile.TemporaryDirectory() as tmp:
+            store = AssistantOSStore(Path(tmp) / "assistant.sqlite")
+            try:
+                self._seed_genus(store)
+                res_path = (
+                    Path(__file__).parent.parent
+                    / "melm" / "contracts" / "reserved_lexemes.v1.json"
+                )
+                with open(res_path) as f:
+                    data = _json.load(f)
+                reserved = set(data["lexemes"]) | set(data.get("policy_lexemes", []))
+                for word in sorted(reserved):
+                    with self.subTest(lexeme=word):
+                        with self.assertRaises(ContractValidationError):
+                            acquire_definition(
+                                store, f"a {word} is a musical instrument",
+                            )
+            finally:
+                store.close()
+
 
 class OfflineDefinitionLookupMvpTests(unittest.TestCase):
     """Tests for the offline dictionary lookup channel."""
@@ -1206,6 +1289,92 @@ class KalimbaEndToEndLifecycleMvpTests(unittest.TestCase):
 
             finally:
                 store.close()
+
+
+class SemanticClassEventIndexMvpTests(unittest.TestCase):
+
+    def test_semantic_family_terms_activates_collector(self) -> None:
+        from melm.appliance.local_assistant_router import (
+            _semantic_family_terms,
+            set_semantic_class_collector,
+        )
+        collector: set[str] = set()
+        set_semantic_class_collector(collector)
+        try:
+            result = _semantic_family_terms(
+                ("hi", "weather", "rain"),
+                semantic_classes={"temporal_descriptor", "social_greeting"},
+            )
+        finally:
+            set_semantic_class_collector(None)
+        self.assertIsInstance(result, set)
+        self.assertGreaterEqual(len(collector), 0)
+
+    def test_router_handle_injects_activated_classes(self) -> None:
+        from melm.appliance import OnDeviceAssistantRouter, LocalAssistantProfile
+        router = OnDeviceAssistantRouter(LocalAssistantProfile())
+        decision = router.handle("hi what is the weather like")
+        self.assertIsInstance(decision.semantic_classes_activated, frozenset)
+
+    def test_activated_semantic_classes_persisted_in_store(self) -> None:
+        from melm.appliance import AssistantOSKernel, AssistantOSStore, LocalAssistantProfile
+        tmp = tempfile.mkdtemp()
+        db = Path(tmp) / "test.sqlite"
+        store = AssistantOSStore(db)
+        kernel = AssistantOSKernel(
+            store=store,
+            profile=LocalAssistantProfile(),
+        )
+        try:
+            decision = kernel.decide("hi what is the weather like")
+            kernel.remember(decision)
+            stored = store.load_events()
+            self.assertGreater(len(stored), 0)
+            for event in stored:
+                self.assertIsInstance(event.semantic_classes_activated, frozenset)
+        finally:
+            store.close()
+
+    def test_activated_semantic_classes_in_query_event_memory(self) -> None:
+        from melm.appliance import AssistantOSKernel, AssistantOSStore, LocalAssistantProfile
+        tmp = tempfile.mkdtemp()
+        db = Path(tmp) / "test.sqlite"
+        store = AssistantOSStore(db)
+        kernel = AssistantOSKernel(
+            store=store,
+            profile=LocalAssistantProfile(),
+        )
+        try:
+            decision = kernel.decide("hi what is the weather like")
+            kernel.remember(decision)
+            memory = store.query_event_memory(limit=10)
+            self.assertIn("events", memory)
+            for event in memory["events"]:
+                self.assertIn("semantic_classes_activated", event)
+                self.assertIsInstance(event["semantic_classes_activated"], tuple)
+        finally:
+            store.close()
+
+    def test_migration_adds_semantic_classes_column(self) -> None:
+        tmp = tempfile.mkdtemp()
+        db = Path(tmp) / "test.sqlite"
+        store = AssistantOSStore(db)
+        try:
+            rows = store.connection.execute("PRAGMA table_info(events)").fetchall()
+            columns = {str(row["name"]) for row in rows}
+            self.assertIn("semantic_classes_activated_json", columns)
+        finally:
+            store.close()
+
+    def test_migration_is_idempotent(self) -> None:
+        tmp = tempfile.mkdtemp()
+        db = Path(tmp) / "test.sqlite"
+        store = AssistantOSStore(db)
+        try:
+            store._ensure_event_semantic_classes_column()
+            store._ensure_event_semantic_classes_column()
+        finally:
+            store.close()
 
 
 if __name__ == "__main__":

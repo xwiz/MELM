@@ -14,7 +14,7 @@ directions against realistic user asks:
 from __future__ import annotations
 
 import re
-from dataclasses import dataclass, field
+from dataclasses import dataclass, field, replace
 from typing import Any, Literal
 
 from .functional_grammar import (
@@ -23,6 +23,7 @@ from .functional_grammar import (
     parse_functional_relations,
 )
 from .assistant_lexicon_legacy import build_legacy_in_memory_lexicon
+from .assistant_frame_linker import FrameLinker
 
 AssistantIntent = Literal[
     "assistant_identity",
@@ -113,6 +114,7 @@ class AssistantDecision:
     device_action: bool = False
     confidence: float = 0.0
     reason: str = ""
+    semantic_classes_activated: frozenset[str] = frozenset()
 
 
 @dataclass(frozen=True)
@@ -259,6 +261,17 @@ class OnDeviceAssistantRouter:
         self.profile = profile or LocalAssistantProfile()
 
     def handle(self, utterance: str) -> AssistantDecision:
+        collector: set[str] = set()
+        set_semantic_class_collector(collector)
+        try:
+            decision = self._route_impl(utterance)
+        finally:
+            set_semantic_class_collector(None)
+        if collector:
+            decision = replace(decision, semantic_classes_activated=frozenset(collector))
+        return decision
+
+    def _route_impl(self, utterance: str) -> AssistantDecision:
         text = _normalize(utterance)
         tokens = _tokenize(text)
         intent = _classify_intent_from_uol_slots(
@@ -1413,17 +1426,9 @@ def _classify_intent_from_uol_slots(
 
     ):
         return "social_contact"
-    if _is_personal_memory_frame(
-        text,
-        tokens,
-
-    ):
+    if _is_personal_memory_frame(text, tokens):
         return "personal_memory"
-    if _is_autobiographical_debug_request(
-        text,
-        tokens,
-
-    ):
+    if _is_autobiographical_debug_request(text, tokens):
         return "autobiographical_memory"
     if _is_meal_suggestion_request(
         text,
@@ -1431,6 +1436,7 @@ def _classify_intent_from_uol_slots(
 
     ):
         return "meal_suggestion"
+
     functional_kind = functional_frame_kind(functional_parse)
     if functional_kind in {
         "social_greeting",
@@ -1439,6 +1445,22 @@ def _classify_intent_from_uol_slots(
         "open_domain",
     }:
         return functional_kind  # type: ignore[return-value]
+
+    # Frame linker catches high-confidence cases that even functional grammar
+    # misses. Uses margin for non-migrated intents (prevents false positives).
+    linker = _get_frame_linker()
+    candidates = linker.score(
+        tokens,
+        _IN_MEMORY_LEXICON,
+        is_question_like=_is_question_like(text, tokens),
+        is_request_like=_is_request_like(tokens),
+    )
+    if candidates:
+        top = candidates[0]
+        if top.frame_id in _FRAME_LINKER_MIGRATED_INTENTS:
+            return top.intent
+        if top.score >= top.threshold + _FRAME_LINKER_CONFIRMATION_MARGIN:
+            return top.intent
     return "unknown"
 
 
@@ -1542,32 +1564,15 @@ def _is_weather_request(
     tokens: tuple[str, ...],
 
 
-
 ) -> bool:
-    token_set = set(tokens)
-    weather_terms = _semantic_family_terms(
-        tokens,
-        semantic_classes={"weather_phenomenon"},
-
-
-    )
-    if _is_weather_concept_question(
-        tokens,
-        weather_terms=weather_terms,
-
-
-    ):
+    # Concept questions about weather ("What is weather?", "How does weather work?")
+    # are NOT weather requests — they're definition/explanation questions.
+    if _is_weather_concept_question(tokens):
         return False
-    weather_object = bool(
-        token_set & weather_terms & {"weather", "forecast", "temperature"}
-    )
-    rain_time_query = bool(
-        "rain" in weather_terms and token_set & {"today", "tomorrow", "outside"}
-    )
-    return (weather_object or rain_time_query) and (
-        _is_question_like(text, tokens)
-        or _is_request_like(tokens)
-        or bool(token_set & {"today", "tomorrow", "outside"})
+    return _classify_from_frame_linker(
+        text, tokens, "weather",
+        collector_classes=frozenset({"weather_phenomenon"}),
+        use_margin=False,
     )
 
 
@@ -1601,6 +1606,53 @@ def _is_weather_concept_question(
 
 
 _IN_MEMORY_LEXICON: dict[str, frozenset[str]] = build_legacy_in_memory_lexicon()
+# Frame linker requires score >= template threshold + this margin to fire.
+# This prevents false positives on borderline matches while still catching
+# high-confidence cases that keyword classifiers miss.
+_FRAME_LINKER_CONFIRMATION_MARGIN = 0.20
+# Intents whose old keyword classifier has been replaced by the frame linker.
+# Add a family here after validating its template produces correct results.
+_FRAME_LINKER_MIGRATED_INTENTS: frozenset[str] = frozenset({"weather"})
+_FRAME_LINKER: FrameLinker | None = None
+
+
+def _classify_from_frame_linker(
+    text: str,
+    tokens: tuple[str, ...],
+    frame_id: str,
+    *,
+    collector_classes: frozenset[str] = frozenset(),
+    use_margin: bool = False,
+) -> bool:
+    """Check if *frame_id* is the top-scoring candidate above its effective threshold.
+
+    Migrated intents (validated templates) use the bare template threshold.
+    Non-migrated fallback uses *use_margin* to prevent false positives.
+    """
+    if collector_classes:
+        _semantic_family_terms(tokens, semantic_classes=collector_classes)
+    linker = _get_frame_linker()
+    candidates = linker.score(
+        tokens,
+        _IN_MEMORY_LEXICON,
+        is_question_like=_is_question_like(text, tokens),
+        is_request_like=_is_request_like(tokens),
+    )
+    needed = _FRAME_LINKER_CONFIRMATION_MARGIN if use_margin else 0.0
+    if not candidates:
+        return False
+    top = candidates[0]
+    return bool(
+        top.frame_id == frame_id
+        and top.score >= top.threshold + needed
+    )
+
+
+def _get_frame_linker() -> FrameLinker:
+    global _FRAME_LINKER
+    if _FRAME_LINKER is None:
+        _FRAME_LINKER = FrameLinker()
+    return _FRAME_LINKER
 
 
 def replace_in_memory_lexicon(
@@ -1610,15 +1662,32 @@ def replace_in_memory_lexicon(
     _IN_MEMORY_LEXICON.update(lexicon)
 
 
+# Collector for activated semantic classes during a single ``handle()`` call.
+# Reset via ``set_semantic_class_collector`` before routing, read after.
+_SEMANTIC_CLASS_COLLECTOR: set[str] | None = None
+
+
+def set_semantic_class_collector(collector: set[str] | None) -> None:
+    global _SEMANTIC_CLASS_COLLECTOR
+    _SEMANTIC_CLASS_COLLECTOR = collector
+
+
 def _semantic_family_terms(
     tokens: tuple[str, ...],
     semantic_classes: set[str],
 ) -> set[str]:
-    return {
+    result = {
         token
         for token in tokens
         if _IN_MEMORY_LEXICON.get(token, frozenset()) & semantic_classes
     }
+    if result and _SEMANTIC_CLASS_COLLECTOR is not None:
+        # Record only the classes actually matched by the result tokens.
+        matched_classes: set[str] = set()
+        for token in result:
+            matched_classes.update(_IN_MEMORY_LEXICON.get(token, frozenset()) & semantic_classes)
+        _SEMANTIC_CLASS_COLLECTOR.update(matched_classes)
+    return result
 
 
 def _weather_observation_context(

@@ -1,0 +1,20 @@
+{
+  "schema_id": "melm.capability_manifest.v1",
+  "families": {
+    "story": {"installed": true, "handler": "builtin"},
+    "weather": {"installed": true, "handler": "builtin"},
+    "common_sense_safety": {"installed": true, "handler": "builtin"},
+    "media_playback": {"installed": true, "handler": "builtin"},
+    "health_advice": {"installed": true, "handler": "builtin"},
+    "social_contact": {"installed": true, "handler": "builtin"},
+    "personal_memory": {"installed": true, "handler": "builtin"},
+    "autobiographical_memory": {"installed": true, "handler": "builtin"},
+    "meal_suggestion": {"installed": true, "handler": "builtin"},
+    "assistant_identity": {"installed": true, "handler": "builtin"},
+    "assistant_status": {"installed": true, "handler": "builtin"},
+    "social_greeting": {"installed": true, "handler": "builtin"},
+    "assistant_behavior": {"installed": true, "handler": "builtin"},
+    "personal_goal_advice": {"installed": true, "handler": "builtin"},
+    "open_domain": {"installed": true, "handler": "builtin"}
+  }
+}

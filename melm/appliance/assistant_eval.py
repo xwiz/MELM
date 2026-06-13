@@ -839,6 +839,9 @@ def _copy_latest_turn(source: AssistantOSStore, target: AssistantOSStore) -> Non
         device_action=bool(event["device_action"]),
         local_memory_used=bool(event["local_memory_used"]),
         evidence_keys=(),
+        semantic_classes_activated=frozenset(
+            _json_values(str(event["semantic_classes_activated_json"]))
+        ),
         membrane={
             "route": str(membrane["route"]),
             "allowed": bool(membrane["allowed"]),
