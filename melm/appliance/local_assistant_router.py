@@ -115,6 +115,7 @@ class AssistantDecision:
     confidence: float = 0.0
     reason: str = ""
     semantic_classes_activated: frozenset[str] = frozenset()
+    slot_states: dict[str, str] = field(default_factory=dict)  # slot_name → state constant
 
 
 @dataclass(frozen=True)

@@ -44,6 +44,65 @@ OpportunityKind = Literal[
 
 SELF_OBSERVATION_HISTORY_LIMIT = 24
 
+# Slot names that each intent checks on its target entity.
+_INTENT_SLOT_BINDINGS: dict[str, tuple[str, ...]] = {
+    "social_contact": ("name", "phone"),
+    "personal_memory": ("self_facts",),
+}
+
+
+def _simple_tokenize(text: str) -> tuple[str, ...]:
+    return tuple(text.lower().split())
+
+
+def _resolve_slot_states(
+    intent: str,
+    tokens: tuple[str, ...],
+    store: AssistantOSStore | None,
+) -> dict[str, str]:
+    """Resolve slot fill states for *intent* from the entity store."""
+    if store is None:
+        return {}
+    from .assistant_frame_linker import (
+        SLOT_STATE_FILLED,
+        SLOT_STATE_UNKNOWN,
+        SLOT_STATE_UNKNOWN_ENTITY,
+    )
+
+    slot_names = _INTENT_SLOT_BINDINGS.get(intent)
+    if not slot_names:
+        return {}
+
+    if intent == "social_contact":
+        persons = store.find_entities(kind="person")
+        if not persons:
+            return {s: SLOT_STATE_UNKNOWN_ENTITY for s in slot_names}
+        token_set = set(tokens)
+        matched = [p for p in persons if p.label.lower() in token_set]
+        if not matched:
+            matched = persons
+        entity_id = matched[0].entity_id
+        states: dict[str, str] = {}
+        for sn in slot_names:
+            slot = store.get_entity_slot(entity_id, sn)
+            if slot is None:
+                states[sn] = SLOT_STATE_UNKNOWN
+            else:
+                states[sn] = slot.slot_state
+        return states
+
+    if intent == "personal_memory":
+        self_entity = store.get_entity("self")
+        if self_entity is None:
+            return {s: SLOT_STATE_UNKNOWN_ENTITY for s in slot_names}
+        rows = store.connection.execute(
+            "SELECT slot_name, slot_state FROM entity_slots WHERE entity_id = 'self'"
+        ).fetchall()
+        has_facts = any(str(r["slot_state"]) == SLOT_STATE_FILLED for r in rows)
+        return {"self_facts": SLOT_STATE_FILLED if has_facts else SLOT_STATE_UNKNOWN}
+
+    return {}
+
 
 @dataclass(frozen=True)
 class SelfModel:
@@ -275,6 +334,14 @@ class AssistantOSKernel:
         decision = OnDeviceAssistantRouter(
             self.profile,
         ).handle(utterance)
+        if self.store is not None:
+            resolved = _resolve_slot_states(
+                decision.intent,
+                _simple_tokenize(utterance),
+                self.store,
+            )
+            if resolved:
+                decision = replace(decision, slot_states=resolved)
         membrane = MembranePolicy().evaluate(decision, fact_privacy=self._fact_privacy_index())
         if not membrane.allowed:
             rejected = AssistantDecision(

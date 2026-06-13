@@ -13,7 +13,7 @@
         "exclude_classes": [],
         "action_tokens": ["tell", "read", "make", "give"]
       },
-      "slot_bindings": {},
+      "slot_bindings": [],
       "threshold": 0.40,
       "priority": 3
     },
@@ -27,7 +27,7 @@
         "exclude_classes": ["definition_request", "abstract_concept"],
         "action_tokens": []
       },
-      "slot_bindings": {},
+      "slot_bindings": [],
       "threshold": 0.40,
       "priority": 4
     },
@@ -42,7 +42,7 @@
         "exclude_classes": [],
         "action_tokens": ["go", "going", "walk"]
       },
-      "slot_bindings": {},
+      "slot_bindings": [],
       "threshold": 0.40,
       "priority": 5
     },
@@ -56,7 +56,7 @@
         "exclude_classes": [],
         "action_tokens": ["play", "start"]
       },
-      "slot_bindings": {},
+      "slot_bindings": [],
       "threshold": 0.40,
       "priority": 6
     },
@@ -70,7 +70,7 @@
         "exclude_classes": [],
         "action_tokens": ["better", "do", "sleep", "take", "see"]
       },
-      "slot_bindings": {},
+      "slot_bindings": [],
       "threshold": 0.40,
       "priority": 7
     },
@@ -84,7 +84,7 @@
         "exclude_classes": [],
         "action_tokens": ["call", "phone", "ring", "reach"]
       },
-      "slot_bindings": {},
+      "slot_bindings": ["name", "phone"],
       "threshold": 0.40,
       "priority": 8
     },
@@ -98,7 +98,7 @@
         "exclude_classes": [],
         "action_tokens": ["remember", "recall", "forget"]
       },
-      "slot_bindings": {},
+      "slot_bindings": ["self_facts"],
       "threshold": 0.30,
       "priority": 9
     },
@@ -112,7 +112,7 @@
         "exclude_classes": [],
         "action_tokens": ["summarize", "recap", "show", "list", "tell"]
       },
-      "slot_bindings": {},
+      "slot_bindings": [],
       "threshold": 0.40,
       "priority": 10
     },
@@ -126,7 +126,7 @@
         "exclude_classes": [],
         "action_tokens": ["eat", "cook", "have", "suggest", "recommend"]
       },
-      "slot_bindings": {},
+      "slot_bindings": [],
       "threshold": 0.40,
       "priority": 11
     }

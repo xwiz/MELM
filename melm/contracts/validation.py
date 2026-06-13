@@ -353,6 +353,9 @@ def validate_frame_templates(payload: dict[str, Any]) -> None:
                     f"{path}.activation.{cls_list_key}",
                     f"unknown semantic classes: {', '.join(unknown)}",
                 )
+        sb = item.get("slot_bindings", [])
+        if not isinstance(sb, list) or any(not isinstance(s, str) for s in sb):
+            _fail(f"{path}.slot_bindings", "must be an array of strings")
         threshold = item.get("threshold")
         if not isinstance(threshold, (int, float)) or not 0 <= threshold <= 1:
             _fail(f"{path}.threshold", "must be in [0, 1]")

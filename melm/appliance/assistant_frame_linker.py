@@ -3,7 +3,7 @@
 from __future__ import annotations
 
 import json
-from dataclasses import dataclass
+from dataclasses import dataclass, field, replace
 from typing import Any
 
 from ..contracts import CONTRACT_ROOT, validate_frame_templates
@@ -15,6 +15,20 @@ _WEIGHT_ACTION = 0.15
 _WEIGHT_STRUCTURE = 0.15
 _WEIGHT_EXCLUDE_PENALTY = 0.25
 
+# Slot state constants — track fill state for entity slots.
+SLOT_STATE_FILLED = "filled"
+SLOT_STATE_ASKED_BUT_EMPTY = "asked_but_empty"
+SLOT_STATE_UNKNOWN_ENTITY = "unknown_entity"
+SLOT_STATE_UNKNOWN = "unknown"
+SLOT_STATE_INFERRED = "inferred"
+
+
+def enrich_candidate_slot_states(
+    candidate: FrameCandidate,
+    slot_states: dict[str, str],
+) -> FrameCandidate:
+    return replace(candidate, slot_states=slot_states)
+
 
 @dataclass(frozen=True)
 class FrameCandidate:
@@ -23,6 +37,7 @@ class FrameCandidate:
     score: float
     score_components: dict[str, float]
     threshold: float
+    slot_states: dict[str, str] = field(default_factory=dict)  # slot_name → state constant
 
 
 class FrameLinker:
