@@ -35,6 +35,8 @@
 - **M3: `cloud_definition_lookup(store, word, *, api_key, endpoint, model, pos_hint, timeout)` built** — cloud LLM definition lookup channel. Sends an OpenAI-compatible chat-completions request with a dictionary-service system prompt that includes the full 89-class semantic-class enum. Parses the LLM response into `sense_candidate.v1` with `provenance=cloud_lookup`, `status=quarantined`, `confidence_prior=0.50`, `method=llm_assigned` (per contract policy). `genus_lemma` omitted when empty (not in schema required list). Unknown `class_id` values from the LLM are filtered; empty candidates fall back to `abstract` at 0.50. Network errors, malformed JSON, and `ContractValidationError` are silently swallowed (return `[]`). Uses `urllib.request` (project stdlib convention). 11 tests cover valid ingestion, provenance, confidence prior, `llm_assigned` method, network error, malformed response, empty content, empty word, reserved-word rejection, abstract fallback, and unknown-class filtering.
 - **`load_semantic_class_ids()` made public** — previously `_semantic_class_ids` private function in `contracts/validation.py`. Renamed and exported from `melm.contracts`.
 - **Code cleanup during M3 review**: `_clean_definition` simplified (removed dead branch and unused `lemma` param). `_compute_class_candidates` cleaned (removed unused `definition` param). `_build_dictionary_candidate` cleaned (removed unused `normalized_word` param). `_build_dictionary_candidate` guards against empty/invalid `pos`. `offline_definition_lookup` catches `OSError` for missing files. `_extract_candidate_from_llm_response` simplified (removed dead early candidate dict).
+- **M3: `set_lexical_sense_status(store, sense_id, new_status)` built** — promote/rollback API for lexical sense status. Accepts any value in `VALID_SENSE_STATUSES` (`{"quarantined", "dormant", "active"}`). Uses `with store.connection:` to ensure SQLite transaction commits (critical: implicit transactions are rolled back on `connection.close()`). Raises `ContractValidationError` for invalid status or unknown `sense_id`.
+- **M3: Kalimba e2e fixture** — `test_teach_quarantine_promote_restart_rollback` exercises teach (acquire_definition, quarantined) → promote to active → routing visibility via `lexical_classes_for_term` → reopen store verifying persistence → correction merge into same sense → rollback to quarantined removing routing visibility.
 
 ### In Progress
 - *(none)*
@@ -55,10 +57,12 @@
 - **API key/endpoint/model are function parameters** — no existing API key management infrastructure in the codebase. The caller (CLI, kernel, or test) provides these explicitly.
 
 ## Next Steps
-1. **Build kalimba end-to-end fixture** — teach → quarantine → minimal pairs → promote → reuse after restart → correct → rollback (M3 gate).
+1. **Mini steps**: minimal-pairs adversarial fixture for the teaching channel (edge cases for polysemous genus, homonyms, separator normalization).
+2. **M4: In-memory semantic-class event index** — annotate each `events` row with semantic classes activated during routing, enabling class-filtered event recall and usage-based sense promotion.
+3. **M5: UOL-based frame linking** — replace keyword classifiers (weather, story, media, etc.) with contract-driven frame templates backed by the factored lexicon.
 
 ## Critical Context
-- **95/95 related tests pass** (15 subtests) — contracts, lexicon, seed, legacy, store, kernel. 2 pre-existing failures unrelated to this work: `test_assistant_authority_mvp.py` (`AnswerPlan` import), `test_cli_pi_bundle_builds_portable_self_checked_bundle` (missing `docs/local_assistant_os_mvp_plan.md`).
+- **102/102 related tests pass** (15 subtests) — contracts, lexicon, seed, legacy, store, kernel. 2 pre-existing failures unrelated to this work: `test_assistant_authority_mvp.py` (`AnswerPlan` import), `test_cli_pi_bundle_builds_portable_self_checked_bundle` (missing `docs/local_assistant_os_mvp_plan.md`).
 - **`_rebuild_router_lexicon_cache`** — always rebuilds. Store data → store cache. Empty store → LEGACY cache. Fixes test isolation.
 - **`_IN_MEMORY_LEXICON`** — `dict[str, frozenset[str]]`, term→classes. Built from LEGACY at module load. Replaced at kernel init via `_rebuild_router_lexicon_cache()`.
 - **`_semantic_family_terms(tokens, *, semantic_classes)`** — no other parameters. Always reads `_IN_MEMORY_LEXICON`.
@@ -70,6 +74,7 @@
 - **Deletion test works** — deleting a seeded lexeme from the store and creating a new kernel removes the term from the cache.
 - **`offline_definition_lookup`** catches `OSError` for missing files. `cloud_definition_lookup` catches `OSError`/`URLError`/`json.JSONDecodeError` for network failures. Both silently return `[]` on error.
 - **`cloud_definition_lookup`** uses `urllib.request` directly (project convention). Adds no new dependencies. API key, endpoint, and model are function parameters (no existing API key management in codebase).
+- **`set_lexical_sense_status`** uses `with store.connection:` to ensure SQLite transaction commits (critical: implicit transactions are rolled back on `connection.close()`).
 - **2 pre-existing test failures** (unrelated to this work): `test_assistant_authority_mvp.py` (`AnswerPlan` import), `test_cli_pi_bundle_builds_portable_self_checked_bundle` (missing `docs/local_assistant_os_mvp_plan.md`).
 
 ## Relevant Files
