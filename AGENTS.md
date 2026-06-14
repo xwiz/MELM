@@ -74,7 +74,9 @@
 - **Data generator script saved** — `scripts/generate_bulk_lexicon_data.py` creates JSONL data files from LEGACY vocabulary and curated word lists per supersense.
 
 ### In Progress
-- *(none)*
+- **M3 sealed dictionary test harness built** — 72 synthetic words across 11 intent categories. 4 tests: word count ≥60, ingest/promote rate ≥80%, routing agreement ≥80%, retention after restart ≥80%. All pass.
+- **M3 gaps identified**: (1) `set_lexical_sense_status` doesn't write to `promotions` table — trace not queryable end-to-end; (2) capability manifest runtime enforcement missing — no gate against capability grants from acquired vocab; (3) Pi benchmark not started.
+- **M4 built**: authority scaffold exists (evidence packets, 24 tests), but Pi benchmark (tok/s/TTFT/RSS) and constrained decoding not started.
 
 ### Blocked
 - `test_cli_pi_bundle_builds_portable_self_checked_bundle` — bundle builds but `v01_audit`/`v01_progress` checks fail by design (project milestone blockers, not code issues). Remaining infrastructure smokes all pass with contract files included.
@@ -96,11 +98,12 @@
 - `cloud_lookup` uses `urllib.request` directly (project convention), no new dependencies.
 
 ## Next Steps
-1. **Review & consolidate** — Full validation pass.
+1. **Close M3 gate** — (a) Wire `set_lexical_sense_status` → `add_promotion` so promotion trace is queryable; (b) Build capability manifest runtime enforcement to block capability grants from acquired vocab; (c) Start Pi benchmark for M4.
 2. **Personal_memory frame linker migration** — consider adding child_memory sub-frame with restrictive threshold to catch "the child" patterns.
 
 ## Critical Context
-- **633 tests pass**: authority (24), frame_linker (27), router (54, 71 subtests), eval (4, 107/107 cases), lexicon (65), entity (61), lifecycle (2), lifecycle integration (1), CLI (rest). 11 new bulk seeder tests.
+- **647 tests pass**: authority (24), frame_linker (27), router (54, 71 subtests), eval (4, 107/107 cases), lexicon (69), entity (61), lifecycle (2), lifecycle integration (1), CLI (rest). 4 sealed dictionary tests.
+- **M3 sealed dictionary**: 72 words across 11 intent categories. Test harness verifies ingest/promote ≥80%, routing agreement ≥80%, retention ≥80%.
 - **9/9 classifiers migrated** to frame linker. 1 partial (personal_memory — structural gates kept, memory_cognition+first_person delegated to frame linker).
 - **`_FRAME_LINKER_MIGRATED_INTENTS`**: 8 intents — weather, story, media_playback, autobiographical_memory, meal_suggestion, common_sense_safety, social_contact, health_advice.
 - **89 semantic classes** in `semantic_classes.v1.json`.
@@ -127,6 +130,6 @@
 - **`docs/local_assistant_os_mvp_plan_v2.md`** — §16.5 Entity store architecture.
 - **`tests/test_assistant_frame_linker_mvp.py`** — 27 frame linker tests.
 - **`tests/test_local_assistant_router_mvp.py`** — 54 router tests.
-- **`tests/test_assistant_lexicon_mvp.py`** — 65 lexicon tests (54 original + 11 bulk seeder).
+- **`tests/test_assistant_lexicon_mvp.py`** — 69 lexicon tests (54 original + 11 bulk seeder + 4 sealed dictionary).
 - **`tests/test_assistant_os_eval_mvp.py`** — 4 eval tests (107/107 cases).
 - **`tests/test_entity_architecture_mvp.py`** — 61 entity tests (schema, migration, seeding, CRUD, slot states, entity relations, count whitelist, contacts migration, self-facts migration, entity lexicon index).

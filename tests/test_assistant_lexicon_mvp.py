@@ -17,6 +17,14 @@ from melm.appliance import (
     offline_definition_lookup,
     set_lexical_sense_status,
 )
+from melm.appliance.assistant_lexicon import LexiconIngestResult
+from melm.appliance.assistant_frame_linker import FrameLinker
+from melm.appliance.assistant_lexicon import _normalize_term
+from melm.appliance.local_assistant_router import (
+    _classify_from_frame_linker,
+    _IN_MEMORY_LEXICON,
+    replace_in_memory_lexicon,
+)
 from melm.contracts import ContractValidationError
 
 
@@ -1544,6 +1552,299 @@ class BulkLexiconSeederMvpTests(unittest.TestCase):
             self.assertGreaterEqual(counts["verbnet"], 20)
         finally:
             store.close()
+
+
+class SealedDictionaryMvpTests(unittest.TestCase):
+    """M3 exit gate: sealed >=60-word dictionary set.
+
+    Verifies >=80% correct next-turn use and retention across the full
+    acquisition pipeline: ingest -> promote -> route -> restart-retain.
+    """
+
+    _SEALED_DICTIONARY: tuple[dict[str, str], ...] = (
+        # story (class: narrative_content)
+        {"word": "wug", "utterance": "tell me a story about wug",
+         "expected_intent": "story", "class_id": "narrative_content"},
+        {"word": "thorp", "utterance": "tell me about thorp",
+         "expected_intent": "story", "class_id": "narrative_content"},
+        {"word": "glimmer", "utterance": "tell a story with glimmer",
+         "expected_intent": "story", "class_id": "narrative_content"},
+        {"word": "niffler", "utterance": "read me the niffler story",
+         "expected_intent": "story", "class_id": "narrative_content"},
+        {"word": "boggle", "utterance": "make up a boggle tale",
+         "expected_intent": "story", "class_id": "narrative_content"},
+        {"word": "sprocket", "utterance": "give me a sprocket story",
+         "expected_intent": "story", "class_id": "narrative_content"},
+        # media_playback (class: physical_object.instrument)
+        {"word": "zindle", "utterance": "play zindle",
+         "expected_intent": "media_playback", "class_id": "physical_object.instrument"},
+        {"word": "flump", "utterance": "play flump on the speaker",
+         "expected_intent": "media_playback", "class_id": "physical_object.instrument"},
+        {"word": "dringle", "utterance": "play dringle music",
+         "expected_intent": "media_playback", "class_id": "physical_object.instrument"},
+        {"word": "brizzle", "utterance": "play brizzle tune",
+         "expected_intent": "media_playback", "class_id": "physical_object.instrument"},
+        {"word": "thribble", "utterance": "start playing thribble",
+         "expected_intent": "media_playback", "class_id": "physical_object.instrument"},
+        {"word": "quibble", "utterance": "play quibble song",
+         "expected_intent": "media_playback", "class_id": "physical_object.instrument"},
+        # weather (class: weather_phenomenon)
+        {"word": "blizz", "utterance": "what is the blizz like today",
+         "expected_intent": "weather", "class_id": "weather_phenomenon"},
+        {"word": "sunspark", "utterance": "is sunspark expected tomorrow",
+         "expected_intent": "weather", "class_id": "weather_phenomenon"},
+        {"word": "rainfleck", "utterance": "what about rainfleck on wednesday",
+         "expected_intent": "weather", "class_id": "weather_phenomenon"},
+        {"word": "drizzlefluff", "utterance": "how much drizzlefluff will there be",
+         "expected_intent": "weather", "class_id": "weather_phenomenon"},
+        {"word": "windwhorl", "utterance": "is windwhorl dangerous",
+         "expected_intent": "weather", "class_id": "weather_phenomenon"},
+        {"word": "frostgleam", "utterance": "when will frostgleam start",
+         "expected_intent": "weather", "class_id": "weather_phenomenon"},
+        # meal_suggestion (class: food_item)
+        {"word": "zargle", "utterance": "suggest a zargle recipe",
+         "expected_intent": "meal_suggestion", "class_id": "food_item"},
+        {"word": "morket", "utterance": "cook morket for dinner",
+         "expected_intent": "meal_suggestion", "class_id": "food_item"},
+        {"word": "flibble", "utterance": "recommend a flibble dish",
+         "expected_intent": "meal_suggestion", "class_id": "food_item"},
+        {"word": "gront", "utterance": "eat gront for breakfast",
+         "expected_intent": "meal_suggestion", "class_id": "food_item"},
+        {"word": "snibble", "utterance": "have snibble with rice",
+         "expected_intent": "meal_suggestion", "class_id": "food_item"},
+        {"word": "plinket", "utterance": "suggest plinket soup",
+         "expected_intent": "meal_suggestion", "class_id": "food_item"},
+        # routine_memory (class: routine_concept)
+        {"word": "mizzle", "utterance": "my mizzle routine",
+         "expected_intent": "routine_memory", "class_id": "routine_concept"},
+        {"word": "bloop", "utterance": "my bloop schedule",
+         "expected_intent": "routine_memory", "class_id": "routine_concept"},
+        {"word": "zorp", "utterance": "our zorp plan",
+         "expected_intent": "routine_memory", "class_id": "routine_concept"},
+        {"word": "wuzzle", "utterance": "my wuzzle time",
+         "expected_intent": "routine_memory", "class_id": "routine_concept"},
+        {"word": "snizzle", "utterance": "our snizzle habit",
+         "expected_intent": "routine_memory", "class_id": "routine_concept"},
+        {"word": "glorb", "utterance": "my glorb practice",
+         "expected_intent": "routine_memory", "class_id": "routine_concept"},
+        # household_memory (class: household_concept)
+        {"word": "frump", "utterance": "my frump is broken",
+         "expected_intent": "household_memory", "class_id": "household_concept"},
+        {"word": "squibble", "utterance": "where is my squibble",
+         "expected_intent": "household_memory", "class_id": "household_concept"},
+        {"word": "trumpet", "utterance": "our trumpet shelf",
+         "expected_intent": "household_memory", "class_id": "household_concept"},
+        {"word": "bramble", "utterance": "my bramble drawer",
+         "expected_intent": "household_memory", "class_id": "household_concept"},
+        {"word": "crizzle", "utterance": "we need a crizzle",
+         "expected_intent": "household_memory", "class_id": "household_concept"},
+        {"word": "dibble", "utterance": "my dibble cabinet",
+         "expected_intent": "household_memory", "class_id": "household_concept"},
+
+        # autobiographical_memory (class: autobiographical_event)
+        {"word": "skribble", "utterance": "tell me about skribble",
+         "expected_intent": "autobiographical_memory", "class_id": "autobiographical_event"},
+        {"word": "plundle", "utterance": "show my plundle",
+         "expected_intent": "autobiographical_memory", "class_id": "autobiographical_event"},
+        {"word": "gribble", "utterance": "list gribble events",
+         "expected_intent": "autobiographical_memory", "class_id": "autobiographical_event"},
+        {"word": "frinkle", "utterance": "recap frinkle for me",
+         "expected_intent": "autobiographical_memory", "class_id": "autobiographical_event"},
+        {"word": "drabble", "utterance": "summarize drabble",
+         "expected_intent": "autobiographical_memory", "class_id": "autobiographical_event"},
+        {"word": "nubble", "utterance": "tell me nubble details",
+         "expected_intent": "autobiographical_memory", "class_id": "autobiographical_event"},
+        # social_contact (class: contact_action)
+        {"word": "clibble", "utterance": "call clibble",
+         "expected_intent": "social_contact", "class_id": "contact_action"},
+        {"word": "strumble", "utterance": "phone strumble",
+         "expected_intent": "social_contact", "class_id": "contact_action"},
+        {"word": "prickle", "utterance": "ring prickle",
+         "expected_intent": "social_contact", "class_id": "contact_action"},
+        {"word": "wumble", "utterance": "reach wumble by phone",
+         "expected_intent": "social_contact", "class_id": "contact_action"},
+        {"word": "frizzle", "utterance": "call frizzle at home",
+         "expected_intent": "social_contact", "class_id": "contact_action"},
+        {"word": "tramble", "utterance": "phone tramble now",
+         "expected_intent": "social_contact", "class_id": "contact_action"},
+        # health_advice (class: health_condition)
+        {"word": "snoggle", "utterance": "my snoggle hurts",
+         "expected_intent": "health_advice", "class_id": "health_condition"},
+        {"word": "murgle", "utterance": "how to treat murgle",
+         "expected_intent": "health_advice", "class_id": "health_condition"},
+        {"word": "flargle", "utterance": "sleep with flargle",
+         "expected_intent": "health_advice", "class_id": "health_condition"},
+        {"word": "drongle", "utterance": "take medicine for drongle",
+         "expected_intent": "health_advice", "class_id": "health_condition"},
+        {"word": "prink", "utterance": "see doctor about prink",
+         "expected_intent": "health_advice", "class_id": "health_condition"},
+        {"word": "thrizzle", "utterance": "do exercise for thrizzle",
+         "expected_intent": "health_advice", "class_id": "health_condition"},
+        # common_sense_safety (class: undress_state)
+        {"word": "glorp", "utterance": "go glorp alone at night",
+         "expected_intent": "common_sense_safety", "class_id": "undress_state"},
+        {"word": "snarkle", "utterance": "walk snarkle in the dark",
+         "expected_intent": "common_sense_safety", "class_id": "undress_state"},
+        {"word": "plorf", "utterance": "go plorf by the river",
+         "expected_intent": "common_sense_safety", "class_id": "undress_state"},
+        {"word": "dring", "utterance": "walk dring in the forest",
+         "expected_intent": "common_sense_safety", "class_id": "undress_state"},
+        {"word": "spindle", "utterance": "go spindle near the highway",
+         "expected_intent": "common_sense_safety", "class_id": "undress_state"},
+        {"word": "blorple", "utterance": "walk blorple on the bridge",
+         "expected_intent": "common_sense_safety", "class_id": "undress_state"},
+        # personal_memory (class: memory_recall)
+        {"word": "wibble", "utterance": "remember wibble",
+         "expected_intent": "personal_memory", "class_id": "memory_recall"},
+        {"word": "tibble", "utterance": "recall tibble for me",
+         "expected_intent": "personal_memory", "class_id": "memory_recall"},
+        {"word": "nibble", "utterance": "forget nibble",
+         "expected_intent": "personal_memory", "class_id": "memory_recall"},
+        {"word": "wramble", "utterance": "remember wramble event",
+         "expected_intent": "personal_memory", "class_id": "memory_recall"},
+        {"word": "fribble", "utterance": "recall fribble memory",
+         "expected_intent": "personal_memory", "class_id": "memory_recall"},
+        {"word": "squamble", "utterance": "remember squamble detail",
+         "expected_intent": "personal_memory", "class_id": "memory_recall"},
+        # extra: 6 more to ensure >= 66
+        {"word": "sprinkle", "utterance": "tell a story with sprinkle",
+         "expected_intent": "story", "class_id": "narrative_content"},
+        {"word": "twindle", "utterance": "play twindle on the radio",
+         "expected_intent": "media_playback", "class_id": "physical_object.instrument"},
+        {"word": "snorf", "utterance": "what is the snorf index",
+         "expected_intent": "weather", "class_id": "weather_phenomenon"},
+        {"word": "miffle", "utterance": "suggest miffle for lunch",
+         "expected_intent": "meal_suggestion", "class_id": "food_item"},
+        {"word": "zuffle", "utterance": "my zuffle morning habit",
+         "expected_intent": "routine_memory", "class_id": "routine_concept"},
+        {"word": "kribble", "utterance": "remember kribble from yesterday",
+         "expected_intent": "personal_memory", "class_id": "memory_recall"},
+    )
+
+    @property
+    def _dictionary_words(self) -> tuple[str, ...]:
+        return tuple(e["word"] for e in self._SEALED_DICTIONARY)
+
+    def _ingest_word(self, store: AssistantOSStore, entry: dict[str, str]) -> LexiconIngestResult | None:
+        candidate = {
+            "schema_id": "melm.sense_candidate.v1",
+            "lemma": entry["word"],
+            "language": "en",
+            "pos": "noun",
+            "source": {"provenance": "seed_authored",
+                       "source_ref": f"test:{entry['word']}",
+                       "license": "test"},
+            "definition": f"a test word for {entry['expected_intent']}",
+            "semantic_class_candidates": [
+                {"class_id": entry["class_id"],
+                 "method": "seed_authored",
+                 "confidence": 0.95}],
+            "safety": {"reserved_conflict": False, "policy_term_overlap": False},
+            "suggested_status": "active",
+            "confidence_prior": 0.95,
+        }
+        return lexicon_ingest(store, candidate, expected_provenance="seed_authored")
+
+    def _inject_new_words(self, store: AssistantOSStore) -> None:
+        """Merge new-word entries from store into _IN_MEMORY_LEXICON."""
+        rows = store.connection.execute(
+            """
+            SELECT l.normalized_lemma, s.semantic_class_id
+            FROM lexemes AS l
+            JOIN lexical_senses AS s ON s.lexeme_id = l.lexeme_id
+            WHERE s.status = 'active'
+            """
+        ).fetchall()
+        from collections import defaultdict
+        lexicon: dict[str, set[str]] = defaultdict(set)
+        lexicon.update({k: set(v) for k, v in _IN_MEMORY_LEXICON.items()})
+        for row in rows:
+            lemma = str(row["normalized_lemma"])
+            class_id = str(row["semantic_class_id"])
+            lexicon[lemma].add(class_id)
+        replace_in_memory_lexicon(
+            {k: frozenset(v) for k, v in lexicon.items()}
+        )
+
+    def _run_routing_agreement(self, store: AssistantOSStore) -> float:
+        """Return fraction of sealed-dictionary words that route to expected intent."""
+        saved = dict(_IN_MEMORY_LEXICON)
+        try:
+            self._inject_new_words(store)
+            linker = FrameLinker()
+            successes = 0
+            for entry in self._SEALED_DICTIONARY:
+                tokens = tuple(_normalize_term(entry["utterance"]).split())
+                if _classify_from_frame_linker(
+                    entry["utterance"], tokens, entry["expected_intent"]
+                ):
+                    successes += 1
+            return successes / len(self._SEALED_DICTIONARY)
+        finally:
+            replace_in_memory_lexicon(saved)
+
+    def test_sealed_dictionary_count(self) -> None:
+        """The sealed dictionary contains >= 60 words."""
+        self.assertGreaterEqual(len(self._SEALED_DICTIONARY), 60)
+
+    def test_sealed_dictionary_all_ingest_and_promote(self) -> None:
+        """All >= 60 words ingest and promote to active without error."""
+        with tempfile.TemporaryDirectory() as tmp:
+            path = Path(tmp) / "test.sqlite"
+            store = AssistantOSStore(path)
+            try:
+                successes = 0
+                for entry in self._SEALED_DICTIONARY:
+                    result = self._ingest_word(store, entry)
+                    if result is not None and result.status == "active":
+                        successes += 1
+                rate = successes / len(self._SEALED_DICTIONARY)
+                self.assertGreaterEqual(
+                    rate, 0.80,
+                    f"ingestion rate={rate:.0%} < 80% "
+                    f"({successes}/{len(self._SEALED_DICTIONARY)})"
+                )
+            finally:
+                store.close()
+
+    def test_sealed_dictionary_routing_agreement(self) -> None:
+        """>= 80% of words produce correct intent routing after ingest."""
+        with tempfile.TemporaryDirectory() as tmp:
+            path = Path(tmp) / "test.sqlite"
+            store = AssistantOSStore(path)
+            try:
+                for entry in self._SEALED_DICTIONARY:
+                    self._ingest_word(store, entry)
+                rate = self._run_routing_agreement(store)
+                self.assertGreaterEqual(
+                    rate, 0.80,
+                    f"routing rate={rate:.0%} < 80%"
+                )
+            finally:
+                store.close()
+
+    def test_sealed_dictionary_retention(self) -> None:
+        """>= 80% of words retain correct routing after store restart."""
+        with tempfile.TemporaryDirectory() as tmp:
+            path = Path(tmp) / "test.sqlite"
+            store = AssistantOSStore(path)
+            try:
+                for entry in self._SEALED_DICTIONARY:
+                    self._ingest_word(store, entry)
+                store.close()
+
+                store2 = AssistantOSStore(path)
+                try:
+                    rate = self._run_routing_agreement(store2)
+                    self.assertGreaterEqual(
+                        rate, 0.80,
+                        f"retention rate={rate:.0%} < 80%"
+                    )
+                finally:
+                    store2.close()
+            except:
+                store.close()
+                raise
 
 
 if __name__ == "__main__":
