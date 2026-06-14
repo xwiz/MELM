@@ -1298,6 +1298,41 @@ class KalimbaEndToEndLifecycleMvpTests(unittest.TestCase):
             finally:
                 store.close()
 
+    def test_promotion_trace_queryable_after_status_change(self) -> None:
+        """set_lexical_sense_status records promotion in promotions table."""
+        with tempfile.TemporaryDirectory() as tmp:
+            path = Path(tmp) / "assistant.sqlite"
+            store = AssistantOSStore(path)
+            try:
+                self._seed_genus(store)
+                result = acquire_definition(
+                    store, "a kalimba is a musical instrument",
+                )
+                self.assertIsNotNone(result)
+                sense_id = result.sense_id
+
+                set_lexical_sense_status(store, sense_id, "active")
+                proms = store.find_promotions(target_type="sense", target_id=sense_id)
+                self.assertEqual(len(proms), 1)
+                self.assertEqual(proms[0].from_status, "quarantined")
+                self.assertEqual(proms[0].to_status, "active")
+                self.assertEqual(proms[0].target_type, "sense")
+                self.assertEqual(proms[0].target_id, sense_id)
+
+                set_lexical_sense_status(store, sense_id, "quarantined")
+                proms = store.find_promotions(target_type="sense", target_id=sense_id)
+                self.assertGreaterEqual(len(proms), 2)
+                self.assertEqual(proms[0].from_status, "active")
+                self.assertEqual(proms[0].to_status, "quarantined")
+
+                set_lexical_sense_status(store, sense_id, "active")
+                proms = store.find_promotions(target_type="sense", target_id=sense_id)
+                third_from = {p.from_status for p in proms[:3]}
+                self.assertIn("quarantined", third_from)
+                self.assertIn("active", third_from)
+            finally:
+                store.close()
+
 
 class SemanticClassEventIndexMvpTests(unittest.TestCase):
 

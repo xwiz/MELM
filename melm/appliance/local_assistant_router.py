@@ -13,8 +13,10 @@ directions against realistic user asks:
 
 from __future__ import annotations
 
+import json
 import re
 from dataclasses import dataclass, field, replace
+from pathlib import Path
 from typing import Any, Literal
 
 from .functional_grammar import (
@@ -280,6 +282,16 @@ class OnDeviceAssistantRouter:
             tokens,
             trusted_contact_names=tuple(self.profile.contacts),
         )
+        if intent != "open_domain" and not _is_family_installed(intent):
+            return AssistantDecision(
+                utterance=utterance,
+                intent=intent,
+                route="open_domain",
+                answer="That capability is not available on this device.",
+                cloud_needed=False,
+                confidence=0.60,
+                reason=f"family_not_installed:{intent}",
+            )
         if intent == "personal_memory" and _is_private_cloud_export_request(
             text, tokens
         ):
@@ -1634,6 +1646,45 @@ _FRAME_LINKER_MIGRATED_INTENTS: frozenset[str] = frozenset({
     "health_advice",
 })
 _FRAME_LINKER: FrameLinker | None = None
+# Capability-manifest state: installed set + all managed families.
+# Initialised lazily; overridable via replace_installed_families().
+_INSTALLED_FAMILIES: frozenset[str] | None = None
+_ALL_MANAGED_FAMILIES: frozenset[str] | None = None
+
+
+def _is_family_installed(family: str) -> bool:
+    """Check whether *family* is installed per the capability manifest.
+
+    Families not listed in the manifest (unmanaged) are allowed through.
+    Only explicitly-marked-not-installed families are blocked.
+    """
+    installed, managed = _get_capability_manifest()
+    if family not in managed:
+        return True
+    return family in installed
+
+
+def _get_capability_manifest() -> tuple[frozenset[str], frozenset[str]]:
+    global _INSTALLED_FAMILIES, _ALL_MANAGED_FAMILIES
+    if _INSTALLED_FAMILIES is None:
+        path = Path(__file__).resolve().parent.parent / "contracts" / "default_capability_manifest.v1.json"
+        payload = json.loads(path.read_text(encoding="utf-8"))
+        raw = payload.get("families", {})
+        _ALL_MANAGED_FAMILIES = frozenset(raw.keys())
+        _INSTALLED_FAMILIES = frozenset(
+            k for k, v in raw.items() if v.get("installed")
+        )
+    return _INSTALLED_FAMILIES, _ALL_MANAGED_FAMILIES
+
+
+def replace_installed_families(
+    installed: frozenset[str] | None,
+    managed: frozenset[str] | None = None,
+) -> None:
+    """Override capability-manifest state (used for testing)."""
+    global _INSTALLED_FAMILIES, _ALL_MANAGED_FAMILIES
+    _INSTALLED_FAMILIES = installed
+    _ALL_MANAGED_FAMILIES = managed
 
 
 def _classify_from_frame_linker(

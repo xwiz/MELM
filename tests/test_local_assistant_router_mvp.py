@@ -1131,5 +1131,64 @@ class LocalAssistantRouterMvpTests(unittest.TestCase):
         self.assertEqual(secondary_lexical.decisions[0].reason, "intent_without_grounded_runtime")
 
 
+class CapabilityManifestEnforcementMvpTests(unittest.TestCase):
+    """M3 exit gate: zero capability grants via manifest enforcement."""
+
+    def test_uninstalled_family_routes_to_open_domain(self) -> None:
+        from melm.appliance.local_assistant_router import (
+            replace_installed_families,
+            _get_capability_manifest,
+        )
+        # Remove "story" from installed families
+        all_installed, managed = _get_capability_manifest()
+        reduced = frozenset(f for f in all_installed if f != "story")
+        replace_installed_families(reduced, managed)
+        try:
+            router = OnDeviceAssistantRouter(LocalAssistantProfile(
+                story_models={"test": "A test story."},
+            ))
+            # "story" is NOT installed → should route to open_domain
+            decision = router.handle("Tell me a story about a dragon.")
+            self.assertEqual(decision.intent, "story")
+            self.assertEqual(decision.route, "open_domain")
+            self.assertIn("family_not_installed", decision.reason)
+        finally:
+            replace_installed_families(all_installed, managed)
+
+    def test_unmanaged_family_passes_through(self) -> None:
+        from melm.appliance.local_assistant_router import (
+            replace_installed_families,
+            _get_capability_manifest,
+        )
+        all_installed, managed = _get_capability_manifest()
+        replace_installed_families(all_installed, managed)
+        try:
+            router = OnDeviceAssistantRouter(LocalAssistantProfile())
+            decision = router.handle("Who are you")
+            # assistant_identity is in the default manifest → should handle normally
+            self.assertEqual(decision.intent, "assistant_identity")
+            self.assertEqual(decision.route, "local_answer")
+        finally:
+            replace_installed_families(all_installed, managed)
+
+    def test_uninstalled_family_blocks_acquired_vocabulary(self) -> None:
+        """Teaching a word that maps to an uninstalled family does not enable it."""
+        from melm.appliance.local_assistant_router import (
+            replace_installed_families,
+            _get_capability_manifest,
+        )
+        all_installed, managed = _get_capability_manifest()
+        reduced = frozenset(f for f in all_installed if f != "meal_suggestion")
+        replace_installed_families(reduced, managed)
+        try:
+            router = OnDeviceAssistantRouter(LocalAssistantProfile())
+            decision = router.handle("suggest a pasta recipe")
+            self.assertEqual(decision.intent, "meal_suggestion")
+            self.assertEqual(decision.route, "open_domain")
+            self.assertIn("family_not_installed", decision.reason)
+        finally:
+            replace_installed_families(all_installed, managed)
+
+
 if __name__ == "__main__":
     unittest.main()

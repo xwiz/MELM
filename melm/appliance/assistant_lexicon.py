@@ -1275,9 +1275,8 @@ def set_lexical_sense_status(
     """Set the status of a lexical sense.
 
     Updates the ``status`` column on ``lexical_senses`` for the given
-    *sense_id*.  The caller is responsible for the status transition's
-    semantic validity — this function accepts any value in
-    ``VALID_SENSE_STATUSES``.
+    *sense_id*.  Records the transition in the ``promotions`` table so
+    the correction/rollback trace is queryable end to end.
 
     Raises ``ContractValidationError`` if *sense_id* does not exist or
     *new_status* is not one of ``quarantined``, ``dormant``, ``active``.
@@ -1286,12 +1285,22 @@ def set_lexical_sense_status(
         raise ContractValidationError(
             f"$.status: {new_status!r} is not a valid sense status"
         )
-    _sense_row(store, sense_id)
+    old_row = _sense_row(store, sense_id)
+    old_status = str(old_row["status"])
+    if old_status == new_status:
+        return
     now = _timestamp()
     with store.connection:
         store.connection.execute(
             "UPDATE lexical_senses SET status=?, updated_at=? WHERE sense_id=?",
             (new_status, now, sense_id),
+        )
+        store.add_promotion(
+            target_type="sense",
+            target_id=sense_id,
+            from_status=old_status,
+            to_status=new_status,
+            provenance="set_lexical_sense_status",
         )
 
 
