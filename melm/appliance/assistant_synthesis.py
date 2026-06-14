@@ -7,9 +7,21 @@ decision plus its evidence keys into a local answer trace with citations.
 
 from __future__ import annotations
 
+import json
 from dataclasses import dataclass, field
 from typing import Any
 
+from .assistant_authority import (
+    AnswerPlan,
+    AuthorityEvidenceItem,
+    AuthorityEvidencePacket,
+    AuthorityInfo,
+    DecoderResult,
+    VerificationResult,
+    build_answer_plan,
+    build_evidence_packet,
+    verify_answer,
+)
 from .assistant_os_store import AssistantOSStore
 from .local_assistant_router import AssistantDecision, LocalAssistantProfile, choose_local_meal
 
@@ -50,6 +62,7 @@ class BoundedSynthesisResult:
     reason: str
     boundary_crossed: str
     quality: dict[str, Any] = field(default_factory=dict)
+    authority: AuthorityInfo | None = None
 
     def to_dict(self) -> dict[str, Any]:
         return {
@@ -130,6 +143,18 @@ class BoundedLocalSynthesizer:
             return self._refused(decision, boundary_crossed, "no_bound_evidence")
 
         answer = self._answer(decision, evidence)
+        evidence_items = tuple(
+            AuthorityEvidenceItem(
+                key=item.key, kind=item.kind, value=str(item.value),
+                source=item.source, license=item.license,
+                local_only=item.local_only,
+            )
+            for item in evidence
+        )
+        packet = build_evidence_packet(decision.evidence_keys, evidence_items, boundary_crossed)
+        plan = build_answer_plan(decision, packet)
+        verification = verify_answer(plan, answer, packet)
+        authority = AuthorityInfo(evidence_packet=packet, answer_plan=plan, verification=verification)
         return BoundedSynthesisResult(
             route=decision.route,
             applied=True,
@@ -150,7 +175,18 @@ class BoundedLocalSynthesizer:
                 reason=f"bounded_synthesis:{decision.reason}",
                 boundary_crossed=boundary_crossed,
             ),
+            authority=authority,
         )
+
+    def _decode(
+        self,
+        plan: AnswerPlan,
+        evidence: tuple[SynthesisEvidence, ...],
+        decision: AssistantDecision,
+    ) -> DecoderResult:
+        answer = self._answer(decision, evidence)
+        tokens_generated = len(answer.split()) if answer else 0
+        return DecoderResult(answer=answer, decoder="template", tokens_generated=tokens_generated)
 
     def _answer(
         self,
@@ -373,16 +409,27 @@ class BoundedLocalSynthesizer:
                 )
         if key.startswith("facts."):
             fact_key = key.split(".", 1)[1]
-            value = self.profile.facts.get(fact_key, "")
+            value = ""
+            source = "user_profile"
+            local_only = True
+            if self.store is not None:
+                slot = self.store.get_entity_slot("self", fact_key)
+                if slot is not None and slot.consent:
+                    raw = json.loads(slot.value_json) if slot.value_json else ""
+                    value = str(raw) if raw else ""
+                    source = slot.source
+                    local_only = slot.scope == "private_local" or "local" in slot.scope
+            if not value:
+                value = self.profile.facts.get(fact_key, "")
             if value:
                 return (
                     SynthesisEvidence(
                         key=key,
                         kind="user_fact",
                         value=value,
-                        source="user_profile",
+                        source=source,
                         license="private_local",
-                        local_only=True,
+                        local_only=local_only,
                     ),
                 )
         if key.startswith("preferences."):
@@ -458,16 +505,30 @@ class BoundedLocalSynthesizer:
             )
         if key.startswith("contacts."):
             contact_key = key.split(".", 1)[1]
-            value = self.profile.contacts.get(contact_key, "")
+            value = ""
+            source = "user_profile"
+            local_only = True
+            if self.store is not None:
+                entity_id = f"contact:{contact_key}"
+                entity = self.store.get_entity(entity_id)
+                if entity is not None:
+                    phone_slot = self.store.get_entity_slot(entity_id, "phone")
+                    if phone_slot is not None and phone_slot.consent:
+                        raw = json.loads(phone_slot.value_json) if phone_slot.value_json else ""
+                        value = str(raw) if raw else ""
+                        source = phone_slot.source
+                        local_only = phone_slot.scope == "private_local" or "local" in phone_slot.scope
+            if not value:
+                value = self.profile.contacts.get(contact_key, "")
             if value:
                 return (
                     SynthesisEvidence(
                         key=key,
                         kind="contact",
                         value=value,
-                        source="user_profile",
+                        source=source,
                         license="private_local",
-                        local_only=True,
+                        local_only=local_only,
                     ),
                 )
         if key.startswith("events.") and self.store is not None:

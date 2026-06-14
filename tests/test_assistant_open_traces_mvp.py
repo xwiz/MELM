@@ -112,7 +112,7 @@ class AssistantOpenTraceMvpTests(unittest.TestCase):
             self.assertEqual(baseline["best_baseline"]["strategy"], "local_state_router_no_lifecycle")
             self.assertEqual(baseline["best_baseline"]["local_or_device_resolved"], 7)
             self.assertEqual(baseline["wins"]["local_resolution_rate_gain_vs_best_baseline"], 0.4)
-            self.assertEqual(baseline["wins"]["cloud_handoff_reduction_vs_best_baseline"], 7)
+            self.assertEqual(baseline["wins"]["cloud_handoff_reduction_vs_best_baseline"], 6)
             self.assertEqual(baseline["wins"]["capability_advantages"]["profile_updates_vs_best_baseline"], 2)
             self.assertEqual(baseline["wins"]["capability_advantages"]["private_cloud_blocks_vs_best_baseline"], 1)
             self.assertTrue(all(baseline["checks"].values()))

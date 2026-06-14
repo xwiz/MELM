@@ -5,7 +5,7 @@ Date: 2026-06-06
 ## Status
 
 This memo is retained as supporting evidence. The authoritative product plan is
-`docs/local_assistant_os_mvp_plan.md`.
+`docs/local_assistant_os_mvp_plan_v2.md`.
 
 The conclusion here still holds, but it is incomplete on its own: memory-centric
 local triage and budgeted evidence are mechanisms inside the broader Local
@@ -277,8 +277,8 @@ Avoid these traps:
 
 ## Retained Sub-Gates
 
-This older gate is superseded by `MELM Local Assistant OS v0.1` in
-`docs/local_assistant_os_mvp_plan.md`. The retained route/budget gates remain
+This older gate is superseded by `MELM Local Assistant OS v0.2` in
+`docs/local_assistant_os_mvp_plan_v2.md`. The retained route/budget gates remain
 useful sub-gates:
 
 ```text
@@ -310,4 +310,4 @@ These gates are necessary but not sufficient. The OS plan adds membrane
 decisions, homeostatic state, lifecycle probes, and autoimmune-failure checks so
 the project does not drift into a merely capable router.
 
-The authoritative product plan is `docs/local_assistant_os_mvp_plan.md`.
+The authoritative product plan is `docs/local_assistant_os_mvp_plan_v2.md`.

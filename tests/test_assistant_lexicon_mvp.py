@@ -1377,5 +1377,174 @@ class SemanticClassEventIndexMvpTests(unittest.TestCase):
             store.close()
 
 
+class BulkLexiconSeederMvpTests(unittest.TestCase):
+
+    def _make_store(self) -> AssistantOSStore:
+        tmp = tempfile.mkdtemp()
+        db = Path(tmp) / "test.sqlite"
+        store = AssistantOSStore(db)
+        store.initialize()
+        return store
+
+    def _wn_data_path(self, lines: list[str]) -> Path:
+        p = Path(tempfile.mkdtemp()) / "test_supersense.jsonl"
+        p.write_text("\n".join(lines), encoding="utf-8")
+        return p
+
+    def _vn_data_path(self, lines: list[str]) -> Path:
+        p = Path(tempfile.mkdtemp()) / "test_verb.jsonl"
+        p.write_text("\n".join(lines), encoding="utf-8")
+        return p
+
+    def test_seed_wordnet_supersenses_basic(self) -> None:
+        from melm.appliance.assistant_lexicon_bulk import seed_wordnet_supersenses
+        store = self._make_store()
+        try:
+            data = self._wn_data_path([
+                '{"word": "love", "supersense": "noun.feeling", "pos": "noun"}',
+                '{"word": "run", "supersense": "noun.act", "pos": "noun"}',
+            ])
+            count = seed_wordnet_supersenses(store, data_path=data)
+            self.assertEqual(count, 2)
+            self.assertGreaterEqual(store.count("lexemes"), 2)
+        finally:
+            store.close()
+
+    def test_seed_wordnet_supersenses_skips_reserved(self) -> None:
+        from melm.appliance.assistant_lexicon_bulk import seed_wordnet_supersenses
+        store = self._make_store()
+        try:
+            data = self._wn_data_path([
+                '{"word": "weather", "supersense": "noun.state", "pos": "noun"}',
+                '{"word": "love", "supersense": "noun.feeling", "pos": "noun"}',
+            ])
+            count = seed_wordnet_supersenses(store, data_path=data)
+            self.assertEqual(count, 1)
+        finally:
+            store.close()
+
+    def test_seed_wordnet_supersenses_skips_unknown_supersense(self) -> None:
+        from melm.appliance.assistant_lexicon_bulk import seed_wordnet_supersenses
+        store = self._make_store()
+        try:
+            data = self._wn_data_path([
+                '{"word": "foo", "supersense": "noun.nonexistent", "pos": "noun"}',
+                '{"word": "love", "supersense": "noun.feeling", "pos": "noun"}',
+            ])
+            count = seed_wordnet_supersenses(store, data_path=data)
+            self.assertEqual(count, 1)
+        finally:
+            store.close()
+
+    def test_seed_wordnet_supersenses_idempotent(self) -> None:
+        from melm.appliance.assistant_lexicon_bulk import seed_wordnet_supersenses
+        store = self._make_store()
+        try:
+            data = self._wn_data_path([
+                '{"word": "love", "supersense": "noun.feeling", "pos": "noun"}',
+            ])
+            count1 = seed_wordnet_supersenses(store, data_path=data)
+            count2 = seed_wordnet_supersenses(store, data_path=data)
+            self.assertEqual(count1, 1)
+            self.assertEqual(count2, 1)
+            self.assertEqual(store.count("lexemes"), 1)
+        finally:
+            store.close()
+
+    def test_seed_verbnet_classes_basic(self) -> None:
+        from melm.appliance.assistant_lexicon_bulk import seed_verbnet_classes
+        store = self._make_store()
+        try:
+            data = self._vn_data_path([
+                '{"verb": "ask", "verbnet_class": "communication-37.5", "pos": "verb"}',
+            ])
+            count = seed_verbnet_classes(store, data_path=data)
+            self.assertEqual(count, 1)
+            self.assertGreaterEqual(store.count("lexemes"), 1)
+        finally:
+            store.close()
+
+    def test_seed_verbnet_classes_skips_reserved(self) -> None:
+        from melm.appliance.assistant_lexicon_bulk import seed_verbnet_classes
+        store = self._make_store()
+        try:
+            data = self._vn_data_path([
+                '{"verb": "call", "verbnet_class": "communication-37.5", "pos": "verb"}',
+                '{"verb": "ask", "verbnet_class": "communication-37.5", "pos": "verb"}',
+            ])
+            count = seed_verbnet_classes(store, data_path=data)
+            self.assertEqual(count, 1)
+        finally:
+            store.close()
+
+    def test_seed_verbnet_classes_idempotent(self) -> None:
+        from melm.appliance.assistant_lexicon_bulk import seed_verbnet_classes
+        store = self._make_store()
+        try:
+            data = self._vn_data_path([
+                '{"verb": "ask", "verbnet_class": "communication-37.5", "pos": "verb"}',
+            ])
+            count1 = seed_verbnet_classes(store, data_path=data)
+            count2 = seed_verbnet_classes(store, data_path=data)
+            self.assertEqual(count1, 1)
+            self.assertEqual(count2, 1)
+            self.assertEqual(store.count("lexemes"), 1)
+        finally:
+            store.close()
+
+    def test_seed_bulk_lexicon_orchestrator(self) -> None:
+        from melm.appliance.assistant_lexicon_bulk import seed_bulk_lexicon
+        store = self._make_store()
+        try:
+            wn_data = self._wn_data_path([
+                '{"word": "love", "supersense": "noun.feeling", "pos": "noun"}',
+            ])
+            vn_data = self._vn_data_path([
+                '{"verb": "ask", "verbnet_class": "communication-37.5", "pos": "verb"}',
+            ])
+            counts = seed_bulk_lexicon(store, wordnet_data=wn_data, verbnet_data=vn_data)
+            self.assertEqual(counts["wordnet"], 1)
+            self.assertEqual(counts["verbnet"], 1)
+        finally:
+            store.close()
+
+    def test_missing_data_files_return_zero(self) -> None:
+        from melm.appliance.assistant_lexicon_bulk import seed_wordnet_supersenses, seed_verbnet_classes
+        store = self._make_store()
+        try:
+            missing = Path(tempfile.mkdtemp()) / "nonexistent.jsonl"
+            wn_count = seed_wordnet_supersenses(store, data_path=missing)
+            vn_count = seed_verbnet_classes(store, data_path=missing)
+            self.assertEqual(wn_count, 0)
+            self.assertEqual(vn_count, 0)
+        finally:
+            store.close()
+
+    def test_entries_are_dormant(self) -> None:
+        from melm.appliance.assistant_lexicon_bulk import seed_wordnet_supersenses
+        from melm.appliance.assistant_lexicon import lookup_lexical_senses
+        store = self._make_store()
+        try:
+            data = self._wn_data_path([
+                '{"word": "love", "supersense": "noun.feeling", "pos": "noun"}',
+            ])
+            seed_wordnet_supersenses(store, data_path=data)
+            senses = lookup_lexical_senses(store, "love")
+            self.assertEqual(len(senses), 1)
+            self.assertEqual(senses[0]["status"], "dormant")
+        finally:
+            store.close()
+
+    def test_seed_with_actual_data_files(self) -> None:
+        from melm.appliance.assistant_lexicon_bulk import seed_bulk_lexicon
+        store = self._make_store()
+        try:
+            counts = seed_bulk_lexicon(store)
+            self.assertGreaterEqual(counts["wordnet"], 1500)
+            self.assertGreaterEqual(counts["verbnet"], 20)
+        finally:
+            store.close()
+
+
 if __name__ == "__main__":
     unittest.main()

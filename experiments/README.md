@@ -3,7 +3,7 @@
 This directory will hold experiment configs and run notes.
 
 Active product alignment: experiments should feed `MELM Local Assistant OS
-v0.1` in `../docs/local_assistant_os_mvp_plan.md`. Tokenizer/model work should
+v0.2` in `../docs/local_assistant_os_mvp_plan_v2.md`. Tokenizer/model work should
 advance bounded local synthesis; memory/dialogue work should advance
 autobiographical memory, evidence budgets, membrane policy, homeostasis, and
 local/tool/action/cloud triage.

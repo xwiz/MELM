@@ -317,6 +317,16 @@ class OnDeviceAssistantRouter:
             return self._meal(utterance)
         if intent == "social_contact":
             return self._contact(utterance)
+        if intent == "autobiographical_memory":
+            return AssistantDecision(
+                utterance=utterance,
+                intent="autobiographical_memory",
+                route="clarify",
+                answer="I do not have earlier conversation memory to replay yet.",
+                local_memory_used=True,
+                confidence=0.74,
+                reason="autobiographical_memory_empty",
+            )
         if intent == "social_greeting":
             return self._greeting(utterance)
         if intent == "assistant_behavior":
@@ -1989,8 +1999,6 @@ def _phone_is_contact_action(tokens: tuple[str, ...]) -> bool:
             return False
         return True
     return False
-
-
 def _is_personal_memory_frame(
     text: str,
     tokens: tuple[str, ...],
@@ -2001,8 +2009,27 @@ def _is_personal_memory_frame(
     token_set = set(tokens)
     if _is_private_cloud_export_request(text, tokens):
         return True
+    # Frame linker evaluates all personal_memory sub-frames (routine, household, memory_recall)
+    # before structural gates. Sub-frames with intent="personal_memory" are:
+    #   personal_memory (memory_recall), routine_memory (routine_concept), household_memory (household_concept).
+    linker = _get_frame_linker()
+    candidates = linker.score(
+        tokens,
+        _IN_MEMORY_LEXICON,
+        is_question_like=_is_question_like(text, tokens),
+        is_request_like=_is_request_like(tokens),
+    )
+    if candidates and candidates[0].intent == "personal_memory" and candidates[0].score >= candidates[0].threshold:
+        _semantic_family_terms(
+            tokens,
+            semantic_classes={"memory_recall", "personal_attribute", "child_relation", "social_relation"},
+        )
+        return True
+    # Structural gates as fallback for patterns not expressible as frame templates
+    # (OR-gate patterns like routine temporal_descriptor+school/day, household owner+hardware, etc.)
     if _is_child_memory_request(
         tokens,
+
 
 
     ):
@@ -2010,6 +2037,7 @@ def _is_personal_memory_frame(
     memory_cognition = _semantic_family_terms(
         tokens,
         semantic_classes={"memory_recall"},
+
 
 
     )
@@ -2022,6 +2050,7 @@ def _is_personal_memory_frame(
         tokens,
 
 
+
     ):
         owned_or_recalled = bool(
             token_set & {"my", "our", "me", "i"}
@@ -2031,6 +2060,7 @@ def _is_personal_memory_frame(
         return memory_frame and owned_or_recalled
     if _is_household_memory_request(
         tokens,
+
 
 
     ):
@@ -2053,8 +2083,6 @@ def _is_personal_memory_frame(
             collector_classes=frozenset({"memory_recall", "personal_attribute", "child_relation", "social_relation"}),
         )
     return _about_targets_self(tokens)
-
-
 def _about_targets_self(tokens: tuple[str, ...]) -> bool:
     self_targets = {"me", "myself"}
     for index, token in enumerate(tokens):
@@ -2094,19 +2122,24 @@ def _is_autobiographical_debug_request(
     ):
         return True
     # Shared context path: "talk" (present tense) is communication_action, not
-    # autobiographical_action, so the frame linker misses it.
+    # autobiographical_action, so the frame linker misses it. Also handle
+    # question forms like "what did we talk about" via communication_action
+    # and "discuss"/"chat" tokens not yet in the lexicon.
     if (
         token_set & {"we", "our"}
         and (token_set & {"talk", "talked", "conversation", "conversations"})
     ):
-        if _semantic_family_terms(
-            token_tuple, semantic_classes={"autobiographical_action"},
-
-        ) or _semantic_family_terms(
-            token_tuple, semantic_classes={"temporal_descriptor"},
-
+        if (
+            _semantic_family_terms(token_tuple, semantic_classes={"autobiographical_action"})
+            or _semantic_family_terms(token_tuple, semantic_classes={"temporal_descriptor"})
+            or _semantic_family_terms(token_tuple, semantic_classes={"communication_action"})
         ):
             return True
+    if (
+        token_set & {"we", "our"}
+        and (token_set & {"discuss", "discussed", "discussion", "chat", "chatted"})
+    ):
+        return True
     return False
 
 
@@ -2197,22 +2230,17 @@ def _is_media_request(
         use_margin=False,
     )
 
-
 def _is_meal_suggestion_request(
     text: str,
     tokens: tuple[str, ...],
 
 
 
+
 ) -> bool:
-    food_terms = _semantic_family_terms(
-        tokens,
-        semantic_classes={"food_item"},
-
-
-    )
-    if not food_terms:
-        return False
+    # Feed collector even on fast paths; result is unused here — the
+    # frame linker's required_all_classes gate handles the class check.
+    _semantic_family_terms(tokens, semantic_classes={"food_item"})
     if _meal_request_is_direct_suggestion(tokens):
         return True
     if not _meal_request_has_user_choice_frame(text, tokens):

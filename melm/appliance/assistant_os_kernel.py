@@ -16,6 +16,7 @@ from .assistant_inventory import (
     media_items_to_inventory_rows,
     story_items_to_inventory_rows,
 )
+from .assistant_lexicon import cloud_definition_lookup, offline_definition_lookup
 from .assistant_os_store import AssistantOSStore
 from .assistant_synthesis import BoundedLocalSynthesizer, BoundedSynthesisResult
 from .local_assistant_router import (
@@ -23,6 +24,7 @@ from .local_assistant_router import (
     AssistantIntent,
     LocalAssistantProfile,
     OnDeviceAssistantRouter,
+    _IN_MEMORY_LEXICON,
     classify_autobiographical_memory_scope,
     compose_autobiographical_memory_frame,
     compose_assistant_status_frame,
@@ -78,7 +80,11 @@ def _resolve_slot_states(
         if not persons:
             return {s: SLOT_STATE_UNKNOWN_ENTITY for s in slot_names}
         token_set = set(tokens)
-        matched = [p for p in persons if p.label.lower() in token_set]
+        matched = [
+            p for p in persons
+            if p.label.lower() in token_set
+            or set(p.label.lower().split()) & token_set
+        ]
         if not matched:
             matched = persons
         entity_id = matched[0].entity_id
@@ -96,7 +102,7 @@ def _resolve_slot_states(
         if self_entity is None:
             return {s: SLOT_STATE_UNKNOWN_ENTITY for s in slot_names}
         rows = store.connection.execute(
-            "SELECT slot_name, slot_state FROM entity_slots WHERE entity_id = 'self'"
+            "SELECT slot_name, slot_state FROM entity_slots WHERE entity_id = 'self' AND consent=1"
         ).fetchall()
         has_facts = any(str(r["slot_state"]) == SLOT_STATE_FILLED for r in rows)
         return {"self_facts": SLOT_STATE_FILLED if has_facts else SLOT_STATE_UNKNOWN}
@@ -230,6 +236,8 @@ class AssistantOSKernel:
         capture_surface: str = "",
         capture_source: str = "",
         improvement_opt_in: bool = False,
+        offline_dictionary_path: str | Path | None = None,
+        cloud_api_key: str | None = None,
     ) -> None:
         if store is not None and db_path is not None:
             raise ValueError("pass either store or db_path, not both")
@@ -242,6 +250,8 @@ class AssistantOSKernel:
         self.capture_surface = str(capture_surface)
         self.capture_source = str(capture_source)
         self.improvement_opt_in = bool(improvement_opt_in)
+        self.offline_dictionary_path = str(offline_dictionary_path) if offline_dictionary_path is not None else None
+        self.cloud_api_key = cloud_api_key
         self.events: list[AssistantMemoryEvent] = []
         self.executed_jobs: list[str] = []
         self.last_synthesis: BoundedSynthesisResult | None = None
@@ -268,7 +278,36 @@ class AssistantOSKernel:
     def handle(self, utterance: str) -> AssistantDecision:
         decision = self.decide(utterance)
         self.remember(decision)
+        self._run_acquisition()
         return decision
+
+    def _run_acquisition(self) -> None:
+        if self.store is None or self.last_response_integrity is None:
+            return
+        topics = self.last_response_integrity.research_topics
+        if not topics:
+            return
+        seen = set()
+        for token in topics:
+            if token in seen:
+                continue
+            seen.add(token)
+            if token in _IN_MEMORY_LEXICON:
+                continue
+            if self.offline_dictionary_path is not None:
+                try:
+                    offline_definition_lookup(
+                        self.store, token, dictionary_path=self.offline_dictionary_path,
+                    )
+                except Exception:
+                    pass
+            if self.cloud_api_key is not None:
+                try:
+                    cloud_definition_lookup(
+                        self.store, token, api_key=self.cloud_api_key,
+                    )
+                except Exception:
+                    pass
 
     def decide(self, utterance: str) -> AssistantDecision:
         self._current_self_status = {}
@@ -613,9 +652,10 @@ class AssistantOSKernel:
                 answer = "I will remember your name locally on this device."
             else:
                 facts = dict(self.profile.facts)
-                facts[_memory_key(key)] = value
+                memory_key = _memory_key(key)
+                facts[memory_key] = value
                 self.profile = replace(self.profile, facts=facts)
-                evidence_key = f"facts.{_memory_key(key)}"
+                evidence_key = f"facts.{memory_key}"
                 answer = "I will remember that profile fact locally."
             reason = "profile_update"
         elif kind == "preference":
@@ -649,8 +689,21 @@ class AssistantOSKernel:
         for key in evidence_keys:
             if key.startswith("facts."):
                 facts = dict(self.profile.facts)
-                facts.pop(key.split(".", 1)[1], None)
+                slot_name = key.split(".", 1)[1]
+                facts.pop(slot_name, None)
                 self.profile = replace(self.profile, facts=facts)
+                if self.store is not None:
+                    slot = self.store.get_entity_slot("self", slot_name)
+                    if slot is not None:
+                        self.store.set_entity_slot(
+                            "self", slot_name, json.loads(slot.value_json),
+                            consent=0, provenance="revoked",
+                            local_only=slot.local_only,
+                            cloud_eligible=slot.cloud_eligible,
+                            scope=slot.scope,
+                            source=slot.source,
+                            confidence=slot.confidence,
+                        )
             elif key.startswith("preferences."):
                 preferences = dict(self.profile.preferences)
                 preferences.pop(key.split(".", 1)[1], None)

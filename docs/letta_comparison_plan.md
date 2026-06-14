@@ -35,7 +35,7 @@ For the Local Assistant OS MVP, the central bottleneck is broader than answer
 generation: membrane policy, homeostatic state, autobiographical memory,
 opportunity planning, typed action gates, and bounded local synthesis must work
 together. The current authoritative product plan is
-`docs/local_assistant_os_mvp_plan.md`.
+`docs/local_assistant_os_mvp_plan_v2.md`.
 
 ## Current Evidence
 

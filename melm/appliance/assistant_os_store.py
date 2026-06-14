@@ -73,6 +73,12 @@ class StoredEntitySlot:
     slot_state: str
     provenance: str
     updated_at: str
+    consent: int = 1
+    local_only: bool = True
+    cloud_eligible: bool = False
+    scope: str = "private_local"
+    source: str = "unknown"
+    confidence: float = 0.8
 
 
 @dataclass(frozen=True)
@@ -93,6 +99,60 @@ class ClassSchemaDef:
     label: str
     base_entity_kind: str
     description: str
+
+
+@dataclass(frozen=True)
+class StoredAtlasEdge:
+    edge_id: str
+    subject_concept_id: str
+    relation_id: str
+    object_concept_id: str
+    polarity: int = 1
+    strength: float = 0.5
+    status: str = "quarantined"
+    provenance: str = "unknown"
+    source_ref: str = ""
+    policy_scope: str = "private_local"
+    created_at: str = ""
+    last_used_at: str = ""
+    superseded_by: str = ""
+
+
+@dataclass(frozen=True)
+class StoredLearningCandidate:
+    candidate_id: str
+    source: str
+    surface_form: str
+    context: str = ""
+    semantic_class_id: str = ""
+    status: str = "quarantined"
+    confidence: float = 0.5
+    error: str = ""
+    created_at: str = ""
+    updated_at: str = ""
+
+
+@dataclass(frozen=True)
+class StoredCorrection:
+    correction_id: str
+    target_type: str
+    target_id: str
+    correction_type: str
+    user_utterance: str = ""
+    status: str = "applied"
+    created_at: str = ""
+
+
+@dataclass(frozen=True)
+class StoredPromotion:
+    promotion_id: str
+    target_type: str
+    target_id: str
+    from_status: str
+    to_status: str
+    reason: str = ""
+    provenance: str = "unknown"
+    created_at: str = ""
 
 
 class AssistantOSStore:
@@ -416,6 +476,12 @@ class AssistantOSStore:
                 value_json TEXT NOT NULL,
                 slot_state TEXT NOT NULL DEFAULT 'filled',
                 provenance TEXT NOT NULL DEFAULT 'unknown',
+                consent INTEGER NOT NULL DEFAULT 1,
+                local_only INTEGER NOT NULL DEFAULT 1,
+                cloud_eligible INTEGER NOT NULL DEFAULT 0,
+                scope TEXT NOT NULL DEFAULT 'private_local',
+                source TEXT NOT NULL DEFAULT 'unknown',
+                confidence REAL NOT NULL DEFAULT 0.8,
                 updated_at TEXT NOT NULL,
                 UNIQUE(entity_id, slot_name),
                 FOREIGN KEY(entity_id) REFERENCES entities(entity_id)
@@ -432,6 +498,58 @@ class AssistantOSStore:
                 UNIQUE(entity_id, relation, target_entity_id),
                 FOREIGN KEY(entity_id) REFERENCES entities(entity_id),
                 FOREIGN KEY(target_entity_id) REFERENCES entities(entity_id)
+            );
+
+            CREATE TABLE IF NOT EXISTS atlas_edges (
+                edge_id TEXT PRIMARY KEY,
+                subject_concept_id TEXT NOT NULL,
+                relation_id TEXT NOT NULL,
+                object_concept_id TEXT NOT NULL,
+                polarity INTEGER NOT NULL DEFAULT 1,
+                strength REAL NOT NULL DEFAULT 0.5,
+                status TEXT NOT NULL DEFAULT 'quarantined',
+                provenance TEXT NOT NULL DEFAULT 'unknown',
+                source_ref TEXT NOT NULL DEFAULT '',
+                policy_scope TEXT NOT NULL DEFAULT 'private_local',
+                created_at TEXT NOT NULL,
+                last_used_at TEXT NOT NULL,
+                superseded_by TEXT NOT NULL DEFAULT '',
+                UNIQUE(subject_concept_id, relation_id, object_concept_id, polarity)
+            );
+
+            CREATE TABLE IF NOT EXISTS learning_candidates (
+                candidate_id TEXT PRIMARY KEY,
+                source TEXT NOT NULL,
+                surface_form TEXT NOT NULL,
+                context TEXT NOT NULL DEFAULT '',
+                semantic_class_id TEXT NOT NULL DEFAULT '',
+                status TEXT NOT NULL DEFAULT 'quarantined',
+                confidence REAL NOT NULL DEFAULT 0.5,
+                error TEXT NOT NULL DEFAULT '',
+                created_at TEXT NOT NULL,
+                updated_at TEXT NOT NULL,
+                UNIQUE(source, surface_form)
+            );
+
+            CREATE TABLE IF NOT EXISTS corrections (
+                correction_id TEXT PRIMARY KEY,
+                target_type TEXT NOT NULL,
+                target_id TEXT NOT NULL,
+                correction_type TEXT NOT NULL,
+                user_utterance TEXT NOT NULL DEFAULT '',
+                status TEXT NOT NULL DEFAULT 'applied',
+                created_at TEXT NOT NULL
+            );
+
+            CREATE TABLE IF NOT EXISTS promotions (
+                promotion_id TEXT PRIMARY KEY,
+                target_type TEXT NOT NULL,
+                target_id TEXT NOT NULL,
+                from_status TEXT NOT NULL,
+                to_status TEXT NOT NULL,
+                reason TEXT NOT NULL DEFAULT '',
+                provenance TEXT NOT NULL DEFAULT 'unknown',
+                created_at TEXT NOT NULL
             );
 
             CREATE INDEX IF NOT EXISTS idx_events_intent_route
@@ -491,6 +609,8 @@ class AssistantOSStore:
         self._ensure_event_semantic_classes_column()
         self._ensure_user_fact_policy_columns()
         self._ensure_entity_tables()
+        self._ensure_entity_slots_columns()
+        self._ensure_learning_ledger_tables()
         self.connection.execute(
             """
             INSERT INTO metadata(key, value) VALUES (?, ?)
@@ -540,6 +660,14 @@ class AssistantOSStore:
                 scope=_default_user_fact_scope(evidence_key),
                 preserve_policy=True,
             )
+            self.add_entity("self", "self", "Self", "person")
+            self.set_entity_slot(
+                "self", key, value,
+                source="profile.facts",
+                confidence=0.86,
+                scope=_default_user_fact_scope(evidence_key),
+                provenance="profile.facts",
+            )
         for key, value in profile.preferences.items():
             self.upsert_user_fact(
                 f"preferences.{key}",
@@ -582,6 +710,20 @@ class AssistantOSStore:
                 source="user_profile",
                 license="private_local",
                 tags=("contact", "local_only"),
+            )
+            entity_id = f"contact:{key}"
+            self.add_entity(entity_id, "person", key, "person")
+            self.set_entity_slot(
+                entity_id, "name", key,
+                source="profile.contacts",
+                confidence=0.86,
+                provenance="profile.contacts",
+            )
+            self.set_entity_slot(
+                entity_id, "phone", value,
+                source="profile.contacts",
+                confidence=0.86,
+                provenance="profile.contacts",
             )
         for item in profile.media_library:
             self.upsert_profile_inventory(
@@ -636,7 +778,6 @@ class AssistantOSStore:
 
     def load_profile(self, base: LocalAssistantProfile | None = None) -> LocalAssistantProfile:
         profile = base or LocalAssistantProfile()
-        facts = dict(profile.facts)
         preferences = dict(profile.preferences)
         health_goals = list(profile.health_goals)
         user_name = profile.user_name
@@ -645,6 +786,24 @@ class AssistantOSStore:
         culture = profile.culture
         fact_rows = self.connection.execute("SELECT key, value, consent FROM user_facts").fetchall()
         revoked_keys = {str(row["key"]) for row in fact_rows if not bool(row["consent"])}
+
+        # Try entity store for facts first
+        self_fact_rows = self.connection.execute(
+            "SELECT slot_name, value_json FROM entity_slots WHERE entity_id='self' AND consent=1"
+        ).fetchall()
+        use_entity_facts = bool(self_fact_rows)
+        if use_entity_facts:
+            facts = {}
+            for row in self_fact_rows:
+                raw = str(row["value_json"])
+                try:
+                    val = json.loads(raw)
+                except (json.JSONDecodeError, TypeError):
+                    val = raw
+                facts[str(row["slot_name"])] = str(val)
+        else:
+            facts = dict(profile.facts)
+
         for row in fact_rows:
             if not bool(row["consent"]):
                 continue
@@ -662,7 +821,8 @@ class AssistantOSStore:
             elif key == "profile.culture":
                 culture = value
             elif key.startswith("facts."):
-                facts[key.split(".", 1)[1]] = value
+                if not use_entity_facts:
+                    facts[key.split(".", 1)[1]] = value
             elif key.startswith("preferences."):
                 preferences[key.split(".", 1)[1]] = value
             elif key.startswith("health_goals."):
@@ -686,11 +846,33 @@ class AssistantOSStore:
         }
         if not weather_inventory:
             weekly_weather = dict(profile.weekly_weather)
-        contacts = {
-            item_id: str(payload.get("number", ""))
-            for item_id, payload in self.load_inventory("contact").items()
-            if payload.get("number")
-        } or dict(profile.contacts)
+
+        # Try entity store for contacts first
+        contact_entities = self.connection.execute(
+            "SELECT entity_id, label FROM entities WHERE kind='person'"
+        ).fetchall()
+        use_entity_contacts = bool(contact_entities)
+        if use_entity_contacts:
+            contacts = {}
+            for ent_row in contact_entities:
+                label = str(ent_row["label"])
+                phone_row = self.connection.execute(
+                    "SELECT value_json FROM entity_slots WHERE entity_id=? AND slot_name='phone' AND consent=1",
+                    (str(ent_row["entity_id"]),),
+                ).fetchone()
+                if phone_row:
+                    raw = str(phone_row["value_json"])
+                    try:
+                        val = json.loads(raw)
+                    except (json.JSONDecodeError, TypeError):
+                        val = raw
+                    contacts[label] = str(val)
+        else:
+            contacts = {
+                item_id: str(payload.get("number", ""))
+                for item_id, payload in self.load_inventory("contact").items()
+                if payload.get("number")
+            } or dict(profile.contacts)
         media = tuple(self.load_inventory("media").keys()) or profile.media_library
         food = tuple(self.load_inventory("food").keys()) or profile.food_inventory
         return LocalAssistantProfile(
@@ -777,22 +959,39 @@ class AssistantOSStore:
         slot_name: str,
         value: Any,
         slot_state: str = "filled",
+        consent: int = 1,
         provenance: str = "unknown",
+        local_only: bool = True,
+        cloud_eligible: bool = False,
+        scope: str = "private_local",
+        source: str = "unknown",
+        confidence: float = 0.8,
     ) -> None:
         now = _now()
         self.connection.execute(
             """
             INSERT INTO entity_slots(
-                slot_id, entity_id, slot_name, value_json, slot_state, provenance, updated_at
+                slot_id, entity_id, slot_name, value_json, slot_state, consent, local_only,
+                cloud_eligible, scope, source, confidence, provenance, updated_at
             )
-            VALUES (?, ?, ?, ?, ?, ?, ?)
+            VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
             ON CONFLICT(entity_id, slot_name)
             DO UPDATE SET value_json=excluded.value_json,
                           slot_state=excluded.slot_state,
+                          consent=excluded.consent,
+                          local_only=excluded.local_only,
+                          cloud_eligible=excluded.cloud_eligible,
+                          scope=excluded.scope,
+                          source=excluded.source,
+                          confidence=excluded.confidence,
                           provenance=excluded.provenance,
                           updated_at=excluded.updated_at
             """,
-            (f"{entity_id}:{slot_name}", entity_id, slot_name, _json(value), slot_state, provenance, now),
+            (
+                f"{entity_id}:{slot_name}", entity_id, slot_name, _json(value), slot_state,
+                consent, int(local_only), int(cloud_eligible), scope, source, confidence,
+                provenance, now,
+            ),
         )
 
     def get_entity_slots(self, entity_id: str) -> list[StoredEntitySlot]:
@@ -809,6 +1008,12 @@ class AssistantOSStore:
                 slot_state=str(r["slot_state"]),
                 provenance=str(r["provenance"]),
                 updated_at=str(r["updated_at"]),
+                consent=int(r["consent"]),
+                local_only=bool(r["local_only"]),
+                cloud_eligible=bool(r["cloud_eligible"]),
+                scope=str(r["scope"]),
+                source=str(r["source"]),
+                confidence=float(r["confidence"]),
             )
             for r in rows
         ]
@@ -828,6 +1033,12 @@ class AssistantOSStore:
             slot_state=str(row["slot_state"]),
             provenance=str(row["provenance"]),
             updated_at=str(row["updated_at"]),
+            consent=int(row["consent"]),
+            local_only=bool(row["local_only"]),
+            cloud_eligible=bool(row["cloud_eligible"]),
+            scope=str(row["scope"]),
+            source=str(row["source"]),
+            confidence=float(row["confidence"]),
         )
 
     def delete_entity(self, entity_id: str) -> None:
@@ -835,6 +1046,309 @@ class AssistantOSStore:
         self.connection.execute("DELETE FROM entity_relations WHERE entity_id = ?", (entity_id,))
         self.connection.execute("DELETE FROM entity_relations WHERE target_entity_id = ?", (entity_id,))
         self.connection.execute("DELETE FROM entities WHERE entity_id = ?", (entity_id,))
+
+    def add_relation(
+        self,
+        entity_id: str,
+        relation: str,
+        target_entity_id: str,
+        *,
+        provenance: str = "unknown",
+        strength: float = 1.0,
+    ) -> str:
+        now = _now()
+        import uuid
+        relation_id = str(uuid.uuid4())
+        cursor = self.connection.execute(
+            """
+            INSERT OR IGNORE INTO entity_relations(
+                relation_id, entity_id, relation, target_entity_id,
+                provenance, strength, created_at
+            )
+            VALUES (?, ?, ?, ?, ?, ?, ?)
+            """,
+            (relation_id, entity_id, relation, target_entity_id, provenance, strength, now),
+        )
+        return relation_id if cursor.rowcount else ""
+
+    def get_entity_relations(self, entity_id: str) -> list[StoredEntityRelation]:
+        rows = self.connection.execute(
+            """
+            SELECT * FROM entity_relations
+            WHERE entity_id = ?
+            ORDER BY created_at
+            """,
+            (entity_id,),
+        ).fetchall()
+        return [
+            StoredEntityRelation(
+                relation_id=str(r["relation_id"]),
+                entity_id=str(r["entity_id"]),
+                relation=str(r["relation"]),
+                target_entity_id=str(r["target_entity_id"]),
+                provenance=str(r["provenance"]),
+                strength=float(r["strength"]),
+                created_at=str(r["created_at"]),
+            )
+            for r in rows
+        ]
+
+    def find_relations_by_type(self, relation: str) -> list[StoredEntityRelation]:
+        rows = self.connection.execute(
+            """
+            SELECT * FROM entity_relations
+            WHERE relation = ?
+            ORDER BY created_at
+            """,
+            (relation,),
+        ).fetchall()
+        return [
+            StoredEntityRelation(
+                relation_id=str(r["relation_id"]),
+                entity_id=str(r["entity_id"]),
+                relation=str(r["relation"]),
+                target_entity_id=str(r["target_entity_id"]),
+                provenance=str(r["provenance"]),
+                strength=float(r["strength"]),
+                created_at=str(r["created_at"]),
+            )
+            for r in rows
+        ]
+
+    def find_relations_by_target(self, target_entity_id: str) -> list[StoredEntityRelation]:
+        rows = self.connection.execute(
+            """
+            SELECT * FROM entity_relations
+            WHERE target_entity_id = ?
+            ORDER BY created_at
+            """,
+            (target_entity_id,),
+        ).fetchall()
+        return [
+            StoredEntityRelation(
+                relation_id=str(r["relation_id"]),
+                entity_id=str(r["entity_id"]),
+                relation=str(r["relation"]),
+                target_entity_id=str(r["target_entity_id"]),
+                provenance=str(r["provenance"]),
+                strength=float(r["strength"]),
+                created_at=str(r["created_at"]),
+            )
+            for r in rows
+        ]
+
+    def delete_relation(self, relation_id: str) -> None:
+        self.connection.execute(
+            "DELETE FROM entity_relations WHERE relation_id = ?", (relation_id,),
+        )
+
+    # ── Learning ledger CRUD ──────────────────────────────────────────────
+
+    def add_atlas_edge(
+        self,
+        subject_concept_id: str,
+        relation_id: str,
+        object_concept_id: str,
+        *,
+        polarity: int = 1,
+        strength: float = 0.5,
+        provenance: str = "unknown",
+        source_ref: str = "",
+        policy_scope: str = "private_local",
+    ) -> str:
+        now = _now()
+        import uuid
+        edge_id = str(uuid.uuid4())
+        cursor = self.connection.execute(
+            """
+            INSERT OR IGNORE INTO atlas_edges(
+                edge_id, subject_concept_id, relation_id, object_concept_id,
+                polarity, strength, status, provenance, source_ref, policy_scope,
+                created_at, last_used_at
+            )
+            VALUES (?, ?, ?, ?, ?, ?, 'quarantined', ?, ?, ?, ?, ?)
+            """,
+            (edge_id, subject_concept_id, relation_id, object_concept_id,
+             polarity, strength, provenance, source_ref, policy_scope, now, now),
+        )
+        return edge_id if cursor.rowcount else ""
+
+    def get_atlas_edge(self, edge_id: str) -> StoredAtlasEdge | None:
+        row = self.connection.execute(
+            "SELECT * FROM atlas_edges WHERE edge_id = ?", (edge_id,)
+        ).fetchone()
+        if row is None:
+            return None
+        return StoredAtlasEdge(**dict(row))
+
+    def find_atlas_edges(
+        self,
+        subject_concept_id: str = "",
+        relation_id: str = "",
+        status: str = "",
+    ) -> list[StoredAtlasEdge]:
+        clauses: list[str] = []
+        params: list[str] = []
+        if subject_concept_id:
+            clauses.append("subject_concept_id = ?")
+            params.append(subject_concept_id)
+        if relation_id:
+            clauses.append("relation_id = ?")
+            params.append(relation_id)
+        if status:
+            clauses.append("status = ?")
+            params.append(status)
+        where = " AND ".join(clauses) if clauses else "1"
+        rows = self.connection.execute(
+            f"SELECT * FROM atlas_edges WHERE {where} ORDER BY strength DESC",
+            params,
+        ).fetchall()
+        return [StoredAtlasEdge(**dict(r)) for r in rows]
+
+    def set_atlas_edge_status(self, edge_id: str, status: str) -> None:
+        now = _now()
+        self.connection.execute(
+            "UPDATE atlas_edges SET status=?, last_used_at=? WHERE edge_id=?",
+            (status, now, edge_id),
+        )
+
+    def touch_atlas_edge(self, edge_id: str) -> None:
+        now = _now()
+        self.connection.execute(
+            "UPDATE atlas_edges SET last_used_at=? WHERE edge_id=?", (now, edge_id),
+        )
+
+    def add_learning_candidate(
+        self,
+        source: str,
+        surface_form: str,
+        *,
+        context: str = "",
+        semantic_class_id: str = "",
+        confidence: float = 0.5,
+    ) -> str:
+        now = _now()
+        import uuid
+        candidate_id = str(uuid.uuid4())
+        cursor = self.connection.execute(
+            """
+            INSERT OR IGNORE INTO learning_candidates(
+                candidate_id, source, surface_form, context, semantic_class_id,
+                status, confidence, error, created_at, updated_at
+            )
+            VALUES (?, ?, ?, ?, ?, 'quarantined', ?, '', ?, ?)
+            """,
+            (candidate_id, source, surface_form, context, semantic_class_id, confidence, now, now),
+        )
+        return candidate_id if cursor.rowcount else ""
+
+    def get_learning_candidate(self, candidate_id: str) -> StoredLearningCandidate | None:
+        row = self.connection.execute(
+            "SELECT * FROM learning_candidates WHERE candidate_id = ?", (candidate_id,)
+        ).fetchone()
+        if row is None:
+            return None
+        return StoredLearningCandidate(**dict(row))
+
+    def find_learning_candidates(self, status: str = "") -> list[StoredLearningCandidate]:
+        if status:
+            rows = self.connection.execute(
+                "SELECT * FROM learning_candidates WHERE status = ? ORDER BY confidence DESC",
+                (status,),
+            ).fetchall()
+        else:
+            rows = self.connection.execute(
+                "SELECT * FROM learning_candidates ORDER BY confidence DESC"
+            ).fetchall()
+        return [StoredLearningCandidate(**dict(r)) for r in rows]
+
+    def set_learning_candidate_status(self, candidate_id: str, status: str, *, error: str = "") -> None:
+        now = _now()
+        self.connection.execute(
+            "UPDATE learning_candidates SET status=?, error=?, updated_at=? WHERE candidate_id=?",
+            (status, error, now, candidate_id),
+        )
+
+    def add_correction(
+        self,
+        target_type: str,
+        target_id: str,
+        correction_type: str,
+        *,
+        user_utterance: str = "",
+    ) -> str:
+        now = _now()
+        import uuid
+        correction_id = str(uuid.uuid4())
+        self.connection.execute(
+            """
+            INSERT INTO corrections(
+                correction_id, target_type, target_id, correction_type,
+                user_utterance, status, created_at
+            )
+            VALUES (?, ?, ?, ?, ?, 'applied', ?)
+            """,
+            (correction_id, target_type, target_id, correction_type, user_utterance, now),
+        )
+        return correction_id
+
+    def find_corrections(self, target_type: str = "", target_id: str = "") -> list[StoredCorrection]:
+        clauses: list[str] = []
+        params: list[str] = []
+        if target_type:
+            clauses.append("target_type = ?")
+            params.append(target_type)
+        if target_id:
+            clauses.append("target_id = ?")
+            params.append(target_id)
+        where = " AND ".join(clauses) if clauses else "1"
+        rows = self.connection.execute(
+            f"SELECT * FROM corrections WHERE {where} ORDER BY created_at DESC",
+            params,
+        ).fetchall()
+        return [StoredCorrection(**dict(r)) for r in rows]
+
+    def add_promotion(
+        self,
+        target_type: str,
+        target_id: str,
+        from_status: str,
+        to_status: str,
+        *,
+        reason: str = "",
+        provenance: str = "unknown",
+    ) -> str:
+        now = _now()
+        import uuid
+        promotion_id = str(uuid.uuid4())
+        self.connection.execute(
+            """
+            INSERT INTO promotions(
+                promotion_id, target_type, target_id, from_status, to_status,
+                reason, provenance, created_at
+            )
+            VALUES (?, ?, ?, ?, ?, ?, ?, ?)
+            """,
+            (promotion_id, target_type, target_id, from_status, to_status,
+             reason, provenance, now),
+        )
+        return promotion_id
+
+    def find_promotions(self, target_type: str = "", target_id: str = "") -> list[StoredPromotion]:
+        clauses: list[str] = []
+        params: list[str] = []
+        if target_type:
+            clauses.append("target_type = ?")
+            params.append(target_type)
+        if target_id:
+            clauses.append("target_id = ?")
+            params.append(target_id)
+        where = " AND ".join(clauses) if clauses else "1"
+        rows = self.connection.execute(
+            f"SELECT * FROM promotions WHERE {where} ORDER BY created_at DESC, rowid DESC",
+            params,
+        ).fetchall()
+        return [StoredPromotion(**dict(r)) for r in rows]
 
     def upsert_user_fact(
         self,
@@ -918,15 +1432,17 @@ class AssistantOSStore:
         self.connection.commit()
 
     def load_user_fact_privacy_index(self) -> dict[str, dict[str, Any]]:
-        rows = self.connection.execute(
+        # Read from user_facts for base data (all keys including profile.*, preferences.*, etc.)
+        fact_rows = self.connection.execute(
             """
             SELECT key, consent, local_only, cloud_eligible, scope, source, confidence
             FROM user_facts
             ORDER BY key
             """
         ).fetchall()
-        return {
-            str(row["key"]): {
+        result: dict[str, dict[str, Any]] = {}
+        for row in fact_rows:
+            result[str(row["key"])] = {
                 "consent": bool(row["consent"]),
                 "local_only": bool(row["local_only"]),
                 "cloud_eligible": bool(row["cloud_eligible"]),
@@ -934,8 +1450,26 @@ class AssistantOSStore:
                 "source": str(row["source"]),
                 "confidence": float(row["confidence"]),
             }
-            for row in rows
-        }
+        # Override only consent for facts.* keys from entity_slots (most current consent state)
+        entity_rows = self.connection.execute(
+            """
+            SELECT slot_name, consent FROM entity_slots WHERE entity_id='self'
+            """
+        ).fetchall()
+        for row in entity_rows:
+            key = f"facts.{row['slot_name']}"
+            if key in result:
+                result[key]["consent"] = bool(row["consent"])
+            else:
+                result[key] = {
+                    "consent": bool(row["consent"]),
+                    "local_only": True,
+                    "cloud_eligible": False,
+                    "scope": "private_local",
+                    "source": "entity_store",
+                    "confidence": 0.8,
+                }
+        return result
 
     def save_self_model(self, payload: dict[str, Any]) -> None:
         for key, value in payload.items():
@@ -1988,6 +2522,10 @@ class AssistantOSStore:
             "entities",
             "entity_slots",
             "entity_relations",
+            "atlas_edges",
+            "learning_candidates",
+            "corrections",
+            "promotions",
         }:
             raise ValueError(f"unsupported table: {table}")
         row = self.connection.execute(f"SELECT COUNT(*) AS count FROM {table}").fetchone()
@@ -2021,6 +2559,10 @@ class AssistantOSStore:
                 "entities",
                 "entity_slots",
                 "entity_relations",
+                "atlas_edges",
+                "learning_candidates",
+                "corrections",
+                "promotions",
             )
         }
 
@@ -2124,6 +2666,12 @@ class AssistantOSStore:
                 value_json TEXT NOT NULL,
                 slot_state TEXT NOT NULL DEFAULT 'filled',
                 provenance TEXT NOT NULL DEFAULT 'unknown',
+                consent INTEGER NOT NULL DEFAULT 1,
+                local_only INTEGER NOT NULL DEFAULT 1,
+                cloud_eligible INTEGER NOT NULL DEFAULT 0,
+                scope TEXT NOT NULL DEFAULT 'private_local',
+                source TEXT NOT NULL DEFAULT 'unknown',
+                confidence REAL NOT NULL DEFAULT 0.8,
                 updated_at TEXT NOT NULL,
                 UNIQUE(entity_id, slot_name),
                 FOREIGN KEY(entity_id) REFERENCES entities(entity_id)
@@ -2149,6 +2697,90 @@ class AssistantOSStore:
             CREATE INDEX IF NOT EXISTS idx_entity_relations_relation ON entity_relations(relation);
             """
         )
+
+    def _ensure_learning_ledger_tables(self) -> None:
+        rows = self.connection.execute("PRAGMA table_info(atlas_edges)").fetchall()
+        if rows:
+            return
+        self.connection.executescript(
+            """
+            CREATE TABLE IF NOT EXISTS atlas_edges (
+                edge_id TEXT PRIMARY KEY,
+                subject_concept_id TEXT NOT NULL,
+                relation_id TEXT NOT NULL,
+                object_concept_id TEXT NOT NULL,
+                polarity INTEGER NOT NULL DEFAULT 1,
+                strength REAL NOT NULL DEFAULT 0.5,
+                status TEXT NOT NULL DEFAULT 'quarantined',
+                provenance TEXT NOT NULL DEFAULT 'unknown',
+                source_ref TEXT NOT NULL DEFAULT '',
+                policy_scope TEXT NOT NULL DEFAULT 'private_local',
+                created_at TEXT NOT NULL,
+                last_used_at TEXT NOT NULL,
+                superseded_by TEXT NOT NULL DEFAULT ''
+            );
+            CREATE UNIQUE INDEX IF NOT EXISTS idx_atlas_edges_unique
+                ON atlas_edges(subject_concept_id, relation_id, object_concept_id, polarity);
+            CREATE INDEX IF NOT EXISTS idx_atlas_edges_status ON atlas_edges(status);
+            CREATE TABLE IF NOT EXISTS learning_candidates (
+                candidate_id TEXT PRIMARY KEY,
+                source TEXT NOT NULL,
+                surface_form TEXT NOT NULL,
+                context TEXT NOT NULL DEFAULT '',
+                semantic_class_id TEXT NOT NULL DEFAULT '',
+                status TEXT NOT NULL DEFAULT 'quarantined',
+                confidence REAL NOT NULL DEFAULT 0.5,
+                error TEXT NOT NULL DEFAULT '',
+                created_at TEXT NOT NULL,
+                updated_at TEXT NOT NULL
+            );
+            CREATE UNIQUE INDEX IF NOT EXISTS idx_learning_candidates_unique
+                ON learning_candidates(source, surface_form);
+            CREATE INDEX IF NOT EXISTS idx_learning_candidates_status ON learning_candidates(status);
+            CREATE TABLE IF NOT EXISTS corrections (
+                correction_id TEXT PRIMARY KEY,
+                target_type TEXT NOT NULL,
+                target_id TEXT NOT NULL,
+                correction_type TEXT NOT NULL,
+                user_utterance TEXT NOT NULL DEFAULT '',
+                status TEXT NOT NULL DEFAULT 'applied',
+                created_at TEXT NOT NULL
+            );
+            CREATE INDEX IF NOT EXISTS idx_corrections_target ON corrections(target_type, target_id);
+            CREATE TABLE IF NOT EXISTS promotions (
+                promotion_id TEXT PRIMARY KEY,
+                target_type TEXT NOT NULL,
+                target_id TEXT NOT NULL,
+                from_status TEXT NOT NULL,
+                to_status TEXT NOT NULL,
+                reason TEXT NOT NULL DEFAULT '',
+                provenance TEXT NOT NULL DEFAULT 'unknown',
+                created_at TEXT NOT NULL
+            );
+            CREATE INDEX IF NOT EXISTS idx_promotions_target ON promotions(target_type, target_id);
+            """
+        )
+
+    def _ensure_entity_slots_columns(self) -> None:
+        rows = self.connection.execute("PRAGMA table_info(entity_slots)").fetchall()
+        columns = {str(row["name"]) for row in rows}
+        pending = []
+        if "consent" not in columns:
+            pending.append("consent INTEGER NOT NULL DEFAULT 1")
+        if "local_only" not in columns:
+            pending.append("local_only INTEGER NOT NULL DEFAULT 1")
+        if "cloud_eligible" not in columns:
+            pending.append("cloud_eligible INTEGER NOT NULL DEFAULT 0")
+        if "scope" not in columns:
+            pending.append("scope TEXT NOT NULL DEFAULT 'private_local'")
+        if "source" not in columns:
+            pending.append("source TEXT NOT NULL DEFAULT 'unknown'")
+        if "confidence" not in columns:
+            pending.append("confidence REAL NOT NULL DEFAULT 0.8")
+        for col_def in pending:
+            self.connection.execute(f"ALTER TABLE entity_slots ADD COLUMN {col_def}")
+        if pending:
+            self.connection.commit()
 
     def _resolve_session_selector(self, session_id: str) -> str:
         requested = session_id.strip()
@@ -2323,8 +2955,9 @@ def migrate_self_facts_to_entities(store: AssistantOSStore) -> int:
     """Port user_facts into entity_slots on entities WHERE kind='self'.
 
     Creates a single 'self' entity if it doesn't exist, then ports each
-    non-revoked user_fact key->value as an entity_slot. Returns count of
-    slots created.
+    non-revoked user_fact key->value with a "facts." prefix as an entity_slot
+    using the bare key (without prefix). Only "facts.*" keys are migrated,
+    matching save_profile's convention. Returns count of slots created.
     """
     existing_self = store.get_entity("self")
     if existing_self is None:
@@ -2336,10 +2969,13 @@ def migrate_self_facts_to_entities(store: AssistantOSStore) -> int:
     for row in rows:
         key = str(row["key"])
         value = str(row["value"])
-        existing_slot = store.get_entity_slot("self", key)
+        if not key.startswith("facts."):
+            continue
+        slot_name = key.split(".", 1)[1]
+        existing_slot = store.get_entity_slot("self", slot_name)
         if existing_slot is not None:
             continue
-        store.set_entity_slot("self", key, value, provenance="migrated")
+        store.set_entity_slot("self", slot_name, value, provenance="migrated")
         created += 1
     if created:
         store.connection.commit()
@@ -2358,6 +2994,7 @@ def seed_assistant_os_lexicon(store: AssistantOSStore) -> None:
         configure_lexicon_router_families,
         lexicon_ingest,
     )
+    from .assistant_lexicon_bulk import seed_bulk_lexicon
     from .assistant_lexicon_legacy import (
         build_legacy_lexicon_candidates,
         build_legacy_router_candidates,
@@ -2369,6 +3006,7 @@ def seed_assistant_os_lexicon(store: AssistantOSStore) -> None:
     )
     for candidate in candidates:
         lexicon_ingest(store, candidate, expected_provenance="seed_authored")
+    seed_bulk_lexicon(store)
     configure_lexicon_router_families(store, ("media", "story", "weather"))
 
 

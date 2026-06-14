@@ -109,7 +109,7 @@ positive evidence check, 128 moves:
 
 This is sub-gate evidence for the broader Local Assistant OS plan. It proves why
 budgeted evidence/state matters, but it is not the full product direction. The
-authoritative product plan is `docs/local_assistant_os_mvp_plan.md`.
+authoritative product plan is `docs/local_assistant_os_mvp_plan_v2.md`.
 
 ## Realistic Assistant Direction Probe
 
@@ -261,6 +261,6 @@ contracts.
 - It does not prove the atlas/frame inventory can scale without better authoring
   and extraction tools.
 
-See `docs/local_assistant_os_mvp_plan.md` for the authoritative product plan.
+See `docs/local_assistant_os_mvp_plan_v2.md` for the authoritative product plan.
 See `docs/grounded_child_chat_mvp_direction.md` only as retained supporting
 evidence for the route/budget sub-gates.

@@ -256,6 +256,17 @@ PI_BUNDLE_STATIC_FILES = (
     Path("scripts/local_assistant_os_cli.py"),
     Path("tests/test_local_assistant_router_mvp.py"),
     Path("melm/__init__.py"),
+    Path("melm/contracts/frame_templates.v1.json"),
+    Path("melm/contracts/reserved_lexemes.v1.json"),
+    Path("melm/contracts/semantic_classes.v1.json"),
+    Path("melm/contracts/frame_candidate.v1.json"),
+    Path("melm/contracts/capability_manifest.v1.json"),
+    Path("melm/contracts/default_capability_manifest.v1.json"),
+    Path("melm/contracts/registry.v1.json"),
+    Path("melm/contracts/router_lexicon_families.v1.json"),
+    Path("melm/contracts/sense_candidate.v1.json"),
+    Path("melm/contracts/verbnet_map.v1.json"),
+    Path("melm/contracts/wn_supersense_map.v1.json"),
 )
 PI_BUNDLE_LAUNCHER_FILES = (
     Path("bin/first_run.sh"),

@@ -6,15 +6,15 @@ Primary repo: `C:\Users\Son\cowork\MELM`
 Parts donor: `C:\dev\nameless_vector`
 
 **Status:** supporting validation track. This document is not the current
-product architecture. Use `docs/local_assistant_os_mvp_plan.md` for the
-authoritative Local Assistant OS v0.1 plan.
+product architecture. Use `docs/local_assistant_os_mvp_plan_v2.md` for the
+authoritative Local Assistant OS v0.2 plan.
 If any older workstream here competes with the OS kernel, keep it as background
 until it produces evidence that directly strengthens the MVP plan.
 
 ## Current Product MVP Alignment
 
-The active product-shaped MVP is `MELM Local Assistant OS v0.1`, documented in
-`docs/local_assistant_os_mvp_plan.md`. This implementation plan remains the
+The active product-shaped MVP is `MELM Local Assistant OS v0.2`, documented in
+`docs/local_assistant_os_mvp_plan_v2.md`. This implementation plan remains the
 validation track; it does not supersede the Local Assistant OS plan.
 
 Validation work should now feed the assistant OS kernel directly:

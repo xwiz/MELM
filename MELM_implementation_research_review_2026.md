@@ -7,15 +7,15 @@ Project reviewed: `MELM_whitepaper.md`, the archived legacy Word draft at
 current validation-first implementation tree.
 
 **Status:** historical de-risking review. This is useful background, but
-`docs/local_assistant_os_mvp_plan.md` is the authoritative product plan.
+`docs/local_assistant_os_mvp_plan_v2.md` is the authoritative product plan.
 If this review's model-first recommendations conflict with the Local Assistant
 OS MVP plan, the OS plan wins unless new measured evidence changes the plan.
 
 ## Current Product MVP Alignment
 
 This research review remains useful as a de-risking memo, but the active
-product-shaped MVP direction is now `MELM Local Assistant OS v0.1` in
-`docs/local_assistant_os_mvp_plan.md`.
+product-shaped MVP direction is now `MELM Local Assistant OS v0.2` in
+`docs/local_assistant_os_mvp_plan_v2.md`.
 
 Read the staged research architecture below as support for the OS kernel:
 

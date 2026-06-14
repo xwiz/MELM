@@ -3158,8 +3158,8 @@ class LocalAssistantOSCliMvpTests(unittest.TestCase):
             self.assertEqual(baseline["current"]["local_or_device_resolved"], 17)
             self.assertEqual(baseline["best_baseline"]["local_or_device_resolved"], 7)
             self.assertEqual(baseline["wins"]["local_resolution_rate_gain_vs_best_baseline"], 0.4)
-            self.assertEqual(baseline["wins"]["cloud_handoff_reduction_vs_best_baseline"], 7)
-            self.assertEqual(baseline["wins"]["clarification_reduction_vs_best_baseline"], 3)
+            self.assertEqual(baseline["wins"]["cloud_handoff_reduction_vs_best_baseline"], 6)
+            self.assertEqual(baseline["wins"]["clarification_reduction_vs_best_baseline"], 4)
             self.assertTrue(all(baseline["checks"].values()))
             scenario = report["scenario_reports"][0]
             by_label = {turn["label"]: turn for turn in scenario["routes"]}

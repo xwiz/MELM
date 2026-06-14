@@ -493,6 +493,123 @@ class EntityRelationMvpTests(unittest.TestCase):
         finally:
             store.close()
 
+    def test_add_relation_returns_id(self) -> None:
+        store = self.make_store()
+        try:
+            store.add_entity("alice", "person", "Alice", "person")
+            store.add_entity("bob", "person", "Bob", "person")
+            rid = store.add_relation("alice", "knows", "bob")
+            self.assertIsInstance(rid, str)
+            self.assertTrue(len(rid) > 0)
+        finally:
+            store.close()
+
+    def test_add_relation_with_provenance_and_strength(self) -> None:
+        store = self.make_store()
+        try:
+            store.add_entity("alice", "person", "Alice", "person")
+            store.add_entity("bob", "person", "Bob", "person")
+            store.add_relation("alice", "knows", "bob", provenance="user_taught", strength=0.95)
+            relations = store.get_entity_relations("alice")
+            self.assertEqual(1, len(relations))
+            self.assertEqual("knows", relations[0].relation)
+            self.assertEqual("bob", relations[0].target_entity_id)
+            self.assertEqual("user_taught", relations[0].provenance)
+            self.assertAlmostEqual(0.95, relations[0].strength)
+        finally:
+            store.close()
+
+    def test_get_entity_relations_empty(self) -> None:
+        store = self.make_store()
+        try:
+            store.add_entity("alice", "person", "Alice", "person")
+            self.assertEqual([], store.get_entity_relations("alice"))
+        finally:
+            store.close()
+
+    def test_get_entity_relations_multiple(self) -> None:
+        store = self.make_store()
+        try:
+            store.add_entity("alice", "person", "Alice", "person")
+            store.add_entity("bob", "person", "Bob", "person")
+            store.add_entity("carol", "person", "Carol", "person")
+            store.add_relation("alice", "knows", "bob")
+            store.add_relation("alice", "knows", "carol")
+            relations = store.get_entity_relations("alice")
+            self.assertEqual(2, len(relations))
+            targets = {r.target_entity_id for r in relations}
+            self.assertIn("bob", targets)
+            self.assertIn("carol", targets)
+        finally:
+            store.close()
+
+    def test_find_relations_by_type(self) -> None:
+        store = self.make_store()
+        try:
+            store.add_entity("alice", "person", "Alice", "person")
+            store.add_entity("bob", "person", "Bob", "person")
+            store.add_entity("carol", "person", "Carol", "person")
+            store.add_entity("event1", "event_instance", "Party", "event")
+            store.add_relation("alice", "knows", "bob")
+            store.add_relation("alice", "knows", "carol")
+            store.add_relation("alice", "attended", "event1")
+            knows = store.find_relations_by_type("knows")
+            self.assertEqual(2, len(knows))
+            attended = store.find_relations_by_type("attended")
+            self.assertEqual(1, len(attended))
+        finally:
+            store.close()
+
+    def test_find_relations_by_type_empty(self) -> None:
+        store = self.make_store()
+        try:
+            self.assertEqual([], store.find_relations_by_type("nonexistent"))
+        finally:
+            store.close()
+
+    def test_find_relations_by_target(self) -> None:
+        store = self.make_store()
+        try:
+            store.add_entity("alice", "person", "Alice", "person")
+            store.add_entity("bob", "person", "Bob", "person")
+            store.add_entity("carol", "person", "Carol", "person")
+            store.add_relation("alice", "knows", "bob")
+            store.add_relation("carol", "knows", "bob")
+            result = store.find_relations_by_target("bob")
+            self.assertEqual(2, len(result))
+        finally:
+            store.close()
+
+    def test_delete_relation(self) -> None:
+        store = self.make_store()
+        try:
+            store.add_entity("alice", "person", "Alice", "person")
+            store.add_entity("bob", "person", "Bob", "person")
+            rid = store.add_relation("alice", "knows", "bob")
+            self.assertEqual(1, len(store.get_entity_relations("alice")))
+            store.delete_relation(rid)
+            self.assertEqual(0, len(store.get_entity_relations("alice")))
+        finally:
+            store.close()
+
+    def test_delete_nonexistent_relation_does_not_raise(self) -> None:
+        store = self.make_store()
+        try:
+            store.delete_relation("nonexistent")
+        finally:
+            store.close()
+
+    def test_add_duplicate_via_method_is_idempotent(self) -> None:
+        store = self.make_store()
+        try:
+            store.add_entity("alice", "person", "Alice", "person")
+            store.add_entity("bob", "person", "Bob", "person")
+            store.add_relation("alice", "knows", "bob")
+            store.add_relation("alice", "knows", "bob")
+            self.assertEqual(1, len(store.get_entity_relations("alice")))
+        finally:
+            store.close()
+
 
 class EntityCountWhitelistMvpTests(unittest.TestCase):
     """Entity tables are counted by store.count() and table_counts()."""
@@ -594,25 +711,28 @@ class SelfFactsMigrationMvpTests(unittest.TestCase):
             store.upsert_user_fact("profile.user_name", "Alice", source="profile", confidence=1.0)
             store.upsert_user_fact("facts.favorite_color", "blue", source="profile.facts", confidence=0.9)
             count = migrate_self_facts_to_entities(store)
-            self.assertEqual(2, count)
+            self.assertEqual(1, count)
             self_entity = store.get_entity("self")
             self.assertIsNotNone(self_entity)
             self.assertEqual("self", self_entity.kind)
-            name_slot = store.get_entity_slot("self", "profile.user_name")
-            self.assertEqual("Alice", json.loads(name_slot.value_json))
-            color_slot = store.get_entity_slot("self", "facts.favorite_color")
+            color_slot = store.get_entity_slot("self", "favorite_color")
             self.assertEqual("blue", json.loads(color_slot.value_json))
+            # Profile fields ("profile.*") are NOT migrated — only "facts.*" keys.
+            name_slot = store.get_entity_slot("self", "profile.user_name")
+            self.assertIsNone(name_slot)
         finally:
             store.close()
 
     def test_skips_revoked_facts(self) -> None:
         store = self.make_store()
         try:
-            store.upsert_user_fact("profile.user_name", "Alice", source="profile", confidence=1.0)
+            store.upsert_user_fact("facts.public", "visible", source="profile.facts", confidence=1.0)
             store.upsert_user_fact("facts.secret", "hidden", source="profile.facts", confidence=1.0, consent=False)
             count = migrate_self_facts_to_entities(store)
             self.assertEqual(1, count)
-            secret = store.get_entity_slot("self", "facts.secret")
+            public_slot = store.get_entity_slot("self", "public")
+            self.assertIsNotNone(public_slot)
+            secret = store.get_entity_slot("self", "secret")
             self.assertIsNone(secret)
         finally:
             store.close()
@@ -620,7 +740,7 @@ class SelfFactsMigrationMvpTests(unittest.TestCase):
     def test_idempotent(self) -> None:
         store = self.make_store()
         try:
-            store.upsert_user_fact("profile.user_name", "Alice", source="profile", confidence=1.0)
+            store.upsert_user_fact("facts.color", "red", source="profile.facts", confidence=1.0)
             migrate_self_facts_to_entities(store)
             count = migrate_self_facts_to_entities(store)
             self.assertEqual(0, count)
@@ -755,5 +875,186 @@ class EntityLexiconIndexMvpTests(unittest.TestCase):
             rebuild_entity_lexicon_index(store)
             result = _semantic_family_terms(("call", "mom", "now"), {"person"})
             self.assertIn("mom", result)
+        finally:
+            store.close()
+
+
+class LearningLedgerCrudMvpTests(unittest.TestCase):
+    """CRUD for atlas_edges, learning_candidates, corrections, promotions."""
+
+    def make_store(self) -> AssistantOSStore:
+        return AssistantOSStore(":memory:")
+
+    # ── atlas_edges ────────────────────────────────────────────────────────
+
+    def test_add_and_get_atlas_edge(self) -> None:
+        store = self.make_store()
+        try:
+            edge_id = store.add_atlas_edge("dog", "used_with", "bone", provenance="uol_parse")
+            edge = store.get_atlas_edge(edge_id)
+            self.assertIsNotNone(edge)
+            self.assertEqual("dog", edge.subject_concept_id)
+            self.assertEqual("used_with", edge.relation_id)
+            self.assertEqual("bone", edge.object_concept_id)
+            self.assertEqual("quarantined", edge.status)
+        finally:
+            store.close()
+
+    def test_add_atlas_edge_idempotent(self) -> None:
+        store = self.make_store()
+        try:
+            e1 = store.add_atlas_edge("dog", "used_with", "bone")
+            e2 = store.add_atlas_edge("dog", "used_with", "bone")
+            self.assertNotEqual(e1, e2)
+            edges = store.find_atlas_edges(subject_concept_id="dog", relation_id="used_with")
+            self.assertEqual(1, len(edges))
+        finally:
+            store.close()
+
+    def test_find_atlas_edges_by_status(self) -> None:
+        store = self.make_store()
+        try:
+            store.add_atlas_edge("dog", "used_with", "bone", provenance="uol")
+            e2 = store.add_atlas_edge("cat", "used_with", "yarn", provenance="uol")
+            store.set_atlas_edge_status(e2, "promoted")
+            edges = store.find_atlas_edges(status="quarantined")
+            self.assertEqual(1, len(edges))
+            self.assertEqual("dog", edges[0].subject_concept_id)
+        finally:
+            store.close()
+
+    def test_touch_atlas_edge_does_not_fail(self) -> None:
+        store = self.make_store()
+        try:
+            edge_id = store.add_atlas_edge("dog", "used_with", "bone")
+            store.touch_atlas_edge(edge_id)
+            edge = store.get_atlas_edge(edge_id)
+            self.assertIsNotNone(edge)
+            self.assertEqual("quarantined", edge.status)
+        finally:
+            store.close()
+
+    def test_set_atlas_edge_status(self) -> None:
+        store = self.make_store()
+        try:
+            edge_id = store.add_atlas_edge("dog", "used_with", "bone")
+            store.set_atlas_edge_status(edge_id, "promoted")
+            edge = store.get_atlas_edge(edge_id)
+            self.assertEqual("promoted", edge.status)
+        finally:
+            store.close()
+
+    # ── learning_candidates ────────────────────────────────────────────────
+
+    def test_add_and_get_learning_candidate(self) -> None:
+        store = self.make_store()
+        try:
+            cid = store.add_learning_candidate("offline_dict", "xylophone", context="a musical instrument")
+            cand = store.get_learning_candidate(cid)
+            self.assertIsNotNone(cand)
+            self.assertEqual("xylophone", cand.surface_form)
+            self.assertEqual("offline_dict", cand.source)
+            self.assertEqual("quarantined", cand.status)
+        finally:
+            store.close()
+
+    def test_add_learning_candidate_idempotent(self) -> None:
+        store = self.make_store()
+        try:
+            store.add_learning_candidate("offline_dict", "xylophone")
+            store.add_learning_candidate("offline_dict", "xylophone")
+            candidates = store.find_learning_candidates()
+            self.assertEqual(1, len(candidates))
+        finally:
+            store.close()
+
+    def test_find_learning_candidates_by_status(self) -> None:
+        store = self.make_store()
+        try:
+            store.add_learning_candidate("offline_dict", "dog")
+            c2 = store.add_learning_candidate("offline_dict", "cat")
+            store.set_learning_candidate_status(c2, "promoted")
+            quarantined = store.find_learning_candidates(status="quarantined")
+            self.assertEqual(1, len(quarantined))
+            self.assertEqual("dog", quarantined[0].surface_form)
+        finally:
+            store.close()
+
+    def test_set_learning_candidate_status_with_error(self) -> None:
+        store = self.make_store()
+        try:
+            cid = store.add_learning_candidate("offline_dict", "xyzzy")
+            store.set_learning_candidate_status(cid, "failed", error="not_found")
+            cand = store.get_learning_candidate(cid)
+            self.assertEqual("failed", cand.status)
+            self.assertEqual("not_found", cand.error)
+        finally:
+            store.close()
+
+    # ── corrections ────────────────────────────────────────────────────────
+
+    def test_add_and_find_corrections(self) -> None:
+        store = self.make_store()
+        try:
+            corr_id = store.add_correction(
+                "edge", "edge123", "strength_down",
+                user_utterance="that is not right",
+            )
+            corr = store.find_corrections(target_type="edge", target_id="edge123")
+            self.assertEqual(1, len(corr))
+            self.assertEqual(corr_id, corr[0].correction_id)
+            self.assertEqual("strength_down", corr[0].correction_type)
+        finally:
+            store.close()
+
+    def test_find_corrections_all(self) -> None:
+        store = self.make_store()
+        try:
+            store.add_correction("edge", "e1", "strength_down")
+            store.add_correction("sense", "s1", "delete")
+            all_corr = store.find_corrections()
+            self.assertEqual(2, len(all_corr))
+        finally:
+            store.close()
+
+    # ── promotions ─────────────────────────────────────────────────────────
+
+    def test_add_and_find_promotions(self) -> None:
+        store = self.make_store()
+        try:
+            prom_id = store.add_promotion(
+                "candidate", "cand123", "quarantined", "promoted",
+                reason="verified_by_user",
+                provenance="user_teach",
+            )
+            proms = store.find_promotions(target_type="candidate", target_id="cand123")
+            self.assertEqual(1, len(proms))
+            self.assertEqual(prom_id, proms[0].promotion_id)
+            self.assertEqual("promoted", proms[0].to_status)
+            self.assertEqual("quarantined", proms[0].from_status)
+        finally:
+            store.close()
+
+    def test_find_promotions_orders_by_created_desc(self) -> None:
+        store = self.make_store()
+        try:
+            p1 = store.add_promotion("sense", "s1", "quarantined", "promoted")
+            p2 = store.add_promotion("sense", "s1", "promoted", "rolled_back")
+            proms = store.find_promotions(target_type="sense", target_id="s1")
+            self.assertEqual(2, len(proms))
+            self.assertEqual(p2, proms[0].promotion_id)
+            self.assertEqual(p1, proms[1].promotion_id)
+        finally:
+            store.close()
+
+    # ── count whitelist ────────────────────────────────────────────────────
+
+    def test_count_new_tables(self) -> None:
+        store = self.make_store()
+        try:
+            self.assertEqual(0, store.count("atlas_edges"))
+            self.assertEqual(0, store.count("learning_candidates"))
+            self.assertEqual(0, store.count("corrections"))
+            self.assertEqual(0, store.count("promotions"))
         finally:
             store.close()

@@ -1,8 +1,8 @@
 # MELM Python Package
 
 This package holds the Python implementation for the validation-first MELM build.
-The active product-shaped MVP is `MELM Local Assistant OS v0.1` in
-`../docs/local_assistant_os_mvp_plan.md`; package work should feed that kernel
+The active product-shaped MVP is `MELM Local Assistant OS v0.2` in
+`../docs/local_assistant_os_mvp_plan_v2.md`; package work should feed that kernel
 rather than create a separate chatbot or model-first track.
 
 Planned modules:
@@ -39,7 +39,7 @@ Implemented now:
   revocation without generic school fallback, stale cache exclusion,
   parent/child private-cloud blocking, membrane decisions,
   homeostatic snapshots, session-linked autobiographical event chains, offline
-  limits, ledger dashboarding, assistant eval metrics, a 105-case/12-profile
+  limits, ledger dashboarding, assistant eval metrics, a 107-case/12-profile
   realistic assistant eval, a 3-scenario / 34-turn lifecycle suite,
   a 2-scenario / 29-turn open trace gate, a 25-turn transcript replay gate,
   a same-turn transcript baseline comparison where the current kernel resolves

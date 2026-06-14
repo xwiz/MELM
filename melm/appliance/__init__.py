@@ -79,6 +79,17 @@ from .assistant_synthesis import (
     SYNTHESIS_QUALITY_FLOOR,
     SynthesisEvidence,
 )
+from .assistant_authority import (
+    AnswerPlan,
+    AuthorityEvidenceItem,
+    AuthorityEvidencePacket,
+    AuthorityInfo,
+    DecoderResult,
+    VerificationResult,
+    build_answer_plan,
+    build_evidence_packet,
+    verify_answer,
+)
 from .assistant_inventory import (
     DEFAULT_LOCAL_MEDIA_MANIFEST,
     InternetArchiveSearchMetadataImporter,
@@ -161,6 +172,11 @@ from .assistant_lexicon_legacy import (
     build_legacy_lexicon_candidates,
     build_legacy_router_candidates,
     write_legacy_lexicon_candidates,
+)
+from .assistant_lexicon_bulk import (
+    seed_bulk_lexicon,
+    seed_wordnet_supersenses,
+    seed_verbnet_classes,
 )
 from .assistant_lexicon_seed import (
     LexiconSeedBuildReport,
@@ -363,6 +379,13 @@ __all__ = [
     "seed_class_schemas",
     "migrate_contacts_to_entities",
     "migrate_self_facts_to_entities",
+    "seed_bulk_lexicon",
+    "seed_wordnet_supersenses",
+    "seed_verbnet_classes",
+    "StoredAtlasEdge",
+    "StoredLearningCandidate",
+    "StoredCorrection",
+    "StoredPromotion",
     "media_items_to_inventory_rows",
     "schedule_inventory_refreshes",
     "story_items_to_inventory_rows",

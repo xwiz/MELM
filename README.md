@@ -1,57 +1,5 @@
 # MELM
 
-## Authoritative Direction
-
-The current product MVP is **MELM Local Assistant OS v0.1**:
-
-```text
-membrane policy
-  + homeostatic state
-  + autobiographical memory
-  + user/self model
-  + opportunity planner
-  + local inventories
-  + budgeted evidence runtime
-  + local/tool/action/cloud triage
-```
-
-Use [docs/local_assistant_os_mvp_plan.md](docs/local_assistant_os_mvp_plan.md) as
-the authoritative architecture and build plan. Root-level whitepaper,
-validation, and research-review files are evidence sources only. They must not
-be used to steer the current MVP if they imply a model-first, tokenizer-first,
-or generic-chatbot direction.
-
-## Root Document Roles
-
-- [MELM_whitepaper.md](MELM_whitepaper.md): supporting research thesis and
-  validation ladder. It is not the product build plan and cannot override the
-  local assistant OS architecture.
-- [MELM_validation_implementation_plan.md](MELM_validation_implementation_plan.md):
-  supporting validation track for tokenizer, memory, model, and dialogue
-  evidence. Promote only the parts that strengthen the assistant OS kernel.
-- [MELM_implementation_research_review_2026.md](MELM_implementation_research_review_2026.md):
-  historical de-risking review. Treat its model-first sections as background,
-  not as current MVP direction.
-- [docs/archive/](docs/archive/): non-authoritative historical drafts.
-
-## Architecture Guardrail
-
-MELM follows the `db-claw` / SemanticSQL lesson: typed frames own accepted
-behavior. For chat, the frame is not allowed to be a shape inferred from the
-current utterance alone. A candidate UOL relation becomes an accepted ChatFrame
-only after it binds to the assistant's lived context: past chat sessions,
-referenced objects, user/self memory, local inventories, current action state,
-and the assistant world atlas that records semantic/relational strengths across
-those experiences.
-
-Phrase or vocabulary tables are allowed only as secondary meaning hints for
-noun, verb, analogy, idiom, or domain interpretation. They must not create the
-route, action, object, frame, or atlas edge by themselves. New chat capability
-should be implemented as reusable UOL decomposition plus experience-grounded
-ChatFrame transitions, then backed by tests and trace evidence.
-
-The foundational order is:
-
 ## Quickstart
 
 ```powershell
@@ -74,6 +22,73 @@ python scripts\local_assistant_os_cli.py chat
 
 No external dependencies required (stdlib Python 3.11+ and SQLite only).
 No GPU, no network, no ML framework, no vector database.
+
+## Table of Contents
+
+- [Quickstart](#quickstart)
+- [Authoritative Direction](#authoritative-direction)
+- [Root Document Roles](#root-document-roles)
+- [Architecture & Guardrails](#architecture--guardrails)
+  - [Foundational Order](#foundational-order)
+  - [Frame Ownership Rule](#frame-ownership-rule)
+  - [Anti-Shortcut Rules](#anti-shortcut-rules)
+  - [Memory & Policy Rules](#memory--policy-rules)
+- [Drift Rule](#drift-rule)
+- [Current Verification](#current-verification)
+  - [Runnable Diagnostics](#runnable-diagnostics)
+  - [Verified Signals](#verified-signals)
+
+## Authoritative Direction
+
+The current product MVP is **MELM Local Assistant OS v0.2**:
+
+```text
+membrane policy
+  + homeostatic state
+  + autobiographical memory
+  + user/self model
+  + opportunity planner
+  + local inventories
+  + budgeted evidence runtime
+  + local/tool/action/cloud triage
+```
+
+Use [docs/local_assistant_os_mvp_plan_v2.md](docs/local_assistant_os_mvp_plan_v2.md) as
+the authoritative architecture and build plan. Root-level whitepaper,
+validation, and research-review files are evidence sources only. They must not
+be used to steer the current MVP if they imply a model-first, tokenizer-first,
+or generic-chatbot direction.
+
+## Root Document Roles
+
+- [MELM_whitepaper.md](MELM_whitepaper.md): supporting research thesis and
+  validation ladder. It is not the product build plan and cannot override the
+  local assistant OS architecture.
+- [MELM_validation_implementation_plan.md](MELM_validation_implementation_plan.md):
+  supporting validation track for tokenizer, memory, model, and dialogue
+  evidence. Promote only the parts that strengthen the assistant OS kernel.
+- [MELM_implementation_research_review_2026.md](MELM_implementation_research_review_2026.md):
+  historical de-risking review. Treat its model-first sections as background,
+  not as current MVP direction.
+- [docs/archive/](docs/archive/): non-authoritative historical drafts.
+
+## Architecture & Guardrails
+
+### Foundational Order
+
+MELM follows the `db-claw` / SemanticSQL lesson: typed frames own accepted
+behavior. For chat, the frame is not allowed to be a shape inferred from the
+current utterance alone. A candidate UOL relation becomes an accepted ChatFrame
+only after it binds to the assistant's lived context: past chat sessions,
+referenced objects, user/self memory, local inventories, current action state,
+and the assistant world atlas that records semantic/relational strengths across
+those experiences.
+
+Phrase or vocabulary tables are allowed only as secondary meaning hints for
+noun, verb, analogy, idiom, or domain interpretation. They must not create the
+route, action, object, frame, or atlas edge by themselves. New chat capability
+should be implemented as reusable UOL decomposition plus experience-grounded
+ChatFrame transitions, then backed by tests and trace evidence.
 
 ```text
 tokens
@@ -103,6 +118,8 @@ no defensible predicate structure remain `unknown_intent`. Browser/CLI debug
 exposes candidate predicates, relation edges, parse coverage, and semantic
 unknowns.
 
+### Frame Ownership Rule
+
 Concrete code smell: the primary intent classifier and post-route UOL slot
 helpers must not call secondary phrase/marker-table helpers or
 `_secondary_meaning_*`. Marker matching may explain/debug hints after token-role
@@ -128,6 +145,8 @@ Identity support must be an identity-frame relation (`who/what/how` operator +
 copula/modal + assistant deixis + allowed scope/capability roles), so variants
 such as `who exactly are you on this device` work without allowing task frames
 such as `who are you calling` to become self-model shortcuts.
+
+### Anti-Shortcut Rules
 
 The same guard applies outside self-awareness: bare domain words such as
 `story`, `bedtime`, `doctor`, `medicine`, `dinner`, `naked`, `call`, or
@@ -166,6 +185,8 @@ still contain semantically unresolved content words, which remain visible in
 not a local story request; `story` remains a semantic research topic and the
 route remains `cloud_handoff`.
 
+### Memory & Policy Rules
+
 Memory facts must keep ownership in their keys and policy metadata. For example,
 `my child's school` is `facts.child_school` with `child_local` scope; it must not
 collapse into generic `facts.school` or `profile.age` routing evidence.
@@ -174,7 +195,12 @@ only when its stored policy says `consent=true`, `local_only=false`, and
 `cloud_eligible=true`. Baselines labelled vocabulary-only must remain
 secondary-lexical baselines and must not call the UOL/ChatFrame classifier.
 
-## Current Runnable Evidence
+## Current Verification
+
+### Runnable Diagnostics
+
+<details>
+<summary>Core eval and lifecycle gates</summary>
 
 ```powershell
 python scripts\local_assistant_os_cli.py eval --json
@@ -183,17 +209,38 @@ python scripts\local_assistant_os_cli.py run-lifecycle-suite --json
 python scripts\local_assistant_os_cli.py run-household-week --reset --json
 python scripts\local_assistant_os_cli.py run-open-traces --reset --json
 python scripts\local_assistant_os_cli.py run-transcript-replay --reset --json
+```
+</details>
+
+<details>
+<summary>Transcript replay and calibration</summary>
+
+```powershell
 python scripts\local_assistant_os_cli.py export-transcript-replay --db artifacts\local_assistant_os\assistant_v01.sqlite --out artifacts\local_assistant_os\event_ledger_transcript_replay.jsonl --json
 python scripts\local_assistant_os_cli.py calibrate-event-ledger --db artifacts\local_assistant_os\assistant_v01.sqlite --work-dir artifacts\local_assistant_os\event_ledger_calibration --controls-json config\safe_lifecycle_controls.example.json --min-total-turns 4 --min-local-resolution-rate 0.5 --json
 python scripts\local_assistant_os_cli.py v01-evidence-pack --db artifacts\local_assistant_os\assistant_v01.sqlite --work-dir artifacts\local_assistant_os\v01_evidence_pack --auto-lifecycle --json
 python scripts\local_assistant_os_cli.py import-transcript-replay --input path\raw_chat.jsonl --out artifacts\local_assistant_os\imported_transcript_replay.jsonl --controls-json config\safe_lifecycle_controls.example.json --replace "Maya=<person_1>" --json
 python scripts\local_assistant_os_cli.py calibrate-transcript-replay --input benchmarks\sample_local_assistant_raw_transcript.jsonl --controls-json config\safe_lifecycle_controls.example.json --replace "Maya=<person_1>" --min-total-turns 4 --min-local-resolution-rate 0.2 --min-route-kinds 3 --min-intent-kinds 3 --require-redaction --require-static-drop --out artifacts\local_assistant_os\sample_transcript_calibration.json --reset --json
+```
+</details>
+
+<details>
+<summary>Source attestation and blocker evidence</summary>
+
+```powershell
 python scripts\local_assistant_os_cli.py candidate-session-audit --db artifacts\local_assistant_os\assistant_v01.sqlite --session all --capture-surface cli_chat --json
 python scripts\local_assistant_os_cli.py write-source-attestation --event-ledger-db artifacts\local_assistant_os\assistant_v01.sqlite --event-ledger-session all --source-kind redacted_user_session --capture-surface cli_chat --redaction-applied --static-expectations-absent --answers-routes-reasons-absent --human-reviewed --out artifacts\local_assistant_os\source_attestation.json --json
 python scripts\local_assistant_os_cli.py write-host-app-attestation --host-app-config-json config\host_actions.json --capture-surface target_device_cli --media-app-configured --call-app-configured --not-demo-recorder --real-app-commands-acknowledged --human-reviewed --out artifacts\local_assistant_os\host_app_attestation.json --json
 python scripts\local_assistant_os_cli.py v01-blocker-evidence --event-ledger-db artifacts\local_assistant_os\assistant_v01.sqlite --event-ledger-session all --event-source-kind redacted_user_session --source-attestation-json artifacts\local_assistant_os\source_attestation.json --transcript-calibration-report-json artifacts\local_assistant_os\sample_transcript_calibration.json --inventory-soak-report-json artifacts\local_assistant_os\live_inventory_soak_matrix.json --host-app-config-json config\host_actions.json --host-app-attestation-json artifacts\local_assistant_os\host_app_attestation.json --run-host-app-probe --out artifacts\local_assistant_os\v01_blocker_evidence.json --json
 python scripts\local_assistant_os_cli.py v01-blocker-rehearsal --reset --json
 python scripts\local_assistant_os_cli.py v01-progress --json
+```
+</details>
+
+<details>
+<summary>Smoke tests (synthesis, setup, actions, capabilities)</summary>
+
+```powershell
 python scripts\local_assistant_os_cli.py autoimmune-smoke --reset --json
 python scripts\local_assistant_os_cli.py synthesis-variant-smoke --reset --json
 python scripts\local_assistant_os_cli.py synthesis-stress-smoke --reset --json
@@ -207,20 +254,40 @@ python scripts\local_assistant_os_cli.py v01-acceptance --reset --json
 python scripts\local_assistant_os_cli.py parse-debug --utterance "wow you don't know who you are?" --json
 python scripts\local_assistant_os_cli.py ask --utterance "Can you explain quasar algebra to my zorbulator?" --improvement-opt-in --json
 python scripts\local_assistant_os_cli.py improvement-queue --json
+```
+</details>
+
+<details>
+<summary>Dataset, resources, and portable bundle</summary>
+
+```powershell
 python scripts\local_assistant_os_cli.py dataset-audit --reset --json
 python scripts\local_assistant_os_cli.py resource-report --reset --json
 python scripts\local_assistant_os_cli.py pi-smoke --reset --json
 python scripts\local_assistant_os_cli.py pi-bundle --reset --zip --json
 python scripts\local_assistant_os_cli.py verify-bundle --bundle-root artifacts\local_assistant_os\melm_local_assistant_os_v01_pi_bundle --json
-python scripts\local_assistant_os_cli.py bootstrap-runtime --reset --json
-python scripts\local_assistant_os_cli.py api-smoke --reset --json
-python scripts\local_assistant_os_cli.py api-session-smoke --reset --json
-python scripts\local_assistant_os_cli.py ui-smoke --reset --json
 python scripts\local_assistant_os_cli.py launcher-smoke --bundle-root artifacts\local_assistant_os\melm_local_assistant_os_v01_pi_bundle --reset --json
 python scripts\local_assistant_os_cli.py first-run-smoke --bundle-root artifacts\local_assistant_os\melm_local_assistant_os_v01_pi_bundle --json
 python scripts\local_assistant_os_cli.py archive-smoke --archive artifacts\local_assistant_os\melm_local_assistant_os_v01_pi_bundle.zip --reset --json
+```
+</details>
+
+<details>
+<summary>API, UI, and chat</summary>
+
+```powershell
+python scripts\local_assistant_os_cli.py api-smoke --reset --json
+python scripts\local_assistant_os_cli.py api-session-smoke --reset --json
+python scripts\local_assistant_os_cli.py ui-smoke --reset --json
 python scripts\local_assistant_os_cli.py chat --turn "Tell me a story." --turn "What is the weather today?" --json
 python scripts\local_assistant_os_cli.py target-report --reset --json
+```
+</details>
+
+<details>
+<summary>Weather, jobs, and inventory</summary>
+
+```powershell
 python scripts\local_assistant_os_cli.py refresh-weather --offline-json benchmarks\sample_open_meteo_forecast.json --json
 python scripts\local_assistant_os_cli.py schedule-refreshes --offline-samples --json
 python scripts\local_assistant_os_cli.py run-jobs --json
@@ -231,48 +298,50 @@ python scripts\local_assistant_os_cli.py inventory-diversity-smoke --reset --jso
 python scripts\local_assistant_os_cli.py inventory-retry-smoke --reset --json
 python scripts\local_assistant_os_cli.py inventory-failure-smoke --reset --json
 python scripts\local_assistant_os_cli.py import-media --cold-start --manifest benchmarks\local_media_manifest.json --limit 2 --json
+```
+</details>
+
+<details>
+<summary>Media playback and memory</summary>
+
+```powershell
 python scripts\local_assistant_os_cli.py ask --utterance "Play calm piano." --json
 python scripts\local_assistant_os_cli.py ask --utterance "Yes, play calm piano." --action-mode dry-run --json
 python scripts\local_assistant_os_cli.py action-smoke --reset --json
 python scripts\local_assistant_os_cli.py memory-replay --query story --json
 python scripts\local_assistant_os_cli.py memory-replay --sessions 3 --events-per-session 1 --json
 python scripts\local_assistant_os_cli.py memory-digest --sessions 20 --events-per-session 3 --json
+python scripts\local_assistant_os_cli.py bootstrap-runtime --reset --json
 ```
+</details>
 
-Current verified signals:
+### Verified Signals
 
-- `105/105` deterministic assistant eval cases pass across `12` profiles.
-- `0` privacy leaks, `0` unsafe local actions, `0` wrong local answers, and `0`
-  fake latest-news local answers in the current eval.
-- The current eval records `97` bounded synthesis traces with `0` low-quality
-  applied traces and empty warning counts.
-- The 17-step cold lifecycle logs `17` membrane decisions and `17`
-  homeostatic snapshots, builds story/weather inventory, confirms one action,
-  and preserves offline limits.
-- The 3-scenario / 34-turn lifecycle suite covers child cold start, adult
-  media/routine/household setup, and elder sparse offline/contact behavior with
-  `0` privacy leaks, unconfirmed actions, fake latest-news answers, low-quality
-  applied synthesis, or dangling memory links.
-- The 37-turn household-week trace covers setup, weather, story inventory,
-  media/contact actions, cancellation/replay, private-cloud rejection, offline
-  latest-news refusal, consent revocation, and detailed six-session memory
-  digest recall with `11/11` architecture checks and `0` privacy/action/fake-news,
-  dangling-link, or low-quality synthesis failures.
-- `run-open-traces` adds a messier 2-scenario / 29-turn gate through the real
-  kernel/store/scheduler/weather/action/debug path. Current run passes with
-  `0.655` local/device resolution, weather miss-to-hit, story cloud-to-local,
-  media/contact setup-to-action transitions, `0` privacy/action/fake-news
-  failures, and priority signals showing self-observation pressure.
-- `run-transcript-replay` adds an authored 25-user-turn JSONL transcript replay
-  gate through the same real kernel/store/debug path without per-turn expected
-  answers, routes, or response text. Current run passes with `0.68`
-  local/device resolution, `profile_update` for simple age/location facts,
-  weather/story/media/contact setup-to-ready transitions, private-cloud
-  blocking, long-horizon digest recall, all Basic NLP -> UOL -> ChatFrame maps,
-  memory-digest quality over the floor, and a transcript-level baseline win:
-  current kernel `17/25` local/device vs best static baseline `7/25`, `+0.40`
-  local-resolution gain, `7` fewer cloud handoffs, and `3` fewer
-  clarifications over the same user turns.
+**Eval & lifecycle.** `107/107` deterministic assistant eval cases pass
+across `12` profiles with `0` privacy leaks, unsafe actions, wrong local
+answers, or fake latest-news answers. The eval records `97` bounded synthesis
+traces with `0` low-quality applied traces and empty warning counts.
+The 17-step cold lifecycle logs `17` membrane decisions and `17` homeostatic
+snapshots; the 3-scenario / 34-turn suite and 37-turn household-week trace
+cover setup, weather, story inventory, media/contact actions, cancellation,
+replay, private-cloud, consent revocation, and 6-session memory digest recall
+with `0` failures across all privacy, action, fake-news, dangling-link, and
+synthesis checks.
+
+**Open traces & transcript replay.** `run-open-traces` (2 scenarios, 29 turns)
+passes with `0.655` local/device resolution, weather miss-to-hit, story
+cloud-to-local, media/contact setup-to-action transitions, `0` privacy/action/
+fake-news failures, and priority signals. `run-transcript-replay` (25 user
+turns) passes with `0.68` local/device resolution, setup-to-ready transitions,
+private-cloud blocking, long-horizon digest recall, and a transcript-level
+baseline win: current kernel `17/25` local/device vs best static baseline
+`7/25` (`+0.40` gain, `7` fewer cloud handoffs, `3` fewer clarifications).
+
+### Command Details
+
+<details>
+<summary>Transcript replay and calibration pipeline</summary>
+
 - `import-transcript-replay` converts raw local chat JSONL into the same replay
   format by keeping only user rows, redacting email/phone/URL/long-number tokens
   plus optional manual replacements, and dropping static expected answer/route
@@ -346,6 +415,11 @@ Current verified signals:
   `--min-synthesis-traces`,
   `--require-priority-signals`, `--require-memory-digest-quality`, and
   `--require-strict-baseline-win`.
+</details>
+
+<details>
+<summary>Blocker evidence, audit, and smoke tests</summary>
+
 - `v01-blocker-evidence` packages the remaining six blocker rows in one honest
   report. Development sessions can show useful evidence, but only
   `--event-source-kind redacted_user_session` or `target_device_user_session`
@@ -449,6 +523,11 @@ Current verified signals:
   examples are blocked, action confirmations stay dry-run, and every case
   reports Basic NLP -> UOL -> ChatFrame mapping, complexity score, unknown
   tokens, route, reason, primary routing basis, and secondary debug hints.
+</details>
+
+<details>
+<summary>Dataset, bundle, and runtime commands</summary>
+
 - `dataset-audit` validates the seed/source fixture set, SHA-256 hashes, story
   metadata, local media manifest, 7-day weather sample, Gutenberg/Archive source
   candidates, 29-turn open trace fixture, 25-turn transcript replay fixture, and
@@ -670,6 +749,7 @@ Current verified signals:
   setup requests require user-supplied values, later explicit routine/household
   facts are scoped local, and trusted-contact actions still pass through the
   confirmation gate.
+</details>
 
 ## Drift Rule
 

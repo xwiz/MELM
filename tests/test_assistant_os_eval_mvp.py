@@ -19,7 +19,7 @@ class AssistantOSEvalMvpTests(unittest.TestCase):
     def test_multi_profile_eval_measures_biggest_v01_risks(self) -> None:
         report = run_assistant_os_eval()
 
-        self.assertEqual(report.cases, 105)
+        self.assertEqual(report.cases, 107)
         self.assertEqual(report.passed, report.cases)
         self.assertEqual(report.metrics["privacy_exposures"], 0)
         self.assertEqual(report.metrics["wrong_local_answers"], 0)
@@ -114,7 +114,7 @@ class AssistantOSEvalMvpTests(unittest.TestCase):
             eval_report = _run_cli("eval", "--json")
             dashboard = _run_cli("dashboard", "--db", str(db), "--json")
 
-            self.assertEqual(eval_report["cases"], 105)
+            self.assertEqual(eval_report["cases"], 107)
             self.assertEqual(eval_report["metrics"]["privacy_exposures"], 0)
             self.assertEqual(dashboard["counts"]["events"], 17)
             self.assertEqual(dashboard["route_counts"]["cloud_handoff"], 3)

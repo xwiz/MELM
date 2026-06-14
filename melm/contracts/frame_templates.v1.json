@@ -88,6 +88,34 @@
       "threshold": 0.40,
       "priority": 8
     },
+    "routine_memory": {
+      "frame_id": "routine_memory",
+      "intent": "personal_memory",
+      "family": "personal_memory",
+      "activation": {
+        "required_classes": ["routine_concept"],
+        "optional_classes": ["memory_recall", "temporal_descriptor"],
+        "exclude_classes": [],
+        "action_tokens": ["my", "our"]
+      },
+      "slot_bindings": ["self_facts"],
+      "threshold": 0.56,
+      "priority": 7
+    },
+    "household_memory": {
+      "frame_id": "household_memory",
+      "intent": "personal_memory",
+      "family": "personal_memory",
+      "activation": {
+        "required_classes": ["household_concept"],
+        "optional_classes": ["memory_recall", "owner_concept", "hardware_entity", "action_verb"],
+        "exclude_classes": [],
+        "action_tokens": ["my", "our", "we", "us", "this"]
+      },
+      "slot_bindings": ["self_facts"],
+      "threshold": 0.56,
+      "priority": 8
+    },
     "personal_memory": {
       "frame_id": "personal_memory",
       "intent": "personal_memory",
