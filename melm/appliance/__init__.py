@@ -97,6 +97,13 @@ from .assistant_decoder import (
     TemplateBackend,
     build_decoding_grammar,
 )
+from .assistant_decoder_llguidance import (
+    HFCompatTokenizer,
+    LlguidanceBackend,
+    build_llguidance_grammar,
+    build_llm_prompt,
+    build_regex_pattern,
+)
 from .assistant_inventory import (
     DEFAULT_LOCAL_MEDIA_MANIFEST,
     InternetArchiveSearchMetadataImporter,
@@ -383,6 +390,11 @@ __all__ = [
     "DecodingGrammar",
     "TemplateBackend",
     "build_decoding_grammar",
+    "build_llguidance_grammar",
+    "build_llm_prompt",
+    "build_regex_pattern",
+    "HFCompatTokenizer",
+    "LlguidanceBackend",
     "run_child_capability_probe",
     "run_child_context_budget_probe",
     "run_realistic_assistant_lifecycle_probe",
