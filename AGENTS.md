@@ -73,10 +73,10 @@
 - **Bulk seeder tests** — 11 new tests: basic seeding, reserved term skipping, unknown supersense skipping, idempotency, orchestrator, missing data files, dormant status, actual data file validation.
 - **Data generator script saved** — `scripts/generate_bulk_lexicon_data.py` creates JSONL data files from LEGACY vocabulary and curated word lists per supersense.
 
+### Done (just committed)
+- **M3 gate closed** — promotion trace wired (`set_lexical_sense_status` → `add_promotion`), capability manifest enforced (`_is_family_installed` in `_route_impl`), 289 core tests pass.
 ### In Progress
-- **M3 sealed dictionary test harness built** — 72 synthetic words across 11 intent categories. 4 tests: word count ≥60, ingest/promote rate ≥80%, routing agreement ≥80%, retention after restart ≥80%. All pass.
-- **M3 gaps identified**: (1) `set_lexical_sense_status` doesn't write to `promotions` table — trace not queryable end-to-end; (2) capability manifest runtime enforcement missing — no gate against capability grants from acquired vocab; (3) Pi benchmark not started.
-- **M4 built**: authority scaffold exists (evidence packets, 24 tests), but Pi benchmark (tok/s/TTFT/RSS) and constrained decoding not started.
+- **M4 scaffold building** — `assistant_decoder.py` with `ConstrainedDecoder` registry, template fallback, llguidance/BitNet backends pending.
 
 ### Blocked
 - `test_cli_pi_bundle_builds_portable_self_checked_bundle` — bundle builds but `v01_audit`/`v01_progress` checks fail by design (project milestone blockers, not code issues). Remaining infrastructure smokes all pass with contract files included.
@@ -96,6 +96,8 @@
 - **Slot state resolution is kernel-side, not in the frame linker** — `_resolve_slot_states` lives in `assistant_os_kernel.py` because the frame linker shouldn't depend on the store. After `OnDeviceAssistantRouter.handle()` returns, the kernel enriches the decision with slot states from the entity store.
 - Contracts store lemmas only — language-agnostic invariant per the plan.
 - `cloud_lookup` uses `urllib.request` directly (project convention), no new dependencies.
+- **Pluggable SLM architecture**: M4 decoder uses a `ConstrainedDecoder` registry supporting llguidance (HuggingFace + CFG grammar) and BitNet b1.58 1B (TQ2_0/TQ1_0 + LoRA for tone/mood). Template fallback is the zero-dep baseline.
+- **`_food_tags` deferred**: hardcoded food-tag dict at `local_assistant_router.py:1074` is legacy synthesis metadata (not router vocabulary). Deferred to M5 synthesis-data migration — should become a contract JSON (`food_tags.v1.json`) or entity store slot data.
 
 ## Next Steps
 1. **Close M3 gate** — (a) Wire `set_lexical_sense_status` → `add_promotion` so promotion trace is queryable; (b) Build capability manifest runtime enforcement to block capability grants from acquired vocab; (c) Start Pi benchmark for M4.

@@ -22,6 +22,7 @@ from .assistant_authority import (
     build_evidence_packet,
     verify_answer,
 )
+from .assistant_decoder import ConstrainedDecoder, build_decoding_grammar
 from .assistant_os_store import AssistantOSStore
 from .local_assistant_router import AssistantDecision, LocalAssistantProfile, choose_local_meal
 
@@ -89,11 +90,13 @@ class BoundedLocalSynthesizer:
         store: AssistantOSStore | None = None,
         self_state: dict[str, Any] | None = None,
         runtime_status: dict[str, Any] | None = None,
+        decoder: ConstrainedDecoder | None = None,
     ) -> None:
         self.profile = profile
         self.store = store
         self.self_state = self_state or {}
         self.runtime_status = runtime_status or {}
+        self.decoder = decoder
 
     def synthesize(
         self,
@@ -142,7 +145,7 @@ class BoundedLocalSynthesizer:
         if not evidence:
             return self._refused(decision, boundary_crossed, "no_bound_evidence")
 
-        answer = self._answer(decision, evidence)
+        template_answer = self._answer(decision, evidence)
         evidence_items = tuple(
             AuthorityEvidenceItem(
                 key=item.key, kind=item.kind, value=str(item.value),
@@ -153,6 +156,7 @@ class BoundedLocalSynthesizer:
         )
         packet = build_evidence_packet(decision.evidence_keys, evidence_items, boundary_crossed)
         plan = build_answer_plan(decision, packet)
+        answer = self._decode_verified(plan, evidence, decision, template_answer, packet)
         verification = verify_answer(plan, answer, packet)
         authority = AuthorityInfo(evidence_packet=packet, answer_plan=plan, verification=verification)
         return BoundedSynthesisResult(
@@ -187,6 +191,28 @@ class BoundedLocalSynthesizer:
         answer = self._answer(decision, evidence)
         tokens_generated = len(answer.split()) if answer else 0
         return DecoderResult(answer=answer, decoder="template", tokens_generated=tokens_generated)
+
+    def _decode_verified(
+        self,
+        plan: AnswerPlan,
+        evidence: tuple[SynthesisEvidence, ...],
+        decision: AssistantDecision,
+        template_answer: str,
+        packet: AuthorityEvidencePacket,
+    ) -> str:
+        if self.decoder is None:
+            return template_answer
+        evidence_entities = tuple(
+            item.key for item in evidence
+            if item.kind in ("story_model", "weather", "user_fact", "profile", "contact", "health_goal", "food_inventory", "preference")
+        )
+        grammar = build_decoding_grammar(plan, template_answer, evidence_entities)
+        result = self.decoder.dispatch(plan, grammar)
+        if result is not None and result.decoder != "template":
+            v = verify_answer(plan, result.answer, packet)
+            if v.passed:
+                return result.answer
+        return template_answer
 
     def _answer(
         self,

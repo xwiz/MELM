@@ -90,6 +90,13 @@ from .assistant_authority import (
     build_evidence_packet,
     verify_answer,
 )
+from .assistant_decoder import (
+    ConstrainedDecoder,
+    DecoderBackend,
+    DecodingGrammar,
+    TemplateBackend,
+    build_decoding_grammar,
+)
 from .assistant_inventory import (
     DEFAULT_LOCAL_MEDIA_MANIFEST,
     InternetArchiveSearchMetadataImporter,
@@ -371,6 +378,11 @@ __all__ = [
     "persist_self_observation",
     "classify_autobiographical_memory_scope",
     "compose_autobiographical_memory_frame",
+    "ConstrainedDecoder",
+    "DecoderBackend",
+    "DecodingGrammar",
+    "TemplateBackend",
+    "build_decoding_grammar",
     "run_child_capability_probe",
     "run_child_context_budget_probe",
     "run_realistic_assistant_lifecycle_probe",
