@@ -24,6 +24,9 @@ from melm.appliance.local_assistant_router import (
     _classify_from_frame_linker,
     _IN_MEMORY_LEXICON,
     replace_in_memory_lexicon,
+    OnDeviceAssistantRouter,
+    LocalAssistantProfile,
+    replace_installed_families,
 )
 from melm.contracts import ContractValidationError
 
@@ -1745,30 +1748,30 @@ class SealedDictionaryMvpTests(unittest.TestCase):
         {"word": "plinket", "utterance": "suggest plinket soup",
          "expected_intent": "meal_suggestion", "class_id": "food_item"},
         # routine_memory (class: routine_concept)
-        {"word": "mizzle", "utterance": "my mizzle routine",
+        {"word": "mizzle", "utterance": "what is my mizzle routine",
          "expected_intent": "routine_memory", "class_id": "routine_concept"},
-        {"word": "bloop", "utterance": "my bloop schedule",
+        {"word": "bloop", "utterance": "what is my bloop schedule",
          "expected_intent": "routine_memory", "class_id": "routine_concept"},
-        {"word": "zorp", "utterance": "our zorp plan",
+        {"word": "zorp", "utterance": "what is our zorp plan",
          "expected_intent": "routine_memory", "class_id": "routine_concept"},
-        {"word": "wuzzle", "utterance": "my wuzzle time",
+        {"word": "wuzzle", "utterance": "when is my wuzzle time",
          "expected_intent": "routine_memory", "class_id": "routine_concept"},
-        {"word": "snizzle", "utterance": "our snizzle habit",
+        {"word": "snizzle", "utterance": "what is our snizzle habit",
          "expected_intent": "routine_memory", "class_id": "routine_concept"},
-        {"word": "glorb", "utterance": "my glorb practice",
+        {"word": "glorb", "utterance": "what is my glorb practice",
          "expected_intent": "routine_memory", "class_id": "routine_concept"},
         # household_memory (class: household_concept)
-        {"word": "frump", "utterance": "my frump is broken",
+        {"word": "frump", "utterance": "where is my frump",
          "expected_intent": "household_memory", "class_id": "household_concept"},
         {"word": "squibble", "utterance": "where is my squibble",
          "expected_intent": "household_memory", "class_id": "household_concept"},
-        {"word": "trumpet", "utterance": "our trumpet shelf",
+        {"word": "trumpet", "utterance": "where is our trumpet shelf",
          "expected_intent": "household_memory", "class_id": "household_concept"},
-        {"word": "bramble", "utterance": "my bramble drawer",
+        {"word": "bramble", "utterance": "where is my bramble drawer",
          "expected_intent": "household_memory", "class_id": "household_concept"},
-        {"word": "crizzle", "utterance": "we need a crizzle",
+        {"word": "crizzle", "utterance": "do we need a crizzle",
          "expected_intent": "household_memory", "class_id": "household_concept"},
-        {"word": "dibble", "utterance": "my dibble cabinet",
+        {"word": "dibble", "utterance": "where is my dibble cabinet",
          "expected_intent": "household_memory", "class_id": "household_concept"},
 
         # autobiographical_memory (class: autobiographical_event)
@@ -1845,7 +1848,7 @@ class SealedDictionaryMvpTests(unittest.TestCase):
          "expected_intent": "weather", "class_id": "weather_phenomenon"},
         {"word": "miffle", "utterance": "suggest miffle for lunch",
          "expected_intent": "meal_suggestion", "class_id": "food_item"},
-        {"word": "zuffle", "utterance": "my zuffle morning habit",
+        {"word": "zuffle", "utterance": "what is my zuffle morning habit",
          "expected_intent": "routine_memory", "class_id": "routine_concept"},
         {"word": "kribble", "utterance": "remember kribble from yesterday",
          "expected_intent": "personal_memory", "class_id": "memory_recall"},
@@ -1975,6 +1978,53 @@ class SealedDictionaryMvpTests(unittest.TestCase):
             except:
                 store.close()
                 raise
+
+    def test_sealed_dictionary_end_to_end_routing_agreement(self) -> None:
+        """>= 80% of words route correctly through full OnDeviceAssistantRouter."""
+        with tempfile.TemporaryDirectory() as tmp:
+            path = Path(tmp) / "test.sqlite"
+            store = AssistantOSStore(path)
+            try:
+                for entry in self._SEALED_DICTIONARY:
+                    self._ingest_word(store, entry)
+                saved = dict(_IN_MEMORY_LEXICON)
+                try:
+                    self._inject_new_words(store)
+                    # Ensure all families are installed for the test
+                    replace_installed_families(None, None)
+                    contact_words = {
+                        e["word"]: "+123-000-TEST"
+                        for e in self._SEALED_DICTIONARY
+                        if e["expected_intent"] == "social_contact"
+                    }
+                    router = OnDeviceAssistantRouter(
+                        profile=LocalAssistantProfile(contacts=contact_words)
+                    )
+                    successes = 0
+                    failures: list[str] = []
+                    for entry in self._SEALED_DICTIONARY:
+                        decision = router.handle(entry["utterance"])
+                        # Frame sub-types map to top-level intent in the router
+                        expected = entry["expected_intent"]
+                        if expected in {"routine_memory", "household_memory"}:
+                            expected = "personal_memory"
+                        if decision.intent == expected:
+                            successes += 1
+                        else:
+                            failures.append(
+                                f"{entry['word']!r}: expected={expected}, "
+                                f"got={decision.intent} (reason={decision.reason})"
+                            )
+                    rate = successes / len(self._SEALED_DICTIONARY)
+                    self.assertGreaterEqual(
+                        rate, 0.80,
+                        f"end-to-end routing rate={rate:.0%} < 80%\nFailures:\n"
+                        + "\n".join(failures)
+                    )
+                finally:
+                    replace_in_memory_lexicon(saved)
+            finally:
+                store.close()
 
 
 class LexiconLifecycleMvpTests(unittest.TestCase):

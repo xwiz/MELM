@@ -1759,10 +1759,10 @@ def _is_common_sense_safety_request(
 
 
     )
-    safety_frame = (
+    safety_frame = bool(
         _is_question_like(text, tokens)
         or _is_request_like(tokens)
-        or bool(token_set & {"go", "going"})
+        or bool(token_set & {"go", "going", "walk"})
         or clothing_terms
         or public_context
     )
@@ -2107,6 +2107,7 @@ def _is_question_like(text: str, tokens: tuple[str, ...]) -> bool:
         ("will",),
         ("is",),
         ("are",),
+        ("where",),
     }
 
 
@@ -2587,6 +2588,12 @@ def _self_status_composition(
     if "think" in token_set and (
         token_set & {"i", "me", "my"} or token_set & {"health", "eat", "food"}
     ):
+        return None
+    autobiographical_terms = _semantic_family_terms(
+        tokens,
+        semantic_classes={"autobiographical_event"},
+    )
+    if autobiographical_terms:
         return None
     command_like = tokens[:1] in {("show",), ("report",), ("summarize",), ("list",)}
     question_or_command = _is_question_like(text, tokens) or command_like
