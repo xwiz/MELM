@@ -19,13 +19,19 @@ from dataclasses import dataclass, field, replace
 from pathlib import Path
 from typing import Any, Literal
 
+from melm.contracts import load_food_tags, load_meal_scopes, load_router_semantic_aliases, load_weather_concepts
+
+from .assistant_skill_meal import MealSuggestion, suggest_meal
+
 from .functional_grammar import (
     FunctionalParse,
     functional_frame_kind,
     parse_functional_relations,
+    set_uol_lexicon,
 )
 from .assistant_lexicon_legacy import build_legacy_in_memory_lexicon
 from .assistant_frame_linker import FrameLinker
+from .assistant_frame_ranker import E3CandidateReranker
 
 AssistantIntent = Literal[
     "assistant_identity",
@@ -965,58 +971,13 @@ def choose_local_meal(
     weather: str = "",
     utterance: str = "",
 ) -> LocalMealChoice:
-    inventory = tuple(
-        dict.fromkeys(
-            _clean_food_name(item) for item in foods if _clean_food_name(item)
-        )
-    )
-    scope = _meal_scope(utterance)
-    warm_weather = _weather_suggests_warm_food(weather)
-    if not inventory:
-        return LocalMealChoice(
-            items=("a simple meal",),
-            backups=(),
-            reason_tags=("empty_inventory_fallback",),
-            meal_scope=scope,
-            warm_note=warm_weather,
-        )
-    preference_text = " ".join(
-        str(value) for value in (preferences or {}).values()
-    ).lower()
-    scored = sorted(
-        (
-            (
-                _food_inventory_score(
-                    food,
-                    index=index,
-                    preference_text=preference_text,
-                    scope=scope,
-                    warm_weather=warm_weather,
-                    utterance=utterance,
-                ),
-                index,
-                food,
-            )
-            for index, food in enumerate(inventory)
-        ),
-        key=lambda item: (-item[0], item[1], item[2]),
-    )
-    selected_count = min(3, max(1, 2 if len(scored) > 1 else 1))
-    selected = tuple(food for _, _, food in scored[:selected_count])
-    backups = tuple(food for _, _, food in scored[selected_count : selected_count + 2])
-    reason_tags = _meal_reason_tags(
-        selected,
-        scope=scope,
-        warm_weather=warm_weather,
-        preference_text=preference_text,
-    )
+    result = suggest_meal(foods, preferences=preferences, weather=weather, utterance=utterance)
     return LocalMealChoice(
-        items=selected,
-        backups=backups,
-        reason_tags=reason_tags,
-        meal_scope=scope,
-        warm_note=warm_weather
-        and any(_food_tags(food) & {"warm", "staple", "protein"} for food in selected),
+        items=result.items,
+        backups=result.backups,
+        reason_tags=result.reason_tags,
+        meal_scope=result.meal_scope,
+        warm_note=result.warm_note,
     )
 
 
@@ -1026,11 +987,10 @@ def _clean_food_name(value: str) -> str:
 
 def _meal_scope(utterance: str) -> str:
     tokens = set(_tokenize(_normalize(utterance)))
-    for scope in ("breakfast", "lunch", "dinner"):
-        if scope in tokens:
+    scope_pairs = load_meal_scopes()
+    for token, scope in scope_pairs:
+        if token in tokens:
             return scope
-    if tokens & {"cook", "cooking"}:
-        return "cooking"
     return "meal"
 
 
@@ -1074,20 +1034,7 @@ def _food_inventory_score(
 def _food_tags(food: str) -> set[str]:
     tokens = _tokenize(food.lower())
     tags: set[str] = set()
-    mapping = {
-        "rice": {"staple", "grain", "warm"},
-        "beans": {"protein", "staple", "warm"},
-        "plantain": {"staple", "fruit", "warm"},
-        "egg": {"protein", "breakfast"},
-        "oat": {"grain", "breakfast", "warm"},
-        "fruit": {"fruit", "light"},
-        "salad": {"vegetable", "light"},
-        "soup": {"vegetable", "warm", "light"},
-        "vegetable": {"vegetable"},
-        "fish": {"protein"},
-        "chicken": {"protein"},
-        "bread": {"grain", "breakfast"},
-    }
+    mapping = load_food_tags()
     for marker, marker_tags in mapping.items():
         if _has_token_sequence(tokens, _tokenize(marker)):
             tags.update(marker_tags)
@@ -1409,19 +1356,22 @@ def _classify_intent_from_uol_slots(
         return "assistant_identity"
     if _is_assistant_status_request(text, tokens):
         return "assistant_status"
-    if _is_story_request(
-        text,
-        tokens,
-
-    ) and (
+    # Bridge-eliminated: was _is_story_request (Phase 1)
+    # Action token required to prevent "What is a story?" → story
+    if set(tokens) & {"tell", "read", "make", "give"} and (
         functional_parse is None
         or functional_parse.speech_act in {"request", "yes_no_question", "wh_question"}
+    ) and _classify_from_frame_linker(
+        text, tokens, "story",
+        collector_classes=frozenset({"narrative_content"}),
+        use_margin=False,
     ):
         return "story"
-    if _is_weather_request(
-        text,
-        tokens,
-
+    # Bridge-eliminated: was _is_weather_request (Phase 2)
+    if _classify_from_frame_linker(
+        text, tokens, "weather",
+        collector_classes=frozenset({"weather_phenomenon"}),
+        use_margin=False,
     ):
         return "weather"
     if _is_common_sense_safety_request(
@@ -1430,16 +1380,24 @@ def _classify_intent_from_uol_slots(
 
     ):
         return "common_sense_safety"
-    if _is_media_request(
-        text,
-        tokens,
-
+    # Bridge-eliminated: was _is_media_request (Phase 1)
+    if set(tokens) & {"play", "start"} and _classify_from_frame_linker(
+        text, tokens, "media_playback",
+        collector_classes=frozenset({
+            "media_content", "media_descriptor",
+            "physical_object.instrument",
+            "physical_object.media_source",
+        }),
+        use_margin=False,
     ):
         return "media_playback"
-    if _is_health_advice_request(
-        text,
-        tokens,
-
+    # Bridge-eliminated: was _is_health_advice_request (Phase 2)
+    if _has_urgent_health_frame(tokens):
+        return "health_advice"
+    if _classify_from_frame_linker(
+        text, tokens, "health_advice",
+        collector_classes=frozenset({"health_domain", "health_condition", "advice_action"}),
+        use_margin=False,
     ):
         return "health_advice"
     if _is_social_contact_request(
@@ -1453,10 +1411,11 @@ def _classify_intent_from_uol_slots(
         return "personal_memory"
     if _is_autobiographical_debug_request(text, tokens):
         return "autobiographical_memory"
-    if _is_meal_suggestion_request(
-        text,
-        tokens,
-
+    # Bridge-eliminated: was _is_meal_suggestion_request (Phase 2)
+    if _classify_from_frame_linker(
+        text, tokens, "meal_suggestion",
+        collector_classes=frozenset({"food_item"}),
+        use_margin=False,
     ):
         return "meal_suggestion"
 
@@ -1479,7 +1438,18 @@ def _classify_intent_from_uol_slots(
         is_request_like=_is_request_like(tokens),
     )
     if candidates:
-        top = candidates[0]
+        # Apply UOL-aware reranker when functional parse is available.
+        if functional_parse is not None:
+            reranker = _get_frame_reranker()
+            reranked = reranker.rerank(
+                candidates, tokens, _IN_MEMORY_LEXICON,
+                is_question_like=_is_question_like(text, tokens),
+                is_request_like=_is_request_like(tokens),
+                token_roles=functional_parse.token_roles,
+            )
+            top = reranked[0]
+        else:
+            top = candidates[0]
         if top.frame_id in _FRAME_LINKER_MIGRATED_INTENTS:
             # Migrated intents require a non-required contribution
             # (structure, action, or optional) to prevent bare
@@ -1502,21 +1472,6 @@ def _is_assistant_status_request(
     return _self_status_composition(text, tokens or _tokenize(text)) is not None
 
 
-def _is_story_request(
-    text: str,
-    tokens: tuple[str, ...],
-) -> bool:
-    token_set = set(tokens)
-    # Action tokens are effectively required for story (old classifier invariants).
-    # Check here for early exit rather than calling the linker at all.
-    story_actions = {"tell", "read", "make", "give"}
-    if not (token_set & story_actions) and not _story_request_question(text, tokens):
-        return False
-    return _classify_from_frame_linker(
-        text, tokens, "story",
-        collector_classes=frozenset({"narrative_content"}),
-        use_margin=False,
-    )
 
 
 _STORY_CONSTRAINT_STOPWORDS = {
@@ -1586,53 +1541,11 @@ def _available_story_inventory_label(story_models: dict[str, str]) -> str:
     return f"the local {first_key.replace('_', ' ')} story"
 
 
-def _is_weather_request(
-    text: str,
-    tokens: tuple[str, ...],
-
-
-) -> bool:
-    # Concept questions about weather ("What is weather?", "How does weather work?")
-    # are NOT weather requests — they're definition/explanation questions.
-    if _is_weather_concept_question(tokens):
-        return False
-    return _classify_from_frame_linker(
-        text, tokens, "weather",
-        collector_classes=frozenset({"weather_phenomenon"}),
-        use_margin=False,
-    )
-
-
-def _is_weather_concept_question(
-    tokens: tuple[str, ...],
-    weather_terms: set[str] | None = None,
-
-
-
-) -> bool:
-    token_set = set(tokens)
-    if _weather_observation_context(
-        tokens,
-
-    ):
-        return False
-    weather_terms = weather_terms or {"weather", "forecast", "temperature"}
-    concept_terms = {
-        "define", "explain", "mean", "means",
-        "system", "systems",
-    }
-    return bool(
-        token_set & weather_terms
-        and (
-            token_set & concept_terms
-            or token_set & {"work", "works"}
-            or _is_bare_domain_definition_question(tokens, weather_terms)
-            or tokens[:1] in {("how",), ("why",)}
-        )
-    )
-
 
 _IN_MEMORY_LEXICON: dict[str, frozenset[str]] = build_legacy_in_memory_lexicon()
+# Wire the growing lexicon into the UOL grammar so acquired verbs lemmatize
+# and receive a semantic class even when not in the hardcoded _VERBS dict.
+set_uol_lexicon(_IN_MEMORY_LEXICON)
 # Frame linker requires score >= template threshold + this margin to fire.
 # This prevents false positives on borderline matches while still catching
 # high-confidence cases that keyword classifiers miss.
@@ -1646,6 +1559,7 @@ _FRAME_LINKER_MIGRATED_INTENTS: frozenset[str] = frozenset({
     "health_advice",
 })
 _FRAME_LINKER: FrameLinker | None = None
+_FRAME_RERANKER: E3CandidateReranker | None = None
 # Capability-manifest state: installed set + all managed families.
 # Initialised lazily; overridable via replace_installed_families().
 _INSTALLED_FAMILIES: frozenset[str] | None = None
@@ -1726,11 +1640,28 @@ def _get_frame_linker() -> FrameLinker:
     return _FRAME_LINKER
 
 
+def _get_frame_reranker() -> E3CandidateReranker:
+    global _FRAME_RERANKER
+    if _FRAME_RERANKER is None:
+        _FRAME_RERANKER = E3CandidateReranker()
+    return _FRAME_RERANKER
+
+
 def replace_in_memory_lexicon(
     lexicon: dict[str, frozenset[str]],
 ) -> None:
     _IN_MEMORY_LEXICON.clear()
     _IN_MEMORY_LEXICON.update(lexicon)
+
+
+def inject_lexicon_entry(lemma: str, class_id: str) -> None:
+    """Inject or update a single lemma→class mapping in the runtime lexicon.
+
+    Adds *class_id* to the existing frozenset for *lemma* if the lemma already
+    exists, otherwise creates a new entry.  Does not affect other entries.
+    """
+    existing = _IN_MEMORY_LEXICON.get(lemma, frozenset())
+    _IN_MEMORY_LEXICON[lemma] = frozenset(existing | {class_id})
 
 
 # Collector for activated semantic classes during a single ``handle()`` call.
@@ -1801,52 +1732,6 @@ def rebuild_entity_lexicon_index(
                 _IN_MEMORY_LEXICON[t] = frozenset(existing | {class_id})
 
 
-def _weather_observation_context(
-    tokens: tuple[str, ...],
-) -> bool:
-    time_terms = _semantic_family_terms(
-        tokens,
-        semantic_classes={"temporal_descriptor", "public_place"},
-
-
-    )
-    if time_terms:
-        return True
-    live_weather_sequences = (
-        ("the", "weather"),
-        ("the", "temperature"),
-        ("the", "forecast"),
-    )
-    return _has_any_token_sequence(tokens, live_weather_sequences)
-
-
-def _is_bare_domain_definition_question(
-    tokens: tuple[str, ...], domain_terms: set[str]
-) -> bool:
-    semantic_tokens = tuple(
-        token for token in tokens if token not in {"please", "really", "now"}
-    )
-    if semantic_tokens[:2] == ("what", "is"):
-        remainder = tuple(
-            token for token in semantic_tokens[2:] if token not in {"a", "an"}
-        )
-        return len(remainder) == 1 and remainder[0] in domain_terms
-    if semantic_tokens[:1] == ("what's",):
-        remainder = tuple(
-            token for token in semantic_tokens[1:] if token not in {"a", "an"}
-        )
-        return len(remainder) == 1 and remainder[0] in domain_terms
-    return False
-
-
-def _story_request_question(text: str, tokens: tuple[str, ...]) -> bool:
-    token_set = set(tokens)
-    if not _is_question_like(text, tokens):
-        return False
-    if token_set & {"tell", "read", "make", "give"}:
-        return True
-    return False
-
 
 def _is_common_sense_safety_request(
     text: str,
@@ -1905,59 +1790,7 @@ def _is_common_sense_safety_request(
     )
 
 
-def _is_health_advice_request(
-    text: str,
-    tokens: tuple[str, ...],
 
-
-
-) -> bool:
-    token_set = set(tokens)
-    health_terms = _semantic_family_terms(
-        tokens,
-        semantic_classes={"health_domain"},
-
-
-    )
-    care_terms = _semantic_family_terms(
-        tokens,
-        semantic_classes={"health_condition"},
-
-
-    )
-    if _has_urgent_health_frame(tokens):
-        return True
-    if not health_terms and not care_terms:
-        return False
-    advice_terms = _semantic_family_terms(
-        tokens,
-        semantic_classes={"advice_action"},
-
-
-    )
-    advice_frame = (
-        _is_question_like(text, tokens)
-        or _is_request_like(tokens)
-        or bool(advice_terms)
-    )
-    if not advice_frame:
-        return False
-    personal_context = bool(token_set & {"i", "me", "my", "myself"})
-    health_action_context = bool(
-        advice_terms
-        or token_set & {"better", "do", "goals", "goal", "sleep", "take", "see"}
-    )
-    health_question_context = tokens[:1] in {("how",), ("should",)} or (
-        tokens[:1] in {("what",), ("can",), ("could",)}
-        and (personal_context or health_action_context)
-    )
-    if not (personal_context or health_action_context or health_question_context):
-        return False
-    return _classify_from_frame_linker(
-        text, tokens, "health_advice",
-        collector_classes=frozenset({"health_domain", "health_condition", "advice_action"}),
-        use_margin=False,
-    )
 def _is_social_contact_request(
     text: str,
     tokens: tuple[str, ...] | None = None,
@@ -2256,69 +2089,6 @@ def _autobiographical_latest_event_frame(text: str, tokens: tuple[str, ...]) -> 
     user_or_assistant_context = bool(token_set & {"i", "my", "me", "we", "our", "you"})
     return latest_scope and event_object and user_or_assistant_context
 
-def _is_media_request(
-    text: str,
-    tokens: tuple[str, ...],
-
-
-
-
-) -> bool:
-    token_set = set(tokens)
-    media_action = bool(token_set & {"play", "start"})
-    if not media_action:
-        return False
-    # "play something with sounds" special case — "something" isn't in media classes.
-    if "something" in token_set and token_set & {"sound", "sounds"}:
-        return True
-    return _classify_from_frame_linker(
-        text, tokens, "media_playback",
-        collector_classes=frozenset({
-            "media_content", "media_descriptor",
-            "physical_object.instrument",
-            "physical_object.media_source",
-        }),
-        use_margin=False,
-    )
-
-def _is_meal_suggestion_request(
-    text: str,
-    tokens: tuple[str, ...],
-
-
-
-
-) -> bool:
-    # Feed collector even on fast paths; result is unused here — the
-    # frame linker's required_all_classes gate handles the class check.
-    _semantic_family_terms(tokens, semantic_classes={"food_item"})
-    if _meal_request_is_direct_suggestion(tokens):
-        return True
-    if not _meal_request_has_user_choice_frame(text, tokens):
-        return False
-    return _classify_from_frame_linker(
-        text, tokens, "meal_suggestion",
-        collector_classes=frozenset({"food_item"}),
-        use_margin=False,
-    )
-
-
-def _meal_request_is_direct_suggestion(tokens: tuple[str, ...]) -> bool:
-    return tokens[:1] in {("suggest",), ("recommend",)}
-
-
-def _meal_request_has_user_choice_frame(text: str, tokens: tuple[str, ...]) -> bool:
-    token_set = set(tokens)
-    user_context = bool(token_set & {"i", "me", "my", "we", "us", "our"})
-    if not user_context:
-        return False
-    if token_set & {"should", "could"}:
-        return True
-    return bool(
-        tokens[:1] in {("what",), ("what's",)}
-        and "can" in token_set
-        and _is_question_like(text, tokens)
-    )
 
 
 def _is_question_like(text: str, tokens: tuple[str, ...]) -> bool:
@@ -2366,7 +2136,7 @@ def _is_request_like(tokens: tuple[str, ...]) -> bool:
 
 
 def _tokenize(text: str) -> tuple[str, ...]:
-    return tuple(re.findall(r"[a-z0-9']+", text))
+    return tuple(re.findall(r"[a-z0-9']+", text.lower()))
 
 
 def _assistant_compositional_parse(
@@ -2768,112 +2538,8 @@ def _semantic_object_role_tokens(
     intent: AssistantIntent, object_value: str
 ) -> set[str]:
     tokens = set(_tokenize(object_value.replace("_", " ")))
-    aliases = {
-        "story": {"story", "stories", "tale", "tales", "fable", "fables", "bedtime"},
-        "weather": {
-            "weather",
-            "forecast",
-            "temperature",
-            "rain",
-            "outside",
-            "today",
-            "tomorrow",
-        },
-        "common_sense_safety": {
-            "naked",
-            "undressed",
-            "clothes",
-            "wear",
-            "dress",
-            "dressed",
-            "school",
-            "class",
-            "outside",
-            "public",
-        },
-        "media_playback": {
-            "song",
-            "music",
-            "piano",
-            "radio",
-            "lofi",
-            "audio",
-            "track",
-            "sound",
-            "sounds",
-        },
-        "health_advice": {
-            "health",
-            "healthy",
-            "healthier",
-            "wellness",
-            "doctor",
-            "medicine",
-            "medication",
-            "fever",
-            "sick",
-            "pain",
-            "sleep",
-        },
-        "personal_memory": {
-            "about",
-            "memory",
-            "remember",
-            "recall",
-            "routine",
-            "morning",
-            "household",
-            "family",
-            "child",
-            "kid",
-            "son",
-            "daughter",
-            "school",
-            "age",
-            "name",
-            "location",
-            "favorite",
-            "health",
-            "goal",
-            "goals",
-            "contact",
-        },
-        "autobiographical_memory": {
-            "conversation",
-            "conversations",
-            "sessions",
-            "earlier",
-            "previous",
-            "recent",
-            "last",
-            "question",
-            "days",
-        },
-        "meal_suggestion": {
-            "eat",
-            "food",
-            "meal",
-            "breakfast",
-            "lunch",
-            "dinner",
-            "cook",
-        },
-        "social_contact": {
-            "someone",
-            "person",
-            "caregiver",
-            "contact",
-            "adult",
-            "mom",
-            "dad",
-            "sister",
-            "brother",
-            "daughter",
-            "son",
-            "child",
-        },
-    }
-    tokens.update(aliases.get(intent, set()))
+    aliases = load_router_semantic_aliases().get("object_role_tokens", {})
+    tokens.update(set(aliases.get(intent, [])))
     return tokens
 
 
@@ -4304,47 +3970,8 @@ def _secondary_meaning_hints(text: str, intent: AssistantIntent) -> tuple[str, .
 
 
 def _secondary_meaning_hint_groups() -> dict[str, tuple[str, ...]]:
-    return {
-        "assistant_status": (
-            "status",
-            "ledger",
-            "cloud",
-            "memory",
-            "missing",
-            "next",
-        ),
-        "story": ("story", "tale", "fable", "bedtime"),
-        "weather": ("weather", "forecast", "temperature", "rain"),
-        "common_sense_safety": ("naked", "clothes", "wear", "school"),
-        "media_playback": ("song", "music", "piano", "radio", "lofi", "sounds"),
-        "health_advice": (
-            "health",
-            "healthy",
-            "healthier",
-            "doctor",
-            "medicine",
-            "poison",
-            "breathe",
-        ),
-        "personal_memory": (
-            "remember",
-            "recall",
-            "routine",
-            "morning",
-            "household",
-            "family",
-            "profile",
-        ),
-        "autobiographical_memory": (
-            "earlier",
-            "recent",
-            "previous",
-            "conversation",
-            "sessions",
-        ),
-        "meal_suggestion": ("eat", "food", "meal", "breakfast", "lunch", "dinner"),
-        "social_contact": ("talk", "call", "reach", "caregiver", "someone"),
-    }
+    groups = load_router_semantic_aliases().get("secondary_hint_groups", {})
+    return {intent: tuple(tokens) for intent, tokens in groups.items()}
 
 
 def _debug_notes(
@@ -4409,11 +4036,10 @@ def _is_broad_personal_memory_request(tokens: tuple[str, ...]) -> bool:
         return True
     if _about_targets_self(tokens):
         return True
-    if (
-        "you" in token_set
-        and token_set & {"remember", "know", "recall"}
-        and token_set & {"me", "myself"}
-    ):
+    memory_terms = _semantic_family_terms(
+        tokens, semantic_classes=frozenset({"memory_recall"}),
+    )
+    if "you" in token_set and memory_terms and token_set & {"me", "myself"}:
         return True
     return False
 
@@ -4595,12 +4221,10 @@ def _has_token_sequence(tokens: tuple[str, ...], sequence: tuple[str, ...]) -> b
 
 def _has_urgent_health_frame(tokens: tuple[str, ...]) -> bool:
     token_set = set(tokens)
-    urgent_terms = {"bleeding", "poison", "faint", "emergency"}
-    urgent_pairs = (
-        ("chest", "pain"),
-        ("cannot", "breathe"),
-        ("can't", "breathe"),
-    )
+    from melm.contracts import load_contract_json
+    payload = load_contract_json("health_disclaimers.v1.json")
+    urgent_terms = set(payload.get("urgent_terms", []))
+    urgent_pairs = tuple(tuple(pair) for pair in payload.get("urgent_pairs", []))
     return bool(
         token_set & urgent_terms or _has_any_token_sequence(tokens, urgent_pairs)
     )

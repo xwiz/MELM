@@ -27,6 +27,9 @@
         "exclude_classes": ["definition_request", "abstract_concept"],
         "action_tokens": []
       },
+      "context_gates": {
+        "exclude_weather_concept": true
+      },
       "slot_bindings": [],
       "threshold": 0.40,
       "priority": 4
@@ -69,6 +72,13 @@
         "optional_classes": [],
         "exclude_classes": [],
         "action_tokens": ["better", "do", "sleep", "take", "see"]
+      },
+      "context_gates": {
+        "require_health_terms": true
+      },
+      "context_score": {
+        "personal": 0.15,
+        "advice_structure": 0.10
       },
       "slot_bindings": [],
       "threshold": 0.40,
@@ -153,6 +163,12 @@
         "optional_classes": [],
         "exclude_classes": [],
         "action_tokens": ["eat", "cook", "have", "suggest", "recommend"]
+      },
+      "context_gates": {
+        "require_meal_frame": true
+      },
+      "context_score": {
+        "user_choice": 0.15
       },
       "slot_bindings": [],
       "threshold": 0.40,

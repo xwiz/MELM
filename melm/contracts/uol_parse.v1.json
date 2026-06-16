@@ -1,0 +1,48 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "melm.uol_parse.v1",
+  "type": "object",
+  "additionalProperties": false,
+  "required": [
+    "schema", "speech_act", "subject", "action", "object",
+    "target", "complement_action", "indirect_object", "modifiers",
+    "relations", "token_roles", "candidates", "parse_score",
+    "syntactic_coverage", "semantic_unknown_tokens", "pattern"
+  ],
+  "properties": {
+    "schema": {"const": "melm.weighted_functional_grammar.v1"},
+    "speech_act": {"type": "string"},
+    "subject": {"type": "string"},
+    "action": {"type": "string"},
+    "object": {"type": "string"},
+    "target": {"type": "string"},
+    "complement_action": {"type": "string"},
+    "indirect_object": {"type": "string"},
+    "modifiers": {
+      "type": "object",
+      "additionalProperties": {
+        "type": "array",
+        "items": {"type": "string"}
+      }
+    },
+    "relations": {
+      "type": "array",
+      "items": {"type": "object"}
+    },
+    "token_roles": {
+      "type": "array",
+      "items": {"type": "object"}
+    },
+    "candidates": {
+      "type": "array",
+      "items": {"type": "object"}
+    },
+    "parse_score": {"type": "number", "minimum": 0, "maximum": 1},
+    "syntactic_coverage": {"type": "number", "minimum": 0, "maximum": 1},
+    "semantic_unknown_tokens": {
+      "type": "array",
+      "items": {"type": "string"}
+    },
+    "pattern": {"type": "string"}
+  }
+}

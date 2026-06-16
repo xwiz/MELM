@@ -250,6 +250,72 @@ class VerifierFallbackTests(unittest.TestCase):
         self.assertFalse(result.passed)
         self.assertIn("constraint_violation", result.failure_codes)
 
+    def test_requires_passes_when_evidence_present(self) -> None:
+        packet = build_evidence_packet(
+            ("weather.today", "profile.location"),
+            (_make_item("weather.today", "weather", "sunny"),
+             _make_item("profile.location", "location", "Boston")),
+            "none",
+        )
+        plan = build_answer_plan(_make_decision("weather"), packet)
+        result = verify_answer(plan, "Today in Boston is sunny.", packet)
+        self.assertTrue(result.passed)
+        self.assertNotIn("missing_required_evidence", result.failure_codes)
+
+    def test_requires_fails_when_required_kind_missing(self) -> None:
+        items = (
+            _make_item("weather.today", "weather", "sunny"),
+        )
+        packet = build_evidence_packet(("weather.today",), items, "none")
+        plan = AnswerPlan(
+            plan_id="plan_test",
+            route="local_answer",
+            mode="factual",
+            requires=("missing_kind",),
+            forbids=(),
+            evidence_packet_id=packet.packet_id,
+        )
+        result = verify_answer(plan, "Today is sunny.", packet)
+        self.assertFalse(result.passed)
+        self.assertIn("missing_required_evidence", result.failure_codes)
+        self.assertEqual(result.constraint_retention, 0.0)
+
+    def test_requires_and_forbids_both_checked(self) -> None:
+        items = (_make_item("health.goal", "health_goal", "sleep"),)
+        packet = build_evidence_packet(("health.goal",), items, "none")
+        plan = AnswerPlan(
+            plan_id="plan_test",
+            route="local_answer",
+            mode="factual",
+            requires=("missing_kind",),
+            forbids=("diagnosis",),
+            evidence_packet_id=packet.packet_id,
+        )
+        result = verify_answer(plan, "This is a diagnosis.", packet)
+        self.assertFalse(result.passed)
+        self.assertIn("constraint_violation", result.failure_codes)
+        self.assertIn("missing_required_evidence", result.failure_codes)
+
+    def test_personal_memory_plan_requires_user_fact(self) -> None:
+        items = (_make_item("facts.pet", "user_fact", "dog"),)
+        packet = build_evidence_packet(("facts.pet",), items, "none")
+        plan = build_answer_plan(
+            _make_decision("personal_memory", evidence_keys=("facts.pet",)),
+            packet,
+        )
+        self.assertIn("user_fact", plan.requires)
+
+    def test_personal_memory_verifier_passes_with_user_fact_evidence(self) -> None:
+        items = (_make_item("facts.pet", "user_fact", "dog"),)
+        packet = build_evidence_packet(("facts.pet",), items, "none")
+        plan = build_answer_plan(
+            _make_decision("personal_memory", evidence_keys=("facts.pet",)),
+            packet,
+        )
+        result = verify_answer(plan, "I know this from local memory: dog.", packet)
+        self.assertTrue(result.passed)
+        self.assertNotIn("missing_required_evidence", result.failure_codes)
+
 
 class M4ScaffoldTests(unittest.TestCase):
     """Constrained-decoding scaffold: DecoderResult, _decode(), plan→decode→verify flow."""

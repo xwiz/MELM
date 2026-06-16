@@ -1,0 +1,17 @@
+{
+  "schema_id": "melm.memory_insights.v1",
+  "version": "v1",
+  "rules": [
+    {"category": "transitions", "intent": "story", "reason": "local_story_inventory", "text": "story inventory answered locally"},
+    {"category": "transitions", "intent": "weather", "reason": "weather_cache_hit", "text": "weather cache answered locally"},
+    {"category": "open_loops", "intent": "story", "reason": "missing_story_model", "text": "story inventory was missing, so the story ask needed cloud handoff"},
+    {"category": "open_loops", "intent": "weather", "reason": "weather_cache_miss", "text": "weather cache was missing, so the assistant chose a tool fetch"},
+    {"category": "open_loops", "reason": "personal_memory_empty", "text": "a local memory slot was missing and needs explicit setup"},
+    {"category": "action_state", "reason": "trusted_contact_action", "route": "device_action", "text": "a device action was prepared behind confirmation"},
+    {"category": "action_state", "reason": "local_media_action", "route": "device_action", "text": "a device action was prepared behind confirmation"},
+    {"category": "action_state", "reason": "cancelled_pending_action", "text": "a pending action was cancelled before execution"},
+    {"category": "action_state", "reason": "confirmation_target_mismatch", "text": "a changed confirmation target was blocked"},
+    {"category": "boundary_controls", "reason": "blocked_private_facts_to_cloud", "text": "private memory stayed local and cloud export was blocked"}
+  ],
+  "consented_stored_text": "explicit user-provided memory was stored locally"
+}

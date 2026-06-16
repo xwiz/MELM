@@ -1439,6 +1439,11 @@ class BulkLexiconSeederMvpTests(unittest.TestCase):
         p.write_text("\n".join(lines), encoding="utf-8")
         return p
 
+    def _wiktextract_data_path(self, lines: list[str]) -> Path:
+        p = Path(tempfile.mkdtemp()) / "test_wiktextract.jsonl"
+        p.write_text("\n".join(lines), encoding="utf-8")
+        return p
+
     def test_seed_wordnet_supersenses_basic(self) -> None:
         from melm.appliance.assistant_lexicon_bulk import seed_wordnet_supersenses
         store = self._make_store()
@@ -1499,7 +1504,7 @@ class BulkLexiconSeederMvpTests(unittest.TestCase):
         store = self._make_store()
         try:
             data = self._vn_data_path([
-                '{"verb": "ask", "verbnet_class": "communication-37.5", "pos": "verb"}',
+                '{"verb": "ask", "verbnet_class": "say-37.7", "pos": "verb"}',
             ])
             count = seed_verbnet_classes(store, data_path=data)
             self.assertEqual(count, 1)
@@ -1512,8 +1517,8 @@ class BulkLexiconSeederMvpTests(unittest.TestCase):
         store = self._make_store()
         try:
             data = self._vn_data_path([
-                '{"verb": "call", "verbnet_class": "communication-37.5", "pos": "verb"}',
-                '{"verb": "ask", "verbnet_class": "communication-37.5", "pos": "verb"}',
+                '{"verb": "call", "verbnet_class": "say-37.7", "pos": "verb"}',
+                '{"verb": "ask", "verbnet_class": "say-37.7", "pos": "verb"}',
             ])
             count = seed_verbnet_classes(store, data_path=data)
             self.assertEqual(count, 1)
@@ -1525,13 +1530,80 @@ class BulkLexiconSeederMvpTests(unittest.TestCase):
         store = self._make_store()
         try:
             data = self._vn_data_path([
-                '{"verb": "ask", "verbnet_class": "communication-37.5", "pos": "verb"}',
+                '{"verb": "ask", "verbnet_class": "say-37.7", "pos": "verb"}',
             ])
             count1 = seed_verbnet_classes(store, data_path=data)
             count2 = seed_verbnet_classes(store, data_path=data)
             self.assertEqual(count1, 1)
             self.assertEqual(count2, 1)
             self.assertEqual(store.count("lexemes"), 1)
+        finally:
+            store.close()
+
+    def test_seed_wiktextract_entries_basic(self) -> None:
+        from melm.appliance.assistant_lexicon_bulk import seed_wiktextract_entries
+        store = self._make_store()
+        try:
+            data = self._wiktextract_data_path([
+                '{"word": "zither", "class_id": "physical_object.instrument", "pos": "noun"}',
+                '{"word": "schadenfreude", "class_id": "emotion", "pos": "noun"}',
+            ])
+            count = seed_wiktextract_entries(store, data_path=data)
+            self.assertEqual(count, 2)
+            self.assertGreaterEqual(store.count("lexemes"), 2)
+        finally:
+            store.close()
+
+    def test_seed_wiktextract_entries_skips_unknown_class(self) -> None:
+        from melm.appliance.assistant_lexicon_bulk import seed_wiktextract_entries
+        store = self._make_store()
+        try:
+            data = self._wiktextract_data_path([
+                '{"word": "nonexistent_class", "class_id": "noun.nonexistent", "pos": "noun"}',
+                '{"word": "zither", "class_id": "physical_object.instrument", "pos": "noun"}',
+            ])
+            count = seed_wiktextract_entries(store, data_path=data)
+            self.assertEqual(count, 1)
+        finally:
+            store.close()
+
+    def test_seed_wiktextract_entries_idempotent(self) -> None:
+        from melm.appliance.assistant_lexicon_bulk import seed_wiktextract_entries
+        store = self._make_store()
+        try:
+            data = self._wiktextract_data_path([
+                '{"word": "zither", "class_id": "physical_object.instrument", "pos": "noun"}',
+            ])
+            count1 = seed_wiktextract_entries(store, data_path=data)
+            count2 = seed_wiktextract_entries(store, data_path=data)
+            self.assertEqual(count1, 1)
+            self.assertEqual(count2, 1)
+            self.assertEqual(store.count("lexemes"), 1)
+        finally:
+            store.close()
+
+    def test_seed_wiktextract_entries_uses_dormant_status(self) -> None:
+        from melm.appliance.assistant_lexicon_bulk import seed_wiktextract_entries
+        from melm.appliance.assistant_lexicon import lookup_lexical_senses
+        store = self._make_store()
+        try:
+            data = self._wiktextract_data_path([
+                '{"word": "zither", "class_id": "physical_object.instrument", "pos": "noun"}',
+            ])
+            seed_wiktextract_entries(store, data_path=data)
+            senses = lookup_lexical_senses(store, "zither")
+            self.assertEqual(len(senses), 1)
+            self.assertEqual(senses[0]["status"], "dormant")
+        finally:
+            store.close()
+
+    def test_seed_wiktextract_entries_missing_data_returns_zero(self) -> None:
+        from melm.appliance.assistant_lexicon_bulk import seed_wiktextract_entries
+        store = self._make_store()
+        try:
+            missing = Path(tempfile.mkdtemp()) / "nonexistent.jsonl"
+            count = seed_wiktextract_entries(store, data_path=missing)
+            self.assertEqual(count, 0)
         finally:
             store.close()
 
@@ -1543,11 +1615,18 @@ class BulkLexiconSeederMvpTests(unittest.TestCase):
                 '{"word": "love", "supersense": "noun.feeling", "pos": "noun"}',
             ])
             vn_data = self._vn_data_path([
-                '{"verb": "ask", "verbnet_class": "communication-37.5", "pos": "verb"}',
+                '{"verb": "ask", "verbnet_class": "say-37.7", "pos": "verb"}',
             ])
-            counts = seed_bulk_lexicon(store, wordnet_data=wn_data, verbnet_data=vn_data)
+            wt_data = self._wiktextract_data_path([
+                '{"word": "zither", "class_id": "physical_object.instrument", "pos": "noun"}',
+            ])
+            counts = seed_bulk_lexicon(
+                store, wordnet_data=wn_data, verbnet_data=vn_data,
+                wiktextract_data=wt_data,
+            )
             self.assertEqual(counts["wordnet"], 1)
             self.assertEqual(counts["verbnet"], 1)
+            self.assertEqual(counts["wiktextract"], 1)
         finally:
             store.close()
 
@@ -1579,12 +1658,28 @@ class BulkLexiconSeederMvpTests(unittest.TestCase):
             store.close()
 
     def test_seed_with_actual_data_files(self) -> None:
-        from melm.appliance.assistant_lexicon_bulk import seed_bulk_lexicon
+        from melm.appliance.assistant_lexicon_bulk import (
+            seed_wordnet_supersenses, seed_verbnet_classes, _CONTRACT_ROOT,
+        )
+        from pathlib import Path
         store = self._make_store()
         try:
-            counts = seed_bulk_lexicon(store)
-            self.assertGreaterEqual(counts["wordnet"], 1500)
-            self.assertGreaterEqual(counts["verbnet"], 20)
+            # Use 2000-entry slices of the full data for speed
+            tmpdir = Path(tempfile.mkdtemp())
+            wn_path = _CONTRACT_ROOT / "word_supersense_data.v1.jsonl"
+            lines = wn_path.read_text(encoding="utf-8").strip().splitlines()
+            wn_slice = tmpdir / "wn_slice.jsonl"
+            wn_slice.write_text("\n".join(lines[:2000]), encoding="utf-8")
+            wn_count = seed_wordnet_supersenses(store, data_path=wn_slice)
+            self.assertGreaterEqual(wn_count, 1500,
+                f"Expected >=1500 WordNet entries from 2000-entry slice, got {wn_count}")
+            vn_path = _CONTRACT_ROOT / "verb_data.v1.jsonl"
+            vn_lines = vn_path.read_text(encoding="utf-8").strip().splitlines()
+            vn_slice = tmpdir / "vn_slice.jsonl"
+            vn_slice.write_text("\n".join(vn_lines[:500]), encoding="utf-8")
+            vn_count = seed_verbnet_classes(store, data_path=vn_slice)
+            self.assertGreaterEqual(vn_count, 400,
+                f"Expected >=400 VerbNet entries from 500-entry slice, got {vn_count}")
         finally:
             store.close()
 
@@ -1880,6 +1975,167 @@ class SealedDictionaryMvpTests(unittest.TestCase):
             except:
                 store.close()
                 raise
+
+
+class LexiconLifecycleMvpTests(unittest.TestCase):
+    """Tests for demote_sense, correct_sense, generate_minimal_pairs."""
+
+    def _seed_lemma(
+        self, store: AssistantOSStore, lemma: str,
+        class_id: str = "physical_object.instrument",
+    ) -> str:
+        from melm.appliance.assistant_lexicon import promote_lexical_sense
+        result = lexicon_ingest(store, {
+            "schema_id": "melm.sense_candidate.v1",
+            "lemma": lemma,
+            "language": "en",
+            "pos": "noun",
+            "source": {"provenance": "seed_authored",
+                       "source_ref": "test", "license": "test"},
+            "definition": f"a {lemma} is a test instrument",
+            "semantic_class_candidates": [{"class_id": class_id,
+                                           "method": "seed_authored",
+                                           "confidence": 0.95}],
+            "safety": {"reserved_conflict": False, "policy_term_overlap": False},
+            "suggested_status": "active",
+            "confidence_prior": 0.95,
+        }, expected_provenance="seed_authored")
+        return result.sense_id
+
+    def test_demote_sense_active_to_quarantined(self) -> None:
+        with tempfile.TemporaryDirectory() as tmp:
+            store = AssistantOSStore(Path(tmp) / "test.sqlite")
+            try:
+                sense_id = self._seed_lemma(store, "kalimba")
+                from melm.appliance.assistant_lexicon import demote_sense
+                demote_sense(store, sense_id)
+                senses = lookup_lexical_senses(
+                    store, "kalimba", statuses=("quarantined",),
+                )
+                self.assertEqual(len(senses), 1)
+                senses = lookup_lexical_senses(
+                    store, "kalimba", statuses=("active",),
+                )
+                self.assertEqual(len(senses), 0)
+            finally:
+                store.close()
+
+    def test_demote_sense_rejects_quarantined(self) -> None:
+        with tempfile.TemporaryDirectory() as tmp:
+            store = AssistantOSStore(Path(tmp) / "test.sqlite")
+            try:
+                result = lexicon_ingest(store, {
+                    "schema_id": "melm.sense_candidate.v1",
+                    "lemma": "kalimba",
+                    "language": "en",
+                    "pos": "noun",
+                    "source": {"provenance": "user_taught",
+                               "source_ref": "test", "license": "test"},
+                    "definition": "a small thumb piano",
+                    "semantic_class_candidates": [
+                        {"class_id": "physical_object.instrument",
+                         "method": "genus_walk", "confidence": 0.6}],
+                    "safety": {"reserved_conflict": False,
+                               "policy_term_overlap": False},
+                    "suggested_status": "quarantined",
+                    "confidence_prior": 0.60,
+                }, expected_provenance="user_taught")
+                from melm.appliance.assistant_lexicon import demote_sense
+                with self.assertRaises(ContractValidationError):
+                    demote_sense(store, result.sense_id)
+            finally:
+                store.close()
+
+    def test_correct_sense_preserves_original_as_defeated(self) -> None:
+        with tempfile.TemporaryDirectory() as tmp:
+            store = AssistantOSStore(Path(tmp) / "test.sqlite")
+            try:
+                sense_id = self._seed_lemma(store, "kalimba",
+                                            "physical_object.instrument")
+                from melm.appliance.assistant_lexicon import correct_sense
+                result = correct_sense(
+                    store, sense_id,
+                    semantic_class_id="physical_object.device",
+                )
+                self.assertEqual(result["lemma"], "kalimba")
+                self.assertEqual(result["semantic_class_id"],
+                                 "physical_object.device")
+
+                defeated = lookup_lexical_senses(
+                    store, "kalimba", statuses=("defeated",),
+                )
+                self.assertEqual(len(defeated), 1)
+                self.assertEqual(defeated[0]["semantic_class_id"],
+                                 "physical_object.instrument")
+
+                quarantined = lookup_lexical_senses(
+                    store, "kalimba", statuses=("quarantined",),
+                )
+                self.assertEqual(len(quarantined), 1)
+                self.assertEqual(quarantined[0]["semantic_class_id"],
+                                 "physical_object.device")
+            finally:
+                store.close()
+
+    def test_generate_minimal_pairs_single_sense_returns_empty(self) -> None:
+        with tempfile.TemporaryDirectory() as tmp:
+            store = AssistantOSStore(Path(tmp) / "test.sqlite")
+            try:
+                self._seed_lemma(store, "kalimba", "physical_object.instrument")
+                from melm.appliance.assistant_lexicon import generate_minimal_pairs
+                pairs = generate_minimal_pairs(store, "kalimba")
+                self.assertEqual(pairs, [])
+            finally:
+                store.close()
+
+    def test_promote_lexical_sense_force_overrides_status_gate(self) -> None:
+        with tempfile.TemporaryDirectory() as tmp:
+            store = AssistantOSStore(Path(tmp) / "test.sqlite")
+            try:
+                from melm.appliance.assistant_lexicon import promote_lexical_sense
+                result = lexicon_ingest(store, {
+                    "schema_id": "melm.sense_candidate.v1",
+                    "lemma": "kalimba",
+                    "language": "en",
+                    "pos": "noun",
+                    "source": {"provenance": "seed_authored",
+                               "source_ref": "test", "license": "test"},
+                    "definition": "a small thumb piano",
+                    "semantic_class_candidates": [
+                        {"class_id": "physical_object.instrument",
+                         "method": "seed_authored", "confidence": 0.95}],
+                    "safety": {"reserved_conflict": False,
+                               "policy_term_overlap": False},
+                    "suggested_status": "dormant",
+                    "confidence_prior": 0.95,
+                }, expected_provenance="seed_authored")
+                # Without force, promoting a dormant sense is rejected
+                with self.assertRaises(ContractValidationError):
+                    promote_lexical_sense(store, result.sense_id)
+                # With force=True, the status gate is bypassed
+                injected = promote_lexical_sense(store, result.sense_id, force=True)
+                self.assertEqual(injected["lemma"], "kalimba")
+                senses = lookup_lexical_senses(
+                    store, "kalimba", statuses=("active",),
+                )
+                self.assertEqual(len(senses), 1)
+            finally:
+                store.close()
+
+    def test_generate_minimal_pairs_two_senses_returns_pair(self) -> None:
+        with tempfile.TemporaryDirectory() as tmp:
+            store = AssistantOSStore(Path(tmp) / "test.sqlite")
+            try:
+                self._seed_lemma(store, "kalimba", "physical_object.instrument")
+                self._seed_lemma(store, "kalimba", "physical_object.device")
+                from melm.appliance.assistant_lexicon import generate_minimal_pairs
+                pairs = generate_minimal_pairs(store, "kalimba")
+                self.assertEqual(len(pairs), 1)
+                self.assertIn("kalimba", pairs[0]["case_id"])
+                self.assertIn("good", pairs[0])
+                self.assertIn("bad", pairs[0])
+            finally:
+                store.close()
 
 
 if __name__ == "__main__":

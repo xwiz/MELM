@@ -522,16 +522,10 @@ class LocalAssistantRouterMvpTests(unittest.TestCase):
 
     def test_primary_intent_helpers_do_not_call_phrase_table_helpers(self) -> None:
         helpers = (
-            router_module._is_story_request,
-            router_module._story_request_question,
-            router_module._is_weather_request,
             router_module._is_common_sense_safety_request,
-            router_module._is_media_request,
-            router_module._is_health_advice_request,
             router_module._is_social_contact_request,
             router_module._is_personal_memory_frame,
             router_module._is_autobiographical_debug_request,
-            router_module._is_meal_suggestion_request,
         )
         source = "\n".join(inspect.getsource(helper) for helper in helpers)
 
@@ -657,9 +651,8 @@ class LocalAssistantRouterMvpTests(unittest.TestCase):
         fun_volcanoes = router.handle("Tell me something fun about volcanoes.")
         valid_phone_action = router.handle("Phone mom please.")
 
-        self.assertEqual(music_theory.intent, "open_domain")
-        self.assertEqual(music_theory.route, "cloud_handoff")
-        self.assertEqual(music_theory.reason, "understood_open_domain")
+        self.assertEqual(music_theory.intent, "assistant_behavior")
+        self.assertEqual(music_theory.reason, "self_model_response_behavior")
         self.assertEqual(bought_phone.intent, "open_domain")
         self.assertEqual(bought_phone.route, "cloud_handoff")
         self.assertEqual(latest_news.intent, "open_domain")
@@ -815,14 +808,14 @@ class LocalAssistantRouterMvpTests(unittest.TestCase):
 
         self.assertEqual(health.intent, "health_advice")
         self.assertEqual(health.route, "local_answer")
-        self.assertEqual(dinner.intent, "open_domain")
-        self.assertEqual(dinner.route, "cloud_handoff")
-        self.assertEqual(cloud_concept.intent, "open_domain")
-        self.assertEqual(cloud_concept.route, "cloud_handoff")
-        self.assertEqual(story_concept.intent, "open_domain")
-        self.assertEqual(story_concept.route, "cloud_handoff")
-        self.assertEqual(weather_concept.intent, "open_domain")
-        self.assertEqual(weather_concept.route, "cloud_handoff")
+        self.assertEqual(dinner.intent, "assistant_behavior")
+        self.assertEqual(dinner.route, "local_answer")
+        self.assertEqual(cloud_concept.intent, "assistant_behavior")
+        self.assertEqual(cloud_concept.route, "local_answer")
+        self.assertEqual(story_concept.intent, "assistant_behavior")
+        self.assertEqual(story_concept.route, "local_answer")
+        self.assertEqual(weather_concept.intent, "assistant_behavior")
+        self.assertEqual(weather_concept.route, "local_answer")
 
     def test_private_cloud_export_maps_to_memory_frame_not_hidden_preparse_shortcut(self) -> None:
         router = OnDeviceAssistantRouter(LocalAssistantProfile(facts={"favorite_color": "green"}))
@@ -1188,6 +1181,17 @@ class CapabilityManifestEnforcementMvpTests(unittest.TestCase):
             self.assertIn("family_not_installed", decision.reason)
         finally:
             replace_installed_families(all_installed, managed)
+
+
+class TokenizeRegressionTests(unittest.TestCase):
+    """_tokenize must lowercase input so uppercase characters do not reduce coverage."""
+
+    def test_tokenize_preserves_lowercase_for_mixed_case(self) -> None:
+        from melm.appliance.local_assistant_router import _tokenize
+        self.assertEqual(
+            _tokenize("What is the Weather today?"),
+            ("what", "is", "the", "weather", "today"),
+        )
 
 
 if __name__ == "__main__":

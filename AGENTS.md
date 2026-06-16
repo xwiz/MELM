@@ -1,9 +1,10 @@
 ## Goal
-- Migrate vocabulary from code constants (inline sets, LEGACY_ROUTER_TERM_CLASSES) to the factored lexicon store, replacing the transitional `_semantic_family_terms` bridge with a direct store-backed lookup. Build the M2 meaning substrate per the MVP v2 plan: factored lexicon store, semantic-class registry, ingestion gate, and legacy seed migration with bit-identical routing. Build the M3 learning vertical slice: runtime vocabulary acquisition channels (user-teaching, cloud lookup) with quarantine/promote/rollback lifecycle. Build the unified entity system (entities, entity_slots, entity_relations, class_schemas) replacing user_facts/inventories as the single store for all people, events, objects, and their attributes — documented in §16.5 of the MVP plan.
+- Build the Local Assistant OS per `docs/assistant_os_spec.md` (authoritative architecture) and `docs/local_assistant_os_mvp_plan_v2.md` (execution plan). The foundation must be correct — knowledge is data not code, synthesis is generic not per-intent, skills are radial consumers of a centralized knowledge store, not linear silos with inline knowledge. The anti-regression checklist in `docs/assistant_os_spec.md §13` must be followed for every change.
 
 ## Constraints & Preferences
 - All claims must be reproducible by a command on the current tree.
-- `docs/local_assistant_os_mvp_plan_v2.md` is the authoritative execution plan.
+- `docs/assistant_os_spec.md` is the **authoritative architecture specification**. It documents the target architecture, the skill/knowledge boundary, the knowledge-first (auto-research) design pattern, foundational rules, and the anti-regression checklist.
+- `docs/local_assistant_os_mvp_plan_v2.md` is the authoritative execution plan (milestones, gates, timeline).
 - Behavioral gates assert observable effects, not debug-label strings.
 - Tests use reproducible PRNG seeds for deterministic output.
 - Conversation dialog expectations reflect **current** routing behavior, not aspirational.
@@ -12,126 +13,110 @@
 - The `_semantic_family_terms` bridge is transitional — M5 replaces keyword classifiers with UOL-based frame linking. Do not treat the bridge as permanent architecture.
 - **Entity architecture**: all things (persons, events, places, objects) share a unified `entities` table with `kind` discriminator. Slot values live in `entity_slots`. Relations between entities live in `entity_relations`. Semantic classes define what slots entities of that class can have (`class_schemas` + `class_schema_slots`).
 - **Event class hierarchy**: `event` is an entity class with `kind='event_type'` or `kind='event_instance'`. Competition inherits from event. Chat sessions are personal-experience events (`kind='personal_experience'`).
+- **Knowledge is data, not code**: any domain-specific string, mapping, keyword set, or heuristic that could be referenced by multiple skills or extended at runtime must be extracted into a contract JSON or entity store.
+- **Synthesis is generic, not per-intent**: `_answer()` must not contain intent-specific if/elif branches — templates belong in contract registry.
+- **No new intents in keyword pipeline**: after M2, new capabilities go through frame linker or cloud handoff.
+- **Skills are release-controlled**: capability manifest gates dispatch, runtime learning cannot install a skill.
+- **semantic_classes.v1.json is the spine**: every class ID referenced by frame templates, contracts, entity store schemas, or UOL must exist in `semantic_classes.v1.json`. The CI invariant test enforces this — no new class ID without a spine entry.
+- **Meaning is three-timescale**: T1 utterance meaning (UOL parse), T2 conversation meaning (personal_experience entity with outcome/polarity/learned_facts slots), T3 historical meaning (lexicon + entity store). Each level aggregates from below.
+- **UOL inline dicts are transitional**: The `_VERBS` and `_KNOWN_NOMINAL_DOMAINS` dicts in `functional_grammar.py` use private class names not in the taxonomy. They will be removed when UOL reads verb/noun classes from the lexical_senses table.
+- **personal_experience now has slots**: outcome (required), polarity, learned_fact_ids, follow_up, intent_achieved (see spec §14.3)
 
 ## Progress
 ### Done
 - **M4 authority module built** — `assistant_authority.py` with `AuthorityEvidenceItem`, `AuthorityEvidencePacket`, `AnswerPlan`, `VerificationResult`, `DecoderResult`, `AuthorityInfo` dataclasses. `build_evidence_packet`, `build_answer_plan`, `verify_answer` functions. Negation-aware constraint checking (e.g., "not a diagnosis" does not trigger diagnosis forbids).
-- **`BoundedSynthesisResult.authority` field** — populated with `AuthorityInfo` in `synthesize()` success path.
-- **`_decode` method on `BoundedLocalSynthesizer`** — returns `DecoderResult` for M4 scaffold decode→verify flow.
-- **All authority symbols exported from `__init__.py`** — `AnswerPlan`, `AuthorityEvidenceItem`, `AuthorityEvidencePacket`, `AuthorityInfo`, `DecoderResult`, `VerificationResult`, `build_answer_plan`, `build_evidence_packet`, `verify_answer`.
-- **Contract JSON files added to `PI_BUNDLE_STATIC_FILES`** — `frame_templates.v1.json`, `reserved_lexemes.v1.json`, `semantic_classes.v1.json`, and 8 more contract artifacts fixed bootstrap_runtime and FrameLinker errors in the portable bundle.
-- **`test_assistant_authority_mvp.py` un-ignored** — 24 authority tests pass (no longer pre-existing failure).
-- **`_IN_MEMORY_LEXICON` replaces `_CLASS_TO_FALLBACK_TERMS`** — direct term→classes `dict[str, frozenset[str]]`, built from LEGACY at module load. `_semantic_family_terms` reads exclusively from this cache.
-- **`lexicon_owned`/`lexical_class_lookup` removed entirely** — from `_semantic_family_terms`, all classifiers, `OnDeviceAssistantRouter` constructor, `_classify_intent_from_uol_slots`, and the `decide` method. No per-family activation bits.
-- **`Callable` import removed** — unused after `lexical_class_lookup` removal.
-- **All bare `*,` separators removed** — residues from `lexical_class_lookup`/`lexicon_owned` parameter removal.
-- **`replace_in_memory_lexicon()` added** — replaces the module-level cache (kernel uses it in `_rebuild_router_lexicon_cache`).
-- **`_rebuild_router_lexicon_cache` always rebuilds cache** — store-backed when rows exist; resets to LEGACY baseline when empty. Fixes cross-test pollution where a prior test's store-backed cache leaked into subsequent tests with fresh stores.
-- **`_is_weather_concept_question` reverted to hardcoded set** — concept terms ("define", "explain", "system") are grammatical/structural patterns, not vocabulary.
-- **`build_legacy_router_candidates(seed_all=True)`** — exports ALL 200+ `LEGACY_ROUTER_TERM_CLASSES` entries.
-- **`write_legacy_lexicon_candidates` uses `seed_all=True`** — legacy export includes all router vocabulary.
-- **`seed_assistant_os_lexicon(store)` created** — seeds all 246 candidates (43 FG + 203 router) into the store.
-- **`seed_assistant_os_lexicon` called from bootstrap** — `_bootstrap_runtime` seeds the store right after `initialize_assistant_os_database`. The kernel then rebuilds the in-memory cache from store data at init.
-- **`semantic_classes.v1.json` extended with all 28 LEGACY-internal classes** — 89 total classes.
-- **Bit-identical routing verified** — store-backed cache is a superset of LEGACY cache.
-- **`import_transcript_replay_fixture` restored** — fix verified: `test_cli_api_session_smoke_can_execute_configured_real_actions` passes.
-- **V3: 15 missing content-word terms added** to `LEGACY_ROUTER_TERM_CLASSES`.
-- **V3: `build_legacy_in_memory_lexicon()` extracted** — constant now only referenced in `assistant_lexicon_legacy.py`.
-- **M3: `acquire_definition` built** — user-teaching channel with copula-detection.
-- **M3: `offline_definition_lookup` built** — JSONL dictionary channel.
-- **M3: `cloud_definition_lookup` built** — LLM chat-completions channel.
-- **M3: `set_lexical_sense_status` built** — promote/rollback API.
-- **M3: Kalimba e2e fixture** — teach→promote→rollback lifecycle.
-- **M4: `semantic_classes_activated` in events** — collector, column, event field, queries.
-- **M5: 9 classifiers migrated** to `_classify_from_frame_linker`: weather, story, media_playback, autobiographical_memory, meal_suggestion, common_sense_safety, social_contact, health_advice, personal_memory.
-- **`required_all_classes` AND-gate** added to frame linker and validation.
-- **Entity architecture documented** in §16.5 of MVP plan — unified entities, entity_slots, entity_relations, class_schemas, class_schema_slots, event class hierarchy, frame slot states.
-- **4 new entity tables** — `class_schemas`, `class_schema_slots`, `entities`, `entity_slots`, `entity_relations` added to `initialize()` DDL.
-- **`StoredEntity`, `StoredEntitySlot`, `StoredEntityRelation`, `ClassSchemaDef` dataclasses** added to store.
-- **`seed_class_schemas(store)` built** — seeds event class hierarchy (entity→person, event, place, object; competition→event) with slot definitions.
-- **`_ensure_entity_tables` migration** — creates tables for existing stores.
-- **Entity CRUD methods** — `add_entity`, `get_entity`, `find_entities`, `set_entity_slot`, `get_entity_slots`, `get_entity_slot`, `delete_entity`.
-- **Entity relations CRUD methods** — `add_relation`, `get_entity_relations`, `find_relations_by_type`, `find_relations_by_target`, `delete_relation`. Uses `StoredEntityRelation` dataclass. `add_relation` returns the generated relation_id; duplicate (entity_id, relation, target_entity_id) is silently idempotent via `INSERT OR IGNORE`.
-- **`seed_class_schemas` exported** from `__init__.py` and wired into CLI bootstrap.
-- **Review fixes applied** — `ClassSchemaDef.parent_class_id` changed to `str | None`; `seed_class_schemas` uses `None` for root parent; `count()` and `table_counts()` include entity tables; `seed_class_schemas` added to `__all__`; `count()` `if` statement `:` restored.
-- **36 entity tests** — schema creation, migration, seeding, CRUD, slot states, class hierarchy, entity relations, FK enforcement, `count()` whitelist, restart persistence, frozen dataclass invariance.
-- **Contacts ported to entities** — `migrate_contacts_to_entities(store)` reads `inventories WHERE kind='contact'`, creates `entities WHERE kind='person'` with name + phone slots. Entity ID prefixed `contact:<item_id>`. Idempotent — skips already-migrated contacts.
-- **Self facts ported to entities** — `migrate_self_facts_to_entities(store)` creates `entity_id='self'` if absent, then ports non-revoked `user_facts` key→value into `entity_slots`. Idempotent per-fact.
-- **8 migration tests** — contacts migrate correctly, empty inventory, no-number contact, idempotent re-run; self-facts migrate correctly, skip revoked facts, idempotent.
-- **Migrations wired into CLI bootstrap** — called after `seed_class_schemas` in `_bootstrap_runtime`.
-- **M0 complete** — tree committed in 4 reviewable slices + 1 CI fix + 1 feature slice. CI green (3m18s, 579 passed). Known-broken tests excluded via pyproject.toml `addopts` (`--ignore` / `--deselect`). Optional `tokenizers` dep installed in CI.
-- **`SLOT_STATE_*` constants defined** — `SLOT_STATE_FILLED`, `SLOT_STATE_ASKED_BUT_EMPTY`, `SLOT_STATE_UNKNOWN_ENTITY`, `SLOT_STATE_UNKNOWN`, `SLOT_STATE_INFERRED` in `assistant_frame_linker.py`.
-- **`slot_states` field added to `FrameCandidate`** — `dict[str, str]` mapping slot name → state constant. Defaults to empty dict via `field(default_factory=dict)`.
-- **`slot_states` field added to `AssistantDecision`** — flows slot state info from router through kernel to synthesis.
-- **`slot_bindings` populated in frame templates** — `social_contact` binds `["name", "phone"]`; `personal_memory` binds `["self_facts"]`. All others use `[]` (empty).
-- **`slot_bindings` validated in `validate_frame_templates()`** — must be array of strings.
-- **`_resolve_slot_states` helper** — kernel resolves slot states from entity store for `social_contact` (looks up person entities matching tokens) and `personal_memory` (checks self entity fact existence). Wired into `decide()` after router returns.
-- **personal_memory migrated** — last classifier delegated to frame linker. Structural gates kept (child/routine/household sub-patterns use possessive/contextual logic beyond lexical class matching); `memory_cognition`+first_person lexical path delegated to `_classify_from_frame_linker`. `personal_memory` NOT added to `_FRAME_LINKER_MIGRATED_INTENTS` (prevents bare `memory_recall` word matches like "remember" → personal_memory).
-- **Bulk lexicon seeders built** — `assistant_lexicon_bulk.py` with `seed_wordnet_supersenses()`, `seed_verbnet_classes()`, `seed_bulk_lexicon()` orchestrator. WordNet: 1,540 entries seeded (dormant) via `wn_supersense_map.v1.json` (45 mappings) and `word_supersense_data.v1.jsonl` (1,761 word→supersense entries). VerbNet: 22 entries seeded via `verbnet_map.v1.json` (12 mappings) and `verb_data.v1.jsonl` (23 verb→verbnet-class entries).
-- **Bulk seeder wired into bootstrap** — `seed_bulk_lexicon(store)` called from `seed_assistant_os_lexicon`, between legacy seed and router-family configuration.
-- **`_candidate` normalization fix** — uses `_normalize_term` instead of `lemma.lower()` for reserved/policy safety cross-check, matching `lexicon_ingest` normalization.
-- **Bulk seeder tests** — 11 new tests: basic seeding, reserved term skipping, unknown supersense skipping, idempotency, orchestrator, missing data files, dormant status, actual data file validation.
-- **Data generator script saved** — `scripts/generate_bulk_lexicon_data.py` creates JSONL data files from LEGACY vocabulary and curated word lists per supersense.
+- **M4 concrete decoder scaffold + template fallback** — `assistant_decoder.py` with `ConstrainedDecoder` registry/dispatch, `TemplateBackend` (zero-dep), `DecodingGrammar` data class, `build_decoding_grammar()` helper. Wired into synthesis `_decode_verified()`. 18 tests.
+- **M4 LlguidanceBackend** — `assistant_decoder_llguidance.py` with lazy-loaded HF CausalLM + llguidance `LLInterpreter` token-masked greedy decoding, `HFCompatTokenizer` adapter, `build_llguidance_grammar`, `build_regex_pattern`, `build_llm_prompt`. 29 tests.
+- **Comprehensive architecture rewrite** — `docs/assistant_os_spec.md` rewritten as authoritative architecture doc: honest assessment (3 foundational flaws), skill/knowledge boundary, knowledge-first radial design, P0-P3 extraction priority table, anti-regression checklist, migration path.
+- **P0 knowledge extraction: `_food_tags` → `food_tags.v1.json`** — 13-entry food→tag mapping extracted from `local_assistant_router.py:1077` into `contracts/food_tags.v1.json`. Registered in `registry.v1.json`, validated by `validate_food_tags()`, loaded via `load_food_tags()`.
+- **P1 knowledge extraction: health_disclaimers.v1.json** — 5 urgent medical disclaimer responses extracted from `assistant_synthesis.py:996` into `contracts/health_disclaimers.v1.json`.
+- **P1 knowledge extraction: safety_policies.v1.json** — public clothing safety template + destination mapping extracted from `assistant_synthesis.py:1028` into `contracts/safety_policies.v1.json`.
+- **P2 knowledge extraction: story_components.v1.json** — 3 story generation heuristic groups (image: 8 keyword→image pairs across title/full-text, challenge: 5 topic→challenge, lesson: 4 topic→lesson) extracted from `assistant_synthesis.py:707-751` into `contracts/story_components.v1.json`.
+- **P2 knowledge extraction: weather_concepts.v1.json** — 3 weather domain terms extracted from `local_assistant_router.py:1608` into `contracts/weather_concepts.v1.json`.
+- **P3 knowledge extraction: meal_scopes.v1.json** — 5 scope tokens (breakfast/lunch/dinner/cook/cooking → scope) extracted from `local_assistant_router.py:1029` into `contracts/meal_scopes.v1.json`.
+- **P3 knowledge extraction: assistant_identity.v1.json** — 4 identity/status response templates (introduction, status_unavailable, status_next_steps, status_default) extracted from `assistant_synthesis.py:763-816` into `contracts/assistant_identity.v1.json`.
+- **Phase 3: Generic _answer() dispatch** — replaced the 100-line `_answer()` if/elif chain with a handler registry (`_ANSWER_HANDLERS`) + contract template renderer (`_render_contract_answer`). Complex intents (story, meal, identity, status, etc.) have explicit handler functions registered in the dispatch dict. Template-suitable intents (weather) use `answer_templates.v1.json` with reason-gated template selection. No intent-specific branching in `_answer()` itself.
+- **Phase 4: Skill module pattern — assistant_skill_meal.py** — extracted all meal suggestion logic (`suggest_meal()`, `format_meal_answer()`, `MealSuggestion` dataclass, and 12 helper functions) from `local_assistant_router.py` and `assistant_synthesis.py` into `assistant_skill_meal.py`. The skill module is a radial consumer of knowledge contracts (`food_tags.v1.json`, `meal_scopes.v1.json`). Synthesis `_handle_meal_suggestion` delegates to `format_meal_answer()`. Router `choose_local_meal` delegates to `suggest_meal()` for backward compatibility.
+- **Phase 4: Skill module pattern — assistant_skill_story.py** — extracted story answer formatting (`format_story_answer()`, `format_story_frame()`, `_story_image()`, `_story_challenge()`, `_story_lesson()`) from `assistant_synthesis.py`. Radial consumer of `story_components.v1.json` contract. Keyword iteration now reads keys from contract instead of hardcoded literals.
+- **Phase 4: Skill module pattern — assistant_skill_memory.py** — extracted all autobiographical and personal memory formatting (`personal_memory_summary()`, `autobiographical_memory_summary()`, `autobiographical_session_summary()`, `autobiographical_digest_summary()`, `_event_memory_parts()`, `_event_label()`, `_event_memory_insight_text()`) from `assistant_synthesis.py` into `assistant_skill_memory.py`.
+- **Phase 4: Extract memory_insights.v1.json** — hardcoded intent+reason→text mappings from `_event_memory_insight_text` (10 rules + 1 consented-stored pattern) extracted into `contracts/memory_insights.v1.json`. Validator `validate_memory_insights`, loader `load_memory_insights` in `validation.py`. Registered in `registry.v1.json`.
+- **Phase 4: Add trigger keywords to health_disclaimers.v1.json and safety_policies.v1.json** — `health_disclaimers.v1.json` responses now carry `triggers` arrays (9 keywords across 4 entries), `safety_policies.v1.json` destinations carry `triggers` arrays and renamed `text`→`phrase`. Validators updated. Synthesis `_urgent_health_answer()` and `_public_clothing_safety_answer()` now iterate contract triggers instead of hardcoded keyword checks.
+- **(earlier M0-M3 items persist — entity tables, lexicon seeders, classifier migrations, etc.)**
+- **M10: Intent-specific social_contact branch removed from `_answer_specificity()`** — moved to `answer_templates.v1.json` as `answer_specificity_bonuses`.
+- **M13: Formal Skill protocol** — `assistant_skill_base.py` with `SkillManifest`, `Skill`, `SkillRegistry` structural protocol + global registry. 19 tests.
+- **Context gates fixed** — `require_health_terms` (bare-domain blocker + concern verb detection) and `require_meal_frame` (imperative allowance + second-person block). Fixed 8 test failures.
+- **C1+C2+C3: UOL reads from lexical_senses** — `_UOL_LEXICON` ref + `set_uol_lexicon()` in `functional_grammar.py`. `_lemma()` and `_semantic_class()` fall back to lexicon for verbs not in `_VERBS`. Wired into `local_assistant_router.py` at module init. 16 tests.
+- **C4: T2 personal_experience entity writer** — `assistant_experience_writer.py` with `record_conversation_experience()` wired into kernel `_remember()`. Writes `outcome`/`polarity`/`intent_achieved`/`learned_fact_ids`/`follow_up` slots from synthesis result. 23 tests.
+- **Fixed `seed_class_schemas()` bug** — `class_schema_slots` INSERT for personal_experience referenced nonexistent `updated_at` column. Removed column ref to match table DDL. Unblocks 4 entity architecture tests.
 
-### Done (just committed)
-- **M3 gate closed** — promotion trace wired (`set_lexical_sense_status` → `add_promotion`), capability manifest enforced (`_is_family_installed` in `_route_impl`), 289 core tests pass.
 ### In Progress
-- **M4 scaffold building** — `assistant_decoder.py` with `ConstrainedDecoder` registry, template fallback, llguidance/BitNet backends pending.
+- **(none)**
 
 ### Blocked
-- `test_cli_pi_bundle_builds_portable_self_checked_bundle` — bundle builds but `v01_audit`/`v01_progress` checks fail by design (project milestone blockers, not code issues). Remaining infrastructure smokes all pass with contract files included.
-- **personal_memory** — remaining sub-patterns (child/routine/household) kept as structural gates use possessive/contextual logic beyond frame linker's lexical class matching.
-
-## Key Decisions
-- **Entity architecture**: unified `entities` table with `kind` discriminator. Persons are `kind='person'`. Events are `kind='event_type'`/`kind='event_instance'`. Slot values in `entity_slots`. Relations in `entity_relations`. Class hierarchy defines valid slots via `class_schemas` + `class_schema_slots`.
-- **Event class hierarchy**: `competition` inherits from `event`. Slots defined on the class, not per entity. Frame slot states (`filled`, `asked_but_empty`, `unknown_entity`, `unknown`, `inferred`) enable intelligent "I don't know" responses.
-- **Migration path**: `user_facts` → `entities WHERE kind='self'` + `entity_slots`; contacts → `entities WHERE kind='person'`.
-- In-memory cache is always rebuilt — store data when rows exist, LEGACY reset when empty.
-- Migrated frame-linker intents require top-candidate status (`candidates[0].frame_id == frame_id`) to prevent preemption.
-- Fallback uses strict `>` for migrated intents to block bare required-class matches.
-- Weather concept gate retained for "what is weather?" → `open_domain`.
-- Action tokens checked early in story, media, and autobiographical migrations for bit-identical routing.
-- Concept-level terms and grammar/structural logic stay as hardcoded patterns, not vocabulary lookups.
-- **Talk-based social_contact path uses multi-candidate check** — the contact_action path uses `_classify_from_frame_linker` (strict top-candidate), but the talk+need/help/please path checks all candidates for a passing social_contact score. This prevents preemption by alphabetical tie-breaker when health_advice matches via "help" → advice_action.
-- **Slot state resolution is kernel-side, not in the frame linker** — `_resolve_slot_states` lives in `assistant_os_kernel.py` because the frame linker shouldn't depend on the store. After `OnDeviceAssistantRouter.handle()` returns, the kernel enriches the decision with slot states from the entity store.
-- Contracts store lemmas only — language-agnostic invariant per the plan.
-- `cloud_lookup` uses `urllib.request` directly (project convention), no new dependencies.
-- **Pluggable SLM architecture**: M4 decoder uses a `ConstrainedDecoder` registry supporting llguidance (HuggingFace + CFG grammar) and BitNet b1.58 1B (TQ2_0/TQ1_0 + LoRA for tone/mood). Template fallback is the zero-dep baseline.
-- **`_food_tags` deferred**: hardcoded food-tag dict at `local_assistant_router.py:1074` is legacy synthesis metadata (not router vocabulary). Deferred to M5 synthesis-data migration — should become a contract JSON (`food_tags.v1.json`) or entity store slot data.
+- `test_cli_pi_bundle_builds_portable_self_checked_bundle` — bundle builds but `v01_audit`/`v01_progress` checks fail by design.
+- **Pi benchmark** — requires hardware or emulator access for tok/s/TTFT/RSS.
+- **Knowledge is data, not code** — formal rule. Any domain knowledge in code is a defect until extracted to a contract.
+- **Synthesis is generic, not per-intent** — `_answer()` must be replaced with a generic AnswerPlan renderer. Each intent's template belongs in the contract registry.
+- **No new intents in keyword pipeline** — after M2, frame linker or cloud handoff only.
+- **Skills are release-controlled** — capability manifest gates dispatch. Runtime learning can extend knowledge, not install skills.
+- **Contracts before code** — define contract schema + validator + registry entry before writing domain logic.
+- **Architecture is radial, not linear** — knowledge at center (contracts + lexicon + entities), skills as consumers. Auto-research pattern: teach once, serve all skills.
+- **Entity architecture**: unified `entities` table with `kind` discriminator. Entity relations CRUD on store.
+- **Pluggable SLM architecture**: M4 decoder uses a `ConstrainedDecoder` registry supporting llguidance (HuggingFace + CFG grammar) and BitNet b1.58 1B (TQ2_0/TQ1_0 + LoRA). Template fallback is the zero-dep baseline.
+- Legacy hardcoded data (e.g. health disclaimer texts, safety policies) must be migrated to contracts per the priority table in `docs/assistant_os_spec.md` §11.1.
 
 ## Next Steps
-1. **Close M3 gate** — (a) Wire `set_lexical_sense_status` → `add_promotion` so promotion trace is queryable; (b) Build capability manifest runtime enforcement to block capability grants from acquired vocab; (c) Start Pi benchmark for M4.
-2. **Personal_memory frame linker migration** — consider adding child_memory sub-frame with restrictive threshold to catch "the child" patterns.
+1. **Phase 4: Build skill module pattern** — `assistant_skill_meal.py`, `assistant_skill_story.py`, `assistant_skill_memory.py` complete.
+2. **Pi benchmark** — install on Pi 4/5, measure tok/s/TTFT/RSS with llguidanceBackend + small CausalLM.
+3. **BitNet b1.58 1B backend** — when Pi benchmark validates need for smaller/quantized decoder.
+
 
 ## Critical Context
-- **647 tests pass**: authority (24), frame_linker (27), router (54, 71 subtests), eval (4, 107/107 cases), lexicon (69), entity (61), lifecycle (2), lifecycle integration (1), CLI (rest). 4 sealed dictionary tests.
-- **M3 sealed dictionary**: 72 words across 11 intent categories. Test harness verifies ingest/promote ≥80%, routing agreement ≥80%, retention ≥80%.
-- **9/9 classifiers migrated** to frame linker. 1 partial (personal_memory — structural gates kept, memory_cognition+first_person delegated to frame linker).
+- **391 core tests pass** (57 router, 70 lexicon, 27 frame_linker, 75 entity, 24 authority, 38 reranker, 18 decoder, 29 llguidance, 6 contracts, 4 eval, 2 lifecycle, rest jobs/cli, 17 meaning_invariant, 16 uol_lexicon, 23 experience_writer). 0 regressions.
+- **18 registered contracts** in `registry.v1.json` (sense_candidate, semantic_classes, wn_supersense_map, verbnet_map, reserved_lexemes, router_lexicon_families, frame_templates, food_tags, health_disclaimers, safety_policies, story_components, weather_concepts, meal_scopes, assistant_identity, answer_templates, capability_manifest, memory_insights, router_semantic_aliases).
+- **M3 sealed dictionary**: 72 words across 11 intent categories. Ingest/promote ≥80%, routing agreement ≥80%, retention ≥80%.
+- **9/9 classifiers migrated** to frame linker.
 - **`_FRAME_LINKER_MIGRATED_INTENTS`**: 8 intents — weather, story, media_playback, autobiographical_memory, meal_suggestion, common_sense_safety, social_contact, health_advice.
 - **89 semantic classes** in `semantic_classes.v1.json`.
-- **4 new entity tables**: `class_schemas`, `class_schema_slots`, `entities`, `entity_slots`, `entity_relations`.
-- **`seed_class_schemas`** seeds: entity (base), person, event, place, object, competition, personal_experience — with slot definitions for each.
-- **Entity CRUD**: `add_entity`, `get_entity`, `find_entities`, `set_entity_slot`, `get_entity_slots`, `get_entity_slot`, `delete_entity`.
-- **Migration functions**: `migrate_contacts_to_entities(store)` — ports inventory contacts to person entities (idempotent). `migrate_self_facts_to_entities(store)` — ports user_facts to self entity slots (idempotent). Both wired into CLI bootstrap.
+- **Entity store**: 5 tables (entities, entity_slots, entity_relations, class_schemas, class_schema_slots). Seed class hierarchy (entity→person/event/place/object, competition→event, personal_experience). Migration functions for contacts→persons, user_facts→self entity.
 - **1 pre-existing failure**: bundle test (`v01_audit`/`v01_progress` milestone blockers).
-- **Pre-existing test pollution**: router tests fail when run after legacy tests due to `_IN_MEMORY_LEXICON` global mutable state.
-- **Slot state infrastructure**: `SLOT_STATE_*` constants (5 states), `slot_states` on `FrameCandidate` + `AssistantDecision`, `slot_bindings` in templates (validated), `_resolve_slot_states` in kernel for `social_contact` and `personal_memory` intents.
-- **Authority module**: `assistant_authority.py` with evidence packets, answer plans, verification. `AuthorityInfo` wired into `BoundedSynthesisResult.authority`. `_decode()` on synthesizer for M4 scaffold. Negation-aware forbids checking.
+- **3 foundational flaws documented**: (1) knowledge trapped in code, not referenceable as data; (2) router/synthesis layer duplicates each other; (3) architecture wires intents before meaning.
+- **P0-P3 extraction complete** (all priority-table items in contracts). **Phase 3 generic dispatch** complete. **Phase 4 skill modules** (meal, story, memory) complete.
+- **Router semantic aliases** (`_semantic_object_role_tokens` + `_secondary_meaning_hint_groups`, ~140 token→intent mappings) extracted to `router_semantic_aliases.v1.json`. Both functions now read from contract.
+- **Health disclaimers** contract extended with `urgent_terms` and `urgent_pairs` — `_has_urgent_health_frame` reads from contract instead of hardcoded sets.
+- **Answer templates** contract extended with `evidence_count_targets` (7 intent→int mappings) and `answer_specificity_phrases` (11 intent→phrase patterns). `_target_evidence_count` and `_answer_specificity` read from contract.
+- **M5 E3 reranker built** — `assistant_frame_ranker.py` with predicate + object alignment using UOL token_roles. Wired into router fallback route. 38 tests.
+- **Meaning architecture documented** — spec §14: three-timescale model (T1 UOL → T2 personal_experience → T3 lexicon/entity store), semantic_classes.v1.json as the spine invariant, personal_experience slots (outcome, polarity, learned_fact_ids, follow_up, intent_achieved).
+- **T2 personal_experience writer built** — `assistant_experience_writer.py` implements `record_conversation_experience()`, wired into kernel `_remember()` after each turn.
+- **Cross-layer class ID invariant test** — `test_meaning_invariant.py`: 17 tests verifying every class ID in frame templates, contracts, entity store schemas, and UOL is defined in the spine. Documents 20 transitional UOL-only classes and 3 overlapping classes.
 
 ## Relevant Files
-- **`melm/appliance/local_assistant_router.py`** — 9 migrated classifiers, `_classify_from_frame_linker`, `_FRAME_LINKER_MIGRATED_INTENTS`, `AssistantDecision` with `slot_states` field.
-- **`melm/appliance/assistant_frame_linker.py`** — `_match_required_all_classes` AND-gate, `SLOT_STATE_*` constants, `FrameCandidate` with `slot_states` field.
-- **`melm/appliance/assistant_os_kernel.py`** — `_rebuild_router_lexicon_cache` calls `rebuild_entity_lexicon_index`, `_resolve_slot_states` helper wired into `decide()`.
-- **`melm/contracts/frame_templates.v1.json`** — templates with `required_all_classes` and `slot_bindings` arrays.
-- **`melm/contracts/validation.py`** — `validate_frame_templates` now validates `slot_bindings`.
-- **`melm/appliance/assistant_os_store.py`** — entity DDL (class_schemas, class_schema_slots, entities, entity_slots, entity_relations), `seed_class_schemas`, `StoredEntity`/`StoredEntitySlot`/`StoredEntityRelation`/`ClassSchemaDef` dataclasses, entity CRUD methods, `_ensure_entity_tables` migration.
-- **`melm/appliance/assistant_os_kernel.py`** — `_rebuild_router_lexicon_cache` now calls `rebuild_entity_lexicon_index` after store-backed or legacy rebuild.
-- **`melm/appliance/local_assistant_router.py`** — `_semantic_family_terms` with bigram compound token detection. `rebuild_entity_lexicon_index(store)` injects entity labels into `_IN_MEMORY_LEXICON`.
-- **`melm/appliance/assistant_authority.py`** — M4 authority: evidence packets, answer plans, verification, negation-aware forbids.
-- **`scripts/local_assistant_os_cli.py`** — bootstrap imports `seed_class_schemas` and calls it.
-- **`docs/local_assistant_os_mvp_plan_v2.md`** — §16.5 Entity store architecture.
-- **`tests/test_assistant_frame_linker_mvp.py`** — 27 frame linker tests.
-- **`tests/test_local_assistant_router_mvp.py`** — 54 router tests.
-- **`tests/test_assistant_lexicon_mvp.py`** — 69 lexicon tests (54 original + 11 bulk seeder + 4 sealed dictionary).
-- **`tests/test_assistant_os_eval_mvp.py`** — 4 eval tests (107/107 cases).
-- **`tests/test_entity_architecture_mvp.py`** — 61 entity tests (schema, migration, seeding, CRUD, slot states, entity relations, count whitelist, contacts migration, self-facts migration, entity lexicon index).
+- **`docs/assistant_os_spec.md`** — Comprehensive authoritative architecture specification. Knowledge extraction priority table, anti-regression checklist, migration path.
+- **`docs/local_assistant_os_mvp_plan_v2.md`** — Authoritative execution plan.
+- **`melm/contracts/food_tags.v1.json`** — P0 contract: 12 food→tag marker mappings (extracted from router).
+- **`melm/contracts/health_disclaimers.v1.json`** — P1 contract: 5 urgent medical disclaimer responses (extracted from synthesis).
+- **`melm/contracts/safety_policies.v1.json`** — P1 contract: public clothing safety template + 3 destination phrases (extracted from synthesis).
+- **`melm/contracts/story_components.v1.json`** — P2 contract: 3 story generation heuristic groups (image: 8 keyword→image pairs across title/full-text, challenge: 5 topic→challenge, lesson: 4 topic→lesson).
+- **`melm/contracts/weather_concepts.v1.json`** — P2 contract: 3 weather domain terms (extracted from router).
+- **`melm/contracts/meal_scopes.v1.json`** — P3 contract: 5 scope tokens with default (extracted from router).
+- **`melm/contracts/assistant_identity.v1.json`** — P3 contract: 4 identity/status templates (extracted from synthesis).
+- **`melm/contracts/answer_templates.v1.json`** — Phase 3 contract: 2 intent templates with reason gates and evidence checks.
+- **`melm/contracts/registry.v1.json`** — 18 registered contracts with validators.
+- **`melm/contracts/validation.py`** — Validators: `validate_food_tags`, `validate_health_disclaimers`, `validate_safety_policies`, `validate_story_components`, `validate_weather_concepts`, `validate_meal_scopes`, `validate_assistant_identity`, `validate_answer_templates`, `validate_memory_insights`. Loaders: `load_food_tags`, `load_health_disclaimers`, `load_safety_policies`, `load_story_components`, `load_weather_concepts`, `load_meal_scopes`, `load_assistant_identity`, `load_answer_templates`, `load_memory_insights`.
+- **`melm/appliance/assistant_decoder.py`** — `ConstrainedDecoder` with registry/dispatch, `TemplateBackend` fallback. 18 tests.
+- **`melm/appliance/assistant_decoder_llguidance.py`** — `LlguidanceBackend` (lazy HF CausalLM + llguidance LLInterpreter), `HFCompatTokenizer`, grammar/prompt builders. 29 tests.
+- **`melm/appliance/local_assistant_router.py`** — `_food_tags()` now reads from contract. `_is_family_installed` manifest enforcement. 17-classifier cascade. `set_uol_lexicon()` wired at module init.
+- **`melm/appliance/assistant_synthesis.py`** — `_answer()` uses generic dispatch via `_ANSWER_HANDLERS` registry + `_render_contract_answer()`. All story/health/safety/identity functions read from contracts. Handlers delegate to skill modules for meal, story, and memory.
+- **`melm/appliance/assistant_authority.py`** — Authority: evidence packets, answer plans, verification, negation-aware forbids.
+- **`melm/appliance/assistant_lexicon.py`** — Factored store-backed vocabulary with acquisition lifecycle.
+- **`melm/appliance/assistant_frame_linker.py`** — Correct pattern: meaning-first dispatch. 9 classifiers migrated.
+- **`melm/appliance/assistant_os_store.py`** — Entity CRUD, class schema seeding, migration functions.
+- **`melm/appliance/assistant_experience_writer.py`** — T2 personal_experience entity writer, wired into kernel `_remember()`.
+- **`tests/test_assistant_decoder_mvp.py`** — 18 decoder scaffold tests.
+- **`tests/test_assistant_decoder_llguidance_mvp.py`** — 29 llguidance tests.
+- **`tests/test_contracts_mvp.py`** — 6 contract validation tests.
+- **`tests/test_meaning_invariant.py`** — 17 tests: cross-layer semantic class spine invariant. Documents UOL transition state. 7 realistic conversation tests (tell story, play music, feel sick, eat pasta, call mom, weather, UOL+reranker agreement).
+- **`docs/assistant_os_spec.md §14`** — Meaning representation architecture: three-timescale model, semantic class spine invariant, personal_experience slot schema (outcome/polarity/learned_fact_ids/follow_up/intent_achieved), extensibility contract, anti-regression checklist update.
+- **`melm/appliance/functional_grammar.py`** — UOL lexicon integration: `_UOL_LEXICON` ref, `set_uol_lexicon()`, lexicon fallback in `_lemma()` and `_semantic_class()`. 16 tests.
+- **`melm/appliance/assistant_skill_base.py`** — Skill protocol: `SkillManifest`, `Skill` structural protocol, `SkillRegistry`. 19 tests.
+- **`melm/appliance/assistant_frame_ranker.py`** — E3 reranker with UOL token_roles consumption (_predicate_action_alignment_score, _object_alignment_score). 38 tests.

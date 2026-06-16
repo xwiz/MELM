@@ -83,6 +83,19 @@ _REQUIRES_MAP: dict[str, tuple[str, ...]] = {
     "weather": ("weather",),
     "health_advice": ("health_goal",),
     "meal_suggestion": ("food_inventory",),
+    "personal_memory": ("user_fact",),
+    "story": ("story_model",),
+    "media_playback": ("media", "preference"),
+    "social_contact": ("contact",),
+    "autobiographical_memory": ("event_memory",),
+    "common_sense_safety": ("policy",),
+    "assistant_identity": ("self_model",),
+    "assistant_status": ("self_status",),
+    "open_domain": (),
+    "unknown": (),
+    "social_greeting": (),
+    "assistant_behavior": (),
+    "personal_goal_advice": (),
 }
 
 
@@ -104,7 +117,13 @@ def build_evidence_packet(
         if key in item_map:
             admitted.append(item_map[key])
         else:
-            blocked.append(key)
+            # Prefix match: "health_goals" matches "health_goals.0"
+            matched = [item for item_key, item in item_map.items()
+                       if item_key.startswith(key + ".")]
+            if matched:
+                admitted.extend(matched)
+            else:
+                blocked.append(key)
     return AuthorityEvidencePacket(
         packet_id=_packet_id(evidence_keys, boundary),
         items=tuple(admitted),
@@ -162,8 +181,17 @@ def verify_answer(
     if not answer_nonempty:
         failure_codes.append("empty_answer")
 
-    # Constraint check — forbids (honor negation: "not a diagnosis" or "no diagnosis")
+    # Constraint check — requires (evidence kinds must be present)
     constraint_retention = 1.0
+    admitted_kinds = {item.kind for item in packet.items}
+    for required in plan.requires:
+        if required not in admitted_kinds:
+            if "missing_required_evidence" not in failure_codes:
+                failure_codes.append("missing_required_evidence")
+            constraint_retention = 0.0
+            break
+
+    # Constraint check — forbids (honor negation: "not a diagnosis" or "no diagnosis")
     answer_lower = answer.lower() if answer else ""
     for forbidden in plan.forbids:
         f_lower = forbidden.lower()

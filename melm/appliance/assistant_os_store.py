@@ -2924,6 +2924,16 @@ def seed_class_schemas(store: AssistantOSStore) -> None:
         "INSERT INTO class_schemas(semantic_class_id, parent_class_id, label, base_entity_kind, description, updated_at) VALUES (?, ?, ?, ?, ?, ?)",
         ("personal_experience", "entity", "PersonalExperience", "personal_experience", "A chat session or past interaction", now),
     )
+    store.connection.executemany(
+        "INSERT INTO class_schema_slots(semantic_class_id, slot_name, value_type, required, description) VALUES (?, ?, ?, ?, ?)",
+        [
+            ("personal_experience", "outcome", "text", 1, "Resolution status: resolved | unresolved | escalated | abandoned"),
+            ("personal_experience", "polarity", "real", 0, "Aggregate sentiment: -1.0 to +1.0"),
+            ("personal_experience", "learned_fact_ids", "json", 0, "Entity IDs of facts created during this experience"),
+            ("personal_experience", "follow_up", "text", 0, "Follow-up needed: check_tomorrow | monitor | null"),
+            ("personal_experience", "intent_achieved", "text", 0, "Whether the primary intent was achieved: yes | partial | no"),
+        ],
+    )
 
 
 def migrate_contacts_to_entities(store: AssistantOSStore) -> int:

@@ -1,0 +1,7 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "melm.weather_concepts.v1",
+  "schema_id": "melm.weather_concepts.v1",
+  "weather_terms": ["weather", "forecast", "temperature"],
+  "_note": "Weather domain terms used by concept-question detection. Excludes grammar/structural terms (define, explain, mean) which stay in code per architectural rule."
+}

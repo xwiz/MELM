@@ -13,6 +13,7 @@ Data files live under ``melm/contracts/``:
 from __future__ import annotations
 
 import json
+import os
 from pathlib import Path
 from typing import Any
 
@@ -35,7 +36,8 @@ def _wn_supersense_map() -> dict[str, str]:
     global _WN_SUPERSENSE_MAP
     if _WN_SUPERSENSE_MAP is None:
         payload = load_contract_json("wn_supersense_map.v1.json")
-        _WN_SUPERSENSE_MAP = dict(payload.get("mappings", {}))
+        raw = dict(payload.get("mappings", {}))
+        _WN_SUPERSENSE_MAP = {k.lower(): v for k, v in raw.items()}
     return _WN_SUPERSENSE_MAP
 
 
@@ -165,6 +167,7 @@ def seed_wordnet_supersenses(
     store: AssistantOSStore,
     *,
     data_path: Path | None = None,
+    max_entries: int | None = None,
     provenance: str = "wordnet",
 ) -> int:
     """Seed word→supersense→MELM-class entries through the ingestion gate.
@@ -174,11 +177,19 @@ def seed_wordnet_supersenses(
     ``lexicon_ingest()`` with ``provenance=wordnet`` and
     ``suggested_status=dormant``.
     
+    Args:
+        store: Entity store to seed into.
+        data_path: Optional path to override the default JSONL file.
+        max_entries: If set, only process the first N entries.
+        provenance: Provenance label for ingested entries.
+    
     Returns the count of successfully ingested entries.
     """
     mapping = _wn_supersense_map()
     known = _class_ids()
     entries = _load_word_supersense_data(data_path)
+    if max_entries is not None:
+        entries = entries[:max_entries]
     applied = 0
     for entry in entries:
         word = str(entry["word"]).strip().lower()
@@ -209,6 +220,7 @@ def seed_verbnet_classes(
     store: AssistantOSStore,
     *,
     data_path: Path | None = None,
+    max_entries: int | None = None,
     provenance: str = "verbnet",
 ) -> int:
     """Seed verb→verbnet-class→MELM-class entries through the ingestion gate.
@@ -221,6 +233,8 @@ def seed_verbnet_classes(
     mapping = _verbnet_map()
     known = _class_ids()
     entries = _load_verb_data(data_path)
+    if max_entries is not None:
+        entries = entries[:max_entries]
     applied = 0
     for entry in entries:
         verb = str(entry["verb"]).strip().lower()
@@ -247,16 +261,133 @@ def seed_verbnet_classes(
     return applied
 
 
+def _load_wiktextract_data(path: Path | None = None) -> list[dict[str, str]]:
+    """Load wiktextract word→sense entries from a JSONL file.
+
+    Each line: {"word": ..., "pos": ..., "class_id": ..., "definition": ...}
+    """
+    if path is None:
+        path = _CONTRACT_ROOT / "wiktextract_data.v1.jsonl"
+    if not path.exists():
+        return []
+    entries: list[dict[str, str]] = []
+    for line in path.read_text(encoding="utf-8").splitlines():
+        stripped = line.strip()
+        if not stripped:
+            continue
+        try:
+            entry = json.loads(stripped)
+        except json.JSONDecodeError:
+            continue
+        if isinstance(entry, dict) and "word" in entry and "class_id" in entry:
+            entries.append(entry)
+    return entries
+
+
+def _make_wiktextract_definition(word: str, class_id: str) -> str:
+    return f"wiktextract sense {class_id}: {word}"
+
+
+def seed_wiktextract_entries(
+    store: AssistantOSStore,
+    *,
+    data_path: Path | None = None,
+    max_entries: int | None = None,
+    provenance: str = "wiktextract",
+) -> int:
+    """Seed wiktextract word→sense entries through the ingestion gate.
+
+    Reads a word→class_id JSONL file where each entry has a pre-mapped
+    MELM semantic class ID, and ingests through ``lexicon_ingest()`` with
+    ``provenance=wiktextract`` and ``suggested_status=dormant``.
+
+    Args:
+        store: Entity store to seed into.
+        data_path: Optional path to override the default JSONL file.
+        max_entries: If set, only process the first N entries.
+        provenance: Provenance label for ingested entries.
+
+    Returns the count of successfully ingested entries.
+    """
+    known = _class_ids()
+    entries = _load_wiktextract_data(data_path)
+    if max_entries is not None:
+        entries = entries[:max_entries]
+    applied = 0
+    for entry in entries:
+        word = str(entry["word"]).strip().lower()
+        class_id = str(entry["class_id"]).strip()
+        pos = str(entry.get("pos", "noun")).strip().lower()
+        definition = str(entry.get("definition", _make_wiktextract_definition(word, class_id)))
+        if not word or not class_id:
+            continue
+        if class_id not in known:
+            continue
+        candidate = _candidate(
+            lemma=word,
+            pos=pos,
+            class_id=class_id,
+            definition=definition,
+            source_ref=f"wiktextract:sense:{class_id}:{word}",
+            provenance=provenance,
+        )
+        candidate["semantic_class_candidates"] = [
+            {
+                "class_id": class_id,
+                "method": "genus_walk",
+                "confidence": 0.70,
+            }
+        ]
+        candidate["suggested_status"] = "dormant"
+        candidate["confidence_prior"] = 0.70
+        try:
+            lexicon_ingest(store, candidate, expected_provenance=provenance)
+            applied += 1
+        except ContractValidationError:
+            pass
+    return applied
+
+
+def _resolve_max_entries(max_entries: int | None) -> int | None:
+    """Return ``max_entries`` or fall back to ``MELM_BULK_MAX_ENTRIES`` env var.
+
+    The environment variable allows sub-processes (CLI commands) to inherit
+    the limit without threading CLI flags through every sub-command.
+    """
+    if max_entries is not None:
+        return max_entries
+    env_val = os.environ.get("MELM_BULK_MAX_ENTRIES")
+    if env_val is not None:
+        try:
+            return int(env_val)
+        except (ValueError, TypeError):
+            return None
+    return None
+
+
 def seed_bulk_lexicon(
     store: AssistantOSStore,
     *,
     wordnet_data: Path | None = None,
     verbnet_data: Path | None = None,
+    wiktextract_data: Path | None = None,
+    max_entries: int | None = None,
 ) -> dict[str, int]:
-    """Run all bulk lexicon seeders and return counts per provenance."""
+    """Run all bulk lexicon seeders and return counts per provenance.
+
+    Args:
+        store: Entity store to seed into.
+        wordnet_data: Optional path to override WordNet JSONL.
+        verbnet_data: Optional path to override VerbNet JSONL.
+        wiktextract_data: Optional path to override Wiktextract JSONL.
+        max_entries: If set, limit each provenance to the first N entries.
+            Falls back to the ``MELM_BULK_MAX_ENTRIES`` environment variable.
+    """
+    resolved = _resolve_max_entries(max_entries)
     return {
-        "wordnet": seed_wordnet_supersenses(store, data_path=wordnet_data),
-        "verbnet": seed_verbnet_classes(store, data_path=verbnet_data),
+        "wordnet": seed_wordnet_supersenses(store, data_path=wordnet_data, max_entries=resolved),
+        "verbnet": seed_verbnet_classes(store, data_path=verbnet_data, max_entries=resolved),
+        "wiktextract": seed_wiktextract_entries(store, data_path=wiktextract_data, max_entries=resolved),
     }
 
 

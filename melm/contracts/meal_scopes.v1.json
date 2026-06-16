@@ -1,0 +1,14 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "melm.meal_scopes.v1",
+  "schema_id": "melm.meal_scopes.v1",
+  "scopes": {
+    "breakfast": "breakfast",
+    "lunch": "lunch",
+    "dinner": "dinner",
+    "cook": "cooking",
+    "cooking": "cooking"
+  },
+  "default": "meal",
+  "_note": "Meal scope token mapping used by _meal_scope() to determine meal context from utterance tokens."
+}

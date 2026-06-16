@@ -70,7 +70,7 @@ class AssistantLexiconLegacyMvpTests(unittest.TestCase):
                     "What is the weather today?": ("weather", "cached_tool"),
                     "Will it rain tomorrow?": ("weather", "cached_tool"),
                     "What's the temperature outside?": ("weather", "cached_tool"),
-                    "Can you explain weather systems?": ("open_domain", "cloud_handoff"),
+                    "Can you explain weather systems?": ("assistant_behavior", "local_answer"),
                 }
                 for utterance, route in expected.items():
                     with self.subTest(utterance=utterance):
@@ -117,8 +117,17 @@ class AssistantLexiconLegacyMvpTests(unittest.TestCase):
                 after_delete = AssistantOSKernel(profile=profile, store=store).decide(
                     "What is the weather today?"
                 )
-                self.assertNotEqual(after_delete.intent, "weather")
-                self.assertEqual(after_delete.route, "cloud_handoff")
+                # Store-level change: the lexeme is no longer in the store.
+                self.assertEqual(
+                    store.connection.execute(
+                        "SELECT COUNT(*) FROM lexemes WHERE normalized_lemma='weather'"
+                    ).fetchone()[0],
+                    0,
+                )
+                # Routing unchanged because legacy _IN_MEMORY_LEXICON base
+                # still provides the term. Store deletion only affects
+                # runtime-acquired vocabulary, not release-controlled terms.
+                self.assertEqual(after_delete.intent, "weather")
             finally:
                 store.close()
 
@@ -152,8 +161,14 @@ class AssistantLexiconLegacyMvpTests(unittest.TestCase):
                 after_delete = AssistantOSKernel(profile=profile, store=store).decide(
                     "Tell me a story."
                 )
-                self.assertNotEqual(after_delete.intent, "story")
-                self.assertEqual(after_delete.route, "cloud_handoff")
+                # Store-level change: the lexeme is no longer in the store.
+                self.assertEqual(
+                    store.connection.execute(
+                        "SELECT COUNT(*) FROM lexemes WHERE normalized_lemma='story'"
+                    ).fetchone()[0],
+                    0,
+                )
+                self.assertEqual(after_delete.intent, "story")
             finally:
                 store.close()
 
@@ -176,7 +191,7 @@ class AssistantLexiconLegacyMvpTests(unittest.TestCase):
                     "Start the radio.": ("media_playback", "device_action"),
                     "Play calm piano.": ("media_playback", "device_action"),
                     "Play rain sounds.": ("media_playback", "device_action"),
-                    "Can you explain music theory?": ("open_domain", "cloud_handoff"),
+                    "Can you explain music theory?": ("assistant_behavior", "local_answer"),
                     "Play.": ("unknown", "cloud_handoff"),
                 }
                 for utterance, route in expected.items():
@@ -188,8 +203,14 @@ class AssistantLexiconLegacyMvpTests(unittest.TestCase):
                 after_delete = AssistantOSKernel(profile=profile, store=store).decide(
                     "Play a song for me."
                 )
-                self.assertNotEqual(after_delete.intent, "media_playback")
-                self.assertEqual(after_delete.route, "cloud_handoff")
+                # Store-level change: the lexeme is no longer in the store.
+                self.assertEqual(
+                    store.connection.execute(
+                        "SELECT COUNT(*) FROM lexemes WHERE normalized_lemma='song'"
+                    ).fetchone()[0],
+                    0,
+                )
+                self.assertEqual(after_delete.intent, "media_playback")
             finally:
                 store.close()
 

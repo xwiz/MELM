@@ -1,0 +1,24 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "melm.model_manifest.v1",
+  "type": "object",
+  "additionalProperties": false,
+  "required": [
+    "model_id", "backend", "parameters_b", "max_tokens",
+    "quantization", "context_window"
+  ],
+  "properties": {
+    "model_id": {"type": "string", "minLength": 1},
+    "backend": {
+      "type": "string",
+      "enum": ["template", "llguidance", "bitnet", "remote"]
+    },
+    "parameters_b": {"type": "number", "minimum": 0.001},
+    "max_tokens": {"type": "integer", "minimum": 1},
+    "quantization": {"type": "string"},
+    "context_window": {"type": "integer", "minimum": 1},
+    "family": {"type": "string"},
+    "device": {"type": "string"},
+    "notes": {"type": "string"}
+  }
+}

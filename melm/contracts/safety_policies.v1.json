@@ -1,0 +1,17 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "melm.safety_policies.v1",
+  "schema_id": "melm.safety_policies.v1",
+  "policies": {
+    "public_clothing": {
+      "description": "Response for public clothing / modesty safety concerns",
+      "template": "No. Wear proper clothes before {destination}. That keeps your body private, follows ordinary public clothing rules, and avoids needing an adult to step in after something unsafe happens.",
+      "triggers": ["naked", "undressed", "clothes", "wear", "dress", "school"],
+      "destinations": {
+        "school": {"triggers": ["school"], "phrase": "going to school"},
+        "class": {"triggers": ["class"], "phrase": "going to class"},
+        "default": {"triggers": [], "phrase": "going outside"}
+      }
+    }
+  }
+}

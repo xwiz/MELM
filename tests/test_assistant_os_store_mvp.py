@@ -193,7 +193,7 @@ class AssistantOSStoreMvpTests(unittest.TestCase):
                 self.assertIsNotNone(known_integrity)
                 self.assertEqual(known_integrity.band, "reliable")
                 self.assertFalse(known_integrity.research_recommended)
-                self.assertEqual(unknown.route, "cloud_handoff")
+                self.assertEqual(unknown.route, "local_answer")
                 self.assertIsNotNone(unknown_integrity)
                 self.assertEqual(unknown_integrity.band, "review")
                 self.assertTrue(unknown_integrity.research_recommended)

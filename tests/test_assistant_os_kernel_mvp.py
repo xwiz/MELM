@@ -1041,5 +1041,95 @@ class AssistantOSKernelAcquisitionTests(unittest.TestCase):
                 store.close()
 
 
+class M3AcquisitionEndToEndTests(unittest.TestCase):
+    """M3 thesis-proving artifact: teach → promote → route → restart → rollback."""
+
+    def _seed_genus(self, store, term="instrument", class_id="physical_object.instrument"):
+        return lexicon_ingest(
+            store,
+            {
+                "schema_id": "melm.sense_candidate.v1",
+                "lemma": term,
+                "language": "en",
+                "pos": "noun",
+                "source": {"provenance": "seed_authored",
+                           "source_ref": f"test:{term}",
+                           "license": "test"},
+                "definition": f"a test {class_id}",
+                "semantic_class_candidates": [{"class_id": class_id,
+                                               "method": "seed_authored",
+                                               "confidence": 0.95}],
+                "safety": {"reserved_conflict": False, "policy_term_overlap": False},
+                "suggested_status": "active",
+                "confidence_prior": 0.95,
+            },
+            expected_provenance="seed_authored",
+        )
+
+    def test_teach_promote_route_restart_rollback(self) -> None:
+        with tempfile.TemporaryDirectory() as tmp:
+            path = Path(tmp) / "assistant.sqlite"
+            store = AssistantOSStore(path)
+            try:
+                self._seed_genus(store)
+                kernel = AssistantOSKernel(store=store)
+
+                # 1. TEACH — user defines a new word (quarantined by default)
+                decision = kernel.handle("a kalimba is a musical instrument")
+                self.assertIsNotNone(decision)
+
+                # After teaching, kalimba is quarantined — NOT yet routable
+                senses = lookup_lexical_senses(
+                    store, "kalimba", statuses=("quarantined",),
+                )
+                self.assertEqual(len(senses), 1)
+
+                # 2. PROMOTE — explicitly promote through normal lifecycle
+                from melm.appliance.assistant_lexicon import promote_lexical_sense
+                promote_lexical_sense(store, senses[0]["sense_id"])
+                kernel._rebuild_router_lexicon_cache()
+
+                # After promotion, kalimba is routable
+                kalimba_decision = kernel.handle("play kalimba")
+                self.assertEqual(kalimba_decision.intent, "media_playback")
+
+                # 3. REOPEN — simulate restart
+                store.close()
+                store = AssistantOSStore(path)
+                self._seed_genus(store)
+                kernel = AssistantOSKernel(store=store)
+
+                # Survives restart — still routable
+                after = kernel.handle("play kalimba")
+                self.assertEqual(after.intent, "media_playback")
+
+                # 4. ROLLBACK — active → quarantined
+                senses = lookup_lexical_senses(
+                    store, "kalimba", statuses=("active",),
+                )
+                self.assertEqual(len(senses), 1)
+                from melm.appliance.assistant_lexicon import set_lexical_sense_status
+                set_lexical_sense_status(store, senses[0]["sense_id"], "quarantined")
+
+                # After rollback, rebuild cache and re-check routing
+                kernel._rebuild_router_lexicon_cache()
+                rolled = kernel.handle("play kalimba")
+                self.assertNotEqual(rolled.intent, "media_playback")
+
+            finally:
+                store.close()
+
+
+class KernelDecoderWiringTests(unittest.TestCase):
+    """M4: decoder must be wired from kernel to synthesizer."""
+
+    def test_kernel_accepts_decoder_and_passes_to_synthesizer(self) -> None:
+        from melm.appliance import ConstrainedDecoder
+        decoder = ConstrainedDecoder()
+        kernel = AssistantOSKernel(profile=LocalAssistantProfile(), decoder=decoder)
+        synthesizer = kernel._synthesizer()
+        self.assertIs(synthesizer.decoder, decoder)
+
+
 if __name__ == "__main__":
     unittest.main()

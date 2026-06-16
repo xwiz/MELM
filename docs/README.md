@@ -1,10 +1,20 @@
 # MELM Docs
 
-This directory holds project planning and validation documents for the MELM build.
+This directory holds project planning, architecture, and validation documents
+for the MELM build.
 
-- `../README.md`: root landing guide and drift rule. It names
-  `local_assistant_os_mvp_plan_v2.md` as the authoritative execution plan.
+## Authoritative documents
 
+- `assistant_os_spec.md`: **authoritative architecture specification.**
+  Documents the target typed-expert-cascade architecture, the skill/knowledge
+  boundary, the knowledge-first (auto-research) design pattern, foundational
+  rules, and the anti-regression checklist.
+- `local_assistant_os_mvp_plan_v2.md`: **authoritative execution plan.**
+  Milestones M0-M7, gates, timelines, contracts, and build order.
+
+## Supporting documents
+
+- `../README.md`: root landing guide and drift rule.
 - `../MELM_whitepaper.md`: revised validation-first whitepaper; supporting
   thesis only, not current product direction.
 - `../MELM_validation_implementation_plan.md`: supporting six-month validation
@@ -15,10 +25,6 @@ This directory holds project planning and validation documents for the MELM buil
 - `archive/`: non-authoritative historical drafts. The old root-level Word
   whitepaper was moved here because it predated the Local Assistant OS
   alignment and could mislead product direction.
-- `local_assistant_os_mvp_plan_v2.md`: authoritative Local Assistant OS v0.2
-  execution plan, including truth recovery, contract milestones, meaning
-  substrate, learning vertical slice, bounded generation gates, and document
-  governance.
 - `local_assistant_os_mvp_plan.md`: superseded v0.1 implementation context for
   the Local Assistant OS kernel, including membrane policy, homeostatic state,
   autobiographical memory, lifecycle probes, inventory planning, dashboarding,

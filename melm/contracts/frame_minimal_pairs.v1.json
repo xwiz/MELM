@@ -1,0 +1,2654 @@
+{
+  "schema_id": "melm.frame_minimal_pairs.v1",
+  "description": "Sealed regression test set for M5 E3 frame reranker. 13 minimal pairs (26 cases) across all 8 migrated intents.",
+  "lexicon": {
+    "rain": [
+      "weather_phenomenon"
+    ],
+    "snow": [
+      "weather_phenomenon"
+    ],
+    "cold": [
+      "weather_phenomenon"
+    ],
+    "today": [
+      "temporal_descriptor"
+    ],
+    "yesterday": [
+      "temporal_descriptor"
+    ],
+    "tomorrow": [
+      "temporal_descriptor"
+    ],
+    "weather": [
+      "weather_phenomenon",
+      "abstract_concept"
+    ],
+    "call": [
+      "contact_action",
+      "communication_action"
+    ],
+    "phone": [
+      "contact_action",
+      "communication_action"
+    ],
+    "mom": [
+      "social_relation"
+    ],
+    "dad": [
+      "social_relation"
+    ],
+    "friend": [
+      "social_relation"
+    ],
+    "tell": [
+      "communication_action",
+      "narrative_content"
+    ],
+    "story": [
+      "narrative_content"
+    ],
+    "read": [
+      "action",
+      "narrative_content"
+    ],
+    "play": [
+      "action",
+      "media_content"
+    ],
+    "song": [
+      "media_content"
+    ],
+    "music": [
+      "media_content"
+    ],
+    "movie": [
+      "media_content"
+    ],
+    "eat": [
+      "action",
+      "food_item"
+    ],
+    "cook": [
+      "action",
+      "verb.create"
+    ],
+    "dinner": [
+      "food_item"
+    ],
+    "lunch": [
+      "food_item"
+    ],
+    "pizza": [
+      "food_item"
+    ],
+    "remember": [
+      "memory_recall"
+    ],
+    "recall": [
+      "memory_recall"
+    ],
+    "forget": [
+      "memory_recall"
+    ],
+    "did": [
+      "autobiographical_event",
+      "verb.stative"
+    ],
+    "summarize": [
+      "autobiographical_action",
+      "verb.communicate"
+    ],
+    "recap": [
+      "autobiographical_action",
+      "verb.communicate"
+    ],
+    "headache": [
+      "health_condition"
+    ],
+    "fever": [
+      "health_condition"
+    ],
+    "hurt": [
+      "health_condition"
+    ],
+    "better": [
+      "advice_action"
+    ],
+    "do": [
+      "advice_action",
+      "action"
+    ],
+    "sleep": [
+      "advice_action"
+    ],
+    "take": [
+      "advice_action",
+      "action"
+    ],
+    "see": [
+      "advice_action",
+      "verb.perceive"
+    ],
+    "doctor": [
+      "person",
+      "health_domain"
+    ],
+    "medicine": [
+      "health_domain",
+      "substance"
+    ],
+    "shirt": [
+      "clothing_item"
+    ],
+    "pants": [
+      "clothing_item"
+    ],
+    "park": [
+      "public_place"
+    ],
+    "school": [
+      "public_place"
+    ],
+    "outside": [
+      "public_place"
+    ],
+    "go": [
+      "action_verb",
+      "action"
+    ],
+    "walk": [
+      "action_verb",
+      "action"
+    ],
+    "define": [
+      "definition_request"
+    ],
+    "my": [
+      "possession",
+      "owner_concept"
+    ],
+    "our": [
+      "possession",
+      "owner_concept"
+    ],
+    "sick": [
+      "health_condition"
+    ],
+    "ring": [
+      "contact_action",
+      "communication_action"
+    ],
+    "reach": [
+      "contact_action",
+      "action"
+    ],
+    "give": [
+      "action",
+      "verb.create"
+    ],
+    "make": [
+      "action",
+      "verb.create"
+    ]
+  },
+  "pairs": [
+    {
+      "id": "mp_001",
+      "utterance": "tell me a story about rain",
+      "tokens": [
+        "tell",
+        "me",
+        "a",
+        "story",
+        "about",
+        "rain"
+      ],
+      "is_question_like": false,
+      "is_request_like": true,
+      "expected_top_frame": "story",
+      "expected_top3": [
+        "story",
+        "social_contact",
+        "weather"
+      ],
+      "near_miss": "contains 'rain' (weather_phenomenon); story wins via narrative_content on 'story' and 'tell'",
+      "discriminator": "rule_score_advantage",
+      "token_roles": [
+        {
+          "index": 0,
+          "token": "tell",
+          "lemma": "tell",
+          "role": "main_predicate",
+          "meaning": "tell:communication",
+          "weight": 0.98
+        },
+        {
+          "index": 1,
+          "token": "me",
+          "lemma": "me",
+          "role": "indirect_object",
+          "meaning": "user",
+          "weight": 0.92
+        },
+        {
+          "index": 2,
+          "token": "a",
+          "lemma": "a",
+          "role": "determiner",
+          "meaning": "nominal_scope",
+          "weight": 0.9
+        },
+        {
+          "index": 3,
+          "token": "story",
+          "lemma": "story",
+          "role": "semantic_object",
+          "meaning": "story",
+          "weight": 0.88
+        },
+        {
+          "index": 4,
+          "token": "about",
+          "lemma": "about",
+          "role": "relation_marker",
+          "meaning": "about",
+          "weight": 0.88
+        },
+        {
+          "index": 5,
+          "token": "rain",
+          "lemma": "rain",
+          "role": "content_nominal",
+          "meaning": "semantic_class_unknown",
+          "weight": 0.58
+        }
+      ],
+      "precision_target": true
+    },
+    {
+      "id": "mp_002",
+      "utterance": "will it rain today",
+      "tokens": [
+        "will",
+        "it",
+        "rain",
+        "today"
+      ],
+      "is_question_like": true,
+      "is_request_like": false,
+      "expected_top_frame": "weather",
+      "expected_top3": [
+        "weather"
+      ],
+      "near_miss": "no narrative_content; weather wins with rain→weather_phenomenon + today→temporal_descriptor",
+      "discriminator": "required_class_presence",
+      "token_roles": [],
+      "precision_target": false
+    },
+    {
+      "id": "mp_003",
+      "utterance": "what should I eat for dinner",
+      "tokens": [
+        "what",
+        "should",
+        "I",
+        "eat",
+        "for",
+        "dinner"
+      ],
+      "is_question_like": true,
+      "is_request_like": false,
+      "expected_top_frame": "meal_suggestion",
+      "expected_top3": [
+        "meal_suggestion"
+      ],
+      "near_miss": "contains 'eat' (action/food_item) which also touches health domain; no health_condition present",
+      "discriminator": "required_class_presence",
+      "token_roles": [
+        {
+          "index": 0,
+          "token": "what",
+          "lemma": "what",
+          "role": "interrogative",
+          "meaning": "requested_information_dimension",
+          "weight": 0.96
+        },
+        {
+          "index": 1,
+          "token": "should",
+          "lemma": "should",
+          "role": "modal",
+          "meaning": "possibility_or_obligation",
+          "weight": 0.94
+        },
+        {
+          "index": 2,
+          "token": "I",
+          "lemma": "I",
+          "role": "grammatical_subject",
+          "meaning": "I",
+          "weight": 0.98
+        },
+        {
+          "index": 3,
+          "token": "eat",
+          "lemma": "eat",
+          "role": "main_predicate",
+          "meaning": "eat:consumption",
+          "weight": 0.98
+        },
+        {
+          "index": 4,
+          "token": "for",
+          "lemma": "for",
+          "role": "relation_marker",
+          "meaning": "for",
+          "weight": 0.88
+        },
+        {
+          "index": 5,
+          "token": "dinner",
+          "lemma": "dinner",
+          "role": "semantic_object",
+          "meaning": "dinner",
+          "weight": 0.88
+        }
+      ],
+      "precision_target": false
+    },
+    {
+      "id": "mp_004",
+      "utterance": "what should I do for my headache",
+      "tokens": [
+        "what",
+        "should",
+        "I",
+        "do",
+        "for",
+        "my",
+        "headache"
+      ],
+      "is_question_like": true,
+      "is_request_like": false,
+      "expected_top_frame": "health_advice",
+      "expected_top3": [
+        "health_advice"
+      ],
+      "near_miss": "contains 'do' (advice_action) and 'headache' (health_condition); no food_item to trigger meal_suggestion",
+      "discriminator": "required_class_presence",
+      "token_roles": [
+        {
+          "index": 0,
+          "token": "what",
+          "lemma": "what",
+          "role": "interrogative",
+          "meaning": "requested_information_dimension",
+          "weight": 0.96
+        },
+        {
+          "index": 1,
+          "token": "should",
+          "lemma": "should",
+          "role": "modal",
+          "meaning": "possibility_or_obligation",
+          "weight": 0.94
+        },
+        {
+          "index": 2,
+          "token": "I",
+          "lemma": "I",
+          "role": "grammatical_subject",
+          "meaning": "I",
+          "weight": 0.98
+        },
+        {
+          "index": 3,
+          "token": "do",
+          "lemma": "do",
+          "role": "main_predicate",
+          "meaning": "do:generic_action",
+          "weight": 0.98
+        },
+        {
+          "index": 4,
+          "token": "for",
+          "lemma": "for",
+          "role": "relation_marker",
+          "meaning": "for",
+          "weight": 0.88
+        },
+        {
+          "index": 5,
+          "token": "my",
+          "lemma": "my",
+          "role": "possessor",
+          "meaning": "user",
+          "weight": 0.92
+        },
+        {
+          "index": 6,
+          "token": "headache",
+          "lemma": "headache",
+          "role": "semantic_object",
+          "meaning": "headache",
+          "weight": 0.88
+        }
+      ],
+      "precision_target": false
+    },
+    {
+      "id": "mp_005",
+      "utterance": "call mom",
+      "tokens": [
+        "call",
+        "mom"
+      ],
+      "is_question_like": false,
+      "is_request_like": true,
+      "expected_top_frame": "social_contact",
+      "expected_top3": [
+        "social_contact"
+      ],
+      "near_miss": "mom→social_relation; call→contact_action,communication_action match required classes",
+      "discriminator": "required_class_presence",
+      "token_roles": [
+        {
+          "index": 0,
+          "token": "call",
+          "lemma": "call",
+          "role": "main_predicate",
+          "meaning": "call:communication",
+          "weight": 0.98
+        },
+        {
+          "index": 1,
+          "token": "mom",
+          "lemma": "mom",
+          "role": "semantic_object",
+          "meaning": "mom",
+          "weight": 0.88
+        }
+      ],
+      "precision_target": false
+    },
+    {
+      "id": "mp_006",
+      "utterance": "remember mom",
+      "tokens": [
+        "remember",
+        "mom"
+      ],
+      "is_question_like": false,
+      "is_request_like": true,
+      "expected_top_frame": "personal_memory",
+      "expected_top3": [
+        "personal_memory",
+        "social_contact"
+      ],
+      "near_miss": "'remember' triggers memory_recall instead of contact_action; mom→social_relation is optional for personal_memory",
+      "discriminator": "token_class_switch",
+      "token_roles": [
+        {
+          "index": 0,
+          "token": "remember",
+          "lemma": "remember",
+          "role": "main_predicate",
+          "meaning": "remember:cognition",
+          "weight": 0.98
+        },
+        {
+          "index": 1,
+          "token": "mom",
+          "lemma": "mom",
+          "role": "semantic_object",
+          "meaning": "mom",
+          "weight": 0.88
+        }
+      ],
+      "precision_target": true
+    },
+    {
+      "id": "mp_007",
+      "utterance": "define weather",
+      "tokens": [
+        "define",
+        "weather"
+      ],
+      "is_question_like": true,
+      "is_request_like": false,
+      "expected_top_frame": null,
+      "expected_top3": [],
+      "near_miss": "weather→weather_phenomenon AND abstract_concept → exclude penalty from abstract_concept drops score below threshold",
+      "discriminator": "exclude_penalty",
+      "token_roles": [],
+      "precision_target": false
+    },
+    {
+      "id": "mp_008",
+      "utterance": "what is the weather today",
+      "tokens": [
+        "what",
+        "is",
+        "the",
+        "weather",
+        "today"
+      ],
+      "is_question_like": true,
+      "is_request_like": false,
+      "expected_top_frame": null,
+      "expected_top3": [],
+      "near_miss": "weather→weather_phenomenon AND abstract_concept; exclude penalty + partial optional match drops score below 0.40 threshold",
+      "discriminator": "exclude_penalty",
+      "token_roles": [
+        {
+          "index": 0,
+          "token": "what",
+          "lemma": "what",
+          "role": "interrogative",
+          "meaning": "requested_information_dimension",
+          "weight": 0.96
+        },
+        {
+          "index": 1,
+          "token": "is",
+          "lemma": "be",
+          "role": "main_predicate",
+          "meaning": "be:state",
+          "weight": 0.98
+        },
+        {
+          "index": 2,
+          "token": "the",
+          "lemma": "the",
+          "role": "determiner",
+          "meaning": "nominal_scope",
+          "weight": 0.9
+        },
+        {
+          "index": 3,
+          "token": "weather",
+          "lemma": "weather",
+          "role": "content_nominal",
+          "meaning": "semantic_class_unknown",
+          "weight": 0.58
+        },
+        {
+          "index": 4,
+          "token": "today",
+          "lemma": "today",
+          "role": "semantic_object",
+          "meaning": "today",
+          "weight": 0.88
+        }
+      ],
+      "precision_target": false
+    },
+    {
+      "id": "mp_009",
+      "utterance": "play a song",
+      "tokens": [
+        "play",
+        "a",
+        "song"
+      ],
+      "is_question_like": false,
+      "is_request_like": true,
+      "expected_top_frame": "media_playback",
+      "expected_top3": [
+        "media_playback"
+      ],
+      "near_miss": "play→media_content + song→media_content match media_playback required classes; no narrative_content for story",
+      "discriminator": "required_class_presence",
+      "token_roles": [
+        {
+          "index": 0,
+          "token": "play",
+          "lemma": "play",
+          "role": "main_predicate",
+          "meaning": "play:activity",
+          "weight": 0.98
+        },
+        {
+          "index": 1,
+          "token": "a",
+          "lemma": "a",
+          "role": "determiner",
+          "meaning": "nominal_scope",
+          "weight": 0.9
+        },
+        {
+          "index": 2,
+          "token": "song",
+          "lemma": "song",
+          "role": "semantic_object",
+          "meaning": "song",
+          "weight": 0.88
+        }
+      ],
+      "precision_target": false
+    },
+    {
+      "id": "mp_010",
+      "utterance": "tell a story",
+      "tokens": [
+        "tell",
+        "a",
+        "story"
+      ],
+      "is_question_like": false,
+      "is_request_like": true,
+      "expected_top_frame": "story",
+      "expected_top3": [
+        "story",
+        "social_contact"
+      ],
+      "near_miss": "tell→narrative_content + story→narrative_content match story; no media_content for media_playback",
+      "discriminator": "token_class_switch",
+      "token_roles": [
+        {
+          "index": 0,
+          "token": "tell",
+          "lemma": "tell",
+          "role": "main_predicate",
+          "meaning": "tell:communication",
+          "weight": 0.98
+        },
+        {
+          "index": 1,
+          "token": "a",
+          "lemma": "a",
+          "role": "determiner",
+          "meaning": "nominal_scope",
+          "weight": 0.9
+        },
+        {
+          "index": 2,
+          "token": "story",
+          "lemma": "story",
+          "role": "semantic_object",
+          "meaning": "story",
+          "weight": 0.88
+        }
+      ],
+      "precision_target": true
+    },
+    {
+      "id": "mp_011",
+      "utterance": "summarize yesterday",
+      "tokens": [
+        "summarize",
+        "yesterday"
+      ],
+      "is_question_like": false,
+      "is_request_like": true,
+      "expected_top_frame": "autobiographical_memory",
+      "expected_top3": [
+        "autobiographical_memory"
+      ],
+      "near_miss": "summarize→autobiographical_action matches autobiographical_memory required; yesterday→temporal_descriptor is optional",
+      "discriminator": "required_class_presence",
+      "token_roles": [
+        {
+          "index": 0,
+          "token": "summarize",
+          "lemma": "summarize",
+          "role": "main_predicate",
+          "meaning": "summarize:communication",
+          "weight": 0.98
+        },
+        {
+          "index": 1,
+          "token": "yesterday",
+          "lemma": "yesterday",
+          "role": "semantic_object",
+          "meaning": "yesterday",
+          "weight": 0.88
+        }
+      ],
+      "precision_target": false
+    },
+    {
+      "id": "mp_012",
+      "utterance": "remember yesterday",
+      "tokens": [
+        "remember",
+        "yesterday"
+      ],
+      "is_question_like": false,
+      "is_request_like": true,
+      "expected_top_frame": "personal_memory",
+      "expected_top3": [
+        "personal_memory"
+      ],
+      "near_miss": "remember→memory_recall triggers personal_memory; yesterday→temporal_descriptor is not required for autobiographical",
+      "discriminator": "token_class_switch",
+      "token_roles": [
+        {
+          "index": 0,
+          "token": "remember",
+          "lemma": "remember",
+          "role": "main_predicate",
+          "meaning": "remember:cognition",
+          "weight": 0.98
+        },
+        {
+          "index": 1,
+          "token": "yesterday",
+          "lemma": "yesterday",
+          "role": "semantic_object",
+          "meaning": "yesterday",
+          "weight": 0.88
+        }
+      ],
+      "precision_target": false
+    },
+    {
+      "id": "mp_013",
+      "utterance": "what did I eat yesterday",
+      "tokens": [
+        "what",
+        "did",
+        "I",
+        "eat",
+        "yesterday"
+      ],
+      "is_question_like": true,
+      "is_request_like": false,
+      "expected_top_frame": "meal_suggestion",
+      "expected_top3": [
+        "autobiographical_memory",
+        "meal_suggestion"
+      ],
+      "near_miss": "both meal_suggestion (eat→food_item) and autobiographical_memory (did→autobiographical_event) match at same rule score; reranker must prefer meal via action alignment",
+      "discriminator": "tiebreak_requires_reranker",
+      "token_roles": [
+        {
+          "index": 0,
+          "token": "what",
+          "lemma": "what",
+          "role": "interrogative",
+          "meaning": "requested_information_dimension",
+          "weight": 0.96
+        },
+        {
+          "index": 1,
+          "token": "did",
+          "lemma": "do",
+          "role": "auxiliary",
+          "meaning": "tense_aspect_or_inversion",
+          "weight": 0.94
+        },
+        {
+          "index": 2,
+          "token": "I",
+          "lemma": "I",
+          "role": "grammatical_subject",
+          "meaning": "I",
+          "weight": 0.98
+        },
+        {
+          "index": 3,
+          "token": "eat",
+          "lemma": "eat",
+          "role": "main_predicate",
+          "meaning": "eat:consumption",
+          "weight": 0.98
+        },
+        {
+          "index": 4,
+          "token": "yesterday",
+          "lemma": "yesterday",
+          "role": "semantic_object",
+          "meaning": "yesterday",
+          "weight": 0.88
+        }
+      ],
+      "precision_target": true
+    },
+    {
+      "id": "mp_014",
+      "utterance": "can I go to the park without a shirt",
+      "tokens": [
+        "can",
+        "I",
+        "go",
+        "to",
+        "the",
+        "park",
+        "without",
+        "a",
+        "shirt"
+      ],
+      "is_question_like": true,
+      "is_request_like": false,
+      "expected_top_frame": "common_sense_safety",
+      "expected_top3": [
+        "common_sense_safety"
+      ],
+      "near_miss": "park→public_place, shirt→clothing_item both satisfy required_all_classes for safety; go→action_token boosts",
+      "discriminator": "and_gate",
+      "token_roles": [
+        {
+          "index": 0,
+          "token": "can",
+          "lemma": "can",
+          "role": "modal",
+          "meaning": "possibility_or_obligation",
+          "weight": 0.94
+        },
+        {
+          "index": 1,
+          "token": "I",
+          "lemma": "I",
+          "role": "grammatical_subject",
+          "meaning": "I",
+          "weight": 0.98
+        },
+        {
+          "index": 2,
+          "token": "go",
+          "lemma": "go",
+          "role": "main_predicate",
+          "meaning": "go:motion",
+          "weight": 0.98
+        },
+        {
+          "index": 3,
+          "token": "to",
+          "lemma": "to",
+          "role": "relation_marker",
+          "meaning": "to",
+          "weight": 0.88
+        },
+        {
+          "index": 4,
+          "token": "the",
+          "lemma": "the",
+          "role": "determiner",
+          "meaning": "nominal_scope",
+          "weight": 0.9
+        },
+        {
+          "index": 5,
+          "token": "park",
+          "lemma": "park",
+          "role": "content_nominal",
+          "meaning": "semantic_class_unknown",
+          "weight": 0.58
+        },
+        {
+          "index": 6,
+          "token": "without",
+          "lemma": "without",
+          "role": "content_nominal",
+          "meaning": "semantic_class_unknown",
+          "weight": 0.58
+        },
+        {
+          "index": 7,
+          "token": "a",
+          "lemma": "a",
+          "role": "determiner",
+          "meaning": "nominal_scope",
+          "weight": 0.9
+        },
+        {
+          "index": 8,
+          "token": "shirt",
+          "lemma": "shirt",
+          "role": "semantic_object",
+          "meaning": "shirt",
+          "weight": 0.88
+        }
+      ],
+      "precision_target": false
+    },
+    {
+      "id": "mp_015",
+      "utterance": "is it going to rain at the park today",
+      "tokens": [
+        "is",
+        "it",
+        "going",
+        "to",
+        "rain",
+        "at",
+        "the",
+        "park",
+        "today"
+      ],
+      "is_question_like": true,
+      "is_request_like": false,
+      "expected_top_frame": "weather",
+      "expected_top3": [
+        "weather"
+      ],
+      "near_miss": "rain→weather_phenomenon, park→public_place(optional), today→temporal_descriptor(optional); no clothing_item for safety",
+      "discriminator": "required_class_presence",
+      "token_roles": [
+        {
+          "index": 0,
+          "token": "is",
+          "lemma": "be",
+          "role": "main_predicate",
+          "meaning": "be:state",
+          "weight": 0.98
+        },
+        {
+          "index": 1,
+          "token": "it",
+          "lemma": "it",
+          "role": "content_nominal",
+          "meaning": "semantic_class_unknown",
+          "weight": 0.58
+        },
+        {
+          "index": 2,
+          "token": "going",
+          "lemma": "going",
+          "role": "semantic_object",
+          "meaning": "going",
+          "weight": 0.88
+        },
+        {
+          "index": 3,
+          "token": "to",
+          "lemma": "to",
+          "role": "relation_marker",
+          "meaning": "to",
+          "weight": 0.88
+        },
+        {
+          "index": 4,
+          "token": "rain",
+          "lemma": "rain",
+          "role": "content_nominal",
+          "meaning": "semantic_class_unknown",
+          "weight": 0.58
+        },
+        {
+          "index": 5,
+          "token": "at",
+          "lemma": "at",
+          "role": "relation_marker",
+          "meaning": "at",
+          "weight": 0.88
+        },
+        {
+          "index": 6,
+          "token": "the",
+          "lemma": "the",
+          "role": "determiner",
+          "meaning": "nominal_scope",
+          "weight": 0.9
+        },
+        {
+          "index": 7,
+          "token": "park",
+          "lemma": "park",
+          "role": "content_nominal",
+          "meaning": "semantic_class_unknown",
+          "weight": 0.58
+        },
+        {
+          "index": 8,
+          "token": "today",
+          "lemma": "today",
+          "role": "content_nominal",
+          "meaning": "semantic_class_unknown",
+          "weight": 0.58
+        }
+      ],
+      "precision_target": false
+    },
+    {
+      "id": "mp_016",
+      "utterance": "what should I do when I am sick",
+      "tokens": [
+        "what",
+        "should",
+        "I",
+        "do",
+        "when",
+        "I",
+        "am",
+        "sick"
+      ],
+      "is_question_like": true,
+      "is_request_like": false,
+      "expected_top_frame": "health_advice",
+      "expected_top3": [
+        "health_advice"
+      ],
+      "near_miss": "sick→health_condition, do→advice_action; no memory_recall token for personal_memory",
+      "discriminator": "required_class_presence",
+      "token_roles": [
+        {
+          "index": 0,
+          "token": "what",
+          "lemma": "what",
+          "role": "interrogative",
+          "meaning": "requested_information_dimension",
+          "weight": 0.96
+        },
+        {
+          "index": 1,
+          "token": "should",
+          "lemma": "should",
+          "role": "modal",
+          "meaning": "possibility_or_obligation",
+          "weight": 0.94
+        },
+        {
+          "index": 2,
+          "token": "I",
+          "lemma": "I",
+          "role": "grammatical_subject",
+          "meaning": "I",
+          "weight": 0.98
+        },
+        {
+          "index": 3,
+          "token": "do",
+          "lemma": "do",
+          "role": "main_predicate",
+          "meaning": "do:generic_action",
+          "weight": 0.98
+        },
+        {
+          "index": 4,
+          "token": "when",
+          "lemma": "when",
+          "role": "interrogative",
+          "meaning": "requested_information_dimension",
+          "weight": 0.96
+        },
+        {
+          "index": 5,
+          "token": "I",
+          "lemma": "I",
+          "role": "content_nominal",
+          "meaning": "semantic_class_unknown",
+          "weight": 0.58
+        },
+        {
+          "index": 6,
+          "token": "am",
+          "lemma": "am",
+          "role": "auxiliary",
+          "meaning": "tense_aspect_or_inversion",
+          "weight": 0.94
+        },
+        {
+          "index": 7,
+          "token": "sick",
+          "lemma": "sick",
+          "role": "semantic_object",
+          "meaning": "sick",
+          "weight": 0.88
+        }
+      ],
+      "precision_target": false
+    },
+    {
+      "id": "mp_017",
+      "utterance": "remember when I was sick",
+      "tokens": [
+        "remember",
+        "when",
+        "I",
+        "was",
+        "sick"
+      ],
+      "is_question_like": false,
+      "is_request_like": true,
+      "expected_top_frame": "personal_memory",
+      "expected_top3": [
+        "personal_memory",
+        "health_advice"
+      ],
+      "near_miss": "remember→memory_recall triggers personal_memory; sick→health_condition also triggers health_advice at lower score",
+      "discriminator": "token_class_switch",
+      "token_roles": [
+        {
+          "index": 0,
+          "token": "remember",
+          "lemma": "remember",
+          "role": "main_predicate",
+          "meaning": "remember:cognition",
+          "weight": 0.98
+        },
+        {
+          "index": 1,
+          "token": "when",
+          "lemma": "when",
+          "role": "interrogative",
+          "meaning": "requested_information_dimension",
+          "weight": 0.96
+        },
+        {
+          "index": 2,
+          "token": "I",
+          "lemma": "I",
+          "role": "content_nominal",
+          "meaning": "semantic_class_unknown",
+          "weight": 0.58
+        },
+        {
+          "index": 3,
+          "token": "was",
+          "lemma": "be",
+          "role": "auxiliary",
+          "meaning": "tense_aspect_or_inversion",
+          "weight": 0.94
+        },
+        {
+          "index": 4,
+          "token": "sick",
+          "lemma": "sick",
+          "role": "semantic_object",
+          "meaning": "sick",
+          "weight": 0.88
+        }
+      ],
+      "precision_target": true
+    },
+    {
+      "id": "mp_018",
+      "utterance": "call dad",
+      "tokens": [
+        "call",
+        "dad"
+      ],
+      "is_question_like": false,
+      "is_request_like": true,
+      "expected_top_frame": "social_contact",
+      "expected_top3": [
+        "social_contact"
+      ],
+      "near_miss": "dad→social_relation, call→contact_action,communication_action; no memory_recall for personal_memory",
+      "discriminator": "required_class_presence",
+      "token_roles": [
+        {
+          "index": 0,
+          "token": "call",
+          "lemma": "call",
+          "role": "main_predicate",
+          "meaning": "call:communication",
+          "weight": 0.98
+        },
+        {
+          "index": 1,
+          "token": "dad",
+          "lemma": "dad",
+          "role": "semantic_object",
+          "meaning": "dad",
+          "weight": 0.88
+        }
+      ],
+      "precision_target": false
+    },
+    {
+      "id": "mp_019",
+      "utterance": "forget dad",
+      "tokens": [
+        "forget",
+        "dad"
+      ],
+      "is_question_like": false,
+      "is_request_like": true,
+      "expected_top_frame": "personal_memory",
+      "expected_top3": [
+        "personal_memory",
+        "social_contact"
+      ],
+      "near_miss": "forget→memory_recall triggers personal_memory; dad→social_relation is optional bonus",
+      "discriminator": "token_class_switch",
+      "token_roles": [
+        {
+          "index": 0,
+          "token": "forget",
+          "lemma": "forget",
+          "role": "main_predicate",
+          "meaning": "forget:cognition",
+          "weight": 0.98
+        },
+        {
+          "index": 1,
+          "token": "dad",
+          "lemma": "dad",
+          "role": "semantic_object",
+          "meaning": "dad",
+          "weight": 0.88
+        }
+      ],
+      "precision_target": true
+    },
+    {
+      "id": "mp_020",
+      "utterance": "play music",
+      "tokens": [
+        "play",
+        "music"
+      ],
+      "is_question_like": false,
+      "is_request_like": true,
+      "expected_top_frame": "media_playback",
+      "expected_top3": [
+        "media_playback"
+      ],
+      "near_miss": "play→media_content + music→media_content match media_playback required; no narrative_content for story",
+      "discriminator": "required_class_presence",
+      "token_roles": [
+        {
+          "index": 0,
+          "token": "play",
+          "lemma": "play",
+          "role": "main_predicate",
+          "meaning": "play:activity",
+          "weight": 0.98
+        },
+        {
+          "index": 1,
+          "token": "music",
+          "lemma": "music",
+          "role": "semantic_object",
+          "meaning": "music",
+          "weight": 0.88
+        }
+      ],
+      "precision_target": false
+    },
+    {
+      "id": "mp_021",
+      "utterance": "read a story",
+      "tokens": [
+        "read",
+        "a",
+        "story"
+      ],
+      "is_question_like": false,
+      "is_request_like": true,
+      "expected_top_frame": "story",
+      "expected_top3": [
+        "story"
+      ],
+      "near_miss": "read→narrative_content + story→narrative_content; read is also action but not media_content",
+      "discriminator": "token_class_switch",
+      "token_roles": [
+        {
+          "index": 0,
+          "token": "read",
+          "lemma": "read",
+          "role": "main_predicate",
+          "meaning": "read:activity",
+          "weight": 0.98
+        },
+        {
+          "index": 1,
+          "token": "a",
+          "lemma": "a",
+          "role": "determiner",
+          "meaning": "nominal_scope",
+          "weight": 0.9
+        },
+        {
+          "index": 2,
+          "token": "story",
+          "lemma": "story",
+          "role": "semantic_object",
+          "meaning": "story",
+          "weight": 0.88
+        }
+      ],
+      "precision_target": false
+    },
+    {
+      "id": "mp_022",
+      "utterance": "summarize what I did yesterday",
+      "tokens": [
+        "summarize",
+        "what",
+        "I",
+        "did",
+        "yesterday"
+      ],
+      "is_question_like": false,
+      "is_request_like": true,
+      "expected_top_frame": "autobiographical_memory",
+      "expected_top3": [
+        "autobiographical_memory"
+      ],
+      "near_miss": "summarize→autobiographical_action + did→autobiographical_event match autobiographical; no memory_recall for personal_memory",
+      "discriminator": "required_class_presence",
+      "token_roles": [
+        {
+          "index": 0,
+          "token": "summarize",
+          "lemma": "summarize",
+          "role": "main_predicate",
+          "meaning": "summarize:communication",
+          "weight": 0.98
+        },
+        {
+          "index": 1,
+          "token": "what",
+          "lemma": "what",
+          "role": "interrogative",
+          "meaning": "requested_information_dimension",
+          "weight": 0.96
+        },
+        {
+          "index": 2,
+          "token": "I",
+          "lemma": "I",
+          "role": "content_nominal",
+          "meaning": "semantic_class_unknown",
+          "weight": 0.58
+        },
+        {
+          "index": 3,
+          "token": "did",
+          "lemma": "do",
+          "role": "auxiliary",
+          "meaning": "tense_aspect_or_inversion",
+          "weight": 0.94
+        },
+        {
+          "index": 4,
+          "token": "yesterday",
+          "lemma": "yesterday",
+          "role": "semantic_object",
+          "meaning": "yesterday",
+          "weight": 0.88
+        }
+      ],
+      "precision_target": false
+    },
+    {
+      "id": "mp_023",
+      "utterance": "recall yesterday's events",
+      "tokens": [
+        "recall",
+        "yesterday",
+        "events"
+      ],
+      "is_question_like": false,
+      "is_request_like": true,
+      "expected_top_frame": "personal_memory",
+      "expected_top3": [
+        "personal_memory"
+      ],
+      "near_miss": "recall→memory_recall triggers personal_memory; yesterday→temporal_descriptor optional for both",
+      "discriminator": "token_class_switch",
+      "token_roles": [
+        {
+          "index": 0,
+          "token": "recall",
+          "lemma": "recall",
+          "role": "main_predicate",
+          "meaning": "recall:cognition",
+          "weight": 0.98
+        },
+        {
+          "index": 1,
+          "token": "yesterday",
+          "lemma": "yesterday",
+          "role": "content_nominal",
+          "meaning": "semantic_class_unknown",
+          "weight": 0.58
+        },
+        {
+          "index": 2,
+          "token": "events",
+          "lemma": "events",
+          "role": "semantic_object",
+          "meaning": "events",
+          "weight": 0.88
+        }
+      ],
+      "precision_target": false
+    },
+    {
+      "id": "mp_024",
+      "utterance": "take medicine for my headache",
+      "tokens": [
+        "take",
+        "medicine",
+        "for",
+        "my",
+        "headache"
+      ],
+      "is_question_like": false,
+      "is_request_like": true,
+      "expected_top_frame": "health_advice",
+      "expected_top3": [
+        "health_advice"
+      ],
+      "near_miss": "take→advice_action + headache→health_condition + medicine→health_domain all match health_advice required OR; no food_item for meal",
+      "discriminator": "required_class_presence",
+      "token_roles": [
+        {
+          "index": 0,
+          "token": "take",
+          "lemma": "take",
+          "role": "main_predicate",
+          "meaning": "take:acquisition",
+          "weight": 0.98
+        },
+        {
+          "index": 1,
+          "token": "medicine",
+          "lemma": "medicine",
+          "role": "semantic_object",
+          "meaning": "medicine",
+          "weight": 0.88
+        },
+        {
+          "index": 2,
+          "token": "for",
+          "lemma": "for",
+          "role": "relation_marker",
+          "meaning": "for",
+          "weight": 0.88
+        },
+        {
+          "index": 3,
+          "token": "my",
+          "lemma": "my",
+          "role": "pronoun_relation",
+          "meaning": "user:possessor",
+          "weight": 0.82
+        },
+        {
+          "index": 4,
+          "token": "headache",
+          "lemma": "headache",
+          "role": "content_nominal",
+          "meaning": "semantic_class_unknown",
+          "weight": 0.58
+        }
+      ],
+      "precision_target": false
+    },
+    {
+      "id": "mp_025",
+      "utterance": "cook dinner",
+      "tokens": [
+        "cook",
+        "dinner"
+      ],
+      "is_question_like": false,
+      "is_request_like": true,
+      "expected_top_frame": "meal_suggestion",
+      "expected_top3": [
+        "meal_suggestion"
+      ],
+      "near_miss": "dinner→food_item matches meal_suggestion required; cook is action/verb.create not advice_action",
+      "discriminator": "required_class_presence",
+      "token_roles": [
+        {
+          "index": 0,
+          "token": "cook",
+          "lemma": "cook",
+          "role": "main_predicate",
+          "meaning": "cook:creation",
+          "weight": 0.98
+        },
+        {
+          "index": 1,
+          "token": "dinner",
+          "lemma": "dinner",
+          "role": "semantic_object",
+          "meaning": "dinner",
+          "weight": 0.88
+        }
+      ],
+      "precision_target": false
+    },
+    {
+      "id": "mp_026",
+      "utterance": "walk to school without pants",
+      "tokens": [
+        "walk",
+        "to",
+        "school",
+        "without",
+        "pants"
+      ],
+      "is_question_like": false,
+      "is_request_like": true,
+      "expected_top_frame": "common_sense_safety",
+      "expected_top3": [
+        "common_sense_safety"
+      ],
+      "near_miss": "pants→clothing_item + school→public_place match required_all for safety; walk→action_token boosts",
+      "discriminator": "and_gate",
+      "token_roles": [
+        {
+          "index": 0,
+          "token": "walk",
+          "lemma": "walk",
+          "role": "main_predicate",
+          "meaning": "walk:motion",
+          "weight": 0.98
+        },
+        {
+          "index": 1,
+          "token": "to",
+          "lemma": "to",
+          "role": "relation_marker",
+          "meaning": "to",
+          "weight": 0.88
+        },
+        {
+          "index": 2,
+          "token": "school",
+          "lemma": "school",
+          "role": "content_nominal",
+          "meaning": "semantic_class_unknown",
+          "weight": 0.58
+        },
+        {
+          "index": 3,
+          "token": "without",
+          "lemma": "without",
+          "role": "content_nominal",
+          "meaning": "semantic_class_unknown",
+          "weight": 0.58
+        },
+        {
+          "index": 4,
+          "token": "pants",
+          "lemma": "pants",
+          "role": "semantic_object",
+          "meaning": "pants",
+          "weight": 0.88
+        }
+      ],
+      "precision_target": false
+    },
+    {
+      "id": "mp_027",
+      "utterance": "play a movie",
+      "tokens": [
+        "play",
+        "a",
+        "movie"
+      ],
+      "is_question_like": false,
+      "is_request_like": true,
+      "expected_top_frame": "media_playback",
+      "expected_top3": [
+        "media_playback"
+      ],
+      "near_miss": "play→media_content + movie→media_content match media_playback required; no narrative_content for story",
+      "discriminator": "required_class_presence",
+      "token_roles": [
+        {
+          "index": 0,
+          "token": "play",
+          "lemma": "play",
+          "role": "main_predicate",
+          "meaning": "play:activity",
+          "weight": 0.98
+        },
+        {
+          "index": 1,
+          "token": "a",
+          "lemma": "a",
+          "role": "determiner",
+          "meaning": "nominal_scope",
+          "weight": 0.9
+        },
+        {
+          "index": 2,
+          "token": "movie",
+          "lemma": "movie",
+          "role": "semantic_object",
+          "meaning": "movie",
+          "weight": 0.88
+        }
+      ],
+      "precision_target": false
+    },
+    {
+      "id": "mp_028",
+      "utterance": "recap today",
+      "tokens": [
+        "recap",
+        "today"
+      ],
+      "is_question_like": false,
+      "is_request_like": true,
+      "expected_top_frame": "autobiographical_memory",
+      "expected_top3": [
+        "autobiographical_memory"
+      ],
+      "near_miss": "recap→autobiographical_action matches autobiographical required; today→temporal_descriptor optional",
+      "discriminator": "required_class_presence",
+      "token_roles": [
+        {
+          "index": 0,
+          "token": "recap",
+          "lemma": "recap",
+          "role": "main_predicate",
+          "meaning": "recap:communication",
+          "weight": 0.98
+        },
+        {
+          "index": 1,
+          "token": "today",
+          "lemma": "today",
+          "role": "semantic_object",
+          "meaning": "today",
+          "weight": 0.88
+        }
+      ],
+      "precision_target": false
+    },
+    {
+      "id": "mp_029",
+      "utterance": "go outside without a shirt",
+      "tokens": [
+        "go",
+        "outside",
+        "without",
+        "a",
+        "shirt"
+      ],
+      "is_question_like": false,
+      "is_request_like": true,
+      "expected_top_frame": "common_sense_safety",
+      "expected_top3": [
+        "common_sense_safety"
+      ],
+      "near_miss": "shirt→clothing_item + outside→public_place satisfy required_all_classes for safety; go→action_token boosts",
+      "discriminator": "and_gate",
+      "token_roles": [
+        {
+          "index": 0,
+          "token": "go",
+          "lemma": "go",
+          "role": "main_predicate",
+          "meaning": "go:motion",
+          "weight": 0.98
+        },
+        {
+          "index": 1,
+          "token": "outside",
+          "lemma": "outside",
+          "role": "content_nominal",
+          "meaning": "semantic_class_unknown",
+          "weight": 0.58
+        },
+        {
+          "index": 2,
+          "token": "without",
+          "lemma": "without",
+          "role": "content_nominal",
+          "meaning": "semantic_class_unknown",
+          "weight": 0.58
+        },
+        {
+          "index": 3,
+          "token": "a",
+          "lemma": "a",
+          "role": "determiner",
+          "meaning": "nominal_scope",
+          "weight": 0.9
+        },
+        {
+          "index": 4,
+          "token": "shirt",
+          "lemma": "shirt",
+          "role": "semantic_object",
+          "meaning": "shirt",
+          "weight": 0.88
+        }
+      ],
+      "precision_target": false
+    },
+    {
+      "id": "mp_030",
+      "utterance": "eat lunch today",
+      "tokens": [
+        "eat",
+        "lunch",
+        "today"
+      ],
+      "is_question_like": false,
+      "is_request_like": true,
+      "expected_top_frame": "meal_suggestion",
+      "expected_top3": [
+        "meal_suggestion"
+      ],
+      "near_miss": "eat→food_item + lunch→food_item match meal_suggestion required; today→temporal_descriptor may boost autobiographical but no autobiographical_action",
+      "discriminator": "required_class_presence",
+      "token_roles": [
+        {
+          "index": 0,
+          "token": "eat",
+          "lemma": "eat",
+          "role": "main_predicate",
+          "meaning": "eat:consumption",
+          "weight": 0.98
+        },
+        {
+          "index": 1,
+          "token": "lunch",
+          "lemma": "lunch",
+          "role": "content_nominal",
+          "meaning": "semantic_class_unknown",
+          "weight": 0.58
+        },
+        {
+          "index": 2,
+          "token": "today",
+          "lemma": "today",
+          "role": "semantic_object",
+          "meaning": "today",
+          "weight": 0.88
+        }
+      ],
+      "precision_target": false
+    },
+    {
+      "id": "mp_031",
+      "utterance": "what is a story",
+      "tokens": [
+        "what",
+        "is",
+        "a",
+        "story"
+      ],
+      "is_question_like": true,
+      "is_request_like": false,
+      "expected_top_frame": "story",
+      "expected_top3": [
+        "story"
+      ],
+      "near_miss": "story→narrative_content matches story frame at 0.55; no exclude penalty triggers; tests story recall for bare noun queries",
+      "discriminator": "required_class_presence",
+      "token_roles": [
+        {
+          "index": 0,
+          "token": "what",
+          "lemma": "what",
+          "role": "interrogative",
+          "meaning": "requested_information_dimension",
+          "weight": 0.96
+        },
+        {
+          "index": 1,
+          "token": "is",
+          "lemma": "be",
+          "role": "main_predicate",
+          "meaning": "be:state",
+          "weight": 0.98
+        },
+        {
+          "index": 2,
+          "token": "a",
+          "lemma": "a",
+          "role": "determiner",
+          "meaning": "nominal_scope",
+          "weight": 0.9
+        },
+        {
+          "index": 3,
+          "token": "story",
+          "lemma": "story",
+          "role": "semantic_object",
+          "meaning": "story",
+          "weight": 0.88
+        }
+      ],
+      "precision_target": false
+    },
+    {
+      "id": "mp_032",
+      "utterance": "play a story",
+      "tokens": [
+        "play",
+        "a",
+        "story"
+      ],
+      "is_question_like": false,
+      "is_request_like": true,
+      "expected_top_frame": "media_playback",
+      "expected_top3": [
+        "media_playback",
+        "story"
+      ],
+      "near_miss": "play→media_content + story→narrative_content; media_playback wins via action_token alignment (0.7 vs 0.55); UOL predicate alignment confirms. Tests both recall and precision.",
+      "discriminator": "tiebreak_requires_reranker",
+      "token_roles": [
+        {
+          "index": 0,
+          "token": "play",
+          "lemma": "play",
+          "role": "main_predicate",
+          "meaning": "play:activity",
+          "weight": 0.98
+        },
+        {
+          "index": 1,
+          "token": "a",
+          "lemma": "a",
+          "role": "determiner",
+          "meaning": "nominal_scope",
+          "weight": 0.9
+        },
+        {
+          "index": 2,
+          "token": "story",
+          "lemma": "story",
+          "role": "semantic_object",
+          "meaning": "story",
+          "weight": 0.88
+        }
+      ],
+      "precision_target": true
+    },
+    {
+      "id": "mp_033",
+      "utterance": "call friend",
+      "tokens": [
+        "call",
+        "friend"
+      ],
+      "is_question_like": false,
+      "is_request_like": true,
+      "expected_top_frame": "social_contact",
+      "expected_top3": [
+        "social_contact"
+      ],
+      "near_miss": "call→contact_action + friend→social_relation match social_contact required; no memory_recall for personal_memory",
+      "discriminator": "required_class_presence",
+      "token_roles": [
+        {
+          "index": 0,
+          "token": "call",
+          "lemma": "call",
+          "role": "main_predicate",
+          "meaning": "call:communication",
+          "weight": 0.98
+        },
+        {
+          "index": 1,
+          "token": "friend",
+          "lemma": "friend",
+          "role": "semantic_object",
+          "meaning": "friend",
+          "weight": 0.88
+        }
+      ],
+      "precision_target": false
+    },
+    {
+      "id": "mp_034",
+      "utterance": "is it going to snow today",
+      "tokens": [
+        "is",
+        "it",
+        "going",
+        "to",
+        "snow",
+        "today"
+      ],
+      "is_question_like": true,
+      "is_request_like": false,
+      "expected_top_frame": "weather",
+      "expected_top3": [
+        "weather"
+      ],
+      "near_miss": "snow→weather_phenomenon + today→temporal_descriptor match weather; no abstract_concept for exclude penalty",
+      "discriminator": "required_class_presence",
+      "token_roles": [
+        {
+          "index": 0,
+          "token": "is",
+          "lemma": "be",
+          "role": "main_predicate",
+          "meaning": "be:state",
+          "weight": 0.98
+        },
+        {
+          "index": 1,
+          "token": "it",
+          "lemma": "it",
+          "role": "content_nominal",
+          "meaning": "semantic_class_unknown",
+          "weight": 0.58
+        },
+        {
+          "index": 2,
+          "token": "going",
+          "lemma": "going",
+          "role": "semantic_object",
+          "meaning": "going",
+          "weight": 0.88
+        },
+        {
+          "index": 3,
+          "token": "to",
+          "lemma": "to",
+          "role": "relation_marker",
+          "meaning": "to",
+          "weight": 0.88
+        },
+        {
+          "index": 4,
+          "token": "snow",
+          "lemma": "snow",
+          "role": "content_nominal",
+          "meaning": "semantic_class_unknown",
+          "weight": 0.58
+        },
+        {
+          "index": 5,
+          "token": "today",
+          "lemma": "today",
+          "role": "content_nominal",
+          "meaning": "semantic_class_unknown",
+          "weight": 0.58
+        }
+      ],
+      "precision_target": false
+    },
+    {
+      "id": "mp_035",
+      "utterance": "take medicine for my fever",
+      "tokens": [
+        "take",
+        "medicine",
+        "for",
+        "my",
+        "fever"
+      ],
+      "is_question_like": false,
+      "is_request_like": true,
+      "expected_top_frame": "health_advice",
+      "expected_top3": [
+        "health_advice"
+      ],
+      "near_miss": "take→advice_action + medicine→health_domain + fever→health_condition all match health_advice required OR; no food_item for meal",
+      "discriminator": "required_class_presence",
+      "token_roles": [
+        {
+          "index": 0,
+          "token": "take",
+          "lemma": "take",
+          "role": "main_predicate",
+          "meaning": "take:acquisition",
+          "weight": 0.98
+        },
+        {
+          "index": 1,
+          "token": "medicine",
+          "lemma": "medicine",
+          "role": "semantic_object",
+          "meaning": "medicine",
+          "weight": 0.88
+        },
+        {
+          "index": 2,
+          "token": "for",
+          "lemma": "for",
+          "role": "relation_marker",
+          "meaning": "for",
+          "weight": 0.88
+        },
+        {
+          "index": 3,
+          "token": "my",
+          "lemma": "my",
+          "role": "pronoun_relation",
+          "meaning": "user:possessor",
+          "weight": 0.82
+        },
+        {
+          "index": 4,
+          "token": "fever",
+          "lemma": "fever",
+          "role": "content_nominal",
+          "meaning": "semantic_class_unknown",
+          "weight": 0.58
+        }
+      ],
+      "precision_target": false
+    },
+    {
+      "id": "mp_036",
+      "utterance": "tell me about yesterday",
+      "tokens": [
+        "tell",
+        "me",
+        "about",
+        "yesterday"
+      ],
+      "is_question_like": false,
+      "is_request_like": true,
+      "expected_top_frame": "story",
+      "expected_top3": [
+        "story",
+        "autobiographical_memory"
+      ],
+      "near_miss": "tell→narrative_content + yesterday→temporal_descriptor; story wins via narrative_content; autobiographical needs autobiographical_event which 'tell' does not provide",
+      "discriminator": "token_class_switch",
+      "token_roles": [
+        {
+          "index": 0,
+          "token": "tell",
+          "lemma": "tell",
+          "role": "main_predicate",
+          "meaning": "tell:communication",
+          "weight": 0.98
+        },
+        {
+          "index": 1,
+          "token": "me",
+          "lemma": "me",
+          "role": "indirect_object",
+          "meaning": "user",
+          "weight": 0.92
+        },
+        {
+          "index": 2,
+          "token": "about",
+          "lemma": "about",
+          "role": "relation_marker",
+          "meaning": "about",
+          "weight": 0.88
+        },
+        {
+          "index": 3,
+          "token": "yesterday",
+          "lemma": "yesterday",
+          "role": "semantic_object",
+          "meaning": "yesterday",
+          "weight": 0.88
+        }
+      ],
+      "precision_target": false
+    },
+    {
+      "id": "mp_037",
+      "utterance": "give me a story about rain",
+      "tokens": [
+        "give",
+        "me",
+        "a",
+        "story",
+        "about",
+        "rain"
+      ],
+      "is_question_like": false,
+      "is_request_like": true,
+      "expected_top_frame": "story",
+      "expected_top3": [
+        "story",
+        "weather"
+      ],
+      "near_miss": "give→action (verb.create) + story→narrative_content; near miss with rain→weather_phenomenon competing",
+      "discriminator": "rule_score_advantage",
+      "token_roles": [
+        {
+          "index": 0,
+          "token": "give",
+          "lemma": "give",
+          "role": "main_predicate",
+          "meaning": "give:transfer",
+          "weight": 0.98
+        },
+        {
+          "index": 1,
+          "token": "me",
+          "lemma": "me",
+          "role": "indirect_object",
+          "meaning": "user",
+          "weight": 0.92
+        },
+        {
+          "index": 2,
+          "token": "a",
+          "lemma": "a",
+          "role": "determiner",
+          "meaning": "nominal_scope",
+          "weight": 0.9
+        },
+        {
+          "index": 3,
+          "token": "story",
+          "lemma": "story",
+          "role": "semantic_object",
+          "meaning": "story",
+          "weight": 0.88
+        },
+        {
+          "index": 4,
+          "token": "about",
+          "lemma": "about",
+          "role": "relation_marker",
+          "meaning": "about",
+          "weight": 0.88
+        },
+        {
+          "index": 5,
+          "token": "rain",
+          "lemma": "rain",
+          "role": "content_nominal",
+          "meaning": "semantic_class_unknown",
+          "weight": 0.58
+        }
+      ],
+      "precision_target": false
+    },
+    {
+      "id": "mp_038",
+      "utterance": "make a story",
+      "tokens": [
+        "make",
+        "a",
+        "story"
+      ],
+      "is_question_like": false,
+      "is_request_like": true,
+      "expected_top_frame": "story",
+      "expected_top3": [
+        "story"
+      ],
+      "near_miss": "make→action (verb.create) is in story's action_tokens + story→narrative_content matches required class",
+      "discriminator": "required_class_presence",
+      "token_roles": [
+        {
+          "index": 0,
+          "token": "make",
+          "lemma": "make",
+          "role": "main_predicate",
+          "meaning": "make:creation",
+          "weight": 0.98
+        },
+        {
+          "index": 1,
+          "token": "a",
+          "lemma": "a",
+          "role": "determiner",
+          "meaning": "nominal_scope",
+          "weight": 0.9
+        },
+        {
+          "index": 2,
+          "token": "story",
+          "lemma": "story",
+          "role": "semantic_object",
+          "meaning": "story",
+          "weight": 0.88
+        }
+      ],
+      "precision_target": false
+    },
+    {
+      "id": "mp_039",
+      "utterance": "play music today",
+      "tokens": [
+        "play",
+        "music",
+        "today"
+      ],
+      "is_question_like": false,
+      "is_request_like": true,
+      "expected_top_frame": "media_playback",
+      "expected_top3": [
+        "media_playback"
+      ],
+      "near_miss": "play→media_content + music→media_content match required; today→temporal_descriptor is optional",
+      "discriminator": "required_class_presence",
+      "token_roles": [
+        {
+          "index": 0,
+          "token": "play",
+          "lemma": "play",
+          "role": "main_predicate",
+          "meaning": "play:activity",
+          "weight": 0.98
+        },
+        {
+          "index": 1,
+          "token": "music",
+          "lemma": "music",
+          "role": "content_nominal",
+          "meaning": "semantic_class_unknown",
+          "weight": 0.58
+        },
+        {
+          "index": 2,
+          "token": "today",
+          "lemma": "today",
+          "role": "semantic_object",
+          "meaning": "today",
+          "weight": 0.88
+        }
+      ],
+      "precision_target": false
+    },
+    {
+      "id": "mp_040",
+      "utterance": "eat dinner",
+      "tokens": [
+        "eat",
+        "dinner"
+      ],
+      "is_question_like": false,
+      "is_request_like": true,
+      "expected_top_frame": "meal_suggestion",
+      "expected_top3": [
+        "meal_suggestion"
+      ],
+      "near_miss": "eat→food_item + dinner→food_item match meal_suggestion required; no advice_action for health",
+      "discriminator": "required_class_presence",
+      "token_roles": [
+        {
+          "index": 0,
+          "token": "eat",
+          "lemma": "eat",
+          "role": "main_predicate",
+          "meaning": "eat:consumption",
+          "weight": 0.98
+        },
+        {
+          "index": 1,
+          "token": "dinner",
+          "lemma": "dinner",
+          "role": "semantic_object",
+          "meaning": "dinner",
+          "weight": 0.88
+        }
+      ],
+      "precision_target": false
+    },
+    {
+      "id": "mp_041",
+      "utterance": "cold rain today",
+      "tokens": [
+        "cold",
+        "rain",
+        "today"
+      ],
+      "is_question_like": false,
+      "is_request_like": true,
+      "expected_top_frame": "weather",
+      "expected_top3": [
+        "weather"
+      ],
+      "near_miss": "cold→weather_phenomenon + rain→weather_phenomenon + today→temporal_descriptor all match weather; question-like false avoids exclude",
+      "discriminator": "required_class_presence",
+      "token_roles": [],
+      "precision_target": false
+    },
+    {
+      "id": "mp_042",
+      "utterance": "see a doctor",
+      "tokens": [
+        "see",
+        "a",
+        "doctor"
+      ],
+      "is_question_like": false,
+      "is_request_like": true,
+      "expected_top_frame": "health_advice",
+      "expected_top3": [
+        "health_advice"
+      ],
+      "near_miss": "see→advice_action + doctor→health_domain match health_advice required OR; no food_item for meal",
+      "discriminator": "required_class_presence",
+      "token_roles": [
+        {
+          "index": 0,
+          "token": "see",
+          "lemma": "see",
+          "role": "main_predicate",
+          "meaning": "see:cognition",
+          "weight": 0.98
+        },
+        {
+          "index": 1,
+          "token": "a",
+          "lemma": "a",
+          "role": "determiner",
+          "meaning": "nominal_scope",
+          "weight": 0.9
+        },
+        {
+          "index": 2,
+          "token": "doctor",
+          "lemma": "doctor",
+          "role": "semantic_object",
+          "meaning": "doctor",
+          "weight": 0.88
+        }
+      ],
+      "precision_target": false
+    },
+    {
+      "id": "mp_043",
+      "utterance": "play music and story",
+      "tokens": [
+        "play",
+        "music",
+        "and",
+        "story"
+      ],
+      "is_question_like": false,
+      "is_request_like": true,
+      "expected_top_frame": "media_playback",
+      "expected_top3": [
+        "media_playback",
+        "story"
+      ],
+      "near_miss": "play→media_content + music→media_content win over story→narrative_content via action_token alignment (0.7 vs 0.55)",
+      "discriminator": "tiebreak_requires_reranker",
+      "token_roles": [
+        {
+          "index": 0,
+          "token": "play",
+          "lemma": "play",
+          "role": "main_predicate",
+          "meaning": "play:activity",
+          "weight": 0.98
+        },
+        {
+          "index": 1,
+          "token": "music",
+          "lemma": "music",
+          "role": "content_nominal",
+          "meaning": "semantic_class_unknown",
+          "weight": 0.58
+        },
+        {
+          "index": 2,
+          "token": "and",
+          "lemma": "and",
+          "role": "clause_link",
+          "meaning": "and",
+          "weight": 0.86
+        },
+        {
+          "index": 3,
+          "token": "story",
+          "lemma": "story",
+          "role": "semantic_object",
+          "meaning": "story",
+          "weight": 0.88
+        }
+      ],
+      "precision_target": true
+    },
+    {
+      "id": "mp_044",
+      "utterance": "outside is cold",
+      "tokens": [
+        "outside",
+        "is",
+        "cold"
+      ],
+      "is_question_like": false,
+      "is_request_like": true,
+      "expected_top_frame": "weather",
+      "expected_top3": [
+        "weather"
+      ],
+      "near_miss": "cold→weather_phenomenon required; outside→public_place optional; is ignored (not in lexicon)",
+      "discriminator": "required_class_presence",
+      "token_roles": [
+        {
+          "index": 0,
+          "token": "outside",
+          "lemma": "outside",
+          "role": "grammatical_subject",
+          "meaning": "outside",
+          "weight": 0.98
+        },
+        {
+          "index": 1,
+          "token": "is",
+          "lemma": "be",
+          "role": "main_predicate",
+          "meaning": "be:state",
+          "weight": 0.98
+        },
+        {
+          "index": 2,
+          "token": "cold",
+          "lemma": "cold",
+          "role": "semantic_object",
+          "meaning": "cold",
+          "weight": 0.88
+        }
+      ],
+      "precision_target": false
+    },
+    {
+      "id": "mp_045",
+      "utterance": "call my mom",
+      "tokens": [
+        "call",
+        "my",
+        "mom"
+      ],
+      "is_question_like": false,
+      "is_request_like": true,
+      "expected_top_frame": "social_contact",
+      "expected_top3": [
+        "social_contact"
+      ],
+      "near_miss": "call→contact_action + mom→social_relation match social_contact required; my→possession optional",
+      "discriminator": "required_class_presence",
+      "token_roles": [
+        {
+          "index": 0,
+          "token": "call",
+          "lemma": "call",
+          "role": "main_predicate",
+          "meaning": "call:communication",
+          "weight": 0.98
+        },
+        {
+          "index": 1,
+          "token": "my",
+          "lemma": "my",
+          "role": "possessor",
+          "meaning": "user",
+          "weight": 0.92
+        },
+        {
+          "index": 2,
+          "token": "mom",
+          "lemma": "mom",
+          "role": "semantic_object",
+          "meaning": "mom",
+          "weight": 0.88
+        }
+      ],
+      "precision_target": false
+    },
+    {
+      "id": "mp_046",
+      "utterance": "take medicine",
+      "tokens": [
+        "take",
+        "medicine"
+      ],
+      "is_question_like": false,
+      "is_request_like": true,
+      "expected_top_frame": "health_advice",
+      "expected_top3": [
+        "health_advice"
+      ],
+      "near_miss": "take→advice_action + medicine→health_domain match health_advice required OR; no food_item for meal",
+      "discriminator": "required_class_presence",
+      "token_roles": [
+        {
+          "index": 0,
+          "token": "take",
+          "lemma": "take",
+          "role": "main_predicate",
+          "meaning": "take:acquisition",
+          "weight": 0.98
+        },
+        {
+          "index": 1,
+          "token": "medicine",
+          "lemma": "medicine",
+          "role": "semantic_object",
+          "meaning": "medicine",
+          "weight": 0.88
+        }
+      ],
+      "precision_target": false
+    },
+    {
+      "id": "mp_047",
+      "utterance": "play song",
+      "tokens": [
+        "play",
+        "song"
+      ],
+      "is_question_like": false,
+      "is_request_like": true,
+      "expected_top_frame": "media_playback",
+      "expected_top3": [
+        "media_playback"
+      ],
+      "near_miss": "play→media_content + song→media_content match media_playback required; no narrative_content",
+      "discriminator": "required_class_presence",
+      "token_roles": [
+        {
+          "index": 0,
+          "token": "play",
+          "lemma": "play",
+          "role": "main_predicate",
+          "meaning": "play:activity",
+          "weight": 0.98
+        },
+        {
+          "index": 1,
+          "token": "song",
+          "lemma": "song",
+          "role": "semantic_object",
+          "meaning": "song",
+          "weight": 0.88
+        }
+      ],
+      "precision_target": false
+    },
+    {
+      "id": "mp_048",
+      "utterance": "give me a story",
+      "tokens": [
+        "give",
+        "me",
+        "a",
+        "story"
+      ],
+      "is_question_like": false,
+      "is_request_like": true,
+      "expected_top_frame": "story",
+      "expected_top3": [
+        "story"
+      ],
+      "near_miss": "give→action verb.create is in story's action_tokens + story→narrative_content; 'me'→indirect_object (not in lexicon, ignored)",
+      "discriminator": "required_class_presence",
+      "token_roles": [
+        {
+          "index": 0,
+          "token": "give",
+          "lemma": "give",
+          "role": "main_predicate",
+          "meaning": "give:transfer",
+          "weight": 0.98
+        },
+        {
+          "index": 1,
+          "token": "me",
+          "lemma": "me",
+          "role": "indirect_object",
+          "meaning": "user",
+          "weight": 0.92
+        },
+        {
+          "index": 2,
+          "token": "a",
+          "lemma": "a",
+          "role": "determiner",
+          "meaning": "nominal_scope",
+          "weight": 0.9
+        },
+        {
+          "index": 3,
+          "token": "story",
+          "lemma": "story",
+          "role": "semantic_object",
+          "meaning": "story",
+          "weight": 0.88
+        }
+      ],
+      "precision_target": false
+    },
+    {
+      "id": "mp_049",
+      "utterance": "yesterday cold",
+      "tokens": [
+        "yesterday",
+        "cold"
+      ],
+      "is_question_like": false,
+      "is_request_like": true,
+      "expected_top_frame": "weather",
+      "expected_top3": [
+        "weather"
+      ],
+      "near_miss": "cold→weather_phenomenon + yesterday→temporal_descriptor match weather; no exclude classes triggered",
+      "discriminator": "required_class_presence",
+      "token_roles": [],
+      "precision_target": false
+    },
+    {
+      "id": "mp_050",
+      "utterance": "recap yesterday",
+      "tokens": [
+        "recap",
+        "yesterday"
+      ],
+      "is_question_like": false,
+      "is_request_like": true,
+      "expected_top_frame": "autobiographical_memory",
+      "expected_top3": [
+        "autobiographical_memory"
+      ],
+      "near_miss": "recap→autobiographical_action matches autobiographical required; yesterday→temporal_descriptor optional",
+      "discriminator": "required_class_presence",
+      "token_roles": [
+        {
+          "index": 0,
+          "token": "recap",
+          "lemma": "recap",
+          "role": "main_predicate",
+          "meaning": "recap:communication",
+          "weight": 0.98
+        },
+        {
+          "index": 1,
+          "token": "yesterday",
+          "lemma": "yesterday",
+          "role": "semantic_object",
+          "meaning": "yesterday",
+          "weight": 0.88
+        }
+      ],
+      "precision_target": false
+    }
+  ]
+}

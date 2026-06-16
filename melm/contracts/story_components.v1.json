@@ -1,0 +1,43 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "melm.story_components.v1",
+  "schema_id": "melm.story_components.v1",
+  "images": {
+    "title_keywords": {
+      "drum": "heard a small drum answering every careful step",
+      "music": "heard a small drum answering every careful step",
+      "tortoise": "met a patient tortoise carrying a question bigger than its shell",
+      "rain": "noticed rain tapping a secret path across the window",
+      "bedtime": "noticed rain tapping a secret path across the window",
+      "school": "found a bright question waiting at the edge of the schoolyard",
+      "star": "found a bright question waiting at the edge of the schoolyard"
+    },
+    "full_text_keywords": {
+      "drum": "heard a small drum answering every careful step",
+      "music": "heard a small drum answering every careful step",
+      "tortoise": "met a patient tortoise carrying a question bigger than its shell",
+      "animal": "met a patient tortoise carrying a question bigger than its shell",
+      "rain": "noticed rain tapping a secret path across the window",
+      "bedtime": "noticed rain tapping a secret path across the window",
+      "school": "found a bright question waiting at the edge of the schoolyard",
+      "star": "found a bright question waiting at the edge of the schoolyard"
+    },
+    "default": "found a small sign that made an ordinary walk feel like an adventure"
+  },
+  "challenges": {
+    "questions": "The puzzle could not be rushed, so one good question opened the next clue.",
+    "curiosity": "The puzzle could not be rushed, so one good question opened the next clue.",
+    "kindness": "Someone nearby needed help, and the adventure only moved forward after a kind choice.",
+    "bedtime": "The map faded whenever the room got noisy, so listening became the brave thing to do.",
+    "school": "The answer was not in a cloud or a book at first; it began with looking carefully.",
+    "default": "The safe path was the one that asked for help, listened, and came back before dark."
+  },
+  "lessons": {
+    "questions": "learned that asking first can be braver than running first.",
+    "kindness": "learned that kindness is useful, not just nice.",
+    "bedtime": "came home calm enough to sleep and curious enough for tomorrow.",
+    "school": "wrote the question down so it could grow into tomorrow's lesson.",
+    "default": "came home safely with one new question and one good choice remembered."
+  },
+  "_note": "Story component text templates for image, challenge, and lesson generation. Each maps keyword triggers to narrative text. Trigger detection logic remains in synthesis code."
+}

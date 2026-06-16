@@ -1,0 +1,29 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "melm.health_disclaimers.v1",
+  "schema_id": "melm.health_disclaimers.v1",
+  "urgent_terms": ["bleeding", "poison", "faint", "emergency"],
+  "urgent_pairs": [["chest", "pain"], ["cannot", "breathe"], ["can't", "breathe"]],
+  "responses": {
+    "poison_swallowed": {
+      "text": "This is urgent. Call emergency services or a local poison help line now, or ask a trusted adult to call. I cannot diagnose poisoning, and you should not wait for a chat answer before getting help.",
+      "triggers": ["poison", "swallowed"]
+    },
+    "bleeding": {
+      "text": "This is urgent. Call emergency services or a trusted adult now. I cannot diagnose the bleeding, and you should get real help immediately instead of waiting for a chat answer.",
+      "triggers": ["bleeding"]
+    },
+    "fainting": {
+      "text": "This may be urgent. Sit or lie down somewhere safe and call a trusted adult or emergency services now. I cannot diagnose fainting, and I should not delay real help.",
+      "triggers": ["faint"]
+    },
+    "breathing_chest_pain": {
+      "text": "This sounds urgent. Call emergency services or a trusted adult now. Trouble breathing or chest pain needs real help, not a local diagnosis from me.",
+      "triggers": ["breathe", "chest pain"]
+    },
+    "fallback": {
+      "text": "This sounds urgent. Call emergency services or a trusted adult now. I cannot diagnose you, and I should not delay real help.",
+      "triggers": []
+    }
+  }
+}

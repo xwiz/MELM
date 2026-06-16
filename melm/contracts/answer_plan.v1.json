@@ -1,0 +1,27 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "melm.answer_plan.v1",
+  "type": "object",
+  "additionalProperties": false,
+  "required": [
+    "plan_id", "route", "mode", "requires", "forbids",
+    "evidence_packet_id"
+  ],
+  "properties": {
+    "plan_id": {"type": "string", "minLength": 1},
+    "route": {"type": "string"},
+    "mode": {
+      "type": "string",
+      "enum": ["narrative", "factual", "procedural", "reflective"]
+    },
+    "requires": {
+      "type": "array",
+      "items": {"type": "string"}
+    },
+    "forbids": {
+      "type": "array",
+      "items": {"type": "string"}
+    },
+    "evidence_packet_id": {"type": "string"}
+  }
+}

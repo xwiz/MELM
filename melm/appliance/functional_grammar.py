@@ -11,6 +11,17 @@ from dataclasses import dataclass
 from typing import Any
 
 
+# Mutable reference to the runtime lexicon (set by the router at init time).
+# Acquired verbs that are not in _VERBS can still lemmatize and get a semantic
+# class through this back-reference.
+_UOL_LEXICON: dict[str, frozenset[str]] = {}
+
+
+def set_uol_lexicon(lexicon: dict[str, frozenset[str]]) -> None:
+    global _UOL_LEXICON
+    _UOL_LEXICON = lexicon
+
+
 _GREETINGS = {"hello", "hey", "hi", "hiya"}
 _WH_WORDS = {"how", "what", "when", "where", "which", "who", "why"}
 _MODALS = {"can", "could", "may", "might", "must", "shall", "should", "will", "would"}
@@ -67,41 +78,74 @@ _PRONOUNS = {
     "someone": ("someone", "human_indefinite"),
 }
 _VERBS = {
-    "acknowledge": ("acknowledge", "communication"),
-    "advise": ("advise", "guidance"),
-    "answer": ("answer", "communication"),
-    "ask": ("ask", "communication"),
-    "be": ("be", "state"),
-    "bring": ("bring", "transfer"),
-    "buy": ("buy", "acquisition"),
-    "call": ("call", "communication"),
-    "cook": ("cook", "creation"),
-    "describe": ("describe", "communication"),
-    "do": ("do", "generic_action"),
-    "eat": ("eat", "consumption"),
-    "explain": ("explain", "knowledge_transfer"),
-    "fly": ("fly", "motion"),
-    "give": ("give", "transfer"),
-    "go": ("go", "motion"),
-    "grow": ("grow", "development"),
-    "have": ("have", "possession_or_experience"),
-    "help": ("help", "support"),
-    "improve": ("improve", "development"),
-    "know": ("know", "cognition"),
-    "like": ("like", "preference"),
-    "need": ("need", "necessity"),
-    "play": ("play", "activity"),
-    "repeat": ("repeat", "iteration"),
-    "say": ("say", "communication"),
-    "share": ("share", "communication"),
-    "speak": ("speak", "communication"),
-    "tell": ("tell", "communication"),
-    "talk": ("talk", "communication"),
-    "take": ("take", "acquisition"),
-    "want": ("want", "desire"),
-    "work": ("work", "function"),
-    "write": ("write", "creation"),
+    "acknowledge": ("acknowledge", "verb.communicate"),
+    "advise": ("advise", "verb.communicate"),
+    "answer": ("answer", "verb.communicate"),
+    "ask": ("ask", "verb.communicate"),
+    "be": ("be", "verb.stative"),
+    "bring": ("bring", "verb.move"),
+    "buy": ("buy", "verb.possess"),
+    "call": ("call", "verb.communicate"),
+    "cook": ("cook", "verb.create"),
+    "describe": ("describe", "verb.communicate"),
+    "do": ("do", "action"),
+    "eat": ("eat", "verb.consume"),
+    "explain": ("explain", "verb.communicate"),
+    "feel": ("feel", "verb.cognition"),
+    "fly": ("fly", "verb.move"),
+    "forget": ("forget", "verb.cognition"),
+    "give": ("give", "verb.move"),
+    "go": ("go", "verb.move"),
+    "grow": ("grow", "verb.change"),
+    "have": ("have", "verb.possess"),
+    "help": ("help", "verb.social"),
+    "improve": ("improve", "verb.change"),
+    "know": ("know", "verb.cognition"),
+    "like": ("like", "verb.emotion"),
+    "make": ("make", "verb.create"),
+    "need": ("need", "verb.stative"),
+    "play": ("play", "action"),
+    "read": ("read", "action"),
+    "recall": ("recall", "verb.cognition"),
+    "recap": ("recap", "verb.communicate"),
+    "remember": ("remember", "verb.cognition"),
+    "repeat": ("repeat", "action"),
+    "say": ("say", "verb.communicate"),
+    "see": ("see", "verb.cognition"),
+    "share": ("share", "verb.communicate"),
+    "sleep": ("sleep", "verb.stative"),
+    "speak": ("speak", "verb.communicate"),
+    "summarize": ("summarize", "verb.communicate"),
+    "tell": ("tell", "verb.communicate"),
+    "talk": ("talk", "verb.communicate"),
+    "take": ("take", "verb.possess"),
+    "walk": ("walk", "verb.move"),
+    "want": ("want", "verb.stative"),
+    "work": ("work", "verb.stative"),
+    "write": ("write", "verb.create"),
 }
+def _verb_info(token: str) -> tuple[str, str] | None:
+    """Return (canonical, semantic_class) for a verb.
+
+    Checks ``_VERBS`` first (the hardcoded seed set), then falls back to the
+    runtime lexicon (``_UOL_LEXICON``) which contains acquired / bulk-seeded
+    verbs.  Returns ``None`` when *token* is not known in either source.
+
+    Only matches lexical entries whose semantic class starts with ``verb.``
+    (pure verb senses).  Noun entries like ``narrative_content`` or
+    ``weather_phenomenon`` are excluded to avoid false predicate matches.
+    """
+    entry = _VERBS.get(token)
+    if entry is not None:
+        return entry
+    classes = _UOL_LEXICON.get(token)
+    if classes:
+        first = next(iter(classes))
+        if first.startswith("verb."):
+            return (token, first)
+    return None
+
+
 _KNOWN_NOMINAL_DOMAINS = {
     "career": "career",
     "health": "health",
@@ -292,8 +336,8 @@ def functional_frame_kind(parse: FunctionalParse | None) -> str:
         parse.subject == "assistant"
         and parse.speech_act in {"yes_no_question", "wh_question"}
         and (
-            semantic_class in {"communication", "preference", "iteration"}
-            or complement_class in {"communication", "iteration"}
+            semantic_class in {"verb.communicate", "verb.emotion", "action"}
+            or complement_class in {"verb.communicate", "action"}
         )
     ):
         return "assistant_behavior"
@@ -301,14 +345,14 @@ def functional_frame_kind(parse: FunctionalParse | None) -> str:
         (
             (
                 parse.subject in {"user", "user_group"}
-                and semantic_class in {"desire", "support", "development"}
+                and semantic_class in {"verb.stative", "verb.social", "verb.change"}
             )
             or (
                 parse.subject == "assistant"
-                and semantic_class == "support"
+                and semantic_class == "verb.social"
                 and parse.indirect_object in {"user", "user_group"}
             )
-            or complement_class == "development"
+            or complement_class == "verb.change"
         )
         and parse.object in {"career", "work"}
     ):
@@ -338,7 +382,7 @@ def _speech_act(lemmas: tuple[str, ...], *, question_mark: bool) -> str:
         return "yes_no_question"
     if question_mark:
         return "question"
-    if first in _VERBS or first in _POLITENESS:
+    if _verb_info(first) is not None or first in _POLITENESS:
         return "request"
     return "statement"
 
@@ -354,10 +398,10 @@ def _subject(lemmas: tuple[str, ...], speech_act: str) -> tuple[int, str]:
     predicate_indexes = [
         index
         for index, token in enumerate(lemmas)
-        if token in _VERBS
+        if _verb_info(token) is not None
         and not (
             token in _AUXILIARIES
-            and any(item in _VERBS and item != token for item in lemmas[index + 1 :])
+            and any(_verb_info(item) is not None and item != token for item in lemmas[index + 1 :])
         )
         and not (
             index + 1 < len(lemmas)
@@ -391,7 +435,8 @@ def _predicate_candidates(
 ) -> list[dict[str, Any]]:
     candidates: list[dict[str, Any]] = []
     for index, token in enumerate(lemmas):
-        if token not in _VERBS:
+        verb = _verb_info(token)
+        if verb is None:
             continue
         if (
             index + 1 < len(lemmas)
@@ -399,9 +444,9 @@ def _predicate_candidates(
             and any(item == "be" for item in lemmas[index + 2 :])
         ):
             continue
-        if token == "be" and any(item in _VERBS and item != "be" for item in lemmas[index + 1 :]):
+        if token == "be" and any(_verb_info(item) and item != "be" for item in lemmas[index + 1 :]):
             continue
-        if token in _AUXILIARIES and any(item in _VERBS and item != token for item in lemmas[index + 1 :]):
+        if token in _AUXILIARIES and any(_verb_info(item) and item != token for item in lemmas[index + 1 :]):
             continue
         score = 0.52
         if index > subject_index:
@@ -412,7 +457,7 @@ def _predicate_candidates(
             score += 0.18
         if speech_act == "request" and index <= 1:
             score += 0.12
-        canonical, semantic_class = _VERBS[token]
+        canonical, semantic_class = verb
         candidates.append(
             {
                 "index": index,
@@ -428,7 +473,8 @@ def _predicate_candidates(
 def _complement_predicate(lemmas: tuple[str, ...], predicate_index: int) -> dict[str, Any] | None:
     for index in range(predicate_index + 1, len(lemmas)):
         token = lemmas[index]
-        if token not in _VERBS:
+        verb = _verb_info(token)
+        if verb is None:
             continue
         previous = lemmas[index - 1] if index > 0 else ""
         intervening_pronoun = (
@@ -437,7 +483,7 @@ def _complement_predicate(lemmas: tuple[str, ...], predicate_index: int) -> dict
             and _PRONOUNS[previous][1] in {"patient", "agent_or_patient"}
         )
         if previous == "to" or intervening_pronoun or lemmas[predicate_index] in {"help", "like"}:
-            canonical, semantic_class = _VERBS[token]
+            canonical, semantic_class = verb
             return {
                 "index": index,
                 "action": canonical,
@@ -495,7 +541,7 @@ def _object(
             continue
         if token in _FREQUENCY or token in _EQUIVALENCE or token in _POLITENESS:
             continue
-        if token in _VERBS:
+        if _verb_info(token) is not None:
             previous = lemmas[index - 1] if index > 0 else ""
             nominal_by_relation = previous in _PREPOSITIONS or previous in _DETERMINERS
             nominal_after_communication = action in {"answer", "ask", "describe", "explain", "say", "tell"} and index > start
@@ -565,10 +611,12 @@ def _token_roles(
                 0.98,
             )
         elif index == predicate_index:
-            canonical, semantic_class = _VERBS[lemma]
+            verb = _verb_info(lemma)
+            canonical, semantic_class = verb or (lemma, "unknown")
             role, meaning, weight = "main_predicate", f"{canonical}:{semantic_class}", 0.98
         elif index == complement_index:
-            canonical, semantic_class = _VERBS[lemma]
+            verb = _verb_info(lemma)
+            canonical, semantic_class = verb or (lemma, "unknown")
             role, meaning, weight = "complement_predicate", f"{canonical}:{semantic_class}", 0.92
         elif index == object_index:
             role, meaning, weight = "semantic_object", _KNOWN_NOMINAL_DOMAINS.get(lemma, lemma), 0.88
@@ -608,8 +656,8 @@ def _token_roles(
                 role, meaning, weight = "reflexive_object", referent, 0.94
             else:
                 role, meaning, weight = "pronoun_relation", f"{referent}:{pronoun_role}", 0.82
-        elif lemma in _VERBS:
-            canonical, semantic_class = _VERBS[lemma]
+        elif (verb := _verb_info(lemma)) is not None:
+            canonical, semantic_class = verb
             role, meaning, weight = "secondary_predicate_candidate", f"{canonical}:{semantic_class}", 0.62
         else:
             role, meaning, weight = "content_nominal", _KNOWN_NOMINAL_DOMAINS.get(lemma, "semantic_class_unknown"), 0.58
@@ -636,7 +684,13 @@ def _pattern(
 
 
 def _semantic_class(action: str) -> str:
-    return _VERBS.get(action, ("", ""))[1] if action else ""
+    if action in _VERBS:
+        return _VERBS[action][1]
+    if action in _UOL_LEXICON:
+        classes = _UOL_LEXICON[action]
+        if classes:
+            return next(iter(classes))
+    return ""
 
 
 def _lemma(token: str) -> str:
@@ -658,21 +712,25 @@ def _lemma(token: str) -> str:
     }
     if token in irregular:
         return irregular[token]
+
+    def _known_verb(stem: str) -> bool:
+        return stem in _VERBS or stem in _UOL_LEXICON
+
     if token.endswith("ing") and len(token) > 5:
         stem = token[:-3]
         if stem.endswith(stem[-1:] * 2):
             stem = stem[:-1]
-        if stem in _VERBS:
+        if _known_verb(stem):
             return stem
-        if f"{stem}e" in _VERBS:
+        if _known_verb(f"{stem}e"):
             return f"{stem}e"
     if token.endswith("ed") and len(token) > 4:
         stem = token[:-2]
-        if stem in _VERBS:
+        if _known_verb(stem):
             return stem
-        if f"{stem}e" in _VERBS:
+        if _known_verb(f"{stem}e"):
             return f"{stem}e"
-    if token.endswith("s") and token[:-1] in _VERBS:
+    if token.endswith("s") and _known_verb(token[:-1]):
         return token[:-1]
     return token
 

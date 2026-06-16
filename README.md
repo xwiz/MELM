@@ -53,11 +53,14 @@ membrane policy
   + local/tool/action/cloud triage
 ```
 
-Use [docs/local_assistant_os_mvp_plan_v2.md](docs/local_assistant_os_mvp_plan_v2.md) as
-the authoritative architecture and build plan. Root-level whitepaper,
-validation, and research-review files are evidence sources only. They must not
-be used to steer the current MVP if they imply a model-first, tokenizer-first,
-or generic-chatbot direction.
+Use [docs/assistant_os_spec.md](docs/assistant_os_spec.md) as the authoritative
+architecture specification (target architecture, skill/knowledge boundary,
+foundational rules, anti-regression checklist) and
+[docs/local_assistant_os_mvp_plan_v2.md](docs/local_assistant_os_mvp_plan_v2.md)
+as the authoritative execution plan (milestones, gates, timeline).
+Root-level whitepaper, validation, and research-review files are evidence
+sources only. They must not be used to steer the current MVP if they imply a
+model-first, tokenizer-first, or generic-chatbot direction.
 
 ## Root Document Roles
 

@@ -1,0 +1,76 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "melm.answer_templates.v1",
+  "schema_id": "melm.answer_templates.v1",
+  "intents": {
+    "weather": {
+      "template": "Today in {place}: {weather}. That is the cached local forecast for today. For exact timing, I should refresh the weather cache.",
+      "requires_evidence": ["weather"]
+    },
+    "health_advice": {
+      "template": "This is general local guidance, not a diagnosis. Start with water, steady sleep, and gentle movement. Today, choose one small goal: {goal_text}. For pain, danger, or illness, talk to a trusted adult or clinician.",
+      "reason_gate": "!urgent_health_safety_escalation"
+    },
+    "common_sense_safety": {
+      "templates": {
+        "school_clothing_weather_policy": "Wear school clothes and carry rain protection because the forecast mentions rain."
+      }
+    },
+    "autobiographical_memory": {
+      "templates": {
+        "autobiographical_memory_digest": "From local conversation memory: {summary}.",
+        "autobiographical_session_summary": "From local conversation memory: {summary}.",
+        "autobiographical_memory_summary": "From local conversation memory: {summary}."
+      }
+    },
+    "personal_memory": {
+      "templates": {
+        "personal_memory_summary": "I know this from local memory: {summary}."
+      }
+    },
+    "media_playback": {
+      "templates": {
+        "cancelled_pending_action": "Cancelled. I will not play {title} now. There is no pending media action left to execute unless you ask again."
+      }
+    },
+    "social_contact": {
+      "templates": {
+        "cancelled_pending_action": "Cancelled. I will not call {label} now. The pending trusted-contact action is cleared, so no call will run unless you ask again.",
+        "consented_trusted_contact_stored": "I will remember {label} as a trusted contact on this device."
+      }
+    }
+  },
+  "evidence_count_targets": {
+    "assistant_identity": 3,
+    "assistant_status": 4,
+    "personal_memory": 4,
+    "autobiographical_memory": 3,
+    "meal_suggestion": 4,
+    "health_advice": 2,
+    "story": 2
+  },
+  "answer_specificity_phrases": {
+    "story": "i picked",
+    "assistant_identity": ["melm local assistant os", "local"],
+    "assistant_status": ["local ledger", "safety dashboard"],
+    "personal_memory": "local memory",
+    "autobiographical_memory": "conversation memory",
+    "health_advice": ["not a diagnosis", "cannot diagnose", "real help"],
+    "meal_suggestion": "you could eat",
+    "weather": "today",
+    "common_sense_safety": "proper clothes",
+    "media_playback": "cancelled",
+    "social_contact": ["cancelled", "call"]
+  },
+  "answer_specificity_bonuses": [
+    {
+      "intent": "social_contact",
+      "reason": "consented_trusted_contact_stored",
+      "triggers": [
+        ["trusted contact", "remember"]
+      ],
+      "bonus": 0.3
+    }
+  ],
+  "_note": "Answer response templates keyed by intent. Templates with a 'reason_gate' only apply when decision.reason matches. Templates without a reason_gate apply unconditionally (when not handled by a registered handler). The '!urgent_health_safety_escalation' prefix means 'reason is NOT that value'."
+}

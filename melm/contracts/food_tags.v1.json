@@ -1,0 +1,20 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "melm.food_tags.v1",
+  "schema_id": "melm.food_tags.v1",
+  "tags": {
+    "rice": ["staple", "grain", "warm"],
+    "beans": ["protein", "staple", "warm"],
+    "plantain": ["staple", "fruit", "warm"],
+    "egg": ["protein", "breakfast"],
+    "oat": ["grain", "breakfast", "warm"],
+    "fruit": ["fruit", "light"],
+    "salad": ["vegetable", "light"],
+    "soup": ["vegetable", "warm", "light"],
+    "vegetable": ["vegetable"],
+    "fish": ["protein"],
+    "chicken": ["protein"],
+    "bread": ["grain", "breakfast"]
+  },
+  "_note": "Food→tag mapping for meal suggestion scoring. Each key is a food marker (lowercase), each value is an array of attribute tags. The default fallback tag for unrecognized foods is 'food'."
+}

@@ -1,0 +1,27 @@
+{
+  "schema_id": "melm.router_semantic_aliases.v1",
+  "version": "v1",
+  "object_role_tokens": {
+    "story": ["story", "stories", "tale", "tales", "fable", "fables", "bedtime"],
+    "weather": ["weather", "forecast", "temperature", "rain", "outside", "today", "tomorrow"],
+    "common_sense_safety": ["naked", "undressed", "clothes", "wear", "dress", "dressed", "school", "class", "outside", "public"],
+    "media_playback": ["song", "music", "piano", "radio", "lofi", "audio", "track", "sound", "sounds"],
+    "health_advice": ["health", "healthy", "healthier", "wellness", "doctor", "medicine", "medication", "fever", "sick", "pain", "sleep"],
+    "personal_memory": ["about", "memory", "remember", "recall", "routine", "morning", "household", "family", "child", "kid", "son", "daughter", "school", "age", "name", "location", "favorite", "health", "goal", "goals", "contact"],
+    "autobiographical_memory": ["conversation", "conversations", "sessions", "earlier", "previous", "recent", "last", "question", "days"],
+    "meal_suggestion": ["eat", "food", "meal", "breakfast", "lunch", "dinner", "cook"],
+    "social_contact": ["someone", "person", "caregiver", "contact", "adult", "mom", "dad", "sister", "brother", "daughter", "son", "child"]
+  },
+  "secondary_hint_groups": {
+    "assistant_status": ["status", "ledger", "cloud", "memory", "missing", "next"],
+    "story": ["story", "tale", "fable", "bedtime"],
+    "weather": ["weather", "forecast", "temperature", "rain"],
+    "common_sense_safety": ["naked", "clothes", "wear", "school"],
+    "media_playback": ["song", "music", "piano", "radio", "lofi", "sounds"],
+    "health_advice": ["health", "healthy", "healthier", "doctor", "medicine", "poison", "breathe"],
+    "personal_memory": ["remember", "recall", "routine", "morning", "household", "family", "profile"],
+    "autobiographical_memory": ["earlier", "recent", "previous", "conversation", "sessions"],
+    "meal_suggestion": ["eat", "food", "meal", "breakfast", "lunch", "dinner"],
+    "social_contact": ["talk", "call", "reach", "caregiver", "someone"]
+  }
+}

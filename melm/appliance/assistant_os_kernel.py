@@ -9,6 +9,8 @@ import re
 from typing import Any, Literal
 
 from .assistant_actions import LocalDeviceActionExecutor
+from .assistant_experience_writer import record_conversation_experience
+from ..contracts.validation import ContractRegistry, ContractValidationError
 from .assistant_integrity import ResponseIntegrityAssessment, assess_response_integrity
 from .assistant_inventory import (
     LocalMediaInventoryAdapter,
@@ -16,8 +18,13 @@ from .assistant_inventory import (
     media_items_to_inventory_rows,
     story_items_to_inventory_rows,
 )
-from .assistant_lexicon import cloud_definition_lookup, offline_definition_lookup
+from .assistant_lexicon import (
+    acquire_definition,
+    cloud_definition_lookup,
+    offline_definition_lookup,
+)
 from .assistant_os_store import AssistantOSStore
+from .assistant_decoder import ConstrainedDecoder
 from .assistant_synthesis import BoundedLocalSynthesizer, BoundedSynthesisResult
 from .local_assistant_router import (
     AssistantDecision,
@@ -238,6 +245,7 @@ class AssistantOSKernel:
         improvement_opt_in: bool = False,
         offline_dictionary_path: str | Path | None = None,
         cloud_api_key: str | None = None,
+        decoder: ConstrainedDecoder | None = None,
     ) -> None:
         if store is not None and db_path is not None:
             raise ValueError("pass either store or db_path, not both")
@@ -245,6 +253,7 @@ class AssistantOSKernel:
         self.profile = profile or LocalAssistantProfile()
         if self.store is not None:
             self.profile = self.store.load_profile(self.profile)
+        self.decoder = decoder
         self.self_model = self_model or self._self_model_from_profile(self.profile)
         self.action_executor = action_executor or LocalDeviceActionExecutor()
         self.capture_surface = str(capture_surface)
@@ -274,12 +283,32 @@ class AssistantOSKernel:
             self.executed_jobs = self.store.load_executed_jobs()
             self._persist_profile_and_self_model()
             self._rebuild_router_lexicon_cache()
+            self._validate_contract_compatibility()
+
+    def _validate_contract_compatibility(self) -> None:
+        registry = ContractRegistry.load()
+        errors = registry.check_compatibility()
+        if errors:
+            raise ContractValidationError(
+                "contract compatibility errors:\n" + "\n".join(errors)
+            )
 
     def handle(self, utterance: str) -> AssistantDecision:
         decision = self.decide(utterance)
         self.remember(decision)
         self._run_acquisition()
+        self._run_user_teaching(utterance)
         return decision
+
+    def _run_user_teaching(self, utterance: str) -> None:
+        if self.store is None:
+            return
+        try:
+            result = acquire_definition(self.store, utterance)
+        except Exception:
+            return
+        if result is None:
+            return
 
     def _run_acquisition(self) -> None:
         if self.store is None or self.last_response_integrity is None:
@@ -567,6 +596,7 @@ class AssistantOSKernel:
                     reason=self.last_synthesis.reason,
                     boundary_crossed=self.last_synthesis.boundary_crossed,
                 )
+            record_conversation_experience(self.store, decision, self.last_synthesis)
             debug_parse = parse_assistant_debug_frame(decision.utterance, decision)
             integrity = assess_response_integrity(
                 decision,
@@ -1210,6 +1240,12 @@ class AssistantOSKernel:
         return self_model_from_profile(profile)
 
     def _rebuild_router_lexicon_cache(self) -> None:
+        from .assistant_lexicon_legacy import build_legacy_in_memory_lexicon
+        from collections import defaultdict
+        result = build_legacy_in_memory_lexicon()
+        lexicon: dict[str, set[str]] = defaultdict(
+            set, {k: set(v) for k, v in result.items()},
+        )
         rows = self.store.connection.execute(
             """
             SELECT l.normalized_lemma, s.semantic_class_id
@@ -1218,20 +1254,13 @@ class AssistantOSKernel:
             WHERE s.status = 'active'
             """
         ).fetchall()
-        if rows:
-            from collections import defaultdict
-            lexicon: dict[str, set[str]] = defaultdict(set)
-            for row in rows:
-                lemma = str(row["normalized_lemma"])
-                class_id = str(row["semantic_class_id"])
-                lexicon[lemma].add(class_id)
-            replace_in_memory_lexicon(
-                {k: frozenset(v) for k, v in lexicon.items()}
-            )
-            rebuild_entity_lexicon_index(self.store)
-            return
-        from .assistant_lexicon_legacy import build_legacy_in_memory_lexicon
-        replace_in_memory_lexicon(build_legacy_in_memory_lexicon())
+        for row in rows:
+            lemma = str(row["normalized_lemma"])
+            class_id = str(row["semantic_class_id"])
+            lexicon[lemma].add(class_id)
+        replace_in_memory_lexicon(
+            {k: frozenset(v) for k, v in lexicon.items()}
+        )
         rebuild_entity_lexicon_index(self.store)
 
     def _persist_profile_and_self_model(self) -> None:
@@ -1246,6 +1275,7 @@ class AssistantOSKernel:
             store=self.store,
             self_state=_self_model_payload(self.self_model),
             runtime_status=self._current_self_status,
+            decoder=self.decoder,
         )
 
     def _fact_privacy_index(self) -> dict[str, dict[str, Any]]:

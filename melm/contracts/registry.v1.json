@@ -79,6 +79,127 @@
       "safety_critical": true
     },
     {
+      "schema_id": "melm.food_tags.v1",
+      "path": "food_tags.v1.json",
+      "owner": "kernel/synthesis",
+      "producers": ["release tooling"],
+      "consumers": ["meal suggestion skill"],
+      "validator": "melm.contracts.validate_food_tags",
+      "compatible_predecessors": [],
+      "failure_behavior": "meal suggestion uses hardcoded fallback mapping",
+      "safety_critical": false
+    },
+    {
+      "schema_id": "melm.health_disclaimers.v1",
+      "path": "health_disclaimers.v1.json",
+      "owner": "kernel/synthesis",
+      "producers": ["release tooling"],
+      "consumers": ["health advice response"],
+      "validator": "melm.contracts.validate_health_disclaimers",
+      "compatible_predecessors": [],
+      "failure_behavior": "health advice uses hardcoded fallback disclaimer",
+      "safety_critical": true
+    },
+    {
+      "schema_id": "melm.safety_policies.v1",
+      "path": "safety_policies.v1.json",
+      "owner": "kernel/synthesis",
+      "producers": ["release tooling"],
+      "consumers": ["common sense safety response"],
+      "validator": "melm.contracts.validate_safety_policies",
+      "compatible_predecessors": [],
+      "failure_behavior": "safety response uses hardcoded fallback policy",
+      "safety_critical": true
+    },
+    {
+      "schema_id": "melm.story_components.v1",
+      "path": "story_components.v1.json",
+      "owner": "kernel/synthesis",
+      "producers": ["release tooling"],
+      "consumers": ["story synthesis"],
+      "validator": "melm.contracts.validate_story_components",
+      "compatible_predecessors": [],
+      "failure_behavior": "story uses hardcoded fallback image/challenge/lesson",
+      "safety_critical": false
+    },
+    {
+      "schema_id": "melm.weather_concepts.v1",
+      "path": "weather_concepts.v1.json",
+      "owner": "kernel/router",
+      "producers": ["release tooling"],
+      "consumers": ["weather classifier"],
+      "validator": "melm.contracts.validate_weather_concepts",
+      "compatible_predecessors": [],
+      "failure_behavior": "weather concept detection uses hardcoded fallback terms",
+      "safety_critical": false
+    },
+    {
+      "schema_id": "melm.meal_scopes.v1",
+      "path": "meal_scopes.v1.json",
+      "owner": "kernel/synthesis",
+      "producers": ["release tooling"],
+      "consumers": ["meal suggestion skill"],
+      "validator": "melm.contracts.validate_meal_scopes",
+      "compatible_predecessors": [],
+      "failure_behavior": "meal scope defaults to 'meal'",
+      "safety_critical": false
+    },
+    {
+      "schema_id": "melm.assistant_identity.v1",
+      "path": "assistant_identity.v1.json",
+      "owner": "kernel/synthesis",
+      "producers": ["release tooling"],
+      "consumers": ["assistant identity/status response"],
+      "validator": "melm.contracts.validate_assistant_identity",
+      "compatible_predecessors": [],
+      "failure_behavior": "identity response uses hardcoded fallback text",
+      "safety_critical": false
+    },
+    {
+      "schema_id": "melm.answer_templates.v1",
+      "path": "answer_templates.v1.json",
+      "owner": "kernel/synthesis",
+      "producers": ["release tooling"],
+      "consumers": ["synthesis _answer dispatch"],
+      "validator": "melm.contracts.validate_answer_templates",
+      "compatible_predecessors": [],
+      "failure_behavior": "synthesis falls back to decision.answer",
+      "safety_critical": false
+    },
+    {
+      "schema_id": "melm.router_semantic_aliases.v1",
+      "path": "router_semantic_aliases.v1.json",
+      "owner": "kernel/router",
+      "producers": ["release tooling"],
+      "consumers": ["assistant_router", "UOL"],
+      "validator": "melm.contracts.validate_router_semantic_aliases",
+      "compatible_predecessors": [],
+      "failure_behavior": "router uses hardcoded fallback aliases",
+      "safety_critical": false
+    },
+    {
+      "schema_id": "melm.memory_insights.v1",
+      "path": "memory_insights.v1.json",
+      "owner": "kernel/synthesis",
+      "producers": ["release tooling"],
+      "consumers": ["memory skill"],
+      "validator": "melm.contracts.validate_memory_insights",
+      "compatible_predecessors": [],
+      "failure_behavior": "memory insight uses hardcoded fallback text",
+      "safety_critical": false
+    },
+    {
+      "schema_id": "melm.frame_minimal_pairs.v1",
+      "path": "frame_minimal_pairs.v1.json",
+      "owner": "kernel/router",
+      "producers": ["release tooling"],
+      "consumers": ["frame linker eval", "E3 reranker eval"],
+      "validator": "melm.contracts.validate_frame_minimal_pairs",
+      "compatible_predecessors": [],
+      "failure_behavior": "M5 eval harness cannot load; test assertion for top-3 degrades gracefully",
+      "safety_critical": false
+    },
+    {
       "schema_id": "melm.capability_manifest.v1",
       "path": "default_capability_manifest.v1.json",
       "owner": "kernel/router",
@@ -87,6 +208,72 @@
       "validator": "melm.contracts.validate_capability_manifest",
       "compatible_predecessors": [],
       "failure_behavior": "all families assumed installed",
+      "safety_critical": false
+    },
+    {
+      "schema_id": "melm.uol_parse.v1",
+      "path": "uol_parse.v1.json",
+      "owner": "meaning-core",
+      "producers": ["functional_grammar"],
+      "consumers": ["frame linker", "router", "E3 reranker"],
+      "validator": "melm.contracts.validate_uol_parse",
+      "compatible_predecessors": [],
+      "failure_behavior": "router degrades to fallback classification",
+      "safety_critical": true
+    },
+    {
+      "schema_id": "melm.route_decision.v1",
+      "path": "route_decision.v1.json",
+      "owner": "kernel/router",
+      "producers": ["assistant_router"],
+      "consumers": ["kernel", "experience_writer", "dashboard"],
+      "validator": "melm.contracts.validate_route_decision",
+      "compatible_predecessors": [],
+      "failure_behavior": "router returns unknown/cloud_handoff fallback",
+      "safety_critical": true
+    },
+    {
+      "schema_id": "melm.evidence_packet.v1",
+      "path": "evidence_packet.v1.json",
+      "owner": "kernel/authority",
+      "producers": ["assistant_authority.build_evidence_packet"],
+      "consumers": ["assistant_authority.verify_answer", "decoder"],
+      "validator": "melm.contracts.validate_evidence_packet",
+      "compatible_predecessors": [],
+      "failure_behavior": "synthesis skips authority verification, uses template fallback",
+      "safety_critical": true
+    },
+    {
+      "schema_id": "melm.answer_plan.v1",
+      "path": "answer_plan.v1.json",
+      "owner": "kernel/authority",
+      "producers": ["assistant_authority.build_answer_plan"],
+      "consumers": ["decoder dispatch", "assistant_authority.verify_answer"],
+      "validator": "melm.contracts.validate_answer_plan",
+      "compatible_predecessors": [],
+      "failure_behavior": "synthesis skips decoder, uses template fallback",
+      "safety_critical": true
+    },
+    {
+      "schema_id": "melm.verification_result.v1",
+      "path": "verification_result.v1.json",
+      "owner": "kernel/authority",
+      "producers": ["assistant_authority.verify_answer"],
+      "consumers": ["synthesis pipeline", "dashboard", "experience_writer"],
+      "validator": "melm.contracts.validate_verification_result",
+      "compatible_predecessors": [],
+      "failure_behavior": "synthesis marks answer unverified, uses template fallback",
+      "safety_critical": true
+    },
+    {
+      "schema_id": "melm.model_manifest.v1",
+      "path": "model_manifest.v1.json",
+      "owner": "kernel/decoder",
+      "producers": ["release tooling"],
+      "consumers": ["llguidance backend", "template backend"],
+      "validator": "melm.contracts.validate_model_manifest",
+      "compatible_predecessors": [],
+      "failure_behavior": "decoder defaults to template backend",
       "safety_critical": false
     }
   ]

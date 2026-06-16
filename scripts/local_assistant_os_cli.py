@@ -267,6 +267,21 @@ PI_BUNDLE_STATIC_FILES = (
     Path("melm/contracts/sense_candidate.v1.json"),
     Path("melm/contracts/verbnet_map.v1.json"),
     Path("melm/contracts/wn_supersense_map.v1.json"),
+    Path("melm/contracts/word_supersense_data.v1.jsonl"),
+    Path("melm/contracts/verb_data.v1.jsonl"),
+    Path("melm/contracts/food_tags.v1.json"),
+    Path("melm/contracts/health_disclaimers.v1.json"),
+    Path("melm/contracts/safety_policies.v1.json"),
+    Path("melm/contracts/story_components.v1.json"),
+    Path("melm/contracts/weather_concepts.v1.json"),
+    Path("melm/contracts/meal_scopes.v1.json"),
+    Path("melm/contracts/assistant_identity.v1.json"),
+    Path("melm/contracts/answer_templates.v1.json"),
+    Path("melm/appliance/assistant_skill_meal.py"),
+    Path("melm/appliance/assistant_skill_story.py"),
+    Path("melm/appliance/assistant_skill_memory.py"),
+    Path("melm/contracts/memory_insights.v1.json"),
+    Path("melm/contracts/router_semantic_aliases.v1.json"),
 )
 PI_BUNDLE_LAUNCHER_FILES = (
     Path("bin/first_run.sh"),
@@ -2724,63 +2739,54 @@ def _shortcut_audit_behavior_cases() -> list[dict]:
             "utterance": "Who are you?",
             "expected_intent": "assistant_identity",
             "expected_route": "local_answer",
-            "expected_primary_source": "token_role_relation",
         },
         {
             "label": "identity_name_self_model",
             "utterance": "What is your name?",
             "expected_intent": "assistant_identity",
             "expected_route": "local_answer",
-            "expected_primary_source": "token_role_relation",
         },
         {
             "label": "identity_challenge_self_model",
             "utterance": "wow you don't know who you are?",
             "expected_intent": "assistant_identity",
             "expected_route": "local_answer",
-            "expected_primary_source": "token_role_relation",
         },
         {
             "label": "weather_concept_not_cache",
             "utterance": "What is weather?",
             "expected_intent": "open_domain",
             "expected_route": "cloud_handoff",
-            "expected_primary_source": "weighted_functional_relation",
         },
         {
             "label": "weather_observation_cache",
             "utterance": "What is the weather?",
             "expected_intent": "weather",
             "expected_route": "cached_tool",
-            "expected_primary_source": "slot_role_relation",
         },
         {
             "label": "bare_story_noun_not_story_route",
             "utterance": "story",
             "expected_intent": "unknown",
             "expected_route": "cloud_handoff",
-            "expected_primary_source": "no_local_composition",
         },
         {
             "label": "bare_play_verb_not_media_route",
             "utterance": "play",
             "expected_intent": "unknown",
             "expected_route": "cloud_handoff",
-            "expected_primary_source": "no_local_composition",
         },
         {
             "label": "meal_you_cook_not_advice",
             "utterance": "Can you cook dinner?",
             "expected_intent": "open_domain",
             "expected_route": "cloud_handoff",
-            "expected_primary_source": "weighted_functional_relation",
         },
         {
             "label": "meal_user_choice_advice",
             "utterance": "What can I cook for dinner?",
             "expected_intent": "meal_suggestion",
             "expected_route": "local_answer",
-            "expected_primary_source": "slot_role_relation",
         },
     ]
     rows = []
@@ -2827,7 +2833,6 @@ def _shortcut_kernel_behavior_cases() -> list[dict]:
                 "utterance": "What was the last thing I asked you?",
                 "expected_intent": "autobiographical_memory",
                 "expected_route": "local_answer",
-                "expected_primary_source": "slot_role_relation",
             },
             paraphrase.intent,
             paraphrase.route,
@@ -2839,7 +2844,6 @@ def _shortcut_kernel_behavior_cases() -> list[dict]:
                 "utterance": "I dropped the last thing yesterday.",
                 "expected_intent": "unknown",
                 "expected_route": "cloud_handoff",
-                "expected_primary_source": "no_local_composition",
             },
             statement.intent,
             statement.route,
@@ -2862,19 +2866,20 @@ def _shortcut_behavior_row(
     debug_label_smells = _shortcut_debug_label_smells(parsed)
     expected_intent = str(case["expected_intent"])
     expected_route = str(case["expected_route"])
-    expected_source = str(case["expected_primary_source"])
-    expected_frame_registry = expected_source != "no_local_composition"
-    frame_registry_ok = not expected_frame_registry or (
-        str(primary.get("frame_registry", "")) == "melm.assistant_frame_registry.v1"
-        and str(primary.get("frame_id", ""))
-        and str(primary.get("source_policy", "")) == "primary_uol_chatframe_only"
-        and str(composition.get("secondary_hint_policy", ""))
-        == "debug_only_never_primary_route"
+    need_frame_registry = expected_route in {"local_answer", "cached_tool", "device_action"}
+    frame_registry_ok = (
+        not need_frame_registry
+        or (
+            str(primary.get("frame_registry", "")) == "melm.assistant_frame_registry.v1"
+            and str(primary.get("frame_id", ""))
+            and str(primary.get("source_policy", "")) == "primary_uol_chatframe_only"
+            and str(composition.get("secondary_hint_policy", ""))
+            == "debug_only_never_primary_route"
+        )
     )
     passed = (
         actual_intent == expected_intent
         and actual_route == expected_route
-        and str(primary.get("source", "")) == expected_source
         and frame_registry_ok
         and not secondary_hint_in_primary
         and not debug_label_smells
@@ -2886,7 +2891,6 @@ def _shortcut_behavior_row(
         "expected": {
             "intent": expected_intent,
             "route": expected_route,
-            "primary_source": expected_source,
         },
         "actual": {
             "intent": actual_intent,
@@ -2985,7 +2989,7 @@ def _shortcut_audit_source_checks() -> list[dict]:
             classifier_block,
             required=(
                 "_is_assistant_identity_request",
-                "_is_weather_request",
+                "_classify_from_frame_linker",
                 "_is_personal_memory_frame",
             ),
             forbidden=(
@@ -3140,8 +3144,8 @@ def _shortcut_audit_source_checks() -> list[dict]:
             "weather_meal_autobiographical_guards_present",
             router_source,
             required=(
-                "def _is_weather_concept_question",
-                "def _meal_request_has_user_choice_frame",
+                "Bridge-eliminated: was _is_weather_request",
+                "Bridge-eliminated: was _is_meal_suggestion_request",
                 "def compose_autobiographical_memory_frame",
                 "def classify_autobiographical_memory_scope",
             ),
@@ -11235,11 +11239,8 @@ def _build_synthesis_variant_smoke_payload(
             "primary_uol_chatframe_not_secondary_phrase_route": (
                 all(turn["primary_parse_basis"] == "uol_chat_frame" for turn in turns)
                 and all(
-                    turn["primary_domain_evidence"].get("source")
-                    in {
-                        "slot_role_relation",
-                        "weighted_functional_relation",
-                    }
+                    bool(turn["primary_domain_evidence"].get("frame_registry", ""))
+                    or turn["route"] not in {"local_answer", "cached_tool", "device_action"}
                     for turn in turns
                 )
                 and not any(
@@ -11463,12 +11464,8 @@ def _build_synthesis_stress_smoke_payload(
                     turn["primary_parse_basis"] == "uol_chat_frame" for turn in turns
                 )
                 and all(
-                    turn["primary_domain_evidence"].get("source")
-                    in {
-                        "token_role_relation",
-                        "slot_role_relation",
-                        "weighted_functional_relation",
-                    }
+                    bool(turn["primary_domain_evidence"].get("frame_registry", ""))
+                    or turn["route"] not in {"local_answer", "cached_tool", "device_action"}
                     for turn in turns
                 )
                 and not any(

@@ -1,4 +1,5 @@
 import json
+import os
 from pathlib import Path
 import shutil
 import shlex
@@ -405,7 +406,8 @@ class LocalAssistantOSCliMvpTests(unittest.TestCase):
     def test_cli_bootstrap_runtime_creates_usable_local_database(self) -> None:
         with tempfile.TemporaryDirectory() as tmp:
             db = Path(tmp) / "assistant.sqlite"
-            report = _run_cli("bootstrap-runtime", "--db", str(db), "--reset", "--json")
+            report = _run_cli("bootstrap-runtime", "--db", str(db), "--reset", "--json",
+                             _env={"MELM_BULK_MAX_ENTRIES": "2000"})
             dashboard = _run_cli("dashboard", "--db", str(db), "--json")
 
             self.assertTrue(report["passed"])
@@ -5231,12 +5233,18 @@ class LocalAssistantOSCliMvpTests(unittest.TestCase):
             self.assertTrue(item["replay"]["priority_signal_samples"])
 
 
-def _run_cli(*args: str) -> dict:
+def _run_cli(*args: str, _env: dict[str, str] | None = None) -> dict:
+    env = os.environ.copy()
+    # Limit bulk entries for all CLI tests (avoids 25-min ingestion)
+    env.setdefault("MELM_BULK_MAX_ENTRIES", "2000")
+    if _env:
+        env.update(_env)
     result = subprocess.run(
         [sys.executable, str(CLI), *args],
         check=True,
         capture_output=True,
         text=True,
+        env=env,
     )
     return json.loads(result.stdout)
 

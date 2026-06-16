@@ -11,6 +11,8 @@ import json
 from dataclasses import dataclass, field
 from typing import Any
 
+from melm.contracts import load_answer_templates, load_assistant_identity, load_health_disclaimers, load_safety_policies
+
 from .assistant_authority import (
     AnswerPlan,
     AuthorityEvidenceItem,
@@ -24,11 +26,208 @@ from .assistant_authority import (
 )
 from .assistant_decoder import ConstrainedDecoder, build_decoding_grammar
 from .assistant_os_store import AssistantOSStore
-from .local_assistant_router import AssistantDecision, LocalAssistantProfile, choose_local_meal
+from .assistant_skill_meal import format_meal_answer
+from .assistant_skill_memory import autobiographical_digest_summary, autobiographical_memory_summary, autobiographical_session_summary, personal_memory_summary
+from .assistant_skill_story import format_story_answer, format_story_frame
+from .local_assistant_router import AssistantDecision, LocalAssistantProfile
 
 
 SYNTHESIZABLE_ROUTES = {"local_answer", "cached_tool"}
 SYNTHESIS_QUALITY_FLOOR = 0.65
+
+
+def _load_answer_template(intent: str, reason: str) -> str | None:
+    templates = load_answer_templates()
+    entry = templates.get(intent)
+    if entry is None:
+        return None
+    if "template" in entry:
+        return entry["template"]
+    if "templates" in entry and reason in entry["templates"]:
+        return entry["templates"][reason]
+    return None
+
+
+def _render_contract_answer(
+    decision: AssistantDecision,
+    evidence: tuple[SynthesisEvidence, ...],
+    profile: LocalAssistantProfile,
+) -> str | None:
+    templates = load_answer_templates()
+    entry = templates.get(decision.intent)
+    if entry is None:
+        return None
+    if "reason_gate" in entry:
+        gate = entry["reason_gate"]
+        if gate.startswith("!"):
+            if decision.reason == gate[1:]:
+                return None
+        elif decision.reason != gate:
+            return None
+    if "template" in entry:
+        template = entry["template"]
+    elif "templates" in entry and decision.reason in entry["templates"]:
+        template = entry["templates"][decision.reason]
+    else:
+        return None
+    required = entry.get("requires_evidence", [])
+    for kind in required:
+        if _first_kind(evidence, kind) is None:
+            return None
+    try:
+        return _format_answer_template(
+            template, decision, evidence, profile,
+        )
+    except (KeyError, ValueError):
+        return None
+
+
+def _format_answer_template(
+    template: str,
+    decision: AssistantDecision,
+    evidence: tuple[SynthesisEvidence, ...],
+    profile: LocalAssistantProfile,
+) -> str:
+    evidence_map = {item.kind: item.value for item in evidence}
+    weather = _first_kind(evidence, "weather")
+    location = _first_kind(evidence, "profile")
+    place = location.value if location is not None else profile.location
+    weather_val = weather.value if weather is not None else ""
+    summary = _autobiographical_memory_summary(evidence)
+    goals = [item.value for item in evidence if item.kind == "health_goal"]
+    goal_text = "; ".join(goals) if goals else "basic care"
+    preference = _first_kind(evidence, "preference")
+    contact = _first_kind(evidence, "contact")
+    title = preference.value if preference is not None else _cancelled_title(decision.answer)
+    label = _contact_label(contact, decision.answer) if contact is not None else "the contact"
+    return template.format(
+        place=place,
+        weather=weather_val,
+        summary=summary or "",
+        goal_text=goal_text,
+        title=title,
+        label=label,
+    )
+
+
+def _handle_story(self: BoundedLocalSynthesizer, decision: AssistantDecision, evidence: tuple[SynthesisEvidence, ...]) -> str | None:
+    story = _first_kind(evidence, "story_model")
+    if story is not None:
+        return self._story_answer(story)
+    return None
+
+
+def _handle_identity(self: BoundedLocalSynthesizer, decision: AssistantDecision, evidence: tuple[SynthesisEvidence, ...]) -> str | None:
+    summary = _assistant_identity_summary(evidence)
+    return summary if summary else None
+
+
+def _handle_status(self: BoundedLocalSynthesizer, decision: AssistantDecision, evidence: tuple[SynthesisEvidence, ...]) -> str | None:
+    summary = _assistant_status_summary(decision, self.runtime_status)
+    return summary if summary else None
+
+
+def _handle_health_advice(self: BoundedLocalSynthesizer, decision: AssistantDecision, evidence: tuple[SynthesisEvidence, ...]) -> str | None:
+    if decision.reason == "urgent_health_safety_escalation":
+        return _urgent_health_answer(decision.utterance)
+    return None
+
+
+def _handle_meal_suggestion(self: BoundedLocalSynthesizer, decision: AssistantDecision, evidence: tuple[SynthesisEvidence, ...]) -> str | None:
+    foods = [item.value for item in evidence if item.kind == "food_inventory"]
+    weather = _first_kind(evidence, "weather")
+    return format_meal_answer(
+        foods,
+        weather=weather.value if weather is not None else "",
+        utterance=decision.utterance,
+        preferences=self.profile.preferences,
+        answer=decision.answer,
+    )
+
+
+def _handle_common_sense_safety(self: BoundedLocalSynthesizer, decision: AssistantDecision, evidence: tuple[SynthesisEvidence, ...]) -> str | None:
+    weather = _first_kind(evidence, "weather")
+    if weather is not None and "school_clothing_weather_policy" in decision.reason:
+        template = _load_answer_template(decision.intent, "school_clothing_weather_policy")
+        return template if template else "Wear school clothes and carry rain protection because the forecast mentions rain."
+    if decision.reason == "local_common_sense_policy":
+        return _public_clothing_safety_answer(decision.utterance)
+    return None
+
+
+def _handle_autobiographical_memory(self: BoundedLocalSynthesizer, decision: AssistantDecision, evidence: tuple[SynthesisEvidence, ...]) -> str | None:
+    if decision.reason == "autobiographical_memory_digest":
+        summary = _autobiographical_digest_summary(evidence)
+    elif decision.reason == "autobiographical_session_summary":
+        summary = _autobiographical_session_summary(evidence)
+    else:
+        summary = _autobiographical_memory_summary(evidence)
+    if summary:
+        template = _load_answer_template(decision.intent, decision.reason)
+        if template:
+            return template.format(summary=summary)
+        return f"From local conversation memory: {summary}."
+    return None
+
+
+def _handle_personal_memory(self: BoundedLocalSynthesizer, decision: AssistantDecision, evidence: tuple[SynthesisEvidence, ...]) -> str | None:
+    summary = _personal_memory_summary(evidence)
+    if summary:
+        template = _load_answer_template(decision.intent, "personal_memory_summary")
+        if template:
+            return template.format(summary=summary)
+        return f"I know this from local memory: {summary}."
+    return None
+
+
+def _handle_media_playback(self: BoundedLocalSynthesizer, decision: AssistantDecision, evidence: tuple[SynthesisEvidence, ...]) -> str | None:
+    if decision.reason == "cancelled_pending_action":
+        preference = _first_kind(evidence, "preference")
+        title = preference.value if preference is not None else _cancelled_title(decision.answer)
+        template = _load_answer_template(decision.intent, "cancelled_pending_action")
+        if template:
+            return template.format(title=title)
+        return (
+            f"Cancelled. I will not play {title} now. "
+            "There is no pending media action left to execute unless you ask again."
+        )
+    return None
+
+
+def _handle_social_contact(self: BoundedLocalSynthesizer, decision: AssistantDecision, evidence: tuple[SynthesisEvidence, ...]) -> str | None:
+    if decision.reason == "cancelled_pending_action":
+        contact = _first_kind(evidence, "contact")
+        label = _contact_label(contact, decision.answer)
+        template = _load_answer_template(decision.intent, "cancelled_pending_action")
+        if template:
+            return template.format(label=label)
+        return (
+            f"Cancelled. I will not call {label} now. "
+            "The pending trusted-contact action is cleared, so no call will run unless you ask again."
+        )
+    if decision.reason == "consented_trusted_contact_stored":
+        contact = _first_kind(evidence, "contact")
+        if contact is not None:
+            label = contact.key.split(".", 1)[1].replace("_", " ")
+            template = _load_answer_template(decision.intent, "consented_trusted_contact_stored")
+            if template:
+                return template.format(label=label)
+            return f"I will remember {label} as a trusted contact on this device."
+    return None
+
+
+_ANSWER_HANDLERS: dict[str, Any] = {
+    "story": _handle_story,
+    "assistant_identity": _handle_identity,
+    "assistant_status": _handle_status,
+    "health_advice": _handle_health_advice,
+    "meal_suggestion": _handle_meal_suggestion,
+    "common_sense_safety": _handle_common_sense_safety,
+    "autobiographical_memory": _handle_autobiographical_memory,
+    "personal_memory": _handle_personal_memory,
+    "media_playback": _handle_media_playback,
+    "social_contact": _handle_social_contact,
+}
 
 
 @dataclass(frozen=True)
@@ -219,103 +418,12 @@ class BoundedLocalSynthesizer:
         decision: AssistantDecision,
         evidence: tuple[SynthesisEvidence, ...],
     ) -> str:
-        if decision.intent == "story":
-            story = _first_kind(evidence, "story_model")
-            if story is not None:
-                return self._story_answer(story)
-        if decision.intent == "assistant_identity":
-            summary = _assistant_identity_summary(evidence)
-            if summary:
-                return summary
-        if decision.intent == "assistant_status":
-            summary = _assistant_status_summary(decision, self.runtime_status)
-            if summary:
-                return summary
-        if decision.intent == "health_advice":
-            if decision.reason == "urgent_health_safety_escalation":
-                return _urgent_health_answer(decision.utterance)
-            goals = [item.value for item in evidence if item.kind == "health_goal"]
-            goal_text = "; ".join(goals) if goals else "basic care"
-            return (
-                "This is general local guidance, not a diagnosis. Start with water, "
-                f"steady sleep, and gentle movement. Today, choose one small goal: {goal_text}. "
-                "For pain, danger, or illness, talk to a trusted adult or clinician."
-            )
-        if decision.intent == "meal_suggestion":
-            foods = [item.value for item in evidence if item.kind == "food_inventory"]
-            weather = _first_kind(evidence, "weather")
-            choice = choose_local_meal(
-                foods,
-                preferences=self.profile.preferences,
-                weather=weather.value if weather is not None else "",
-                utterance=decision.utterance,
-            )
-            base = choice.phrase or _meal_phrase(decision.answer)
-            side = (
-                f" A backup from the same inventory is "
-                f"{_join_short_list(choice.backups, fallback='nothing else saved yet')}."
-                if choice.backups
-                else ""
-            )
-            note = ""
-            if choice.warm_note:
-                note = " It may rain, so something warm is sensible."
-            inventory_text = _meal_inventory_text(foods, choice.items)
-            if note or side:
-                return f"You could eat {base}.{note}{side} I chose it from local food inventory: {inventory_text}."
-            return (
-                f"You could eat {base}. I chose it from local food inventory: {inventory_text}. "
-                "That keeps the suggestion grounded in what is already available on this device."
-            )
-        if decision.intent == "common_sense_safety":
-            weather = _first_kind(evidence, "weather")
-            if weather is not None and "school_clothing_weather_policy" in decision.reason:
-                return "Wear school clothes and carry rain protection because the forecast mentions rain."
-            if decision.reason == "local_common_sense_policy":
-                return _public_clothing_safety_answer(decision.utterance)
-        if decision.intent == "media_playback" and decision.reason == "cancelled_pending_action":
-            preference = _first_kind(evidence, "preference")
-            title = preference.value if preference is not None else _cancelled_title(decision.answer)
-            return (
-                f"Cancelled. I will not play {title} now. "
-                "There is no pending media action left to execute unless you ask again."
-            )
-        if decision.intent == "social_contact" and decision.reason == "cancelled_pending_action":
-            contact = _first_kind(evidence, "contact")
-            label = _contact_label(contact, decision.answer)
-            return (
-                f"Cancelled. I will not call {label} now. "
-                "The pending trusted-contact action is cleared, so no call will run unless you ask again."
-            )
-        if decision.intent == "personal_memory":
-            summary = _personal_memory_summary(evidence)
-            if summary:
-                return f"I know this from local memory: {summary}."
-        if decision.intent == "social_contact" and decision.reason == "consented_trusted_contact_stored":
-            contact = _first_kind(evidence, "contact")
-            if contact is not None:
-                label = contact.key.split(".", 1)[1].replace("_", " ")
-                return f"I will remember {label} as a trusted contact on this device."
-        if decision.intent == "autobiographical_memory":
-            if decision.reason == "autobiographical_memory_digest":
-                summary = _autobiographical_digest_summary(evidence)
-            elif decision.reason == "autobiographical_session_summary":
-                summary = _autobiographical_session_summary(evidence)
-            else:
-                summary = _autobiographical_memory_summary(evidence)
-            if summary:
-                return f"From local conversation memory: {summary}."
-        if decision.intent == "weather":
-            weather = _first_kind(evidence, "weather")
-            location = _first_kind(evidence, "profile")
-            if weather is not None:
-                place = location.value if location is not None else self.profile.location
-                return (
-                    f"Today in {place}: {weather.value}. "
-                    "That is the cached local forecast for today. "
-                    "For exact timing, I should refresh the weather cache."
-                )
-        return decision.answer
+        handler = _ANSWER_HANDLERS.get(decision.intent)
+        if handler is not None:
+            result = handler(self, decision, evidence)
+            if result is not None:
+                return result
+        return _render_contract_answer(decision, evidence, self.profile) or decision.answer
 
     def _story_answer(self, evidence: SynthesisEvidence) -> str:
         payload = self._story_payload(evidence)
@@ -323,7 +431,7 @@ class BoundedLocalSynthesizer:
             frame = self._story_frame(evidence)
             payload = {
                 "title": _title_from_evidence(evidence),
-                "summary": _format_story_frame(
+                "summary": format_story_frame(
                     frame,
                     name=self.profile.user_name,
                     location=self.profile.location,
@@ -334,20 +442,11 @@ class BoundedLocalSynthesizer:
         summary = str(payload.get("summary") or evidence.value)
         topics = _string_tuple(payload.get("topics"))
         cultures = _string_tuple(payload.get("cultures"))
-        name = self.profile.user_name
-        location = self.profile.location
-        image = _story_image(title, summary, topics)
-        challenge = _story_challenge(topics, summary)
-        lesson = _story_lesson(topics)
-        fit = ""
-        if self.profile.culture and self.profile.culture in cultures:
-            fit = f" with a {self.profile.culture} flavor"
-        elif location and location in cultures:
-            fit = f" in {location}"
-        return (
-            f"I picked {title} from the local story inventory{fit}. "
-            f"In {location}, {name} {image}. {challenge} "
-            f"By the end, {name} {lesson}"
+        return format_story_answer(
+            title, summary, topics, cultures,
+            name=self.profile.user_name,
+            location=self.profile.location,
+            culture=self.profile.culture,
         )
 
     def _story_payload(self, evidence: SynthesisEvidence) -> dict[str, Any]:
@@ -693,82 +792,8 @@ def _story_frame_from_payload(payload: dict[str, Any]) -> str:
     return str(payload.get("narrative_frame") or payload.get("template") or "")
 
 
-def _format_story_frame(frame: str, *, name: str, location: str, culture: str) -> str:
-    if not frame:
-        return "a local story frame with enough metadata for a short safe adventure"
-    try:
-        return frame.format(name=name, location=location, culture=culture)
-    except (KeyError, IndexError, ValueError):
-        return frame
-
-
-def _story_image(title: str, summary: str, topics: tuple[str, ...]) -> str:
-    title_text = title.lower()
-    text = " ".join((title, summary, *topics)).lower()
-    if "drum" in title_text or "music" in title_text:
-        return "heard a small drum answering every careful step"
-    if "tortoise" in title_text:
-        return "met a patient tortoise carrying a question bigger than its shell"
-    if "rain" in title_text or "bedtime" in title_text:
-        return "noticed rain tapping a secret path across the window"
-    if "school" in title_text or "star" in title_text:
-        return "found a bright question waiting at the edge of the schoolyard"
-    if "rain" in text or "bedtime" in text:
-        return "noticed rain tapping a secret path across the window"
-    if "drum" in text or "music" in text:
-        return "heard a small drum answering every careful step"
-    if "tortoise" in text or "animal" in text:
-        return "met a patient tortoise carrying a question bigger than its shell"
-    if "school" in text or "star" in text:
-        return "found a bright question waiting at the edge of the schoolyard"
-    return "found a small sign that made an ordinary walk feel like an adventure"
-
-
-def _story_challenge(topics: tuple[str, ...], summary: str) -> str:
-    text = " ".join((*topics, summary)).lower()
-    if "questions" in text or "curiosity" in text:
-        return "The puzzle could not be rushed, so one good question opened the next clue."
-    if "kindness" in text:
-        return "Someone nearby needed help, and the adventure only moved forward after a kind choice."
-    if "bedtime" in text:
-        return "The map faded whenever the room got noisy, so listening became the brave thing to do."
-    if "school" in text:
-        return "The answer was not in a cloud or a book at first; it began with looking carefully."
-    return "The safe path was the one that asked for help, listened, and came back before dark."
-
-
-def _story_lesson(topics: tuple[str, ...]) -> str:
-    if "questions" in topics:
-        return "learned that asking first can be braver than running first."
-    if "kindness" in topics:
-        return "learned that kindness is useful, not just nice."
-    if "bedtime" in topics:
-        return "came home calm enough to sleep and curious enough for tomorrow."
-    if "school" in topics:
-        return "wrote the question down so it could grow into tomorrow's lesson."
-    return "came home safely with one new question and one good choice remembered."
-
-
 def _personal_memory_summary(evidence: tuple[SynthesisEvidence, ...]) -> str:
-    parts: list[str] = []
-    for item in evidence:
-        if item.kind == "profile":
-            label = item.key.split(".", 1)[1].replace("_", " ")
-            if label == "age":
-                parts.append(f"your age is {item.value}")
-            elif label == "location":
-                parts.append(f"you are in {item.value}")
-            elif label == "culture":
-                parts.append(f"your culture hint is {item.value}")
-            elif label == "user name":
-                parts.append(f"your name is {item.value}")
-        elif item.kind == "user_fact":
-            label = item.key.split(".", 1)[1].replace("_", " ")
-            parts.append(f"your {label} is {item.value}")
-        elif item.kind == "preference":
-            label = item.key.split(".", 1)[1].replace("_", " ")
-            parts.append(f"your {label} preference is {item.value}")
-    return "; ".join(dict.fromkeys(parts))
+    return personal_memory_summary(evidence)
 
 
 def _assistant_identity_summary(evidence: tuple[SynthesisEvidence, ...]) -> str:
@@ -785,18 +810,18 @@ def _assistant_identity_summary(evidence: tuple[SynthesisEvidence, ...]) -> str:
         tuple(item for item in limits[:2]),
         fallback="I ask for help when local evidence is not enough.",
     )
-    return (
-        f"I am {name}. My purpose is to {purpose[0].lower() + purpose[1:] if purpose else 'help locally first'} "
-        f"I can use {capability_text} on this device. My limits are: {limit_text}."
+    purpose_text = purpose[0].lower() + purpose[1:] if purpose else "help locally first"
+    templates = load_assistant_identity()
+    return templates["introduction"].format(
+        name=name, purpose=purpose_text,
+        capability_text=capability_text, limit_text=limit_text,
     )
 
 
 def _assistant_status_summary(decision: AssistantDecision, status: dict[str, Any]) -> str:
+    templates = load_assistant_identity()
     if not status.get("available", False):
-        return (
-            "I can describe my built-in local capabilities, but I do not have a "
-            "persistent event ledger attached in this runtime."
-        )
+        return templates["status_unavailable"]
     counts = _status_dict(status.get("counts"))
     routes = _status_dict(status.get("route_counts"))
     inventories = _status_dict(status.get("inventories"))
@@ -811,19 +836,11 @@ def _assistant_status_summary(decision: AssistantDecision, status: dict[str, Any
     next_steps = tuple(str(item) for item in status.get("next_steps", ()) if str(item))
     next_text = _join_short_list(next_steps, fallback="continue using the local ledger and refresh inventories when gaps appear")
     observation_text = _self_observation_status_text(status.get("self_observation"))
-    if decision.reason == "self_status_next_steps":
-        return (
-            f"My local ledger has {events} event(s) across {sessions} session(s), "
-            f"with {synthesis_traces} synthesis trace(s) and {pending_count} pending action(s). "
-            f"The safety dashboard is {safety}. My persisted self-observation says {observation_text}. "
-            f"Next I should {next_text}."
-        )
-    return (
-        f"So far my local ledger has {events} event(s) across {sessions} session(s), "
-        f"with routes: {route_text}. Inventory coverage is: {inventory_text}. "
-        f"I have {pending_count} pending action(s), and the safety dashboard is {safety}. "
-        f"My persisted self-observation says {observation_text}. "
-        f"Next useful work: {next_text}."
+    key = "status_next_steps" if decision.reason == "self_status_next_steps" else "status_default"
+    return templates[key].format(
+        events=events, sessions=sessions, synthesis_traces=synthesis_traces,
+        pending_count=pending_count, safety=safety, observation_text=observation_text,
+        next_text=next_text, route_text=route_text, inventory_text=inventory_text,
     )
 
 
@@ -876,168 +893,44 @@ def _join_short_list(items: tuple[str, ...], *, fallback: str) -> str:
 
 
 def _autobiographical_memory_summary(evidence: tuple[SynthesisEvidence, ...]) -> str:
-    events = [_event_memory_parts(item) for item in evidence if item.kind == "event_memory"]
-    if not events:
-        return ""
-    parts: list[str] = []
-    for index, event in enumerate(events[:5], start=1):
-        label = _event_label(event)
-        parts.append(f"{index}. {label} - you said \"{event['utterance']}\"")
-    insight = _event_memory_insight_text(events)
-    if insight:
-        parts.append(insight)
-    return " ".join(parts)
+    return autobiographical_memory_summary(evidence)
 
 
 def _autobiographical_session_summary(evidence: tuple[SynthesisEvidence, ...]) -> str:
-    grouped: dict[str, list[dict[str, str]]] = {}
-    for item in evidence:
-        if item.kind != "event_memory":
-            continue
-        event = _event_memory_parts(item)
-        session_id = event["session_id"]
-        grouped.setdefault(session_id, []).append(event)
-    if not grouped:
-        return ""
-    parts: list[str] = []
-    all_events: list[dict[str, str]] = []
-    for session_index, (session_id, events) in enumerate(grouped.items(), start=1):
-        utterances = []
-        intents = []
-        for event in events[:4]:
-            intents.append(event["intent"].replace("_", " "))
-            utterances.append(event["utterance"])
-            all_events.append(event)
-        intent_text = ", ".join(dict.fromkeys(intents))
-        quoted = "; ".join(f'"{utterance}"' for utterance in utterances)
-        parts.append(f"session {session_index} ({session_id}) covered {intent_text}: {quoted}")
-    insight = _event_memory_insight_text(all_events)
-    if insight:
-        parts.append(insight)
-    return " ".join(parts)
-
-
-def _event_memory_parts(item: SynthesisEvidence) -> dict[str, str]:
-    value = item.value
-    label, detail = value.split(": ", 1) if ": " in value else ("event via local_answer", value)
-    intent, route = label.split(" via ", 1) if " via " in label else (label, "")
-    utterance = detail
-    reason = ""
-    if " (" in detail and detail.endswith(")"):
-        utterance, reason = detail.rsplit(" (", 1)
-        reason = reason[:-1]
-    session_id = item.source.split(":", 1)[1] if ":" in item.source else "session"
-    return {
-        "session_id": session_id,
-        "intent": intent,
-        "route": route,
-        "utterance": utterance,
-        "reason": reason,
-    }
-
-
-def _event_label(event: dict[str, str]) -> str:
-    intent = event.get("intent", "event").replace("_", " ")
-    route = event.get("route", "")
-    return f"{intent} via {route}" if route else intent
-
-
-def _event_memory_insight_text(events: list[dict[str, str]]) -> str:
-    transitions: list[str] = []
-    open_loops: list[str] = []
-    boundary_controls: list[str] = []
-    action_state: list[str] = []
-    for event in events:
-        intent = event["intent"]
-        route = event["route"]
-        reason = event["reason"]
-        if intent == "story" and reason == "missing_story_model":
-            open_loops.append("story inventory was missing, so the story ask needed cloud handoff")
-        elif intent == "story" and reason == "local_story_inventory":
-            transitions.append("story inventory answered locally")
-        elif intent == "weather" and reason == "weather_cache_miss":
-            open_loops.append("weather cache was missing, so the assistant chose a tool fetch")
-        elif intent == "weather" and reason == "weather_cache_hit":
-            transitions.append("weather cache answered locally")
-        elif reason in {"trusted_contact_action", "local_media_action"} and route == "device_action":
-            action_state.append("a device action was prepared behind confirmation")
-        elif reason == "cancelled_pending_action":
-            action_state.append("a pending action was cancelled before execution")
-        elif reason == "confirmation_target_mismatch":
-            action_state.append("a changed confirmation target was blocked")
-        elif reason == "blocked_private_facts_to_cloud":
-            boundary_controls.append("private memory stayed local and cloud export was blocked")
-        elif reason == "personal_memory_empty":
-            open_loops.append("a local memory slot was missing and needs explicit setup")
-        elif reason.startswith("consented_") and reason.endswith("_stored"):
-            transitions.append("explicit user-provided memory was stored locally")
-
-    sections: list[str] = []
-    if transitions:
-        sections.append(f"Capability transitions: {_join_short_list(tuple(dict.fromkeys(transitions)), fallback='none')}.")
-    if open_loops:
-        sections.append(f"Open local gaps: {_join_short_list(tuple(dict.fromkeys(open_loops)), fallback='none')}.")
-    if action_state:
-        sections.append(f"Action state: {_join_short_list(tuple(dict.fromkeys(action_state)), fallback='none')}.")
-    if boundary_controls:
-        sections.append(
-            f"Boundary controls: {_join_short_list(tuple(dict.fromkeys(boundary_controls)), fallback='none')}."
-        )
-    return " ".join(sections)
+    return autobiographical_session_summary(evidence)
 
 
 def _autobiographical_digest_summary(evidence: tuple[SynthesisEvidence, ...]) -> str:
-    digests = [item.value for item in evidence if item.kind == "memory_digest"]
-    if not digests:
-        return ""
-    return f"local long-horizon memory digest: {digests[0]}"
+    return autobiographical_digest_summary(evidence)
 
 
 def _urgent_health_answer(utterance: str) -> str:
     text = utterance.lower()
-    if "poison" in text or "swallowed" in text:
-        return (
-            "This is urgent. Call emergency services or a local poison help line now, "
-            "or ask a trusted adult to call. I cannot diagnose poisoning, and you "
-            "should not wait for a chat answer before getting help."
-        )
-    if "bleeding" in text:
-        return (
-            "This is urgent. Call emergency services or a trusted adult now. "
-            "I cannot diagnose the bleeding, and you should get real help immediately "
-            "instead of waiting for a chat answer."
-        )
-    if "faint" in text:
-        return (
-            "This may be urgent. Sit or lie down somewhere safe and call a trusted "
-            "adult or emergency services now. I cannot diagnose fainting, and I should "
-            "not delay real help."
-        )
-    if "breathe" in text or "chest pain" in text:
-        return (
-            "This sounds urgent. Call emergency services or a trusted adult now. "
-            "Trouble breathing or chest pain needs real help, not a local diagnosis "
-            "from me."
-        )
-    return (
-        "This sounds urgent. Call emergency services or a trusted adult now. "
-        "I cannot diagnose you, and I should not delay real help."
-    )
+    responses = load_health_disclaimers()
+    for key, entry in responses.items():
+        if key == "fallback":
+            continue
+        for trigger in entry.get("triggers", []):
+            if trigger in text:
+                return entry["text"]
+    return responses.get("fallback", {}).get("text", "")
 
 
 def _public_clothing_safety_answer(utterance: str) -> str:
     text = utterance.lower()
-    if "school" in text:
-        destination = "going to school"
-    elif "class" in text:
-        destination = "going to class"
-    else:
-        destination = "going outside"
-    return (
-        f"No. Wear proper clothes before {destination}. "
-        "That keeps your body private, follows ordinary public clothing rules, "
-        "and avoids needing an adult to step in after something unsafe happens."
-    )
+    policies = load_safety_policies()
+    clothing = policies.get("public_clothing", {})
+    destinations = clothing.get("destinations", {})
+    template = clothing.get("template", "")
+    dest_phrase = destinations.get("default", {}).get("phrase", "going outside")
+    for key, dentry in destinations.items():
+        if key == "default":
+            continue
+        for trigger in dentry.get("triggers", []):
+            if trigger in text:
+                dest_phrase = dentry.get("phrase", dest_phrase)
+                break
+    return template.replace("{destination}", dest_phrase)
 
 
 def _cancelled_title(answer: str) -> str:
@@ -1115,23 +1008,6 @@ def _citation_coverage(
     return len(evidence_keys & cited_keys) / max(1, len(evidence_keys))
 
 
-def _meal_phrase(answer: str) -> str:
-    cleaned = " ".join(answer.strip().split()).strip(".")
-    lowered = cleaned.lower()
-    for prefix in ("you could eat ", "eat "):
-        if lowered.startswith(prefix):
-            cleaned = cleaned[len(prefix) :]
-            break
-    return cleaned.strip(".") or "a simple meal"
-
-
-def _meal_inventory_text(foods: list[str], selected_items: tuple[str, ...]) -> str:
-    selected = [food for food in foods if food.lower() in set(selected_items)]
-    if not selected:
-        selected = foods[:3]
-    return _join_short_list(tuple(selected[:4]), fallback="your saved food items")
-
-
 def _contact_label(contact: SynthesisEvidence | None, answer: str) -> str:
     if contact is not None and "." in contact.key:
         return contact.key.split(".", 1)[1].replace("_", " ")
@@ -1140,21 +1016,10 @@ def _contact_label(contact: SynthesisEvidence | None, answer: str) -> str:
 
 
 def _target_evidence_count(decision: AssistantDecision) -> int:
-    if decision.intent == "assistant_identity":
-        return 3
-    if decision.intent == "assistant_status":
-        return 4
-    if decision.intent == "personal_memory":
-        return 4
-    if decision.intent == "autobiographical_memory":
-        return 3
-    if decision.intent == "meal_suggestion":
-        return 4
-    if decision.intent == "health_advice":
-        return 2
-    if decision.intent == "story":
-        return 2
-    return 1
+    from melm.contracts import load_contract_json
+    payload = load_contract_json("answer_templates.v1.json")
+    targets = payload.get("evidence_count_targets", {})
+    return targets.get(decision.intent, 1)
 
 
 def _answer_specificity(
@@ -1172,33 +1037,21 @@ def _answer_specificity(
     if evidence_terms:
         matches = sum(1 for term in evidence_terms if term and term in text)
         score += min(0.45, matches * 0.15)
-    if decision.intent == "story" and "i picked" in text:
+    from melm.contracts import load_contract_json
+    payload = load_contract_json("answer_templates.v1.json")
+    phrases = payload.get("answer_specificity_phrases", {})
+    intent_phrases = phrases.get(decision.intent, [])
+    if isinstance(intent_phrases, str):
+        intent_phrases = [intent_phrases]
+    if intent_phrases and any(p in text for p in intent_phrases):
         score += 0.15
-    elif decision.intent == "assistant_identity" and "melm local assistant os" in text and "local" in text:
-        score += 0.15
-    elif decision.intent == "assistant_status" and "local ledger" in text and "safety dashboard" in text:
-        score += 0.15
-    elif decision.intent == "personal_memory" and "local memory" in text:
-        score += 0.15
-    elif decision.intent == "autobiographical_memory" and "conversation memory" in text:
-        score += 0.15
-    elif decision.intent == "health_advice" and (
-        "not a diagnosis" in text or "cannot diagnose" in text or "real help" in text
-    ):
-        score += 0.15
-    elif decision.intent == "meal_suggestion" and "you could eat" in text:
-        score += 0.15
-    elif decision.intent == "weather" and "today" in text:
-        score += 0.15
-    elif decision.intent == "common_sense_safety" and "proper clothes" in text:
-        score += 0.15
-    elif decision.intent == "media_playback" and "cancelled" in text:
-        score += 0.15
-    elif decision.intent == "social_contact" and "cancelled" in text and "call" in text:
-        score += 0.15
-    elif decision.intent == "social_contact" and decision.reason == "consented_trusted_contact_stored":
-        if "trusted contact" in text and "remember" in text:
-            score += 0.3
+    bonuses = payload.get("answer_specificity_bonuses", [])
+    for entry in bonuses:
+        if entry.get("intent") == decision.intent and entry.get("reason", "") == decision.reason:
+            for group in entry.get("triggers", []):
+                if all(p in text for p in group):
+                    score += entry.get("bonus", 0.0)
+                    break
     return min(1.0, score)
 
 

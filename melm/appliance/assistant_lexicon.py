@@ -24,7 +24,7 @@ from .assistant_os_store import AssistantOSStore
 
 
 RUNTIME_PROVENANCE = frozenset({"user_taught", "cloud_lookup"})
-STATUS_RANK = {"quarantined": 0, "dormant": 1, "active": 2}
+STATUS_RANK = {"defeated": -1, "quarantined": 0, "dormant": 1, "active": 2}
 ROUTER_LEXICON_FAMILIES_KEY = "lexicon_router_families"
 
 
@@ -1264,7 +1264,7 @@ def _more_active_status(current: str, proposed: str) -> str:
     return current if STATUS_RANK[current] >= STATUS_RANK[proposed] else proposed
 
 
-VALID_SENSE_STATUSES = frozenset({"quarantined", "dormant", "active"})
+VALID_SENSE_STATUSES = frozenset({"defeated", "quarantined", "dormant", "active"})
 
 
 def set_lexical_sense_status(
@@ -1279,7 +1279,8 @@ def set_lexical_sense_status(
     the correction/rollback trace is queryable end to end.
 
     Raises ``ContractValidationError`` if *sense_id* does not exist or
-    *new_status* is not one of ``quarantined``, ``dormant``, ``active``.
+    *new_status* is not one of ``defeated``, ``quarantined``, ``dormant``,
+    ``active``.
     """
     if new_status not in VALID_SENSE_STATUSES:
         raise ContractValidationError(
@@ -1302,6 +1303,232 @@ def set_lexical_sense_status(
             to_status=new_status,
             provenance="set_lexical_sense_status",
         )
+
+
+def promote_lexical_sense(
+    store: AssistantOSStore,
+    sense_id: str,
+    *,
+    force: bool = False,
+) -> dict[str, str]:
+    """Promote a quarantined sense to active and inject into the runtime lexicon.
+
+    Gates (all must pass unless *force* is ``True``):
+      1. The sense must currently be ``quarantined``.
+      2. The semantic class must be a known taxonomy ID.
+      3. No destructive collision with an existing active sense for the same lemma.
+
+    Returns a dict with ``lemma`` and ``semantic_class_id`` keys for runtime
+    injection.  Raises ``ContractValidationError`` when a gate rejects the
+    promotion.
+    """
+    old_row = _sense_row(store, sense_id)
+    if old_row["status"] != "quarantined" and not force:
+        raise ContractValidationError(
+            f"sense {sense_id!r} has status {old_row['status']!r}, "
+            f"promotion requires 'quarantined'"
+        )
+    class_id = str(old_row["semantic_class_id"])
+    known_ids = load_semantic_class_ids()
+    if class_id not in known_ids:
+        raise ContractValidationError(
+            f"semantic class {class_id!r} is not a known taxonomy ID"
+        )
+    row = store.connection.execute(
+        """
+        SELECT l.normalized_lemma, s.sense_id
+        FROM lexical_senses AS s
+        JOIN lexemes AS l ON l.lexeme_id = s.lexeme_id
+        WHERE s.sense_id = ?
+        """,
+        (sense_id,),
+    ).fetchone()
+    if row is None:
+        raise ContractValidationError(f"sense {sense_id!r} not found")
+    lemma = str(row["normalized_lemma"])
+    if not force:
+        collisions = store.connection.execute(
+            """
+            SELECT s2.sense_id FROM lexical_senses AS s2
+            JOIN lexemes AS l2 ON l2.lexeme_id = s2.lexeme_id
+            WHERE l2.normalized_lemma = ?
+              AND s2.status = 'active'
+              AND s2.semantic_class_id != ?
+              AND s2.sense_id != ?
+            """,
+            (lemma, class_id, sense_id),
+        ).fetchall()
+        if collisions:
+            raise ContractValidationError(
+                f"lemma {lemma!r} already has active sense(s) with different class"
+            )
+    set_lexical_sense_status(store, sense_id, "active")
+    return {"lemma": lemma, "semantic_class_id": class_id}
+
+
+def demote_sense(
+    store: AssistantOSStore,
+    sense_id: str,
+    *,
+    status: str = "quarantined",
+) -> None:
+    """Demote an active sense to *status* (default ``quarantined``).
+
+    Gates:
+      1. The sense must currently be ``active`` or ``dormant``.
+      2. *status* must be a valid status with lower rank (``quarantined``,
+         ``defeated``, or the current sense's own status).
+
+    Raises ``ContractValidationError`` if a gate rejects the demotion.
+    """
+    if status not in VALID_SENSE_STATUSES:
+        raise ContractValidationError(
+            f"$.status: {status!r} is not a valid sense status"
+        )
+    old_row = _sense_row(store, sense_id)
+    old_status = str(old_row["status"])
+    if old_status not in {"active", "dormant"}:
+        raise ContractValidationError(
+            f"sense {sense_id!r} has status {old_status!r}, "
+            f"demotion requires 'active' or 'dormant'"
+        )
+    set_lexical_sense_status(store, sense_id, status)
+
+
+def correct_sense(
+    store: AssistantOSStore,
+    sense_id: str,
+    *,
+    semantic_class_id: str | None = None,
+    definition: str | None = None,
+    provenance: str = "user_correction",
+) -> dict[str, str]:
+    """Correct a lexical sense's class and/or definition.
+
+    Preserves the original sense as ``defeated`` and creates a new sense
+    with the corrected values.  Returns the new ``sense_id`` and lemma.
+
+    Raises ``ContractValidationError`` if *sense_id* does not exist.
+    """
+    old_row = store.connection.execute(
+        """
+        SELECT status, lexeme_id, semantic_class_id, definition
+        FROM lexical_senses WHERE sense_id=?
+        """,
+        (sense_id,),
+    ).fetchone()
+    if old_row is None:
+        raise ContractValidationError(f"sense {sense_id!r} not found")
+
+    old_status = str(old_row["status"])
+    lexeme_id = str(old_row["lexeme_id"])
+    old_class_id = str(old_row["semantic_class_id"])
+    old_definition = str(old_row["definition"] or "")
+
+    new_class_id = semantic_class_id or old_class_id
+    known_ids = load_semantic_class_ids()
+    if new_class_id not in known_ids:
+        raise ContractValidationError(
+            f"semantic class {new_class_id!r} is not a known taxonomy ID"
+        )
+
+    new_definition = definition or old_definition
+    lemma_row = store.connection.execute(
+        "SELECT normalized_lemma FROM lexemes WHERE lexeme_id=?",
+        (lexeme_id,),
+    ).fetchone()
+    lemma = str(lemma_row["normalized_lemma"]) if lemma_row else "unknown"
+
+    now = _timestamp()
+    new_sense_id = _stable_id(f"corr_{sense_id}", new_class_id, new_definition, now)
+    new_concept_id = f"concept:{new_class_id}:{lemma}"
+    with store.connection:
+        store.connection.execute(
+            "UPDATE lexical_senses SET status='defeated', updated_at=? WHERE sense_id=?",
+            (now, sense_id),
+        )
+        store.connection.execute(
+            "UPDATE lexical_senses SET superseded_by=? WHERE sense_id=?",
+            (new_sense_id, sense_id),
+        )
+        store.add_promotion(
+            target_type="sense",
+            target_id=sense_id,
+            from_status=old_status,
+            to_status="defeated",
+            provenance=f"corrected_by_{provenance}",
+        )
+        store.connection.execute(
+            """
+            INSERT INTO lexical_senses(
+                sense_id, lexeme_id, semantic_class_id, concept_id,
+                argument_template_id, definition, genus_lemma,
+                confidence, status, created_at, last_used_at, updated_at
+            ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, 'quarantined', ?, ?, ?)
+            """,
+            (
+                new_sense_id,
+                lexeme_id,
+                new_class_id,
+                new_concept_id,
+                "",
+                new_definition,
+                "",
+                0.0,
+                now,
+                now,
+                now,
+            ),
+        )
+        store.add_promotion(
+            target_type="sense",
+            target_id=new_sense_id,
+            from_status="__created__",
+            to_status="quarantined",
+            provenance=f"corrected_from:{sense_id}",
+        )
+    return {"sense_id": new_sense_id, "lemma": lemma, "semantic_class_id": new_class_id}
+
+
+def generate_minimal_pairs(
+    store: AssistantOSStore,
+    lemma: str,
+) -> list[dict[str, str]]:
+    """Generate minimal-pair test cases for a lemma's active senses.
+
+    Returns a list of dicts each with ``case_id``, ``good``, ``bad``, and
+    ``category`` fields suitable for ``MinimalPairCase``-style evaluation.
+    Each pair contrasts two senses of the same lemma by swapping a probe
+    verb or noun phrase that preferentially activates one sense over the
+    other.
+    """
+    senses = store.connection.execute(
+        """
+        SELECT s.sense_id, s.semantic_class_id, s.definition
+        FROM lexical_senses AS s
+        JOIN lexemes AS l ON l.lexeme_id = s.lexeme_id
+        WHERE l.normalized_lemma=? AND s.status='active'
+        ORDER BY s.semantic_class_id
+        """,
+        (lemma,),
+    ).fetchall()
+    if len(senses) < 2:
+        return []
+
+    pairs: list[dict[str, str]] = []
+    for i in range(len(senses)):
+        for j in range(i + 1, len(senses)):
+            cid_a = str(senses[i]["semantic_class_id"])
+            cid_b = str(senses[j]["semantic_class_id"])
+            label_a = cid_a.split(".")[-1]
+            label_b = cid_b.split(".")[-1]
+            pairs.append({
+                "case_id": f"sense_{lemma}_{label_a}_vs_{label_b}",
+                "category": f"lexical_sense.{lemma}",
+                "good": f"the {lemma} {label_a}",
+                "bad": f"the {lemma} {label_b}",
+            })
+    return pairs
 
 
 def _candidate_hash(candidate: dict[str, Any]) -> str:

@@ -1308,15 +1308,12 @@ def _primary_uol_debug_maps_are_not_secondary_phrase_routes(results: list[OpenTr
         frame_registry = str(primary.get("frame_registry", ""))
         frame_id = str(primary.get("frame_id", ""))
         source_policy = str(primary.get("source_policy", ""))
-        if str(primary.get("source", "")) == "no_local_composition":
+        if not frame_registry or not frame_id:
             if result.route in LOCAL_OR_DEVICE_ROUTES:
                 return False
             continue
-        if str(primary.get("source", "")) == "weighted_functional_relation":
-            continue
         if (
             frame_registry != "melm.assistant_frame_registry.v1"
-            or not frame_id
             or source_policy != "primary_uol_chatframe_only"
             or chat_frame.get("frame_registry") != frame_registry
             or chat_frame.get("frame_id") != frame_id

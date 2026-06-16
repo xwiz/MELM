@@ -1,0 +1,23 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "melm.verification_result.v1",
+  "type": "object",
+  "additionalProperties": false,
+  "required": [
+    "passed", "schema_valid", "packet_bound",
+    "answer_nonempty", "failure_codes", "constraint_retention"
+  ],
+  "properties": {
+    "passed": {"type": "boolean"},
+    "schema_valid": {"type": "boolean"},
+    "packet_bound": {"type": "boolean"},
+    "answer_nonempty": {"type": "boolean"},
+    "failure_codes": {
+      "type": "array",
+      "items": {"type": "string"}
+    },
+    "constraint_retention": {
+      "type": "number", "minimum": 0, "maximum": 1
+    }
+  }
+}
