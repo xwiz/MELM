@@ -275,3 +275,54 @@ class TestSynthesisWithDecoder:
         assert "dog" in result.answer
         assert result.authority is not None
         assert result.authority.verification.passed
+
+    def test_decoder_forbidden_output_falls_back_to_template(self) -> None:
+        """Mock decoder returns a forbidden term; verifier rejects it and fallback is used."""
+        from melm.appliance.assistant_authority import (
+            AnswerPlan, AuthorityEvidencePacket, verify_answer,
+        )
+        from melm.appliance.assistant_synthesis import SynthesisEvidence
+
+        @dataclass
+        class BadBackend:
+            name: str = "bad"
+
+            def decode(self, plan: AnswerPlan, grammar: DecodingGrammar) -> str:
+                return "This diagnosis shows you need treatment immediately."
+
+        d = ConstrainedDecoder()
+        d.register(BadBackend())
+        d.preferred("bad")
+        s = BoundedLocalSynthesizer(_PROFILE, decoder=d)
+
+        plan = AnswerPlan(
+            plan_id="p_adv",
+            route="local_answer",
+            mode="factual",
+            requires=(),
+            forbids=("diagnosis",),
+            evidence_packet_id="ep_adv",
+        )
+        packet = AuthorityEvidencePacket(
+            packet_id="ep_adv",
+            items=(),
+            admitted_count=0,
+            blocked_keys=(),
+            boundary="local",
+        )
+        evidence = (
+            SynthesisEvidence(
+                key="facts.pet", kind="user_fact", value="dog",
+                source="user_profile", license="private_local", local_only=True,
+            ),
+        )
+        decision = _decision(intent="personal_memory", evidence_keys=("facts.pet",))
+        template_answer = "Your pet is doing well."
+
+        answer = s._decode_verified(plan, evidence, decision, template_answer, packet)
+        # The forbidden decoder output was rejected; template fallback used
+        assert answer == template_answer
+        # Verify the decoder output itself would have failed
+        v = verify_answer(plan, "This diagnosis shows you need treatment immediately.", packet)
+        assert not v.passed
+        assert "constraint_violation" in v.failure_codes
