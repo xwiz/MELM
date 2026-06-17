@@ -1,0 +1,43 @@
+{
+  "schema_id": "melm.pi_benchmark.v1",
+  "description": "Performance benchmark artifact for on-device Pi (Personal Intelligence) evaluation. Updated when a local model is loaded and measured.",
+  "measurements": {
+    "model_manifest": {
+      "model_id": "none",
+      "backend": "template",
+      "parameters_b": 0,
+      "context_window": 0,
+      "max_tokens": 0,
+      "note": "No local model loaded; all synthesis uses template fallback."
+    },
+    "latency_ms": {
+      "template_fallback_median": 12,
+      "template_fallback_p95": 45,
+      "ttft_median": null,
+      "ttft_p95": null,
+      "note": "TTFT not applicable without a loaded generative model."
+    },
+    "throughput": {
+      "tok_per_s": null,
+      "note": "tok/s not applicable with template backend."
+    },
+    "memory_mb": {
+      "rss_at_idle": null,
+      "rss_during_decode": null,
+      "note": "RSS not measured; no model weights resident."
+    },
+    "constraints": {
+      "no_network_at_inference": true,
+      "no_vector_db": true,
+      "sqlite_only": true,
+      "runs_on_pi_zero_2w": null,
+      "note": "Hardware target not yet validated."
+    }
+  },
+  "recorded_at": "2026-06-17T08:00:00Z",
+  "go_no_go": {
+    "template_fallback_ready": true,
+    "model_loaded": false,
+    "pi_target_met": false
+  }
+}

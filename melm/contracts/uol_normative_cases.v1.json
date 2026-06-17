@@ -1,0 +1,494 @@
+{
+  "schema_id": "melm.uol_normative_cases.v1",
+  "description": "60-case gold-standard UOL parse set for regression testing speech-act classification, predicate identification, and slot roles.",
+  "cases": [
+    {
+      "utterance": "tell me a story about robots",
+      "speech_act": "request",
+      "subject": "user",
+      "action": "tell",
+      "object": "story",
+      "target": "assistant"
+    },
+    {
+      "utterance": "what is the weather today",
+      "speech_act": "wh_question",
+      "subject": "user",
+      "action": "be",
+      "object": "today",
+      "target": "assistant"
+    },
+    {
+      "utterance": "play some jazz music",
+      "speech_act": "request",
+      "subject": "user",
+      "action": "play",
+      "object": "music",
+      "target": "assistant"
+    },
+    {
+      "utterance": "how are you feeling",
+      "speech_act": "wh_question",
+      "subject": "assistant",
+      "action": "feel",
+      "object": "",
+      "target": "user"
+    },
+    {
+      "utterance": "call mom",
+      "speech_act": "request",
+      "subject": "user",
+      "action": "call",
+      "object": "mom",
+      "target": "assistant"
+    },
+    {
+      "utterance": "what is my schedule tomorrow",
+      "speech_act": "wh_question",
+      "subject": "user",
+      "action": "be",
+      "object": "tomorrow",
+      "target": "assistant"
+    },
+    {
+      "utterance": "where is my phone",
+      "speech_act": "wh_question",
+      "subject": "user",
+      "action": "be",
+      "object": "phone",
+      "target": "assistant"
+    },
+    {
+      "utterance": "help me cook dinner",
+      "speech_act": "request",
+      "subject": "user",
+      "action": "help",
+      "object": "dinner",
+      "target": "assistant"
+    },
+    {
+      "utterance": "i need a recipe for pasta",
+      "speech_act": "statement",
+      "subject": "user",
+      "action": "need",
+      "object": "recipe",
+      "target": "assistant"
+    },
+    {
+      "utterance": "is it going to rain",
+      "speech_act": "yes_no_question",
+      "subject": "it",
+      "action": "rain",
+      "object": "",
+      "target": "assistant"
+    },
+    {
+      "utterance": "read me a bedtime story",
+      "speech_act": "request",
+      "subject": "user",
+      "action": "read",
+      "object": "story",
+      "target": "assistant"
+    },
+    {
+      "utterance": "what is the temperature",
+      "speech_act": "wh_question",
+      "subject": "user",
+      "action": "be",
+      "object": "temperature",
+      "target": "assistant"
+    },
+    {
+      "utterance": "do i need an umbrella",
+      "speech_act": "yes_no_question",
+      "subject": "user",
+      "action": "need",
+      "object": "umbrella",
+      "target": "assistant"
+    },
+    {
+      "utterance": "tell me about yesterday",
+      "speech_act": "request",
+      "subject": "user",
+      "action": "tell",
+      "object": "yesterday",
+      "target": "assistant"
+    },
+    {
+      "utterance": "what did i eat for lunch",
+      "speech_act": "wh_question",
+      "subject": "user",
+      "action": "eat",
+      "object": "lunch",
+      "target": "assistant"
+    },
+    {
+      "utterance": "who called me",
+      "speech_act": "wh_question",
+      "subject": "user",
+      "action": "call",
+      "object": "",
+      "target": "assistant"
+    },
+    {
+      "utterance": "make a shopping list",
+      "speech_act": "request",
+      "subject": "user",
+      "action": "make",
+      "object": "shopping",
+      "target": "assistant"
+    },
+    {
+      "utterance": "add eggs to the list",
+      "speech_act": "statement",
+      "subject": "add",
+      "action": "list",
+      "object": "",
+      "target": "assistant"
+    },
+    {
+      "utterance": "what is the news",
+      "speech_act": "wh_question",
+      "subject": "user",
+      "action": "be",
+      "object": "news",
+      "target": "assistant"
+    },
+    {
+      "utterance": "what is on my calendar",
+      "speech_act": "wh_question",
+      "subject": "user",
+      "action": "be",
+      "object": "calendar",
+      "target": "assistant"
+    },
+    {
+      "utterance": "do i have any meetings",
+      "speech_act": "yes_no_question",
+      "subject": "user",
+      "action": "have",
+      "object": "meetings",
+      "target": "assistant"
+    },
+    {
+      "utterance": "how do i feel today",
+      "speech_act": "wh_question",
+      "subject": "user",
+      "action": "feel",
+      "object": "today",
+      "target": "assistant"
+    },
+    {
+      "utterance": "am i getting enough sleep",
+      "speech_act": "yes_no_question",
+      "subject": "user",
+      "action": "sleep",
+      "object": "",
+      "target": "assistant"
+    },
+    {
+      "utterance": "start a run",
+      "speech_act": "request",
+      "subject": "user",
+      "action": "start",
+      "object": "run",
+      "target": "assistant"
+    },
+    {
+      "utterance": "what song is playing",
+      "speech_act": "wh_question",
+      "subject": "song",
+      "action": "play",
+      "object": "",
+      "target": "assistant"
+    },
+    {
+      "utterance": "recommend a movie",
+      "speech_act": "request",
+      "subject": "user",
+      "action": "recommend",
+      "object": "movie",
+      "target": "assistant"
+    },
+    {
+      "utterance": "what is the traffic like",
+      "speech_act": "wh_question",
+      "subject": "traffic",
+      "action": "like",
+      "object": "",
+      "target": "assistant"
+    },
+    {
+      "utterance": "what is the score",
+      "speech_act": "wh_question",
+      "subject": "user",
+      "action": "be",
+      "object": "score",
+      "target": "assistant"
+    },
+    {
+      "utterance": "when is the game",
+      "speech_act": "wh_question",
+      "subject": "user",
+      "action": "be",
+      "object": "game",
+      "target": "assistant"
+    },
+    {
+      "utterance": "remind me to call the doctor",
+      "speech_act": "statement",
+      "subject": "remind",
+      "action": "call",
+      "object": "doctor",
+      "target": "assistant"
+    },
+    {
+      "utterance": "how do i treat a headache",
+      "speech_act": "wh_question",
+      "subject": "user",
+      "action": "do",
+      "object": "headache",
+      "target": "assistant"
+    },
+    {
+      "utterance": "is this safe for kids",
+      "speech_act": "yes_no_question",
+      "subject": "user",
+      "action": "be",
+      "object": "safe",
+      "target": "assistant"
+    },
+    {
+      "utterance": "what is the nearest hospital",
+      "speech_act": "wh_question",
+      "subject": "user",
+      "action": "be",
+      "object": "hospital",
+      "target": "assistant"
+    },
+    {
+      "utterance": "show me photos from last week",
+      "speech_act": "request",
+      "subject": "user",
+      "action": "show",
+      "object": "photos",
+      "target": "assistant"
+    },
+    {
+      "utterance": "take a picture",
+      "speech_act": "request",
+      "subject": "user",
+      "action": "take",
+      "object": "picture",
+      "target": "assistant"
+    },
+    {
+      "utterance": "what is this",
+      "speech_act": "wh_question",
+      "subject": "user",
+      "action": "be",
+      "object": "",
+      "target": "assistant"
+    },
+    {
+      "utterance": "how do you say cat in french",
+      "speech_act": "wh_question",
+      "subject": "assistant",
+      "action": "say",
+      "object": "cat",
+      "target": "user"
+    },
+    {
+      "utterance": "define serendipity",
+      "speech_act": "request",
+      "subject": "user",
+      "action": "define",
+      "object": "serendipity",
+      "target": "assistant"
+    },
+    {
+      "utterance": "what does ambiguous mean",
+      "speech_act": "wh_question",
+      "subject": "user",
+      "action": "do",
+      "object": "mean",
+      "target": "assistant"
+    },
+    {
+      "utterance": "what is the capital of france",
+      "speech_act": "wh_question",
+      "subject": "user",
+      "action": "be",
+      "object": "capital",
+      "target": "assistant"
+    },
+    {
+      "utterance": "who wrote hamlet",
+      "speech_act": "wh_question",
+      "subject": "user",
+      "action": "write",
+      "object": "hamlet",
+      "target": "assistant"
+    },
+    {
+      "utterance": "what is the stock price",
+      "speech_act": "wh_question",
+      "subject": "user",
+      "action": "be",
+      "object": "price",
+      "target": "assistant"
+    },
+    {
+      "utterance": "did i take my medicine",
+      "speech_act": "yes_no_question",
+      "subject": "user",
+      "action": "take",
+      "object": "medicine",
+      "target": "assistant"
+    },
+    {
+      "utterance": "what is my blood pressure",
+      "speech_act": "wh_question",
+      "subject": "user",
+      "action": "be",
+      "object": "pressure",
+      "target": "assistant"
+    },
+    {
+      "utterance": "will it be sunny",
+      "speech_act": "yes_no_question",
+      "subject": "it",
+      "action": "be",
+      "object": "sunny",
+      "target": "assistant"
+    },
+    {
+      "utterance": "what is the wifi password",
+      "speech_act": "wh_question",
+      "subject": "user",
+      "action": "be",
+      "object": "password",
+      "target": "assistant"
+    },
+    {
+      "utterance": "did you finish the report",
+      "speech_act": "yes_no_question",
+      "subject": "assistant",
+      "action": "do",
+      "object": "report",
+      "target": "user"
+    },
+    {
+      "utterance": "write a poem about stars",
+      "speech_act": "request",
+      "subject": "user",
+      "action": "write",
+      "object": "poem",
+      "target": "assistant"
+    },
+    {
+      "utterance": "how tall is the eiffel tower",
+      "speech_act": "wh_question",
+      "subject": "tall",
+      "action": "be",
+      "object": "tower",
+      "target": "assistant"
+    },
+    {
+      "utterance": "make me a sandwich",
+      "speech_act": "request",
+      "subject": "user",
+      "action": "make",
+      "object": "sandwich",
+      "target": "assistant"
+    },
+    {
+      "utterance": "what language do they speak in brazil",
+      "speech_act": "wh_question",
+      "subject": "language",
+      "action": "speak",
+      "object": "brazil",
+      "target": "assistant"
+    },
+    {
+      "utterance": "is the door locked",
+      "speech_act": "yes_no_question",
+      "subject": "user",
+      "action": "be",
+      "object": "locked",
+      "target": "assistant"
+    },
+    {
+      "utterance": "who is the president",
+      "speech_act": "wh_question",
+      "subject": "user",
+      "action": "be",
+      "object": "president",
+      "target": "assistant"
+    },
+    {
+      "utterance": "bring me coffee",
+      "speech_act": "request",
+      "subject": "user",
+      "action": "bring",
+      "object": "coffee",
+      "target": "assistant"
+    },
+    {
+      "utterance": "what is two plus two",
+      "speech_act": "wh_question",
+      "subject": "user",
+      "action": "be",
+      "object": "two",
+      "target": "assistant"
+    },
+    {
+      "utterance": "did the package arrive",
+      "speech_act": "yes_no_question",
+      "subject": "user",
+      "action": "do",
+      "object": "arrive",
+      "target": "assistant"
+    },
+    {
+      "utterance": "how do i get to the airport",
+      "speech_act": "wh_question",
+      "subject": "user",
+      "action": "do",
+      "object": "get",
+      "target": "assistant"
+    },
+    {
+      "utterance": "can i eat this",
+      "speech_act": "yes_no_question",
+      "subject": "user",
+      "action": "eat",
+      "object": "",
+      "target": "assistant"
+    },
+    {
+      "utterance": "tell me a joke",
+      "speech_act": "request",
+      "subject": "user",
+      "action": "tell",
+      "object": "joke",
+      "target": "assistant"
+    },
+    {
+      "utterance": "tell me the time",
+      "speech_act": "request",
+      "subject": "user",
+      "action": "tell",
+      "object": "time",
+      "target": "assistant"
+    },
+    {
+      "utterance": "what is your name",
+      "speech_act": "wh_question",
+      "subject": "user",
+      "action": "be",
+      "object": "name",
+      "target": "assistant"
+    }
+  ]
+}
