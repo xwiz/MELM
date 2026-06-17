@@ -107,7 +107,7 @@ class SeedClassSchemasMvpTests(unittest.TestCase):
     def make_store(self) -> AssistantOSStore:
         return AssistantOSStore(":memory:")
 
-    def test_seeds_seven_classes(self) -> None:
+    def test_seeds_nine_classes(self) -> None:
         store = self.make_store()
         try:
             seed_class_schemas(store)
@@ -115,7 +115,10 @@ class SeedClassSchemasMvpTests(unittest.TestCase):
                 "SELECT semantic_class_id, label FROM class_schemas ORDER BY semantic_class_id"
             ).fetchall()
             ids = [str(r["semantic_class_id"]) for r in rows]
-            self.assertEqual(["competition", "entity", "event", "object", "person", "personal_experience", "place"], ids)
+            self.assertEqual(
+                ["abstract", "competition", "entity", "event", "learned_fact", "object", "person", "personal_experience", "place"],
+                ids,
+            )
         finally:
             store.close()
 
@@ -141,7 +144,7 @@ class SeedClassSchemasMvpTests(unittest.TestCase):
             seed_class_schemas(store)
             seed_class_schemas(store)
             count = store.connection.execute("SELECT COUNT(*) AS c FROM class_schemas").fetchone()
-            self.assertEqual(7, count["c"])
+            self.assertEqual(9, count["c"])
         finally:
             store.close()
 

@@ -2880,6 +2880,7 @@ def seed_class_schemas(store: AssistantOSStore) -> None:
     now = _now()
     base_classes = (
         ("entity", None, "Entity", "thing", "Base class for all entities"),
+        ("abstract", "entity", "Abstract", "object", "Abstract concepts and knowledge"),
         ("person", "entity", "Person", "person", "A known person"),
         ("event", "entity", "Event", "event_type", "A class of recurring events"),
         ("place", "entity", "Place", "place", "A known location"),
@@ -2932,6 +2933,19 @@ def seed_class_schemas(store: AssistantOSStore) -> None:
             ("personal_experience", "learned_fact_ids", "json", 0, "Entity IDs of facts created during this experience"),
             ("personal_experience", "follow_up", "text", 0, "Follow-up needed: check_tomorrow | monitor | null"),
             ("personal_experience", "intent_achieved", "text", 0, "Whether the primary intent was achieved: yes | partial | no"),
+        ],
+    )
+    store.connection.execute(
+        "INSERT INTO class_schemas(semantic_class_id, parent_class_id, label, base_entity_kind, description, updated_at) VALUES (?, ?, ?, ?, ?, ?)",
+        ("learned_fact", "abstract", "LearnedFact", "object", "A fact learned from external research or user teaching", now),
+    )
+    store.connection.executemany(
+        "INSERT INTO class_schema_slots(semantic_class_id, slot_name, value_type, required, description) VALUES (?, ?, ?, ?, ?)",
+        [
+            ("learned_fact", "topic", "text", 1, "Topic or subject of the learned fact"),
+            ("learned_fact", "summary", "text", 1, "Brief summary of the fact"),
+            ("learned_fact", "source", "text", 0, "Provenance: web URL, user_taught, etc."),
+            ("learned_fact", "learned_at", "text", 1, "ISO timestamp when the fact was learned"),
         ],
     )
 

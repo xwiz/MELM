@@ -25,6 +25,15 @@ from .assistant_lexicon import (
 )
 from .assistant_os_store import AssistantOSStore
 from .assistant_decoder import ConstrainedDecoder
+from .assistant_skill_research import (
+    ResearchProvider,
+    StubResearchProvider,
+    extract_action,
+    extract_topic,
+    find_learned_fact,
+    format_open_domain_answer,
+    learn_topic,
+)
 from .assistant_synthesis import BoundedLocalSynthesizer, BoundedSynthesisResult
 from .local_assistant_router import (
     AssistantDecision,
@@ -246,6 +255,7 @@ class AssistantOSKernel:
         offline_dictionary_path: str | Path | None = None,
         cloud_api_key: str | None = None,
         decoder: ConstrainedDecoder | None = None,
+        research_provider: ResearchProvider | None = None,
     ) -> None:
         if store is not None and db_path is not None:
             raise ValueError("pass either store or db_path, not both")
@@ -254,6 +264,7 @@ class AssistantOSKernel:
         if self.store is not None:
             self.profile = self.store.load_profile(self.profile)
         self.decoder = decoder
+        self.research_provider = research_provider
         self.self_model = self_model or self._self_model_from_profile(self.profile)
         self.action_executor = action_executor or LocalDeviceActionExecutor()
         self.capture_surface = str(capture_surface)
@@ -402,6 +413,56 @@ class AssistantOSKernel:
         decision = OnDeviceAssistantRouter(
             self.profile,
         ).handle(utterance)
+        # Learned-fact lookup for open_domain / unknown: if we have a stored
+        # fact matching the extracted topic, answer locally instead of handing
+        # off to the cloud. If none exists and a research_provider is wired,
+        # auto-research the topic, store it, and re-answer locally.
+        if decision.intent in {"open_domain", "unknown"} and self.store is not None:
+            topic = extract_topic(decision.functional_parse)
+            if topic:
+                fact = find_learned_fact(self.store, topic)
+                if fact is not None:
+                    answer = format_open_domain_answer(
+                        topic=topic,
+                        learned_fact=fact,
+                    )
+                    evidence_keys = decision.evidence_keys + (f"learned_fact.{fact['entity_id']}",)
+                    decision = replace(
+                        decision,
+                        route="local_answer",
+                        answer=answer,
+                        evidence_keys=evidence_keys,
+                        reason="learned_fact_answer",
+                    )
+                elif self.research_provider is not None:
+                    result = learn_topic(self.store, topic, self.research_provider)
+                    if result.found:
+                        fresh = find_learned_fact(self.store, topic)
+                        if fresh is not None:
+                            answer = format_open_domain_answer(
+                                topic=topic,
+                                learned_fact=fresh,
+                            )
+                            evidence_keys = decision.evidence_keys + (f"learned_fact.{fresh['entity_id']}",)
+                            decision = replace(
+                                decision,
+                                route="local_answer",
+                                answer=answer,
+                                evidence_keys=evidence_keys,
+                                reason="auto_research_answer",
+                            )
+                    else:
+                        action = extract_action(decision.functional_parse)
+                        decision = replace(
+                            decision,
+                            answer=format_open_domain_answer(topic=topic, action=action),
+                        )
+                else:
+                    action = extract_action(decision.functional_parse)
+                    decision = replace(
+                        decision,
+                        answer=format_open_domain_answer(topic=topic, action=action),
+                    )
         if self.store is not None:
             resolved = _resolve_slot_states(
                 decision.intent,

@@ -69,8 +69,13 @@ def record_conversation_experience(
         entity_id, "polarity", polarity,
         provenance="experience_writer",
     )
+    learned_fact_ids = [
+        key.split(".", 1)[1]
+        for key in decision.evidence_keys
+        if key.startswith("learned_fact.")
+    ]
     store.set_entity_slot(
-        entity_id, "learned_fact_ids", [],
+        entity_id, "learned_fact_ids", learned_fact_ids,
         provenance="experience_writer",
     )
     store.set_entity_slot(
