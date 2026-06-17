@@ -1,0 +1,24 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "melm.open_domain_templates.v1",
+  "schema_id": "melm.open_domain_templates.v1",
+  "intents": {
+    "open_domain": {
+      "templates": {
+        "acknowledge_and_handoff": "You asked about {topic}. I do not have that information locally, so I will need to look it up.",
+        "acknowledge_and_learned": "You asked about {topic}. This is what I found: {summary}",
+        "acknowledge_unknown": "I understood you want to {action} something about {topic}, but I do not have that information yet."
+      },
+      "requires_evidence": ["learned_fact"]
+    },
+    "unknown": {
+      "templates": {
+        "acknowledge_and_handoff": "You asked about {topic}. I do not have that information locally, so I will need to look it up.",
+        "acknowledge_and_learned": "You asked about {topic}. This is what I found: {summary}",
+        "acknowledge_unknown": "I understood you want to {action} something about {topic}, but I do not have that information yet."
+      },
+      "requires_evidence": ["learned_fact"]
+    }
+  },
+  "_note": "Fallback templates for open_domain and unknown intents. Slot {action} may be empty; slot {topic} must be present. The 'acknowledge_and_learned' template is selected when a learned_fact evidence item is present."
+}
