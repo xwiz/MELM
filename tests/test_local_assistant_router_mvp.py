@@ -522,10 +522,10 @@ class LocalAssistantRouterMvpTests(unittest.TestCase):
 
     def test_primary_intent_helpers_do_not_call_phrase_table_helpers(self) -> None:
         helpers = (
-            router_module._is_common_sense_safety_request,
-            router_module._is_social_contact_request,
-            router_module._is_personal_memory_frame,
-            router_module._is_autobiographical_debug_request,
+            router_module._is_broad_personal_memory_request,
+            router_module._is_routine_memory_request,
+            router_module._is_household_memory_request,
+            router_module._is_child_memory_request,
         )
         source = "\n".join(inspect.getsource(helper) for helper in helpers)
 
@@ -1025,7 +1025,7 @@ class LocalAssistantRouterMvpTests(unittest.TestCase):
             (
                 inspect.getsource(router_module.compose_autobiographical_memory_frame),
                 inspect.getsource(router_module.classify_autobiographical_memory_scope),
-                inspect.getsource(router_module._is_autobiographical_debug_request),
+                inspect.getsource(router_module._classify_intent_from_uol_slots),
             )
         )
 

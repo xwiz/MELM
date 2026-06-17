@@ -294,6 +294,29 @@ class FrameLinker:
             if "want" in norm_set:
                 return True
             return False
+        if gates.get("deny_phone_device"):
+            if "phone" in norm_set:
+                possessives = {"my", "the", "your", "this", "that"}
+                device_nouns = {"number", "battery", "screen", "charger", "case"}
+                for i, t in enumerate(norm_tokens):
+                    if t != "phone":
+                        continue
+                    prev = norm_tokens[i - 1] if i > 0 else ""
+                    nxt = norm_tokens[i + 1] if i + 1 < len(norm_tokens) else ""
+                    if prev in possessives or nxt in device_nouns:
+                        return False
+        if gates.get("require_social_relation"):
+            social_classes = {"social_relation", "child_relation"}
+            if not any(_norm_lookup(t) & social_classes for t in norm_set):
+                return False
+        if gates.get("require_safety_context"):
+            safety_classes = {"clothing_item", "public_place"}
+            has_safety_class = any(_norm_lookup(t) & safety_classes for t in norm_set)
+            has_action = bool(norm_set & {"go", "going", "walk"})
+            has_frame = is_question_like or is_request_like or has_action or has_safety_class
+            has_subject = bool(norm_set & {"i", "me", "my"}) or has_action or has_safety_class
+            if not (has_frame and has_subject):
+                return False
         return True
 
     def _compute_context_bonus(

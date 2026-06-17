@@ -76,6 +76,7 @@
     {"class_id": "public_place", "parent_id": "location", "policy_flags": []},
     {"class_id": "undress_state", "parent_id": "state", "policy_flags": []},
     {"class_id": "clothing_item", "parent_id": "physical_object", "policy_flags": []},
-    {"class_id": "wellness_activity", "parent_id": "action", "policy_flags": []}
+    {"class_id": "wellness_activity", "parent_id": "action", "policy_flags": []},
+    {"class_id": "learned_fact", "parent_id": "abstract", "policy_flags": []}
   ]
 }

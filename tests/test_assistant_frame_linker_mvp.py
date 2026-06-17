@@ -276,5 +276,54 @@ class FrameCandidateDataclassMvpTests(unittest.TestCase):
             _ = c.nonexistent
 
 
+class FrameTemplateSeedRowDeletionMvpTests(unittest.TestCase):
+    """Deleting a frame template or semantic class changes behavior predictably."""
+
+    def setUp(self) -> None:
+        self.linker = FrameLinker()
+
+    def test_deleting_weather_template_removes_weather_candidate(self) -> None:
+        """Removing the 'weather' frame template stops 'rain' from routing to weather."""
+        lexicon = {"rain": frozenset({"weather_phenomenon"})}
+        tokens = ("will", "it", "rain", "tomorrow")
+        before = self.linker.score(tokens, lexicon, is_question_like=True)
+        self.assertTrue(any(c.frame_id == "weather" for c in before))
+
+        # Delete the weather template
+        del self.linker._templates["weather"]
+        after = self.linker.score(tokens, lexicon, is_question_like=True)
+        self.assertFalse(any(c.frame_id == "weather" for c in after))
+
+    def test_deleting_story_template_removes_story_candidate(self) -> None:
+        """Removing the 'story' frame template stops 'tell me a story' from matching story."""
+        lexicon = {"story": frozenset({"narrative_content"})}
+        tokens = ("tell", "me", "a", "story")
+        before = self.linker.score(tokens, lexicon, is_request_like=True)
+        self.assertTrue(any(c.frame_id == "story" for c in before))
+
+        del self.linker._templates["story"]
+        after = self.linker.score(tokens, lexicon, is_request_like=True)
+        self.assertFalse(any(c.frame_id == "story" for c in after))
+
+    def test_deleting_semantic_class_from_lexicon_drops_template_score(self) -> None:
+        """Removing a required semantic class from the lexicon drops the matching template's score."""
+        lexicon = {"rain": frozenset({"weather_phenomenon"})}
+        tokens = ("rain", "today")
+        before = self.linker.score(tokens, lexicon, is_question_like=True)
+        weather_before = [c for c in before if c.frame_id == "weather"]
+        self.assertEqual(len(weather_before), 1)
+        before_score = weather_before[0].score
+
+        # Remove weather_phenomenon from lexicon
+        lexicon_no_weather = {"rain": frozenset()}
+        after = self.linker.score(tokens, lexicon_no_weather, is_question_like=True)
+        weather_after = [c for c in after if c.frame_id == "weather"]
+        if weather_after:
+            self.assertLess(weather_after[0].score, before_score)
+        else:
+            # If the score drops below threshold, the candidate is filtered out entirely
+            self.assertEqual(len(weather_after), 0)
+
+
 if __name__ == "__main__":
     unittest.main()

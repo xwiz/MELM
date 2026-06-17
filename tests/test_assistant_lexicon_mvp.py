@@ -7,6 +7,7 @@ import json
 
 from melm.appliance import (
     acquire_definition,
+    AssistantOSKernel,
     AssistantOSStore,
     benchmark_lexicon_lookup,
     cloud_definition_lookup,
@@ -2025,6 +2026,55 @@ class SealedDictionaryMvpTests(unittest.TestCase):
                     replace_in_memory_lexicon(saved)
             finally:
                 store.close()
+
+
+    def test_next_turn_use_after_ingest(self) -> None:
+        """A word learned in turn T is correctly routed in turn T+1 through the full kernel."""
+        saved = dict(_IN_MEMORY_LEXICON)
+        try:
+            with tempfile.TemporaryDirectory() as tmp:
+                db = Path(tmp) / "test.sqlite"
+                store = AssistantOSStore(db)
+                try:
+                    # Pick a sealed-dictionary word that is not already in the lexicon
+                    entry = {
+                        "word": "wug",
+                        "utterance": "tell me a story about wug",
+                        "expected_intent": "story",
+                        "class_id": "narrative_content",
+                    }
+                    # Ensure the word is not already known
+                    self.assertNotIn(
+                        entry["word"],
+                        _IN_MEMORY_LEXICON,
+                        f"word {entry['word']!r} already in lexicon; choose another",
+                    )
+
+                    # Turn T: ingest the word into the store
+                    self._ingest_word(store, entry)
+
+                    # Build kernel; init rebuilds lexicon cache
+                    replace_installed_families(None, None)
+                    kernel = AssistantOSKernel(
+                        store=store,
+                        profile=LocalAssistantProfile(
+                            story_models={},
+                            weekly_weather={},
+                            contacts={},
+                        ),
+                    )
+                    # Turn T+1: utterance uses the newly learned word
+                    decision = kernel.handle(entry["utterance"])
+                    self.assertEqual(
+                        decision.intent, entry["expected_intent"],
+                        f"word {entry['word']!r} routed to {decision.intent!r} "
+                        f"instead of {entry['expected_intent']!r}",
+                    )
+                    kernel.store.close()
+                finally:
+                    store.close()
+        finally:
+            replace_in_memory_lexicon(saved)
 
 
 class LexiconLifecycleMvpTests(unittest.TestCase):

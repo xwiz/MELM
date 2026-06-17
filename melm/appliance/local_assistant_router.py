@@ -124,6 +124,7 @@ class AssistantDecision:
     reason: str = ""
     semantic_classes_activated: frozenset[str] = frozenset()
     slot_states: dict[str, str] = field(default_factory=dict)  # slot_name → state constant
+    functional_parse: dict[str, Any] | None = None
 
 
 @dataclass(frozen=True)
@@ -278,6 +279,12 @@ class OnDeviceAssistantRouter:
             set_semantic_class_collector(None)
         if collector:
             decision = replace(decision, semantic_classes_activated=frozenset(collector))
+        # Thread T1 parse into the decision for downstream synthesis/learning
+        text = _normalize(utterance)
+        tokens = _tokenize(text)
+        parse = parse_functional_relations(tokens, question_mark="?" in text)
+        if parse is not None:
+            decision = replace(decision, functional_parse=parse.to_dict())
         return decision
 
     def _route_impl(self, utterance: str) -> AssistantDecision:
@@ -1319,9 +1326,31 @@ def compose_autobiographical_memory_frame(utterance: str) -> dict[str, Any] | No
 
     normalized = _normalize(utterance)
     tokens = _tokenize(normalized)
-    if not _is_autobiographical_debug_request(normalized, tokens):
+    token_set = set(tokens)
+    if not _autobiographical_question_or_command(normalized, tokens):
         return None
-    return _semantic_slot_composition(normalized, tokens, "autobiographical_memory")
+    if _autobiographical_long_horizon_frame(normalized, tokens):
+        return _semantic_slot_composition(normalized, tokens, "autobiographical_memory")
+    if _autobiographical_session_summary_frame(normalized, tokens):
+        return _semantic_slot_composition(normalized, tokens, "autobiographical_memory")
+    if _autobiographical_latest_event_frame(normalized, tokens):
+        return _semantic_slot_composition(normalized, tokens, "autobiographical_memory")
+    if _classify_from_frame_linker(
+        normalized, tokens, "autobiographical_memory",
+        collector_classes=frozenset({"autobiographical_event", "autobiographical_action", "temporal_descriptor"}),
+        use_margin=False,
+    ):
+        return _semantic_slot_composition(normalized, tokens, "autobiographical_memory")
+    if token_set & {"we", "our"} and (token_set & {"talk", "talked", "conversation", "conversations"}):
+        if (
+            _semantic_family_terms(tokens, semantic_classes={"autobiographical_action"})
+            or _semantic_family_terms(tokens, semantic_classes={"temporal_descriptor"})
+            or _semantic_family_terms(tokens, semantic_classes={"communication_action"})
+        ):
+            return _semantic_slot_composition(normalized, tokens, "autobiographical_memory")
+    if token_set & {"we", "our"} and (token_set & {"discuss", "discussed", "discussion", "chat", "chatted"}):
+        return _semantic_slot_composition(normalized, tokens, "autobiographical_memory")
+    return None
 
 
 def classify_autobiographical_memory_scope(utterance: str) -> str:
@@ -1329,7 +1358,8 @@ def classify_autobiographical_memory_scope(utterance: str) -> str:
 
     normalized = _normalize(utterance)
     tokens = _tokenize(normalized)
-    if not _is_autobiographical_debug_request(normalized, tokens):
+    token_set = set(tokens)
+    if not _autobiographical_question_or_command(normalized, tokens):
         return ""
     if _autobiographical_long_horizon_frame(normalized, tokens):
         return "long_horizon"
@@ -1337,7 +1367,22 @@ def classify_autobiographical_memory_scope(utterance: str) -> str:
         return "session_summary"
     if _autobiographical_latest_event_frame(normalized, tokens):
         return "latest_event"
-    return "event_query"
+    if _classify_from_frame_linker(
+        normalized, tokens, "autobiographical_memory",
+        collector_classes=frozenset({"autobiographical_event", "autobiographical_action", "temporal_descriptor"}),
+        use_margin=False,
+    ):
+        return "event_query"
+    if token_set & {"we", "our"} and (token_set & {"talk", "talked", "conversation", "conversations"}):
+        if (
+            _semantic_family_terms(tokens, semantic_classes={"autobiographical_action"})
+            or _semantic_family_terms(tokens, semantic_classes={"temporal_descriptor"})
+            or _semantic_family_terms(tokens, semantic_classes={"communication_action"})
+        ):
+            return "event_query"
+    if token_set & {"we", "our"} and (token_set & {"discuss", "discussed", "discussion", "chat", "chatted"}):
+        return "event_query"
+    return ""
 
 
 def _classify_intent(text: str) -> AssistantIntent:
@@ -1374,10 +1419,15 @@ def _classify_intent_from_uol_slots(
         use_margin=False,
     ):
         return "weather"
-    if _is_common_sense_safety_request(
-        text,
-        tokens,
-
+    # Bridge-eliminated: was _is_common_sense_safety_request (Phase 3)
+    # Linker template already encodes both paths:
+    #   required_classes: ["undress_state"] (path A — OR gate)
+    #   required_all_classes: ["clothing_item", "public_place"] (path B — AND gate)
+    # Context gates and action tokens (go/walk) provide the same filtering.
+    if _classify_from_frame_linker(
+        text, tokens, "common_sense_safety",
+        collector_classes=frozenset({"clothing_item", "public_place", "undress_state"}),
+        use_margin=False,
     ):
         return "common_sense_safety"
     # Bridge-eliminated: was _is_media_request (Phase 1)
@@ -1400,17 +1450,105 @@ def _classify_intent_from_uol_slots(
         use_margin=False,
     ):
         return "health_advice"
-    if _is_social_contact_request(
-        text,
-        tokens,
-        trusted_contact_names=trusted_contact_names,
-
-    ):
-        return "social_contact"
-    if _is_personal_memory_frame(text, tokens):
+    # Bridge-eliminated: was _is_social_contact_request (Phase 3)
+    # Linker context gate deny_phone_device handles phone disambiguation.
+    # Contact target check (social_relation/child_relation OR trusted name) is a
+    # runtime pre-filter because trusted names are not in the lexicon.
+    token_set = set(tokens)
+    has_social_relation = any(
+        "social_relation" in _IN_MEMORY_LEXICON.get(t, frozenset())
+        or "child_relation" in _IN_MEMORY_LEXICON.get(t, frozenset())
+        for t in tokens
+    )
+    has_trusted_name = bool(
+        trusted_contact_names and _matched_trusted_contact_name(tokens, trusted_contact_names)
+    )
+    has_contact_target = has_social_relation or has_trusted_name
+    if not has_contact_target:
+        pass  # skip social_contact entirely
+    else:
+        has_contact_action_token = bool(token_set & {"call", "phone", "ring", "reach"})
+        has_talk_context = bool(token_set & {"need", "help", "please"})
+        contact_semantic = _semantic_family_terms(tokens, semantic_classes={"contact_action"})
+        comm_semantic = _semantic_family_terms(tokens, semantic_classes={"communication_action"})
+        # Path A: explicit contact-action tokens or semantic class + any structure
+        if has_contact_action_token or (contact_semantic and (_is_request_like(tokens) or _is_question_like(text, tokens))):
+            if _classify_from_frame_linker(
+                text, tokens, "social_contact",
+                collector_classes=frozenset({"contact_action", "communication_action", "social_relation"}),
+                use_margin=False,
+            ):
+                return "social_contact"
+        # Path B: communication_action semantic class with talk/question context only
+        if comm_semantic and (has_talk_context or _is_question_like(text, tokens)):
+            if _classify_from_frame_linker(
+                text, tokens, "social_contact",
+                collector_classes=frozenset({"contact_action", "communication_action", "social_relation"}),
+                use_margin=False,
+            ):
+                return "social_contact"
+    # Bridge-eliminated: was _is_personal_memory_frame (Phase 3)
+    # Fast path: private cloud export requests are personal_memory for policy gating.
+    if _is_private_cloud_export_request(text, tokens):
         return "personal_memory"
-    if _is_autobiographical_debug_request(text, tokens):
-        return "autobiographical_memory"
+    # Lexical path via frame linker (routine_memory, household_memory, personal_memory).
+    if _classify_from_frame_linker(
+        text, tokens, "personal_memory",
+        collector_classes=frozenset({"memory_recall", "personal_attribute", "child_relation", "social_relation"}),
+        use_margin=False,
+    ):
+        return "personal_memory"
+    # Structural fallbacks for patterns not expressible as frame templates.
+    if _is_child_memory_request(tokens):
+        return "personal_memory"
+    memory_cognition = _semantic_family_terms(tokens, semantic_classes={"memory_recall"})
+    memory_frame = _is_question_like(text, tokens) or _is_request_like(tokens) or bool(memory_cognition)
+    if _is_routine_memory_request(tokens):
+        owned_or_recalled = bool(
+            token_set & {"my", "our", "me", "i"} or memory_cognition or _about_targets_self(tokens)
+        )
+        if memory_frame and owned_or_recalled:
+            return "personal_memory"
+    if _is_household_memory_request(tokens):
+        owned_or_recalled = bool(
+            token_set & {"my", "our", "we", "us", "this"} or memory_cognition or _is_device_user_memory_question(tokens)
+        )
+        if memory_frame and owned_or_recalled:
+            return "personal_memory"
+    if {"who", "am", "i"} <= token_set:
+        return "personal_memory"
+    first_person_targets = {"me", "my", "myself", "i"}
+    if memory_cognition and token_set & first_person_targets:
+        if _classify_from_frame_linker(
+            text, tokens, "personal_memory",
+            collector_classes=frozenset({"memory_recall", "personal_attribute", "child_relation", "social_relation"}),
+        ):
+            return "personal_memory"
+    if _about_targets_self(tokens):
+        return "personal_memory"
+    # Bridge-eliminated: was _is_autobiographical_debug_request (Phase 3)
+    if _autobiographical_question_or_command(text, tokens):
+        if _autobiographical_long_horizon_frame(text, tokens):
+            return "autobiographical_memory"
+        if _autobiographical_session_summary_frame(text, tokens):
+            return "autobiographical_memory"
+        if _autobiographical_latest_event_frame(text, tokens):
+            return "autobiographical_memory"
+        if _classify_from_frame_linker(
+            text, tokens, "autobiographical_memory",
+            collector_classes=frozenset({"autobiographical_event", "autobiographical_action", "temporal_descriptor"}),
+            use_margin=False,
+        ):
+            return "autobiographical_memory"
+        if token_set & {"we", "our"} and (token_set & {"talk", "talked", "conversation", "conversations"}):
+            if (
+                _semantic_family_terms(tokens, semantic_classes={"autobiographical_action"})
+                or _semantic_family_terms(tokens, semantic_classes={"temporal_descriptor"})
+                or _semantic_family_terms(tokens, semantic_classes={"communication_action"})
+            ):
+                return "autobiographical_memory"
+        if token_set & {"we", "our"} and (token_set & {"discuss", "discussed", "discussion", "chat", "chatted"}):
+            return "autobiographical_memory"
     # Bridge-eliminated: was _is_meal_suggestion_request (Phase 2)
     if _classify_from_frame_linker(
         text, tokens, "meal_suggestion",
@@ -1733,125 +1871,7 @@ def rebuild_entity_lexicon_index(
 
 
 
-def _is_common_sense_safety_request(
-    text: str,
-    tokens: tuple[str, ...],
 
-
-
-) -> bool:
-    token_set = set(tokens)
-    clothing_terms = _semantic_family_terms(
-        tokens,
-        semantic_classes={"clothing_item"},
-
-
-    )
-    public_context = _semantic_family_terms(
-        tokens,
-        semantic_classes={"public_place"},
-
-
-    )
-    undress_terms = _semantic_family_terms(
-        tokens,
-        semantic_classes={"undress_state"},
-
-
-    )
-    safety_frame = bool(
-        _is_question_like(text, tokens)
-        or _is_request_like(tokens)
-        or bool(token_set & {"go", "going", "walk"})
-        or clothing_terms
-        or public_context
-    )
-    safety_subject_or_context = bool(
-        token_set
-        & {
-            "i",
-            "me",
-            "my",
-            "go",
-            "going",
-            "walk",
-        }
-    ) or clothing_terms or public_context
-    if undress_terms:
-        return safety_frame and safety_subject_or_context
-    if {"without", "clothes"} <= token_set:
-        return safety_frame and safety_subject_or_context
-    if not safety_frame:
-        return False
-    return _classify_from_frame_linker(
-        text, tokens, "common_sense_safety",
-        collector_classes=frozenset({"clothing_item", "public_place", "undress_state"}),
-        use_margin=False,
-    )
-
-
-
-def _is_social_contact_request(
-    text: str,
-    tokens: tuple[str, ...] | None = None,
-    trusted_contact_names: tuple[str, ...] = (),
-
-
-
-
-) -> bool:
-    token_tuple = tokens or _tokenize(text)
-    token_set = set(token_tuple)
-    # Phone is ambiguous — only treat as contact action in verb context
-    if "phone" in token_set and not _phone_is_contact_action(token_tuple):
-        return False
-    # Need a person target to prevent false positives like "call the meeting"
-    if not _has_contact_target(token_tuple, trusted_contact_names=trusted_contact_names):
-        return False
-    # Contact-action tokens with a target are social contact requests
-    contact_action_tokens = token_set & {"call", "phone", "ring", "reach"}
-    contact_actions = _semantic_family_terms(
-        token_tuple,
-        semantic_classes={"contact_action"},
-
-
-
-    )
-    if contact_actions:
-        # Require action tokens or request/question structure to prevent bare
-        # matches like "send contact to the cloud" → social_contact.
-        if not (contact_action_tokens or _is_request_like(token_tuple) or _is_question_like(text, token_tuple)):
-            return False
-        return _classify_from_frame_linker(
-            text, token_tuple, "social_contact",
-            collector_classes=frozenset({"contact_action", "communication_action", "social_relation"}),
-            use_margin=False,
-        )
-    # Talk-based requests need structural context
-    talk_terms = _semantic_family_terms(
-        token_tuple,
-        semantic_classes={"communication_action"},
-
-
-
-    )
-    if not talk_terms:
-        return False
-    if not (token_set & {"need", "help", "please"} or _is_question_like(text, token_tuple)):
-        return False
-    # Check if social_contact scores above threshold among any candidate
-    # (not just top — health_advice can tie alphabetically).
-    linker = _get_frame_linker()
-    candidates = linker.score(
-        token_tuple,
-        _IN_MEMORY_LEXICON,
-        is_question_like=_is_question_like(text, token_tuple),
-        is_request_like=_is_request_like(token_tuple),
-    )
-    for c in candidates:
-        if c.frame_id == "social_contact" and c.score >= c.threshold:
-            return True
-    return False
 def _has_contact_target(
     tokens: tuple[str, ...],
     trusted_contact_names: tuple[str, ...] = (),
@@ -1883,90 +1903,6 @@ def _phone_is_contact_action(tokens: tuple[str, ...]) -> bool:
             return False
         return True
     return False
-def _is_personal_memory_frame(
-    text: str,
-    tokens: tuple[str, ...],
-
-
-
-) -> bool:
-    token_set = set(tokens)
-    if _is_private_cloud_export_request(text, tokens):
-        return True
-    # Frame linker evaluates all personal_memory sub-frames (routine, household, memory_recall)
-    # before structural gates. Sub-frames with intent="personal_memory" are:
-    #   personal_memory (memory_recall), routine_memory (routine_concept), household_memory (household_concept).
-    linker = _get_frame_linker()
-    candidates = linker.score(
-        tokens,
-        _IN_MEMORY_LEXICON,
-        is_question_like=_is_question_like(text, tokens),
-        is_request_like=_is_request_like(tokens),
-    )
-    if candidates and candidates[0].intent == "personal_memory" and candidates[0].score >= candidates[0].threshold:
-        _semantic_family_terms(
-            tokens,
-            semantic_classes={"memory_recall", "personal_attribute", "child_relation", "social_relation"},
-        )
-        return True
-    # Structural gates as fallback for patterns not expressible as frame templates
-    # (OR-gate patterns like routine temporal_descriptor+school/day, household owner+hardware, etc.)
-    if _is_child_memory_request(
-        tokens,
-
-
-
-    ):
-        return True
-    memory_cognition = _semantic_family_terms(
-        tokens,
-        semantic_classes={"memory_recall"},
-
-
-
-    )
-    memory_frame = (
-        _is_question_like(text, tokens)
-        or _is_request_like(tokens)
-        or bool(memory_cognition)
-    )
-    if _is_routine_memory_request(
-        tokens,
-
-
-
-    ):
-        owned_or_recalled = bool(
-            token_set & {"my", "our", "me", "i"}
-            or memory_cognition
-            or _about_targets_self(tokens)
-        )
-        return memory_frame and owned_or_recalled
-    if _is_household_memory_request(
-        tokens,
-
-
-
-    ):
-        owned_or_recalled = bool(
-            token_set & {"my", "our", "we", "us", "this"}
-            or memory_cognition
-            or _is_device_user_memory_question(
-                tokens,
-        
-        
-            )
-        )
-        return memory_frame and owned_or_recalled
-    if {"who", "am", "i"} <= token_set:
-        return True
-    first_person_targets = {"me", "my", "myself", "i"}
-    if memory_cognition and token_set & first_person_targets:
-        return _classify_from_frame_linker(
-            text, tokens, "personal_memory",
-            collector_classes=frozenset({"memory_recall", "personal_attribute", "child_relation", "social_relation"}),
-        )
-    return _about_targets_self(tokens)
 def _about_targets_self(tokens: tuple[str, ...]) -> bool:
     self_targets = {"me", "myself"}
     for index, token in enumerate(tokens):
@@ -1980,51 +1916,6 @@ def _about_targets_self(tokens: tuple[str, ...]) -> bool:
     return False
 
 
-def _is_autobiographical_debug_request(
-    text: str,
-    tokens: tuple[str, ...] | None = None,
-
-
-
-) -> bool:
-    token_tuple = tokens or _tokenize(text)
-    token_set = set(token_tuple)
-    if not _autobiographical_question_or_command(text, token_tuple):
-        return False
-    if _autobiographical_long_horizon_frame(text, token_tuple):
-        return True
-    if _autobiographical_session_summary_frame(text, token_tuple):
-        return True
-    if _autobiographical_latest_event_frame(text, token_tuple):
-        return True
-    # Frame linker handles the main lexical path (event + action/temporal).
-    if _classify_from_frame_linker(
-        text, token_tuple, "autobiographical_memory",
-        collector_classes=frozenset({
-            "autobiographical_event", "autobiographical_action", "temporal_descriptor"}),
-        use_margin=False,
-    ):
-        return True
-    # Shared context path: "talk" (present tense) is communication_action, not
-    # autobiographical_action, so the frame linker misses it. Also handle
-    # question forms like "what did we talk about" via communication_action
-    # and "discuss"/"chat" tokens not yet in the lexicon.
-    if (
-        token_set & {"we", "our"}
-        and (token_set & {"talk", "talked", "conversation", "conversations"})
-    ):
-        if (
-            _semantic_family_terms(token_tuple, semantic_classes={"autobiographical_action"})
-            or _semantic_family_terms(token_tuple, semantic_classes={"temporal_descriptor"})
-            or _semantic_family_terms(token_tuple, semantic_classes={"communication_action"})
-        ):
-            return True
-    if (
-        token_set & {"we", "our"}
-        and (token_set & {"discuss", "discussed", "discussion", "chat", "chatted"})
-    ):
-        return True
-    return False
 
 
 def _autobiographical_question_or_command(text: str, tokens: tuple[str, ...]) -> bool:

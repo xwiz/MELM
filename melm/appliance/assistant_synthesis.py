@@ -216,6 +216,34 @@ def _handle_social_contact(self: BoundedLocalSynthesizer, decision: AssistantDec
     return None
 
 
+def _handle_open_domain(
+    synthesizer: "BoundedLocalSynthesizer",
+    decision: AssistantDecision,
+    evidence: tuple,
+) -> str | None:
+    from .assistant_skill_research import extract_topic, extract_action, format_open_domain_answer
+    topic = extract_topic(decision.functional_parse)
+    action = extract_action(decision.functional_parse)
+    learned = [e for e in evidence if e.kind == "learned_fact"]
+    if learned:
+        return decision.answer
+    return format_open_domain_answer(topic=topic or "that", action=action)
+
+
+def _handle_unknown(
+    synthesizer: "BoundedLocalSynthesizer",
+    decision: AssistantDecision,
+    evidence: tuple,
+) -> str | None:
+    from .assistant_skill_research import extract_topic, extract_action, format_open_domain_answer
+    topic = extract_topic(decision.functional_parse)
+    action = extract_action(decision.functional_parse)
+    learned = [e for e in evidence if e.kind == "learned_fact"]
+    if learned:
+        return decision.answer
+    return format_open_domain_answer(topic=topic or "that", action=action)
+
+
 _ANSWER_HANDLERS: dict[str, Any] = {
     "story": _handle_story,
     "assistant_identity": _handle_identity,
@@ -227,6 +255,8 @@ _ANSWER_HANDLERS: dict[str, Any] = {
     "personal_memory": _handle_personal_memory,
     "media_playback": _handle_media_playback,
     "social_contact": _handle_social_contact,
+    "open_domain": _handle_open_domain,
+    "unknown": _handle_unknown,
 }
 
 
@@ -692,6 +722,27 @@ class BoundedLocalSynthesizer:
                         value=summary,
                         source="assistant_event_ledger_compactor",
                         license="private_local",
+                        local_only=True,
+                    ),
+                )
+        if key.startswith("learned_fact.") and self.store is not None:
+            entity_id = key.split(".", 1)[1]
+            slots = self.store.get_entity_slots(entity_id)
+            slot_map = {}
+            for s in slots:
+                try:
+                    slot_map[s.slot_name] = json.loads(s.value_json) if s.value_json else ""
+                except json.JSONDecodeError:
+                    slot_map[s.slot_name] = s.value_json
+            summary = str(slot_map.get("summary", ""))
+            if summary:
+                return (
+                    SynthesisEvidence(
+                        key=key,
+                        kind="learned_fact",
+                        value=summary,
+                        source=str(slot_map.get("source", "assistant_research")),
+                        license="local_runtime",
                         local_only=True,
                     ),
                 )

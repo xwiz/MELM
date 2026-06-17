@@ -45,6 +45,9 @@
         "exclude_classes": [],
         "action_tokens": ["go", "going", "walk"]
       },
+      "context_gates": {
+        "require_safety_context": true
+      },
       "slot_bindings": [],
       "threshold": 0.40,
       "priority": 5
@@ -93,6 +96,9 @@
         "optional_classes": [],
         "exclude_classes": [],
         "action_tokens": ["call", "phone", "ring", "reach"]
+      },
+      "context_gates": {
+        "deny_phone_device": true
       },
       "slot_bindings": ["name", "phone"],
       "threshold": 0.40,

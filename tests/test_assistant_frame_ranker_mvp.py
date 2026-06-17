@@ -156,8 +156,7 @@ class E3RerankerMinimalPairsTests(unittest.TestCase):
         - All cases: expected_top_frame ≠ null (overall).
         - Precision-target cases: precision_target=true (targeted precision metric).
 
-        Target ≥95% overall, ≥95% on precision-target cases toward M5 exit
-        criterion of ≥98%.
+        Target ≥98% overall, ≥98% on precision-target cases (M5 exit gate).
         """
         results: list[dict[str, Any]] = []
         for pair in self.pairs_payload["pairs"]:
@@ -175,8 +174,8 @@ class E3RerankerMinimalPairsTests(unittest.TestCase):
         ]
 
         self.assertGreaterEqual(
-            precision, 0.95,
-            f"precision@1 (all) {precision:.3f} ({correct}/{len(applicable)}) below 0.95\n"
+            precision, 0.98,
+            f"precision@1 (all) {precision:.3f} ({correct}/{len(applicable)}) below 0.98\n"
             + "\n".join(failures),
         )
 
@@ -196,9 +195,9 @@ class E3RerankerMinimalPairsTests(unittest.TestCase):
         ]
 
         self.assertGreaterEqual(
-            pt_precision, 0.95,
+            pt_precision, 0.98,
             f"precision@1 (precision-target) {pt_precision:.3f} "
-            f"({pt_correct}/{len(precision_target_results)}) below 0.95\n"
+            f"({pt_correct}/{len(precision_target_results)}) below 0.98\n"
             + "\n".join(pt_failures),
         )
 
@@ -229,6 +228,35 @@ class E3RerankerMinimalPairsTests(unittest.TestCase):
                             f"expected {expected} (rank={expected_rank}) for "
                             f"'{pair['utterance']}'"
                         )
+
+    def test_rerank_score_safety_margin_above_threshold(self) -> None:
+        """All correctly-routed cases have rerank_score above threshold with margin.
+
+        Thresholds in frame_templates.v1.json were calibrated against rule_score.
+        Since ScoredCandidate.score now returns rerank_score (which weights rule_score
+        at 0.40×), this test empirically verifies that the effective threshold remains
+        safe: no correct case is within 0.05 of the template threshold.
+        """
+        margins: list[float] = []
+        for pair in self.pairs_payload["pairs"]:
+            expected = pair.get("expected_top_frame")
+            if expected is None:
+                continue
+            r = _run_pair(self.linker, self.reranker, pair, self.lexicon)
+            top = r["reranked"][0] if r["reranked"] else None
+            if top is None:
+                continue
+            if top.frame_id == expected:
+                margin = top.rerank_score - top.threshold
+                margins.append(margin)
+                self.assertGreaterEqual(
+                    margin, 0.05,
+                    f"{pair['id']}: rerank_score={top.rerank_score:.4f} "
+                    f"too close to threshold={top.threshold:.2f} "
+                    f"(margin={margin:.4f}) — recalibrate template threshold",
+                )
+        if margins:
+            self.assertGreaterEqual(min(margins), 0.05)
 
     def test_rerank_improves_over_rule_score_on_tiebreak_cases(self) -> None:
         """On tiebreak cases (discriminator=tiebreak_requires_reranker), the
