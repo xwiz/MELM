@@ -96,6 +96,30 @@ def _validate_schema(value: Any, schema: dict[str, Any], path: str = "$") -> Non
             _fail(path, f"must be <= {schema['maximum']}")
 
 
+def _is_compatible_version(current: str, predecessor: str) -> bool:
+    """Return True if *predecessor* version is compatible with *current*.
+
+    Compatibility rule: predecessor major version must be <= current major
+    version, and if majors are equal, predecessor minor must be <= current minor.
+    This allows v2.x to consume v1.x contracts, but not vice versa.
+    """
+    try:
+        c_parts = [int(p) for p in current.split(".")]
+        p_parts = [int(p) for p in predecessor.split(".")]
+    except ValueError:
+        return False
+    # Pad to at least 2 parts
+    while len(c_parts) < 2:
+        c_parts.append(0)
+    while len(p_parts) < 2:
+        p_parts.append(0)
+    if p_parts[0] > c_parts[0]:
+        return False
+    if p_parts[0] == c_parts[0] and p_parts[1] > c_parts[1]:
+        return False
+    return True
+
+
 @dataclass(frozen=True)
 class ContractRegistry:
     schema_id: str
@@ -124,12 +148,36 @@ class ContractRegistry:
         return load_contract_json(path)
 
     def check_compatibility(self) -> list[str]:
+        import hashlib
         errors: list[str] = []
         for schema_id, entry in self.contracts.items():
+            # Verify loaded artifact hash matches stored schema_hash.
+            artifact_path = str(entry.get("path", ""))
+            stored_hash = str(entry.get("schema_hash", ""))
+            if artifact_path and stored_hash:
+                try:
+                    full_content = (CONTRACT_ROOT / artifact_path).read_bytes()
+                    actual_hash = hashlib.sha256(full_content).hexdigest()[:16]
+                    if actual_hash != stored_hash:
+                        errors.append(
+                            f"{schema_id}: schema_hash mismatch "
+                            f"(expected {stored_hash!r}, got {actual_hash!r})"
+                        )
+                except Exception as exc:
+                    errors.append(f"{schema_id}: cannot verify schema_hash: {exc}")
+            # Verify predecessor existence and version compatibility.
+            current_version = str(entry.get("version", "0.0.0"))
             for pred in entry.get("compatible_predecessors", []):
                 if pred not in self.contracts:
                     errors.append(
                         f"{schema_id}: compatible_predecessor {pred!r} not found in registry"
+                    )
+                    continue
+                pred_version = str(self.contracts[pred].get("version", "0.0.0"))
+                if not _is_compatible_version(current_version, pred_version):
+                    errors.append(
+                        f"{schema_id}: version {current_version!r} is not compatible "
+                        f"with predecessor {pred!r} at {pred_version!r}"
                     )
         return errors
 
@@ -145,9 +193,15 @@ def validate_contract_registry(payload: dict[str, Any]) -> None:
         path = f"$.contracts[{index}]"
         if not isinstance(entry, dict):
             _fail(path, "must be an object")
-        for key in ("schema_id", "owner", "failure_behavior", "safety_critical", "compatible_predecessors"):
+        for key in ("schema_id", "owner", "failure_behavior", "safety_critical", "compatible_predecessors", "version", "schema_hash"):
             if key not in entry:
                 _fail(path, f"missing required property {key!r}")
+        version = str(entry.get("version", ""))
+        if not version:
+            _fail(f"{path}.version", "must be a non-empty string")
+        schema_hash = str(entry.get("schema_hash", ""))
+        if not schema_hash or len(schema_hash) != 16 or not all(c in "0123456789abcdef" for c in schema_hash):
+            _fail(f"{path}.schema_hash", "must be a 16-character lowercase hex string")
         predecessors = entry["compatible_predecessors"]
         if not isinstance(predecessors, list) or any(not isinstance(p, str) for p in predecessors):
             _fail(f"{path}.compatible_predecessors", "must be an array of strings")
@@ -665,6 +719,37 @@ def load_answer_templates() -> dict[str, Any]:
     return dict(payload["intents"])
 
 
+def validate_open_domain_templates(payload: dict[str, Any]) -> None:
+    if payload.get("schema_id") != "melm.open_domain_templates.v1":
+        _fail("$.schema_id", "must equal 'melm.open_domain_templates.v1'")
+    intents = payload.get("intents")
+    if not isinstance(intents, dict) or not intents:
+        _fail("$.intents", "must be a non-empty object")
+    for intent, entry in intents.items():
+        path = f"$.intents.{intent}"
+        if not isinstance(entry, dict):
+            _fail(path, "must be an object")
+        templates = entry.get("templates")
+        if not isinstance(templates, dict) or not templates:
+            _fail(f"{path}.templates", "must be a non-empty object")
+        for key, val in templates.items():
+            if not isinstance(val, str) or not val:
+                _fail(f"{path}.templates.{key}", "must be a non-empty string")
+        if "requires_evidence" in entry:
+            req = entry["requires_evidence"]
+            if not isinstance(req, list) or not req:
+                _fail(f"{path}.requires_evidence", "must be a non-empty array of strings")
+            for item in req:
+                if not isinstance(item, str) or not item:
+                    _fail(f"{path}.requires_evidence", "each entry must be a non-empty string")
+
+
+def load_open_domain_templates() -> dict[str, Any]:
+    payload = load_contract_json("open_domain_templates.v1.json")
+    validate_open_domain_templates(payload)
+    return dict(payload["intents"])
+
+
 def validate_memory_insights(payload: dict[str, Any]) -> None:
     if payload.get("schema_id") != "melm.memory_insights.v1":
         _fail("$.schema_id", "must equal 'melm.memory_insights.v1'")
@@ -914,3 +999,55 @@ def validate_model_manifest(payload: dict[str, Any]) -> None:
         _fail("$.max_tokens", "must be an integer")
     if not isinstance(payload.get("context_window"), int):
         _fail("$.context_window", "must be an integer")
+
+
+def validate_pi_benchmark(payload: dict[str, Any]) -> None:
+    if payload.get("schema_id") != "melm.pi_benchmark.v1":
+        _fail("$.schema_id", "must equal 'melm.pi_benchmark.v1'")
+    for key in ("measurements", "recorded_at", "go_no_go"):
+        if key not in payload:
+            _fail(f"$.{key}", "is required")
+    go_no_go = payload["go_no_go"]
+    if not isinstance(go_no_go, dict):
+        _fail("$.go_no_go", "must be an object")
+    for key in ("template_fallback_ready", "model_loaded", "pi_target_met"):
+        if key not in go_no_go:
+            _fail(f"$.go_no_go.{key}", "is required")
+        if not isinstance(go_no_go[key], bool) and go_no_go[key] is not None:
+            _fail(f"$.go_no_go.{key}", "must be a boolean or null")
+
+
+def load_pi_benchmark() -> dict[str, Any]:
+    payload = load_contract_json("pi_benchmark.v1.json")
+    validate_pi_benchmark(payload)
+    return dict(payload)
+
+
+def validate_uol_normative_cases(payload: dict[str, Any]) -> None:
+    if payload.get("schema_id") != "melm.uol_normative_cases.v1":
+        _fail("$.schema_id", "must equal 'melm.uol_normative_cases.v1'")
+    cases = payload.get("cases")
+    if not isinstance(cases, list) or not cases:
+        _fail("$.cases", "must be a non-empty array")
+    for index, case in enumerate(cases):
+        path = f"$.cases[{index}]"
+        if not isinstance(case, dict):
+            _fail(path, "must be an object")
+        for key in ("utterance", "speech_act", "subject", "action", "object", "target"):
+            if key not in case:
+                _fail(path, f"missing required property {key!r}")
+            if not isinstance(case[key], str):
+                _fail(f"{path}.{key}", "must be a string")
+        utterance = case["utterance"]
+        if not utterance:
+            _fail(f"{path}.utterance", "must be non-empty")
+        if case["speech_act"] not in {"request", "wh_question", "yes_no_question", "statement", "greeting"}:
+            _fail(f"{path}.speech_act", "must be a valid speech act")
+    if len(cases) < 60:
+        _fail("$.cases", f"must contain at least 60 cases (got {len(cases)})")
+
+
+def load_uol_normative_cases() -> list[dict[str, str]]:
+    payload = load_contract_json("uol_normative_cases.v1.json")
+    validate_uol_normative_cases(payload)
+    return list(payload["cases"])
