@@ -1,0 +1,24 @@
+{
+  "schema_id": "melm.story_plan_schema.v1",
+  "version": "1.0.0",
+  "story_plan_fields": {
+    "lesson": "string",
+    "themes": "array:string",
+    "protagonist_name": "string",
+    "scene_suggestion": "integer",
+    "length_guide": "string",
+    "cultural_texture": "string",
+    "setting_location": "string",
+    "personal_facts": "array:string",
+    "recent_context": "array:string",
+    "literary_devices": "array:string",
+    "mood_tone": "string",
+    "plan_signature": "string"
+  },
+  "required": [
+    "lesson", "themes", "protagonist_name", "scene_suggestion",
+    "length_guide", "cultural_texture", "setting_location",
+    "personal_facts", "recent_context", "literary_devices",
+    "mood_tone", "plan_signature"
+  ]
+}
