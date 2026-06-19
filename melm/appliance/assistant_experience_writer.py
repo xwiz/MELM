@@ -86,6 +86,15 @@ def record_conversation_experience(
         entity_id, "intent_achieved", intent_achieved,
         provenance="experience_writer",
     )
+    # Check for novelty candidates and set follow_up if found
+    if store is not None:
+        try:
+            entities = store.find_entities(kind="novelty_candidate")
+            if entities:
+                store.set_entity_slot(entity_id, "follow_up", f"novelty_review:{len(entities)} items")
+                store.set_entity_slot(entity_id, "intent_achieved", "partial")
+        except Exception:
+            pass
     return entity_id
 
 
@@ -135,10 +144,13 @@ def _compute_polarity(
     synthesis: BoundedSynthesisResult | None,
     decision: AssistantDecision,
 ) -> float:
-    """Derive the ``polarity`` slot from the synthesis result and decision.
-
-    Current implementation is deliberately simple — polarity defaults to 0.0
-    (neutral).  A future enhancement could inspect evidence quality, the
-    presence of positive/negative UOL frame roles, or user feedback.
-    """
+    affect = decision.utterance_affect
+    if affect is None:
+        return 0.0
+    if isinstance(affect, dict):
+        if affect.get("confidence", 0) > 0:
+            return affect.get("valence", 0.0)
+        return 0.0
+    if getattr(affect, "confidence", 0) > 0:
+        return affect.valence
     return 0.0
