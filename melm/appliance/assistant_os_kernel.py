@@ -275,6 +275,7 @@ class AssistantOSKernel:
         self.events: list[AssistantMemoryEvent] = []
         self.executed_jobs: list[str] = []
         self.last_synthesis: BoundedSynthesisResult | None = None
+        self._pending_greeting_context: str | None = None
         self.last_response_integrity: ResponseIntegrityAssessment | None = None
         self._current_self_status: dict[str, Any] = {}
         if self.store is not None:
@@ -304,11 +305,56 @@ class AssistantOSKernel:
                 "contract compatibility errors:\n" + "\n".join(errors)
             )
 
+    def start(self) -> None:
+        """Start background runner (no-op — passive by default)."""
+        pass
+
+    def stop(self) -> None:
+        """Stop background runner (no-op — passive by default)."""
+        pass
+
+    def _is_new_session(self) -> bool:
+        """Detect if this is the first handle() call of a new session."""
+        if self.store is None:
+            return False
+        if not hasattr(self, '_last_session_id') or self._last_session_id is None:
+            return True
+        return False
+
     def handle(self, utterance: str) -> AssistantDecision:
+        # Check for deferred-task greeting context at session start
+        if self.store is not None and self._is_new_session():
+            try:
+                from .assistant_skill_greeting_context import build_greeting_context
+                context = build_greeting_context(self.store, "", self.profile)
+                if context:
+                    self._pending_greeting_context = context
+            except Exception:
+                pass
         decision = self.decide(utterance)
         self.remember(decision)
+        # Inject pending greeting context
+        if self._pending_greeting_context and decision.intent == "social_greeting":
+            from dataclasses import replace
+            existing = getattr(decision, "answer", "")
+            new_answer = f"{self._pending_greeting_context} {existing}" if existing else self._pending_greeting_context
+            decision = replace(decision, answer=new_answer)
+            self._pending_greeting_context = None
         self._run_acquisition()
         self._run_user_teaching(utterance)
+        # Persist session mood summary and ambient mood (G3)
+        if self.store is not None and decision.session_mood is not None:
+            mood = decision.session_mood
+            summary = {
+                "session_id": mood.session_id,
+                "user_id": mood.user_id,
+                "turn_count": mood.turn_count,
+                "avg_valence": mood.valence,
+                "avg_arousal": mood.arousal,
+                "valence_trend": 0.0,
+            }
+            self.store.record_session_summary(summary)
+            self.store.set_ambient_mood(mood.valence, mood.arousal)
         return decision
 
     def _run_user_teaching(self, utterance: str) -> None:
@@ -412,6 +458,7 @@ class AssistantOSKernel:
             return autobiographical_recall
         decision = OnDeviceAssistantRouter(
             self.profile,
+            store=self.store,
         ).handle(utterance)
         # Learned-fact lookup for open_domain / unknown: if we have a stored
         # fact matching the extracted topic, answer locally instead of handing
@@ -658,6 +705,9 @@ class AssistantOSKernel:
                     boundary_crossed=self.last_synthesis.boundary_crossed,
                 )
             record_conversation_experience(self.store, decision, self.last_synthesis)
+            # Persist mood state after each turn (G3)
+            if decision.session_mood is not None:
+                self.store.set_mood_state(decision.session_mood)
             debug_parse = parse_assistant_debug_frame(decision.utterance, decision)
             integrity = assess_response_integrity(
                 decision,
@@ -718,59 +768,71 @@ class AssistantOSKernel:
             reason="consent_revoked_user_fact",
         )
 
-    def _local_profile_setup_decision(self, utterance: str) -> AssistantDecision | None:
-        setup = _extract_local_profile_setup(utterance)
-        if setup is None:
-            return None
-        kind, key, value = setup
+    def _apply_profile_setup_fact(
+        self, kind: str, key: str, value: str,
+    ) -> tuple[str, str, str]:
+        """Apply one setup fact to the profile. Returns (evidence_key, label, reason)."""
         if kind == "trusted_contact":
             contacts = dict(self.profile.contacts)
             contacts[key] = value
             self.profile = replace(self.profile, contacts=contacts)
-            evidence_key = f"contacts.{key}"
-            answer = f"I will remember {key} as a trusted contact on this device."
-            reason = "consented_trusted_contact_stored"
-        elif kind == "profile_fact":
-            evidence_key = key
+            return f"contacts.{key}", f"{key} as a trusted contact", "consented_trusted_contact_stored"
+        if kind == "profile_fact":
             if key == "profile.age":
                 self.profile = replace(self.profile, age=int(value))
-                answer = "I will remember your age locally on this device."
-            elif key == "profile.location":
+                return key, f"age ({value})", "profile_update"
+            if key == "profile.location":
                 self.profile = replace(self.profile, location=value)
-                answer = "I will remember your location locally on this device."
-            elif key == "profile.user_name":
+                return key, f"location ({value})", "profile_update"
+            if key == "profile.user_name":
                 self.profile = replace(self.profile, user_name=value)
-                answer = "I will remember your name locally on this device."
-            else:
-                facts = dict(self.profile.facts)
-                memory_key = _memory_key(key)
-                facts[memory_key] = value
-                self.profile = replace(self.profile, facts=facts)
-                evidence_key = f"facts.{memory_key}"
-                answer = "I will remember that profile fact locally."
-            reason = "profile_update"
-        elif kind == "preference":
+                return key, f"name ({value})", "profile_update"
+            facts = dict(self.profile.facts)
+            memory_key = _memory_key(key)
+            facts[memory_key] = value
+            self.profile = replace(self.profile, facts=facts)
+            return f"facts.{memory_key}", f"{memory_key.replace('_', ' ')} ({value})", "profile_update"
+        if kind == "preference":
             preferences = dict(self.profile.preferences)
             preferences[key] = value
             culture = "Yoruba" if re.search(r"\byoruba\b", value, flags=re.IGNORECASE) else self.profile.culture
             self.profile = replace(self.profile, preferences=preferences, culture=culture)
-            evidence_key = f"preferences.{key}"
-            answer = f"I will remember your {key.replace('_', ' ')} locally on this device."
-            reason = "profile_update"
-        else:
-            facts = dict(self.profile.facts)
-            facts[key] = value
-            self.profile = replace(self.profile, facts=facts)
-            evidence_key = f"facts.{key}"
-            answer = f"I will remember your {key.replace('_', ' ')} locally."
-            reason = f"consented_{kind}_stored"
+            return f"preferences.{key}", f"{key.replace('_', ' ')}", "profile_update"
+        facts = dict(self.profile.facts)
+        facts[key] = value
+        self.profile = replace(self.profile, facts=facts)
+        return f"facts.{key}", f"{key.replace('_', ' ')} ({value})", f"consented_{kind}_stored"
+
+    def _local_profile_setup_decision(self, utterance: str) -> AssistantDecision | None:
+        setups = _extract_local_profile_setups(utterance)
+        if not setups:
+            return None
+        evidence_keys: list[str] = []
+        labels: list[str] = []
+        reasons: list[str] = []
+        only_contacts = True
+        for kind, key, value in setups:
+            if kind != "trusted_contact":
+                only_contacts = False
+            evidence_key, label, reason = self._apply_profile_setup_fact(kind, key, value)
+            evidence_keys.append(evidence_key)
+            labels.append(label)
+            reasons.append(reason)
         self.self_model = self._self_model_from_profile(self.profile)
+        if len(labels) == 1:
+            joined = labels[0]
+        else:
+            joined = ", ".join(labels[:-1]) + f" and {labels[-1]}"
+        answer = f"I will remember your {joined} locally on this device."
+        # Single fact keeps its specific reason; a compound profile statement
+        # reports the generic profile_update.
+        reason = reasons[0] if len(reasons) == 1 else "profile_update"
         return AssistantDecision(
             utterance=utterance,
-            intent="personal_memory" if kind != "trusted_contact" else "social_contact",
+            intent="social_contact" if only_contacts else "personal_memory",
             route="local_answer",
             answer=answer,
-            evidence_keys=(evidence_key,),
+            evidence_keys=tuple(evidence_keys),
             local_memory_used=True,
             confidence=0.96,
             reason=reason,
@@ -2007,6 +2069,81 @@ def _extract_local_profile_setup(utterance: str) -> tuple[str, str, str] | None:
     if household is not None:
         return household
     return None
+
+
+def _split_setup_clauses(text: str) -> list[str]:
+    """Split a compound profile sentence into clauses.
+
+    Boundaries: sentence terminators, semicolons, commas, and the conjunction
+    'and'. Clause-anchored extraction lets each clause's ``$``-anchored pattern
+    match independently, so 'My name is Ade. I live in Lagos.' yields both facts.
+    """
+    parts = re.split(r"[.;\n!?]+|,|\band\b", text, flags=re.IGNORECASE)
+    return [p.strip() for p in parts if p.strip()]
+
+
+# Factual attributes that can co-occur in one sentence and should each be stored.
+_COMPOUND_PROFILE_KEYS = ("profile.user_name", "profile.location", "profile.age")
+
+
+def _extract_basic_profile_facts(text: str, normalized: str) -> list[tuple[str, str, str]]:
+    """Basic profile facts in *text*.
+
+    The full-text pass yields the primary fact and preserves multi-part values
+    (e.g. a story preference containing 'and'). A clause scan then adds any
+    *additional* factual attributes (name/location/age) so compound statements
+    like 'My name is Ade. I live in Lagos.' capture both.
+    """
+    facts: list[tuple[str, str, str]] = []
+    seen: set[str] = set()
+    # Clause scan for short factual attributes (name/location/age): each clause
+    # is anchored, so values stay clean even when several appear in one sentence.
+    for clause in _split_setup_clauses(text):
+        fact = _extract_basic_profile_setup(clause, clause.lower())
+        if fact is not None and fact[1] in _COMPOUND_PROFILE_KEYS and fact[1] not in seen:
+            facts.append(fact)
+            seen.add(fact[1])
+    # Full-text pass for non-attribute facts (e.g. a story preference whose value
+    # may legitimately contain 'and'); never re-split those.
+    full = _extract_basic_profile_setup(text, normalized)
+    if full is not None and full[1] not in _COMPOUND_PROFILE_KEYS and full[1] not in seen:
+        facts.append(full)
+        seen.add(full[1])
+    return facts
+
+
+def _extract_local_profile_setups(utterance: str) -> list[tuple[str, str, str]]:
+    """All consented setup facts in one utterance (compound-aware).
+
+    Single-fact extractors (contact/child/routine/household) contribute at most
+    one fact; basic profile facts are clause-split so name+location+age in one
+    sentence are all captured. De-duplicated by key.
+    """
+    text = " ".join(utterance.strip().split())
+    normalized = text.lower()
+    if not text or "?" in text:
+        return []
+    collected: list[tuple[str, str, str]] = []
+    contact = _extract_trusted_contact_setup(text, normalized)
+    if contact is not None:
+        collected.append(contact)
+    child = _extract_child_setup(text, normalized)
+    if child is not None:
+        collected.append(child)
+    collected.extend(_extract_basic_profile_facts(text, normalized))
+    routine = _extract_routine_setup(text, normalized)
+    if routine is not None:
+        collected.append(routine)
+    household = _extract_household_setup(text, normalized)
+    if household is not None:
+        collected.append(household)
+    seen: set[str] = set()
+    result: list[tuple[str, str, str]] = []
+    for fact in collected:
+        if fact[1] not in seen:
+            result.append(fact)
+            seen.add(fact[1])
+    return result
 
 
 def _extract_trusted_contact_setup(text: str, normalized: str) -> tuple[str, str, str] | None:
