@@ -19,19 +19,101 @@ from dataclasses import dataclass, field, replace
 from pathlib import Path
 from typing import Any, Literal
 
-from melm.contracts import load_food_tags, load_meal_scopes, load_router_semantic_aliases, load_weather_concepts
+from melm.contracts import load_food_tags, load_igbo_greetings, load_igbo_lexicon_seed, load_meal_scopes, load_router_semantic_aliases, load_yoruba_greetings, load_swahili_greetings
 
 from .assistant_skill_meal import MealSuggestion, suggest_meal
 
 from .functional_grammar import (
     FunctionalParse,
+    _lemma,
     functional_frame_kind,
     parse_functional_relations,
     set_uol_lexicon,
 )
 from .assistant_lexicon_legacy import build_legacy_in_memory_lexicon
-from .assistant_frame_linker import FrameLinker
+from .assistant_frame_linker import FrameCandidate, FrameLinker
 from .assistant_frame_ranker import E3CandidateReranker
+from .language_adapters import SyntaxGraph, build_syntax_graph, detect_language, get_adapter
+from .language_adapters.igbo import seed_igbo_lexicon
+from .uol_atomizer import atomize_syntax_graph
+from .assistant_mood_engine import (
+    MoodState,
+    compute_utterance_affect,
+    detect_identity_claim,
+    detect_identity_probe,
+    initial_mood_from_baseline,
+    load_affect_lexicon,
+    load_mood_regions,
+    load_response_pools,
+    update_session_mood,
+)
+from .uol_types import AffectSignal
+
+import functools
+
+_MORAL_ENGINE: Any | None = None
+
+# Maps surface entity types to verb_states.v1.json semantic class labels
+_PATIENT_TYPE_CLASS_MAP: dict[str, str] = {
+    "person": "person", "people": "person", "someone": "person", "anyone": "person",
+    "man": "person", "woman": "person", "child": "person", "kid": "person",
+    "animal": "living_thing.animal", "dog": "living_thing.animal", "cat": "living_thing.animal",
+    "pet": "living_thing.animal",
+    "clothes": "clothing_item", "shirt": "clothing_item", "pants": "clothing_item",
+    "shorts": "clothing_item", "jacket": "clothing_item", "coat": "clothing_item",
+    "clothing": "clothing_item", "dress": "clothing_item", "shoe": "clothing_item",
+    "wall": "physical_object", "table": "physical_object",
+    "group": "group", "team": "group", "crowd": "group",
+}
+
+def _resolve_patient_type(patient_raw: str) -> str:
+    """Map surface patient text to verb_states semantic class label."""
+    return _PATIENT_TYPE_CLASS_MAP.get(patient_raw, "person")
+
+def _lazy_moral_engine():
+    global _MORAL_ENGINE
+    if _MORAL_ENGINE is None:
+        from melm.appliance.reasoning.implications import derive_moral_context
+        from melm.contracts import load_contract_json
+        verb_data = load_contract_json("verb_states.v1.json")
+        valence_data = load_contract_json("state_valences.v1.json").get("valences", {})
+        _MORAL_ENGINE = functools.lru_cache(maxsize=128)(
+            lambda v, p: derive_moral_context(v, p, verb_data, valence_data)
+        )
+    return _MORAL_ENGINE
+
+
+def _extract_verb(functional_parse=None, uol_act=None):
+    """Extract verb lemma from whichever parse is available."""
+    if functional_parse is not None:
+        action = getattr(functional_parse, "action", None)
+        if action and isinstance(action, str):
+            return action.strip().lower()
+    if uol_act is not None:
+        content = uol_act.get("content") if isinstance(uol_act, dict) else None
+        if content and isinstance(content, list) and len(content) > 0:
+            first = content[0] if isinstance(content[0], dict) else {}
+            pred = first.get("predicate", {}) if isinstance(first, dict) else {}
+            lemma = pred.get("lemma") if isinstance(pred, dict) else None
+            if lemma and isinstance(lemma, str):
+                return lemma.strip().lower()
+    return ""
+
+
+def _extract_patient_type(functional_parse=None, uol_act=None):
+    """Extract patient/object entity type from parse."""
+    if functional_parse is not None:
+        obj = getattr(functional_parse, "object", None)
+        if obj and isinstance(obj, str):
+            return obj.strip().lower()
+    if uol_act is not None:
+        content = uol_act.get("content") if isinstance(uol_act, dict) else None
+        if content and isinstance(content, list) and len(content) > 0:
+            first = content[0] if isinstance(content[0], dict) else {}
+            for role in first.get("roles", []) if isinstance(first, dict) else []:
+                if isinstance(role, dict) and role.get("role") in ("theme", "patient"):
+                    return role.get("value", "").lower()
+    return ""
 
 AssistantIntent = Literal[
     "assistant_identity",
@@ -70,6 +152,7 @@ class LocalAssistantProfile:
     age: int = 7
     location: str = "Lagos"
     culture: str = "Yoruba"
+    language_preference: str = "english"
     facts: dict[str, str] = field(
         default_factory=lambda: {
             "favorite_color": "green",
@@ -106,6 +189,7 @@ class LocalAssistantProfile:
     )
     media_library: tuple[str, ...] = ("calm piano", "rain sounds")
     food_inventory: tuple[str, ...] = ("rice", "beans", "eggs", "plantain", "fruit")
+    user_id: str = "default"
 
 
 @dataclass(frozen=True)
@@ -125,6 +209,121 @@ class AssistantDecision:
     semantic_classes_activated: frozenset[str] = frozenset()
     slot_states: dict[str, str] = field(default_factory=dict)  # slot_name → state constant
     functional_parse: dict[str, Any] | None = None
+    uol_act: dict[str, Any] | None = None
+    utterance_affect: Any = None
+    session_mood: Any = None
+    intent_occurrence: int = 0
+    rapid_occurrence: int = 0
+    active_user_id: str = "default"
+    familiarity: int = 0
+    # Boundary fields for cross-turn behavior context (slice 1).
+    prev_mood: Any = None
+    prev_intent: str = ""
+    ambient_valence: float = 0.0
+    ambient_valence_delta: float = 0.0
+    # Reasoning-layer outputs marshalled to synthesis (slice 4).
+    reasoning_result: dict | None = None
+    reasoning_provenance: dict | None = None
+    refusal_signal: str | None = None
+
+
+@dataclass(frozen=True)
+class _ParseBundle:
+    language: str
+    text: str
+    tokens: tuple[str, ...]
+    syntax_graph: SyntaxGraph
+    functional_parse: FunctionalParse | None
+    uol_act: dict[str, Any] | None
+    lemmas: tuple[str, ...] = ()
+    informal_affect: tuple[dict[str, Any], ...] = ()
+    last_intent: str = ""
+
+
+def _build_parse_bundle(utterance: str, last_intent: str = "") -> _ParseBundle:
+    detected_lang, _conf = detect_language(utterance)
+    adapter = get_adapter(detected_lang)
+    # Layer 0 surface repair (slang/abbreviation/typo expansion) before
+    # normalize/tokenize, so "gimme a story" parses like "give me a story".
+    if adapter is not None and hasattr(adapter, "correct"):
+        utterance = adapter.correct(utterance)
+    text = adapter.normalize(utterance) if adapter else _normalize(utterance)
+    tokens = adapter.tokenize(text) if adapter else _tokenize(text)
+
+    # Phase 2: Strip noise tokens from parse, collect as informal affect signals
+    from melm.contracts.validation import load_noise_tokens, ContractValidationError
+    try:
+        noise = load_noise_tokens()
+    except (ContractValidationError, OSError):
+        noise = {}
+    content_tokens = []
+    informal_affect = []
+    for t in tokens:
+        entry = noise.get(t.lower())
+        if entry and entry.get("strip_from_parse", True):
+            v = entry.get("valence", 0.0)
+            a = entry.get("arousal", 0.0)
+            if v != 0.0 or a != 0.0:
+                informal_affect.append({
+                    "valence": v,
+                    "arousal": a,
+                    "tags": entry.get("tags", []),
+                    "confidence": 0.4,
+                    "source": "informal",
+                })
+        else:
+            content_tokens.append(t)
+    stripped = tuple(content_tokens) if content_tokens else tokens
+    lemmas = tuple(_lemma(t) for t in stripped)
+
+    syntax_graph = (
+        adapter.tag(stripped)
+        if adapter is not None
+        else build_syntax_graph(detected_lang, stripped, stripped)
+    )
+    parse = parse_functional_relations(
+        stripped,
+        question_mark="?" in text,
+        language=detected_lang,
+    )
+    act = atomize_syntax_graph(syntax_graph)
+    return _ParseBundle(
+        language=detected_lang,
+        text=text,
+        tokens=stripped,
+        syntax_graph=syntax_graph,
+        functional_parse=parse,
+        uol_act=act.to_dict() if act is not None else None,
+        lemmas=lemmas,
+        informal_affect=tuple(informal_affect),
+        last_intent=last_intent,
+    )
+
+
+def _aggregate_informal_affect(entries: tuple[dict[str, Any], ...]) -> AffectSignal | None:
+    """Aggregate stripped informal tokens (lol/haha/yay/ugh) into one signal.
+
+    Used as a low-priority fallback when no lexicon/UOL/perception affect is
+    present, so a bare ``"haha"`` or ``"ugh"`` still registers speaker mood
+    instead of being silently dropped.
+    """
+    valid = [e for e in entries if e]
+    if not valid:
+        return None
+    n = len(valid)
+    valence = sum(float(e.get("valence", 0.0)) for e in valid) / n
+    arousal = sum(float(e.get("arousal", 0.0)) for e in valid) / n
+    tags: set[str] = set()
+    for e in valid:
+        tags.update(e.get("tags", []))
+    confidence = max(float(e.get("confidence", 0.4)) for e in valid)
+    return AffectSignal(
+        valence=valence,
+        arousal=arousal,
+        confidence=confidence,
+        source="informal",
+        dominant_tags=tuple(sorted(tags)),
+    )
 
 
 @dataclass(frozen=True)
@@ -174,20 +373,17 @@ class AssistantFrameRegistry:
         text: str,
         tokens: tuple[str, ...],
         intent: AssistantIntent,
+        *,
+        question_like: bool | None = None,
+        functional_parse: FunctionalParse | None = None,
     ) -> AssistantFrameMatch | None:
-        if intent == "assistant_identity":
-            composition = _identity_composition(text, tokens)
-        elif intent == "assistant_status":
-            composition = _self_status_composition(text, tokens)
-        elif intent in {
-            "social_greeting",
-            "assistant_behavior",
-            "personal_goal_advice",
-            "open_domain",
-        }:
-            composition = _functional_relation_composition(text, tokens, intent)
-        else:
-            composition = _semantic_slot_composition(text, tokens, intent)
+        composition = _compose_primary_frame(
+            text,
+            tokens,
+            intent,
+            question_like=question_like,
+            functional_parse=functional_parse,
+        )
         if composition is None:
             return None
         return AssistantFrameMatch(
@@ -267,34 +463,555 @@ class OnDeviceAssistantRouter:
     def __init__(
         self,
         profile: LocalAssistantProfile | None = None,
+        store: Any = None,
     ) -> None:
         self.profile = profile or LocalAssistantProfile()
+        self.store = store
+        self._mood_state: dict[str, MoodState] = {}
+        self._rapid_state: dict[str, dict[str, Any]] = {}
+        self._mood_regions_cache: list[dict[str, Any]] = []
+        self._affect_lexicon_cache: dict[str, Any] = {}
+        self._pools_cache: dict[str, Any] = {}
+        self._mood_regions_loaded: bool = False
 
-    def handle(self, utterance: str) -> AssistantDecision:
+    def _build_parse_bundle(self, utterance: str, last_intent: str = "") -> _ParseBundle:
+        return _build_parse_bundle(utterance, last_intent=last_intent)
+
+    def _mood_regions(self) -> list[dict[str, Any]]:
+        if not self._mood_regions_loaded:
+            self._mood_regions_cache = load_mood_regions()
+            self._mood_regions_loaded = True
+        return self._mood_regions_cache
+
+    def _affect_lexicon(self) -> dict[str, Any]:
+        if not self._affect_lexicon_cache:
+            self._affect_lexicon_cache = load_affect_lexicon()
+        return self._affect_lexicon_cache
+
+    def _pools(self) -> dict[str, Any]:
+        if not self._pools_cache:
+            self._pools_cache = load_response_pools()
+        return self._pools_cache
+
+    def _mood_regions_list(self) -> list[dict[str, Any]]:
+        raw = self._mood_regions()
+        moods = raw.get("moods", {})
+        return list(moods.values()) if isinstance(moods, dict) else moods
+
+    def _load_or_init_mood(
+        self, user_id: str,
+    ) -> MoodState:
+        from datetime import datetime, timezone
+        regions = self._mood_regions_list()
+        mood = initial_mood_from_baseline(user_id, self.store, regions)
+        if not mood.last_updated:
+            mood.last_updated = datetime.now(timezone.utc).isoformat()
+        return mood
+
+    def _infer_intent_hint(
+        self, uol_act: dict[str, Any] | None,
+    ) -> str | None:
+        if uol_act is None:
+            return None
+        content = uol_act.get("content", [])
+        if not content:
+            return None
+        main = content[0]
+        pred = main.get("predicate", {})
+        pred_id = str(pred.get("id", "")).strip().lower()
+        affect = self._affect_lexicon()
+        entry = affect.get(pred_id) or affect.get(pred_id.rstrip("s"))
+        if entry is not None:
+            return entry.get("intent_hint")
+        return None
+
+    def _build_turn_context(
+        self, utterance: str, parse_bundle: _ParseBundle,
+    ) -> dict[str, Any]:
+        user_id = self.profile.user_id
+        session_id = self.store.current_session_id() if self.store is not None else ""
+        if user_id not in self._mood_state:
+            self._mood_state[user_id] = self._load_or_init_mood(user_id)
+            self._rapid_state[user_id] = {"count": 0, "last_utterance": ""}
+        current_mood = self._mood_state[user_id]
+        rapid = self._rapid_state[user_id]
+
+        # Previous-turn state from the persistent store. The router is rebuilt
+        # per turn (kernel constructs a fresh one), so cross-turn context must
+        # come from the store, not router instance state.
+        prev_mood = None
+        prev_intent = ""
+        prev_ambient = 0.0
+        if self.store is not None:
+            try:
+                prev_mood = self.store.current_mood_state(session_id, user_id)
+            except Exception:
+                prev_mood = None
+            try:
+                prev_intent = self.store.previous_intent(session_id)
+            except Exception:
+                prev_intent = ""
+            try:
+                ambient = self.store.load_ambient_mood()
+                if ambient is not None:
+                    prev_ambient = float(ambient.get("valence", 0.0) or 0.0)
+            except Exception:
+                prev_ambient = 0.0
+
+        familiarity = 0
+        if self.store is not None:
+            try:
+                summaries = self.store.query_session_summaries(user_id, limit=100)
+                familiarity = len(summaries) if summaries else 0
+            except Exception:
+                familiarity = 0
+
+        affect = AffectSignal()
+        uol_act = parse_bundle.uol_act
+        affect_lexicon = self._affect_lexicon()
+        inferred = compute_utterance_affect(parse_bundle.lemmas, uol_act, affect_lexicon)
+        if inferred is not None and inferred.confidence > 0:
+            affect = inferred
+        elif parse_bundle.informal_affect:
+            # Fallback: bare informal tokens (lol/haha/ugh) carry the only mood.
+            informal = _aggregate_informal_affect(parse_bundle.informal_affect)
+            if informal is not None:
+                affect = informal
+
+        # Rapid repetition: track consecutive same-utterance text
+        prev_text = rapid.get("last_utterance", "")
+        normalized = utterance.strip().lower()
+        if normalized and normalized == prev_text:
+            rapid["count"] += 1
+        else:
+            rapid["count"] = 0
+            rapid["last_utterance"] = normalized
+
+        short_circuit = self._apply_short_circuits(
+            utterance, parse_bundle, affect, current_mood, rapid,
+        )
+        regions = self._mood_regions_list()
+        updated_mood = update_session_mood(
+            current_mood, affect, user_id, session_id,
+            current_mood.turn_count + 1, regions,
+        )
+        self._mood_state[user_id] = updated_mood
+
+        ambient_valence = prev_ambient
+        ambient_valence_delta = float(updated_mood.valence) - prev_ambient
+
+        return {
+            "user_id": user_id,
+            "session_id": session_id,
+            "utterance_affect": affect,
+            "session_mood": updated_mood,
+            "prev_mood": prev_mood,
+            "prev_intent": prev_intent,
+            "ambient_valence": ambient_valence,
+            "ambient_valence_delta": ambient_valence_delta,
+            "short_circuit": short_circuit,
+            "rapid_count": rapid["count"],
+            "familiarity": familiarity,
+        }
+
+    def _try_reasoning(
+        self, utterance: str, parse_bundle: _ParseBundle,
+    ) -> AssistantDecision | None:
+        """Detect + solve a deterministic reasoning task, or None to fall through.
+
+        Gated by the ``reasoning`` capability family. On a missing-fact refusal,
+        emits a typed refusal decision; on success, an evidence-bound result.
+        """
+        if not _is_family_installed("reasoning"):
+            return None
+        # Knowledge typing — store factual claims as structured propositions
+        knowledge_dec = self._knowledge_decision(utterance, parse_bundle)
+        if knowledge_dec is not None:
+            return knowledge_dec
+        itinerary = self._itinerary_decision(utterance, parse_bundle)
+        if itinerary is not None:
+            return itinerary
+        try:
+            from .reasoning import detect_reasoning_task, solve
+            task = detect_reasoning_task(
+                parse_bundle.text, parse_bundle.tokens, parse_bundle.uol_act,
+            )
+            if task is None:
+                return None
+            if task.get("task") == "self_query":
+                return self._self_query_decision(utterance, task)
+            result, answer, refusal = solve(task)
+        except Exception:
+            return None
+        intent = f"reasoning:{task.get('task', '')}"
+        if refusal is not None:
+            return AssistantDecision(
+                utterance=utterance, intent=intent, route="local_answer",
+                answer=answer or "I need a bit more information to answer that.",
+                refusal_signal=refusal, evidence_keys=("reasoning.refusal",),
+                confidence=0.9, reason=f"reasoning_refusal:{refusal}",
+            )
+        return AssistantDecision(
+            utterance=utterance, intent=intent, route="local_answer",
+            answer=answer, reasoning_result=result,
+            evidence_keys=("reasoning.result",), confidence=0.95,
+            reason="reasoning_solved",
+        )
+
+    def _knowledge_decision(
+        self, utterance: str, parse_bundle: _ParseBundle,
+    ) -> AssistantDecision | None:
+        """Try to classify and store a factual claim from UOL atoms.
+
+        Returns None when the utterance isn't a factual claim, or when the
+        knowledge subsystem isn't available. Returns a decision with the
+        stored-fact acknowledgment or a contradiction prompt.
+        """
+        if self.store is None:
+            return None
+        from .assistant_knowledge import classify_knowledge, extract_proposition
+        uol_act = parse_bundle.uol_act
+        kt = classify_knowledge(uol_act, utterance)
+        if kt not in ("static_fact", "negated_fact", "opinion"):
+            return None
+        prop = extract_proposition(uol_act)
+        if prop is None:
+            return None
+        import uuid
+        eid = f"wf_{uuid.uuid4().hex[:12]}"
+        polarity = "asserted" if kt != "negated_fact" else "negated"
+        self.store.set_world_fact(
+            eid, prop["subject"], prop["relation"], prop["object"],
+            polarity=polarity, provenance="user",
+            confidence=prop.get("confidence", 0.6),
+            source_utterance=utterance,
+        )
+        from melm.contracts.validation import load_knowledge_types
+        kt_data = load_knowledge_types()
+        contradictions = self.store.find_contradicting_facts(
+            prop["subject"], prop["relation"], prop["object"], polarity,
+        )
+        if contradictions:
+            existing = contradictions[0]
+            prop_str = f"{prop['subject']} {prop['relation']} {prop['object']}"
+            if existing.get("confidence", 0) >= prop.get("confidence", 0.6):
+                answer = kt_data.get("truth_arbitration", {}).get(
+                    "contradiction_prompt", "That differs from what I have."
+                ).replace("{proposition}", prop_str)
+                return AssistantDecision(
+                    utterance=utterance, intent="personal_memory", route="local_answer",
+                    answer=answer, reasoning_result={"task": "knowledge_contradiction",
+                        "proposition": prop_str, "stored_polarity": existing.get("polarity", "")},
+                    evidence_keys=(f"world_fact.{eid}",), confidence=0.9,
+                    reason="knowledge_contradiction",
+                )
+        # Positive ack
+        prop_str = f"{prop['subject']} {prop['relation']} {prop['object']}"
+        if kt == "negated_fact":
+            negated = f"{prop['subject']} is not {prop['object']}"
+            answer = kt_data.get("truth_arbitration", {}).get(
+                "negate_ack", "I will remember that {negation}."
+            ).replace("{negation}", negated)
+        elif kt == "opinion":
+            answer = f"I hear your opinion about {prop['subject']}."
+        else:
+            answer = kt_data.get("truth_arbitration", {}).get(
+                "assert_ack", "I will remember that {proposition}."
+            ).replace("{proposition}", prop_str)
+        return AssistantDecision(
+            utterance=utterance, intent="personal_memory", route="local_answer",
+            answer=answer,
+            reasoning_result={"task": "knowledge_write", "proposition": prop_str, "type": kt},
+            evidence_keys=(f"world_fact.{eid}",), confidence=0.9,
+            reason="knowledge_write",
+        )
+
+    def _itinerary_decision(
+        self, utterance: str, parse_bundle: _ParseBundle,
+    ) -> AssistantDecision | None:
+        """Build/answer a multi-turn itinerary scenario from the geo atlas.
+
+        Turn 1 parses + stores the journey; later turns query the bound scenario
+        (duration / total distance / displacement / location-at-time). Returns
+        None when there is neither a new itinerary nor a scenario query, so other
+        routing proceeds.
+        """
+        if self.store is None:
+            return None
+        try:
+            from melm.contracts import load_geo_atlas
+            from .reasoning import clock
+            from .reasoning.itinerary import (
+                detect_itinerary_query, parse_itinerary, solve_itinerary,
+            )
+            atlas = load_geo_atlas()
+            place_names = list(atlas.get("places", {}).keys())
+            text = parse_bundle.text
+            session_id = self.store.current_session_id()
+            query = detect_itinerary_query(text)
+            parsed = parse_itinerary(text, place_names)
+            if parsed is not None:
+                self.store.set_current_scenario(session_id, parsed)
+            scenario = self.store.get_current_scenario(session_id)
+            if scenario is None:
+                return None
+            if query is None:
+                if parsed is None:
+                    return None
+                seq = " -> ".join(p.title() for p in scenario["places"])
+                return AssistantDecision(
+                    utterance=utterance, intent="reasoning:itinerary", route="local_answer",
+                    answer=f"Got it - I'll track this journey: {seq}.",
+                    reasoning_result={"task": "itinerary", "query": "summary",
+                                      "places": scenario["places"]},
+                    evidence_keys=("reasoning.result",), confidence=0.9,
+                    reason="reasoning_solved",
+                )
+            result, answer, refusal = solve_itinerary(scenario, atlas, query, clock.now())
+        except Exception:
+            return None
+        if refusal is not None:
+            return AssistantDecision(
+                utterance=utterance, intent="reasoning:itinerary", route="local_answer",
+                answer=answer or "I need a bit more detail about that journey.",
+                refusal_signal=refusal, evidence_keys=("reasoning.refusal",),
+                confidence=0.9, reason=f"reasoning_refusal:{refusal}",
+            )
+        return AssistantDecision(
+            utterance=utterance, intent="reasoning:itinerary", route="local_answer",
+            answer=answer, reasoning_result=result, evidence_keys=("reasoning.result",),
+            confidence=0.95, reason="reasoning_solved",
+        )
+
+    def _self_query_decision(
+        self, utterance: str, task: dict[str, Any],
+    ) -> AssistantDecision | None:
+        """Answer a self-referential probe locally from the identity contract,
+        grounding 'feeling' in the current operating mood."""
+        from melm.contracts import load_assistant_identity
+        category = str(task.get("category", ""))
+        templates = load_assistant_identity()
+        text = templates.get(f"reflection_{category}", "")
+        if not text:
+            return None
+        if category == "feeling":
+            mood = self._mood_state.get(self.profile.user_id)
+            mood_id = getattr(mood, "mood_id", "neutral") if mood else "neutral"
+            text = text.replace("{mood}", mood_id or "neutral")
+        return AssistantDecision(
+            utterance=utterance, intent="reasoning:self_query", route="local_answer",
+            answer=text, reasoning_result={"task": "self_query", "category": category},
+            evidence_keys=("reasoning.result",), confidence=0.95, reason="reasoning_solved",
+        )
+
+    def _occurrence_for(self, intent: str) -> int:
+        """Per-(session,intent) occurrence for the current turn (1-based).
+
+        Reads the store's O(1) in-memory tally of PRIOR turns and adds one for
+        the current turn. Never scans history (anti-regression invariant 5).
+        """
+        if self.store is None:
+            return 0
+        try:
+            sid = self.store.current_session_id()
+            return self.store.get_intent_tally(sid, intent) + 1
+        except Exception:
+            return 0
+
+    def _attach_turn_context(
+        self, decision: AssistantDecision, turn_context: dict[str, Any],
+    ) -> AssistantDecision:
+        """Marshal turn context onto the decision (single source of truth)."""
+        return replace(
+            decision,
+            utterance_affect=turn_context.get("utterance_affect"),
+            session_mood=turn_context.get("session_mood"),
+            intent_occurrence=self._occurrence_for(decision.intent),
+            rapid_occurrence=turn_context.get("rapid_count", 0),
+            active_user_id=turn_context.get("user_id", "default"),
+            prev_mood=turn_context.get("prev_mood"),
+            prev_intent=turn_context.get("prev_intent", ""),
+            ambient_valence=turn_context.get("ambient_valence", 0.0),
+            ambient_valence_delta=turn_context.get("ambient_valence_delta", 0.0),
+            familiarity=turn_context.get("familiarity", 0),
+        )
+
+    def _apply_short_circuits(
+        self,
+        utterance: str,
+        parse_bundle: _ParseBundle,
+        affect: AffectSignal | None,
+        mood: MoodState,
+        rapid: dict[str, Any],
+    ) -> dict[str, Any]:
+        result: dict[str, Any] = {
+            "is_short_circuit": False,
+            "reason": "",
+            "override_intent": None,
+        }
+        uol_act = parse_bundle.uol_act
+        tokens = parse_bundle.tokens
+        # P0-1: Identity claim detection
+        if uol_act is not None and detect_identity_claim(uol_act, tokens) is not None:
+            result["is_short_circuit"] = True
+            result["reason"] = "identity_switch"
+            result["override_intent"] = "assistant_identity"
+            return result
+        # P0-2: Identity probe detection (assistant-directed + UOL identity predicate)
+        tokens_lower = [t.lower() for t in tokens]
+        assistant_directed = (
+            "you" in tokens_lower or "your" in tokens_lower
+        )
+        is_genuine_identity = True
+        if uol_act is not None:
+            identity_predicates = {"who", "what"}
+            content = uol_act.get("content", [])
+            if content:
+                main = content[0] if isinstance(content, list) else content[0]
+                if isinstance(main, dict):
+                    pred_id = str(main.get("predicate", {}).get("id", "")).lower().strip()
+                    if pred_id not in identity_predicates:
+                        is_genuine_identity = False
+                    else:
+                        themes = [
+                            str(r.get("value", ""))
+                            for r in main.get("roles", [])
+                            if r.get("role") == "theme"
+                        ]
+                        # If there's a verb-like theme (not a PROPN), it's not identity
+                        for tv in themes:
+                            if tv and not tv[0].isupper():
+                                is_genuine_identity = False
+                                break
+        if uol_act is not None and assistant_directed and is_genuine_identity and detect_identity_probe(uol_act, tokens):
+            result["is_short_circuit"] = True
+            result["reason"] = "identity_probe_detected"
+            result["override_intent"] = "assistant_identity"
+            return result
+        # P0-3: Complaint detected — acknowledge as assistant_behavior, NOT a greeting.
+        if affect is not None and affect.is_complaint:
+            result["is_short_circuit"] = True
+            result["reason"] = "complaint_acknowledged"
+            result["override_intent"] = "assistant_behavior"
+            return result
+        # P0-4: Rapid repetition
+        if rapid.get("count", 0) >= 2:
+            result["is_short_circuit"] = True
+            result["reason"] = "rapid_repetition"
+            result["override_intent"] = "assistant_status"
+            return result
+        # P0-5: Perception urgency
+        if affect is not None and affect.source == "perception" and affect.confidence >= 0.9:
+            result["is_short_circuit"] = True
+            result["reason"] = "perception_urgency_high"
+            result["override_intent"] = "common_sense_safety"
+            return result
+        return result
+
+    def handle(self, utterance: str, last_intent: str = "") -> AssistantDecision:
         collector: set[str] = set()
         set_semantic_class_collector(collector)
+        parse_bundle = self._build_parse_bundle(utterance, last_intent=last_intent)
+        turn_context = self._build_turn_context(utterance, parse_bundle)
+        sc = turn_context.get("short_circuit", {})
+        if sc.get("is_short_circuit"):
+            set_semantic_class_collector(None)
+            override_intent = sc.get("override_intent", "")
+            sc_reason = sc.get("reason", "short_circuit")
+            if override_intent == "assistant_identity":
+                decision = self._assistant_identity(utterance)
+            elif override_intent == "social_greeting":
+                decision = self._greeting(utterance)
+            elif override_intent == "assistant_status":
+                decision = self._assistant_status(utterance)
+            elif override_intent == "assistant_behavior":
+                decision = self._assistant_behavior(utterance)
+                if sc_reason == "complaint_acknowledged":
+                    decision = replace(
+                        decision,
+                        reason=sc_reason,
+                        answer=(
+                            "I hear you're not satisfied with how I responded. "
+                            "Tell me what went wrong and I'll try to do better."
+                        ),
+                    )
+            elif override_intent == "common_sense_safety":
+                decision = AssistantDecision(
+                    utterance=utterance,
+                    intent="common_sense_safety",
+                    route="local_answer",
+                    answer=(
+                        "That sounds urgent. If there may be danger, "
+                        "move to safety and alert someone now."
+                    ),
+                    evidence_keys=("local_safety_policy.perception_urgency",),
+                    confidence=0.90,
+                    reason=sc_reason,
+                )
+            else:
+                decision = AssistantDecision(
+                    utterance=utterance,
+                    intent=override_intent,
+                    route="local_answer",
+                    answer="",
+                    evidence_keys=("self_model.purpose",),
+                    confidence=0.90,
+                    reason=sc_reason,
+                )
+            return self._attach_turn_context(decision, turn_context)
         try:
-            decision = self._route_impl(utterance)
+            decision = self._route_impl(utterance, parse_bundle=parse_bundle, turn_context=turn_context)
         finally:
             set_semantic_class_collector(None)
         if collector:
             decision = replace(decision, semantic_classes_activated=frozenset(collector))
-        # Thread T1 parse into the decision for downstream synthesis/learning
-        text = _normalize(utterance)
-        tokens = _tokenize(text)
-        parse = parse_functional_relations(tokens, question_mark="?" in text)
-        if parse is not None:
-            decision = replace(decision, functional_parse=parse.to_dict())
+        if parse_bundle.functional_parse is not None:
+            decision = replace(decision, functional_parse=parse_bundle.functional_parse.to_dict())
+            if parse_bundle.uol_act is not None:
+                decision = replace(decision, uol_act=parse_bundle.uol_act)
+        decision = self._attach_turn_context(decision, turn_context)
         return decision
 
-    def _route_impl(self, utterance: str) -> AssistantDecision:
-        text = _normalize(utterance)
-        tokens = _tokenize(text)
+    def _route_impl(self, utterance: str, parse_bundle: _ParseBundle | None = None, turn_context: dict[str, Any] | None = None) -> AssistantDecision:
+        parse_bundle = parse_bundle or self._build_parse_bundle(utterance)
+        # Novelty detection (best-effort side-effect)
+        if self.store is not None and parse_bundle is not None:
+            try:
+                unknown = getattr(parse_bundle, "semantic_unknown_tokens", None)
+                if unknown:
+                    from .assistant_skill_novelty import detect_novelty, record_novelty_candidates
+                    lex_ref = getattr(self, "_uol_lexicon_ref", None)
+                    candidates = detect_novelty(parse_bundle, lex_ref, self.store)
+                    if candidates:
+                        record_novelty_candidates(self.store, candidates)
+            except Exception:
+                pass
+        detected_lang = parse_bundle.language
+        text = parse_bundle.text
+        tokens = parse_bundle.tokens
         intent = _classify_intent_from_uol_slots(
             text,
             tokens,
             trusted_contact_names=tuple(self.profile.contacts),
+            language=detected_lang,
+            parse_bundle=parse_bundle,
+            uol_act=parse_bundle.uol_act,
         )
+        # Commitment extraction (best-effort side-effect)
+        if self.store is not None:
+            try:
+                from .assistant_skill_commitments import extract_commitment, record_commitment
+                commitment = extract_commitment(utterance, parse_bundle)
+                if commitment is not None:
+                    commitment.session_id = getattr(parse_bundle, "session_id", "") if parse_bundle else ""
+                    record_commitment(self.store, commitment)
+            except Exception:
+                pass
+        # Reasoning task signatures outrank closed-intent routing (e.g. quantity
+        # arithmetic outranks meal_suggestion). Falls through when no task matches.
+        reasoning_decision = self._try_reasoning(utterance, parse_bundle)
+        if reasoning_decision is not None:
+            return reasoning_decision
         if intent != "open_domain" and not _is_family_installed(intent):
             return AssistantDecision(
                 utterance=utterance,
@@ -331,11 +1048,17 @@ class OnDeviceAssistantRouter:
         if intent == "weather":
             return self._weather(utterance)
         if intent == "common_sense_safety":
-            return self._safety(utterance)
-        if intent == "media_playback":
-            return self._media(utterance)
+            return self._safety(utterance, parse_bundle)
         if intent == "health_advice":
             return self._health(utterance)
+        music_gen = self._music_generation(text, parse_bundle, turn_context)
+        if music_gen is not None:
+            return music_gen
+        music_disc = self._music_discovery(text, parse_bundle, turn_context)
+        if music_disc is not None:
+            return music_disc
+        if intent == "media_playback":
+            return self._media(utterance)
         if intent == "personal_memory":
             return self._personal_memory(utterance)
         if intent == "meal_suggestion":
@@ -359,7 +1082,31 @@ class OnDeviceAssistantRouter:
         if intent == "personal_goal_advice":
             return _cloud(utterance, intent, reason="understood_personal_goal_advice")
         if intent == "open_domain":
-            return _cloud(utterance, intent, reason="understood_open_domain")
+            return AssistantDecision(
+                utterance=utterance,
+                intent=intent,
+                route="local_answer",
+                answer="",
+                evidence_keys=("self_model.purpose",),
+                confidence=0.74,
+                reason="understood_open_domain",
+            )
+        # Phase 7: Pre-fallthrough absurdity check — if we're about to return
+        # unknown, check if the raw text has a clear social/intent pattern.
+        if intent == "unknown":
+            if _detect_social_status(text):
+                return self._assistant_status(utterance)
+            from melm.appliance.reasoning.typability import classify_utterance_tokens
+            tokens = text.split()
+            if tokens and classify_utterance_tokens(tokens) == "gibberish":
+                return AssistantDecision(
+                    utterance=utterance,
+                    intent="unknown",
+                    route="local_answer",
+                    answer="I did not understand that — could you rephrase?",
+                    confidence=0.3,
+                    reason="gibberish_detected",
+                )
         return AssistantDecision(
             utterance=utterance,
             intent="unknown",
@@ -371,11 +1118,33 @@ class OnDeviceAssistantRouter:
         )
 
     def _greeting(self, utterance: str) -> AssistantDecision:
+        answer = "Hi. What would you like help with?"
+        culture = self.profile.culture.lower()
+        lang = self.profile.language_preference.lower()
+        try:
+            if culture == "yoruba" or lang == "yoruba":
+                greeting_data = load_yoruba_greetings()
+                greeting = greeting_data["greetings"].get("general", "Báwo ni?")
+                answer = f"{greeting}. What would you like help with?"
+            elif culture == "swahili" or lang == "swahili":
+                greeting_data = load_swahili_greetings()
+                greeting = greeting_data["greetings"].get("general", "Habari")
+                answer = f"{greeting}. What would you like help with?"
+            elif culture == "igbo" or lang == "igbo":
+                greeting_data = load_igbo_greetings()
+                greeting = greeting_data["greetings"].get("general", "Ndeewo")
+                answer = f"{greeting}. What would you like help with?"
+        except Exception:
+            pass
+        pools = self._pools()
+        pool = pools.get("social_greeting", [])
+        if pool and not answer:
+            answer = pool[0].get("text", answer)
         return AssistantDecision(
             utterance=utterance,
             intent="social_greeting",
             route="local_answer",
-            answer="Hi. What would you like help with?",
+            answer=answer,
             evidence_keys=("self_model.purpose",),
             confidence=0.98,
             reason="local_social_greeting",
@@ -397,15 +1166,20 @@ class OnDeviceAssistantRouter:
         )
 
     def _assistant_identity(self, utterance: str) -> AssistantDecision:
+        answer = (
+            "I am MELM Local Assistant OS. I run local-first on this device, "
+            "using local memory, cached tools, and confirmed actions before "
+            "asking a larger model."
+        )
+        pools = self._pools()
+        pool = pools.get("assistant_identity", [])
+        if pool:
+            answer = pool[0].get("text", answer)
         return AssistantDecision(
             utterance=utterance,
             intent="assistant_identity",
             route="local_answer",
-            answer=(
-                "I am MELM Local Assistant OS. I run local-first on this device, "
-                "using local memory, cached tools, and confirmed actions before "
-                "asking a larger model."
-            ),
+            answer=answer,
             evidence_keys=(
                 "self_model.name",
                 "self_model.purpose",
@@ -504,14 +1278,37 @@ class OnDeviceAssistantRouter:
             reason="weather_cache_miss",
         )
 
-    def _safety(self, utterance: str) -> AssistantDecision:
+    def _safety(self, utterance: str, parse_bundle: _ParseBundle | None = None) -> AssistantDecision:
         text = _normalize(utterance)
         tokens = _tokenize(text)
         token_set = set(tokens)
+        # Use implication engine for safety detection
+        fp = parse_bundle.functional_parse if parse_bundle is not None else None
+        ua = parse_bundle.uol_act if parse_bundle is not None else None
+        verb = _extract_verb(fp, ua)
+        patient = _extract_patient_type(fp, ua)
+        patient_cls = _resolve_patient_type(patient) if patient else "person"
+        if verb:
+            mc = _lazy_moral_engine()(verb, patient_cls)
+            if not mc.has_implication:
+                from melm.appliance.reasoning.implications import record_verb_candidate
+                record_verb_candidate(verb, patient_cls, utterance)
+            if mc.policy_triggers:
+                return AssistantDecision(
+                    utterance=utterance,
+                    intent="common_sense_safety",
+                    route="local_answer",
+                    answer="",
+                    evidence_keys=("local_safety_policy.clothing_public_school",),
+                    reason="safety_policy_triggered",
+                )
+        # School-clothing-weather policy: weather-contextual clothing advice
+        _nudity_terms = {"naked", "undressed"}
+        _school_clothing_terms = {"wear", "clothes", "coat", "raincoat"}
         if (
-            token_set & {"wear", "clothes", "coat", "raincoat"}
+            _school_clothing_terms & token_set
             and "school" in token_set
-            and "naked" not in token_set
+            and not (_nudity_terms & token_set)
         ):
             weather = self.profile.weekly_weather.get("today")
             if not weather:
@@ -528,19 +1325,35 @@ class OnDeviceAssistantRouter:
                 utterance=utterance,
                 intent="common_sense_safety",
                 route="local_answer",
-                answer="Wear school clothes and carry rain protection if the forecast mentions rain.",
+                answer="",
                 evidence_keys=("weekly_weather.today", "facts.school"),
                 local_memory_used=True,
                 confidence=0.91,
                 reason="school_clothing_weather_policy",
             )
+        # Contract-driven nudity/modesty safety check
+        try:
+            from melm.contracts import load_safety_policies
+            policies = load_safety_policies()
+        except Exception:
+            policies = {}
+        clothing = policies.get("public_clothing", {})
+        triggers = set(clothing.get("triggers", []))
+        if triggers and triggers & token_set:
+            return AssistantDecision(
+                utterance=utterance,
+                intent="common_sense_safety",
+                route="local_answer",
+                answer="",
+                evidence_keys=("local_safety_policy.clothing_public_school",),
+                reason="local_common_sense_policy",
+            )
         return AssistantDecision(
             utterance=utterance,
             intent="common_sense_safety",
             route="local_answer",
-            answer="No. Wear proper clothes before going to school.",
+            answer="",
             evidence_keys=("local_safety_policy.clothing_public_school",),
-            confidence=0.99,
             reason="local_common_sense_policy",
         )
 
@@ -603,20 +1416,144 @@ class OnDeviceAssistantRouter:
             utterance=utterance,
             intent="health_advice",
             route="local_answer",
-            answer=(
-                "For general health, start with water, sleep, movement, and "
-                f"your current goals: {goals}. For pain, danger, or illness, "
-                "talk to a trusted adult or clinician."
-            ),
+            answer="",
             evidence_keys=("health_goals", "local_health_safety_policy"),
             local_memory_used=True,
-            confidence=0.78,
             reason="bounded_general_health_guidance",
+        )
+
+    def _music_generation(
+        self,
+        text: str,
+        parse_bundle: _ParseBundle,
+        turn_context: dict[str, Any],
+    ) -> AssistantDecision | None:
+        """Route to music generation (MIDI) when user asks to play an instrument.
+
+        Only fires when the utterance is specifically about composing/playing
+        instrumental music — NOT when a track title (e.g. "focus piano") happens
+        to contain an instrument keyword.
+        """
+        instrument_keywords = {"piano", "guitar", "violin", "flute", "drums", "keyboard"}
+        text_lower = text.lower()
+        # Strip common punctuation so "piano." matches "piano"
+        clean = "".join(ch for ch in text_lower if ch.isalnum() or ch.isspace())
+
+        # Bail if any media library title is a substring of the utterance —
+        # the user is requesting a known track, not MIDI composition.
+        media_lib = self.profile.media_library
+        if media_lib and any(title.lower() in clean for title in media_lib):
+            return None
+
+        has_play = any(word in clean.split() for word in ("play", "sing", "perform"))
+        has_instrument = any(kw in clean.split() for kw in instrument_keywords)
+        if has_play and has_instrument:
+            return AssistantDecision(
+                utterance=text,
+                intent="music_generation",
+                route="local_answer",
+                answer=f"I'll compose some {text_lower.replace('play', '').strip()} for you.",
+                evidence_keys=(),
+                cloud_needed=False,
+                external_fetch_needed=False,
+                privacy_exposure=False,
+                local_memory_used=False,
+                device_action=False,
+            )
+        return None
+
+    def _music_discovery(
+        self,
+        text: str,
+        parse_bundle: _ParseBundle,
+        turn_context: dict[str, Any],
+    ) -> AssistantDecision | None:
+        """Route to music discovery when user asks to find/download music."""
+        text_lower = text.lower()
+        clean = "".join(ch for ch in text_lower if ch.isalnum() or ch.isspace())
+        discovery_verbs = {"find", "search", "download", "look", "get", "discover"}
+        has_discovery_verb = any(word in clean.split() for word in discovery_verbs)
+        has_music = any(word in clean.split() for word in ("music", "song", "tune", "audio", "songs"))
+        instrument_keywords = {"piano", "guitar", "violin", "flute", "drums", "keyboard"}
+        if has_discovery_verb and has_music and not any(kw in clean.split() for kw in instrument_keywords):
+            from .assistant_music_discovery import MusicDiscoverer
+            discoverer = MusicDiscoverer()
+            results = discoverer.search_inventory(text_lower, self.store)
+            if results:
+                title = results[0].get("title", text_lower)
+                return AssistantDecision(
+                    utterance=text,
+                    intent="media_playback",
+                    route="device_action",
+                    answer=f"Playing {title}.",
+                    evidence_keys=(),
+                    cloud_needed=False,
+                    external_fetch_needed=False,
+                    privacy_exposure=False,
+                    local_memory_used=True,
+                    device_action=True,
+                    reason="local_media_action",
+                )
+            return AssistantDecision(
+                utterance=text,
+                intent="music_discovery",
+                route="local_answer",
+                answer=discoverer.offer_search(text_lower),
+                evidence_keys=(),
+                cloud_needed=False,
+                external_fetch_needed=False,
+                privacy_exposure=False,
+                local_memory_used=False,
+                device_action=False,
+            )
+        return None
+
+    def _recall_profile_attribute(
+        self, utterance: str, attribute: str,
+    ) -> AssistantDecision | None:
+        """Recall a structured profile field (name/location/age) locally.
+
+        Never hands to cloud/model: a missing field clarifies instead of guessing.
+        """
+        if attribute == "name":
+            value, key, phrase = self.profile.user_name, "profile.user_name", "Your name is {v}."
+        elif attribute == "location":
+            value, key, phrase = self.profile.location, "profile.location", "You live in {v}."
+        elif attribute == "age":
+            value = str(self.profile.age) if getattr(self.profile, "age", 0) else ""
+            key, phrase = "profile.age", "You are {v}."
+        else:
+            return None
+        value = (value or "").strip()
+        if not value:
+            return AssistantDecision(
+                utterance=utterance,
+                intent="personal_memory",
+                route="clarify",
+                answer=f"I don't have your {attribute} stored yet. Tell me and I'll remember it locally.",
+                local_memory_used=True,
+                confidence=0.74,
+                reason="personal_memory_empty",
+            )
+        return AssistantDecision(
+            utterance=utterance,
+            intent="personal_memory",
+            route="local_answer",
+            answer=phrase.format(v=value),
+            evidence_keys=(key,),
+            local_memory_used=True,
+            confidence=0.95,
+            reason="personal_memory_recall",
         )
 
     def _personal_memory(self, utterance: str) -> AssistantDecision:
         text = _normalize(utterance)
         tokens = _tokenize(text)
+        attribute = _profile_attribute_requested(tokens)
+        if attribute is not None:
+            recall = self._recall_profile_attribute(utterance, attribute)
+            if recall is not None:
+                return recall
         if _is_routine_memory_request(tokens) and not _has_routine_fact(self.profile):
             return AssistantDecision(
                 utterance=utterance,
@@ -1221,10 +2158,29 @@ def parse_assistant_debug_frame(
 ) -> AssistantDebugParse:
     """Map text into a small UOL/ChatFrame-style debug trace."""
 
-    normalized = _normalize(utterance)
-    tokens = _tokenize(normalized)
-    intent = decision.intent if decision is not None else _classify_intent(normalized)
-    composition = _assistant_compositional_parse(normalized, tokens, intent)
+    parse_bundle = _build_parse_bundle(utterance)
+    normalized = parse_bundle.text
+    tokens = parse_bundle.tokens
+    question_like = _question_like_from_parse_bundle(parse_bundle)
+    intent = (
+        decision.intent
+        if decision is not None
+        else _classify_intent_from_uol_slots(
+            normalized,
+            tokens,
+            language=parse_bundle.language,
+            parse_bundle=parse_bundle,
+            uol_act=parse_bundle.uol_act,
+        )
+    )
+    frame_match = AssistantFrameRegistry.match(
+        normalized,
+        tokens,
+        intent,
+        question_like=question_like,
+        functional_parse=parse_bundle.functional_parse,
+    )
+    composition = frame_match.to_composition() if frame_match is not None else None
     route = decision.route if decision is not None else _route_hint(intent, composition)
     reason = (
         decision.reason
@@ -1234,7 +2190,13 @@ def parse_assistant_debug_frame(
     secondary_meaning_hints = _secondary_meaning_hints(normalized, intent)
     secondary_domain_hints = _secondary_domain_hints(normalized)
     domain_hints = _domain_hints(normalized, tokens, intent, composition)
-    uol = _assistant_uol(normalized, tokens, intent, composition)
+    uol = _assistant_uol(
+        normalized,
+        tokens,
+        intent,
+        composition,
+        uol_act=parse_bundle.uol_act,
+    )
     slot_sources = _slot_sources(normalized, tokens, intent, uol, composition)
     uol["slot_sources"] = slot_sources
     frame_capabilities = _frame_capabilities(intent, route, decision)
@@ -1317,122 +2279,534 @@ def parse_assistant_debug_frame(
 def compose_assistant_status_frame(utterance: str) -> dict[str, Any] | None:
     """Return the primary self-status UOL composition used by router and kernel."""
 
-    normalized = _normalize(utterance)
-    return _self_status_composition(normalized, _tokenize(normalized))
+    parse_bundle = _build_parse_bundle(utterance)
+    return _self_status_composition(
+        parse_bundle.text,
+        parse_bundle.tokens,
+        question_like=_question_like_from_parse_bundle(parse_bundle),
+    )
 
 
 def compose_autobiographical_memory_frame(utterance: str) -> dict[str, Any] | None:
     """Return the primary autobiographical-memory UOL composition used by router and kernel."""
 
-    normalized = _normalize(utterance)
-    tokens = _tokenize(normalized)
-    token_set = set(tokens)
-    if not _autobiographical_question_or_command(normalized, tokens):
+    parse_bundle = _build_parse_bundle(utterance)
+    scope = _autobiographical_memory_scope(parse_bundle)
+    if not scope:
         return None
-    if _autobiographical_long_horizon_frame(normalized, tokens):
-        return _semantic_slot_composition(normalized, tokens, "autobiographical_memory")
-    if _autobiographical_session_summary_frame(normalized, tokens):
-        return _semantic_slot_composition(normalized, tokens, "autobiographical_memory")
-    if _autobiographical_latest_event_frame(normalized, tokens):
-        return _semantic_slot_composition(normalized, tokens, "autobiographical_memory")
-    if _classify_from_frame_linker(
-        normalized, tokens, "autobiographical_memory",
-        collector_classes=frozenset({"autobiographical_event", "autobiographical_action", "temporal_descriptor"}),
-        use_margin=False,
-    ):
-        return _semantic_slot_composition(normalized, tokens, "autobiographical_memory")
-    if token_set & {"we", "our"} and (token_set & {"talk", "talked", "conversation", "conversations"}):
-        if (
-            _semantic_family_terms(tokens, semantic_classes={"autobiographical_action"})
-            or _semantic_family_terms(tokens, semantic_classes={"temporal_descriptor"})
-            or _semantic_family_terms(tokens, semantic_classes={"communication_action"})
-        ):
-            return _semantic_slot_composition(normalized, tokens, "autobiographical_memory")
-    if token_set & {"we", "our"} and (token_set & {"discuss", "discussed", "discussion", "chat", "chatted"}):
-        return _semantic_slot_composition(normalized, tokens, "autobiographical_memory")
-    return None
+    return _compose_primary_frame(
+        parse_bundle.text,
+        parse_bundle.tokens,
+        "autobiographical_memory",
+        question_like=_question_like_from_parse_bundle(parse_bundle),
+        functional_parse=parse_bundle.functional_parse,
+    )
 
 
 def classify_autobiographical_memory_scope(utterance: str) -> str:
     """Classify the structural scope of an autobiographical-memory request."""
 
-    normalized = _normalize(utterance)
-    tokens = _tokenize(normalized)
-    token_set = set(tokens)
-    if not _autobiographical_question_or_command(normalized, tokens):
-        return ""
-    if _autobiographical_long_horizon_frame(normalized, tokens):
-        return "long_horizon"
-    if _autobiographical_session_summary_frame(normalized, tokens):
-        return "session_summary"
-    if _autobiographical_latest_event_frame(normalized, tokens):
-        return "latest_event"
-    if _classify_from_frame_linker(
-        normalized, tokens, "autobiographical_memory",
-        collector_classes=frozenset({"autobiographical_event", "autobiographical_action", "temporal_descriptor"}),
-        use_margin=False,
-    ):
-        return "event_query"
-    if token_set & {"we", "our"} and (token_set & {"talk", "talked", "conversation", "conversations"}):
-        if (
-            _semantic_family_terms(tokens, semantic_classes={"autobiographical_action"})
-            or _semantic_family_terms(tokens, semantic_classes={"temporal_descriptor"})
-            or _semantic_family_terms(tokens, semantic_classes={"communication_action"})
-        ):
-            return "event_query"
-    if token_set & {"we", "our"} and (token_set & {"discuss", "discussed", "discussion", "chat", "chatted"}):
-        return "event_query"
-    return ""
+    return _autobiographical_memory_scope(_build_parse_bundle(utterance))
 
 
 def _classify_intent(text: str) -> AssistantIntent:
-    tokens = _tokenize(text)
-    return _classify_intent_from_uol_slots(text, tokens)
+    parse_bundle = _build_parse_bundle(text)
+    return _classify_intent_from_uol_slots(
+        parse_bundle.text,
+        parse_bundle.tokens,
+        language=parse_bundle.language,
+        parse_bundle=parse_bundle,
+        uol_act=parse_bundle.uol_act,
+    )
+
+
+def _semantic_classes_from_parse(parse: Any) -> frozenset[str]:
+    """Collect all semantic classes from parse candidates."""
+    classes: set[str] = set()
+    for cand in parse.candidates:
+        sc = cand.get("semantic_class", "")
+        if sc:
+            classes.add(sc)
+    return frozenset(classes)
+
+
+def _classify_from_functional_parse(
+    functional_parse: Any,
+    tokens: tuple[str, ...],
+    text: str,
+) -> str | None:
+    """UOL-first intent classification from FunctionalParse atoms.
+
+    Returns an intent string when the parse clearly indicates a known
+    frame; returns ``None`` only when the parse is genuinely ambiguous.
+    """
+    # Urgent health detection via implication engine (contract-driven)
+    verb = _extract_verb(functional_parse=functional_parse)
+    if verb:
+        patient = _extract_patient_type(functional_parse=functional_parse)
+        mc = _lazy_moral_engine()(verb, patient or "person")
+        if not mc.has_implication:
+            from melm.appliance.reasoning.implications import record_verb_candidate
+            record_verb_candidate(verb, patient or "person", text)
+        if mc.harm_severity == "high":
+            return "health_advice"
+    # Fallback: contract-driven health frame (reads health_disclaimers.v1.json)
+    if _has_urgent_health_frame(tokens):
+        return "health_advice"
+
+    # Structured composition fallbacks work from tokens — no parse required.
+    # They are UOL compositions, not raw keyword guards.
+    if _identity_composition(text, tokens) is not None:
+        return "assistant_identity"
+    if _self_status_composition(text, tokens) is not None:
+        return "assistant_status"
+
+    if functional_parse is None:
+        # Fragment-based classification for short utterances without parseable predicates
+        token_set = set(tokens)
+        if "your" in token_set and "name" in token_set and "?" in text:
+            return "assistant_identity"
+        return None
+
+    speech_act = functional_parse.speech_act
+    subject = functional_parse.subject
+    action = functional_parse.action
+    obj = functional_parse.object
+    obj_words = set(obj.split()) if obj else set()
+    sem_classes = _semantic_classes_from_parse(functional_parse)
+
+    # Assistant identity: "Who are you?" / "What is your name?"
+    # Check token_roles for assistant deixis (possessor=assistant, grammatical_subject=assistant)
+    assistant_refs_in_roles = any(
+        tr.get("meaning") == "assistant" or tr.get("lemma") in ("your", "you", "yourself")
+        for tr in (functional_parse.token_roles if functional_parse else ())
+    )
+    has_assistant_ref = subject == "assistant" or any(
+        w in obj for w in ("your", "you", "yourself")
+    ) or assistant_refs_in_roles or "your" in tokens
+    if speech_act in {"wh_question", "yes_no_question", "question"}:
+        if has_assistant_ref and action == "be" and ("name" in obj or "identity" in obj or "purpose" in obj):
+            return "assistant_identity"
+        if action == "be" and subject == "assistant" and ("who" in tokens or "why" in tokens) and obj not in {"calling", "doing"}:
+            return "assistant_identity"
+        if action == "be" and subject == "assistant" and "what" in tokens and ("kind" in tokens or "assistant" in tokens):
+            return "assistant_identity"
+        # Capability questions: "What can you help me with?", "What can you do?"
+        # Exclude past tense "did" to avoid catching "What did you do?" (status)
+        if subject == "assistant" and action in {"help", "do", "can"} and ("what" in tokens or "who" in tokens) and not obj and "did" not in tokens:
+            return "assistant_identity"
+        # Identity challenge: "you don't know who you are?"
+        if action == "know" and "who" in tokens and ("you" in tokens or "your" in tokens):
+            return "assistant_identity"
+
+    # Imperative self-description: "Describe yourself"
+    if speech_act in {"request", "command"} and action in {"describe", "tell", "say"} and ("assistant" in obj or "yourself" in obj or "you" in obj):
+        return "assistant_identity"
+
+    # Assistant status: "What is your status?" / "How are you doing?" / "What did you do?"
+    if speech_act in {"wh_question", "yes_no_question", "question"}:
+        assistant_ref_question = subject == "assistant" or any(
+            w in obj for w in ("your", "you", "yourself")
+        )
+        if assistant_ref_question and action == "be" and ("status" in obj or "health" in obj or "condition" in obj):
+            return "assistant_status"
+        if action in {"do", "feel"} and subject == "assistant" and ("status" in obj or "health" in obj or "condition" in obj):
+            return "assistant_status"
+        # Bare assistant-action questions ("What did you do?") — no concrete object
+        if subject == "assistant" and action in {"do", "did"} and not obj:
+            return "assistant_status"
+        # "how are you" / "how are you feeling" — no object after "be"/"feel"
+        if subject == "assistant" and action in {"be", "feel"} and not obj:
+            return "assistant_status"
+        # Assistant progress/completion questions ("What have you done so far?")
+        if subject == "assistant" and speech_act in {"wh_question", "yes_no_question"} and "done" in tokens:
+            return "assistant_status"
+
+    # Assistant status request: "Show your memory ledger", "Tell me your status"
+    if speech_act in {"request", "command"} and action in {"show", "tell", "display"} and ("assistant" in obj or has_assistant_ref) and any(w in obj for w in ("status", "ledger", "memory", "health")):
+        return "assistant_status"
+
+    # Meal suggestion: "What should I eat?", "gini m ga eri?"
+    if (
+        speech_act in {"wh_question", "yes_no_question", "request"}
+        and action in {"eat", "cook", "prepare"}
+        and subject in {"user", "i", "we"}
+    ):
+        return "meal_suggestion"
+
+    # Story request: "Tell me a story", "Read me a tale"
+    if (
+        speech_act in {"request", "command", "wh_question"}
+        and action in {"tell", "read", "make", "give"}
+        and bool(obj_words & {"story", "tale", "fable", "narrative"})
+    ):
+        return "story"
+
+    # Weather: "Will it rain today?", "Is it snowing?"
+    if (
+        speech_act in {"wh_question", "yes_no_question", "request"}
+        and action in {"rain", "snow", "forecast"}
+    ):
+        return "weather"
+
+    # Media playback: "Play a song", "Start some music"
+    if (
+        speech_act in {"request", "command"}
+        and action in {"play", "start"}
+        and bool(obj_words & {"music", "song", "audio", "media"})
+    ):
+        return "media_playback"
+
+    # Health advice — parse-level health-domain semantic classes
+    has_health_sem = bool(
+        sem_classes
+        & {"health_domain", "health_condition", "advice_action", "medical_procedure"}
+    )
+    if has_health_sem:
+        return "health_advice"
+
+    # Common sense safety — clothing + public place OR undress state
+    has_clothing = "clothing_item" in sem_classes
+    has_public = "public_place" in sem_classes
+    has_undress = "undress_state" in sem_classes
+    if has_undress or (has_clothing and has_public):
+        return "common_sense_safety"
+
+    # Social contact — social relation + contact action
+    has_social_relation = bool(
+        sem_classes & {"social_relation", "child_relation"}
+    )
+    is_contact_action = action in {"call", "phone", "ring", "reach", "contact"}
+    if has_social_relation and is_contact_action:
+        return "social_contact"
+
+    # Personal memory / autobiographical — memory recall semantic class
+    has_memory_sem = bool(
+        sem_classes
+        & {"memory_recall", "personal_attribute", "autobiographical_event"}
+    )
+    if has_memory_sem:
+        return "personal_memory"
+
+    if _detect_social_status(text):
+        return "assistant_status"
+
+    return None
+
+
+def _semantic_classes_from_atom(atom: dict[str, Any]) -> set[str]:
+    """Collect semantic classes from an atom's predicate and roles."""
+    classes: set[str] = set()
+    predicate = atom.get("predicate", {})
+    sc = str(predicate.get("semantic_class", "")).strip().lower()
+    if sc and sc != "unknown":
+        classes.add(sc)
+    # Also check roles for semantic class annotations
+    for role in atom.get("roles", []):
+        role_sc = str(role.get("semantic_class", "")).strip().lower()
+        if role_sc:
+            classes.add(role_sc)
+    return classes
+
+
+def _classify_from_atoms(
+    uol_act: dict[str, Any] | None,
+    tokens: tuple[str, ...],
+    text: str,
+) -> str | None:
+    """Atom-based intent classification from UolAct dict.
+
+    Returns an intent string when the atom clearly indicates a known frame;
+    returns None when genuinely ambiguous.
+    """
+    if uol_act is None:
+        return None
+
+    # Token-level composition checks (still use tokens for these)
+    if _identity_composition(text, tokens) is not None:
+        return "assistant_identity"
+    if _self_status_composition(text, tokens) is not None:
+        return "assistant_status"
+    # Social-status fallback: detect "how are you" patterns in raw text
+    # when UOL atoms may overfit and miss a clear status question.
+    if _detect_social_status(text):
+        return "assistant_status"
+
+    # Extract atom structure
+    act_type = str(uol_act.get("act", ""))  # "question", "request", "command", "claim", etc.
+    content = uol_act.get("content", [])
+
+    if not content:
+        verb = _extract_verb(uol_act=uol_act)
+        if verb:
+            mc = _lazy_moral_engine()(verb, "person")
+            if not mc.has_implication:
+                from melm.appliance.reasoning.implications import record_verb_candidate
+                record_verb_candidate(verb, "person", text)
+            if mc.harm_severity == "high":
+                return "health_advice"
+        if _has_urgent_health_frame(tokens):
+            return "health_advice"
+        if _detect_social_status(text):
+            return "assistant_status"
+        token_set = set(tokens)
+        if "your" in token_set and "name" in token_set and "?" in text:
+            return "assistant_identity"
+        return None
+
+    main_atom = content[0] if content else {}
+    predicate = main_atom.get("predicate", {})
+    pred_id = str(predicate.get("id", "")).strip().lower()
+    sem_class = str(predicate.get("semantic_class", "")).strip().lower()
+    roles = main_atom.get("roles", [])
+    context = main_atom.get("context", {})
+    polarity = str(context.get("polarity", "positive")).strip().lower()
+    modality = str(context.get("modality", "assertive")).strip().lower()
+    negation_scope = bool(context.get("negation_scope", False))
+    negated_predicate = polarity == "negative" or negation_scope
+    blocked_action_match = negated_predicate or modality == "counterfactual"
+
+    if not negated_predicate:
+        verb = _extract_verb(uol_act=uol_act)
+        if verb:
+            patient = _extract_patient_type(uol_act=uol_act)
+            mc = _lazy_moral_engine()(verb, patient or "person")
+            if not mc.has_implication:
+                from melm.appliance.reasoning.implications import record_verb_candidate
+                record_verb_candidate(verb, patient or "person", text)
+            if mc.harm_severity == "high":
+                return "health_advice"
+        if _has_urgent_health_frame(tokens):
+            return "health_advice"
+
+    # Collect theme values from roles
+    theme_values = {
+        str(r.get("value", "")).strip().lower()
+        for r in roles
+        if r.get("role") == "theme"
+    }
+    # Collect agent values
+    agent_values = {
+        str(r.get("value", "")).strip().lower()
+        for r in roles
+        if r.get("role") == "agent"
+    }
+
+    # Map UolAct.act → speech_act equivalents
+    is_question_act = act_type in {"question"}
+    is_request_act = act_type in {"request", "command"}
+
+    # Semantic class checks
+    health_sem_classes = {"health_domain", "health_condition", "advice_action", "medical_procedure"}
+    has_health_sem = any(
+        sc in sem_class or sc in sem_class.replace(".", "_")
+        for sc in health_sem_classes
+    ) or bool(health_sem_classes & _semantic_classes_from_atom(main_atom))
+
+    # Meal suggestion: eat/cook/prepare + question/request + user agent
+    if (
+        not blocked_action_match
+        and
+        (is_question_act or is_request_act)
+        and pred_id in {"eat", "cook", "prepare", "eri", "nri"}
+        and (agent_values & {"user", "i", "we"} or not agent_values)
+    ):
+        return "meal_suggestion"
+
+    # Story: tell/read/make/give + story/tale in theme
+    if (
+        not blocked_action_match
+        and
+        (is_question_act or is_request_act)
+        and pred_id in {"tell", "read", "make", "give"}
+        and bool(theme_values & {"story", "tale", "fable", "narrative"})
+    ):
+        return "story"
+
+    # Weather: rain/snow/forecast predicate
+    if (
+        not blocked_action_match
+        and
+        (is_question_act or is_request_act)
+        and pred_id in {"rain", "snow", "forecast", "weather"}
+    ):
+        return "weather"
+
+    # Media playback: play/start + music/song theme
+    if (
+        not blocked_action_match
+        and
+        is_request_act
+        and pred_id in {"play", "start"}
+        and bool(theme_values & {"music", "song", "audio", "media", "radio"})
+    ):
+        return "media_playback"
+
+    # Health advice from semantic class
+    if has_health_sem and not blocked_action_match:
+        return "health_advice"
+
+    # Common sense safety: clothing_item or undress_state class
+    atom_sem_classes = _semantic_classes_from_atom(main_atom)
+    if not blocked_action_match and (
+        "undress_state" in atom_sem_classes or (
+            "clothing_item" in atom_sem_classes and "public_place" in atom_sem_classes
+        )
+    ):
+        return "common_sense_safety"
+
+    # Social contact: call/phone + social_relation
+    has_social_relation = "social_relation" in atom_sem_classes or "child_relation" in atom_sem_classes
+    if not blocked_action_match and has_social_relation and pred_id in {"call", "phone", "ring", "reach", "contact"}:
+        return "social_contact"
+
+    # Personal memory: memory_recall semantic class
+    if bool(atom_sem_classes & {"memory_recall", "personal_attribute", "autobiographical_event"}):
+        return "personal_memory"
+
+    return None
+
+
+def is_question_like_act(uol_act: dict[str, Any] | None) -> bool:
+    """True when the UolAct speech act is a question type."""
+    if uol_act is None:
+        return False
+    return str(uol_act.get("act", "")) == "question"
+
+
+def is_request_like_act(uol_act: dict[str, Any] | None) -> bool:
+    """True when the UolAct speech act is a request or command."""
+    if uol_act is None:
+        return False
+    return str(uol_act.get("act", "")) in {"request", "command"}
+
+
+def _frame_linker_candidates_from_atoms(
+    uol_act: dict[str, Any],
+    tokens: tuple[str, ...],
+) -> list[FrameCandidate]:
+    linker = _get_frame_linker()
+    return linker.score_atoms(uol_act, _IN_MEMORY_LEXICON, tokens=tokens)
+
+
+def _frame_linker_candidate_matches(
+    candidates: list[FrameCandidate],
+    frame_id: str,
+    *,
+    use_margin: bool = False,
+) -> bool:
+    if not candidates:
+        return False
+    top = candidates[0]
+    needed = _FRAME_LINKER_CONFIRMATION_MARGIN if use_margin else 0.0
+    return bool(top.frame_id == frame_id and top.score >= top.threshold + needed)
 
 
 def _classify_intent_from_uol_slots(
     text: str,
     tokens: tuple[str, ...],
     trusted_contact_names: tuple[str, ...] = (),
-
+    language: str = "en",
+    parse_bundle: _ParseBundle | None = None,
+    uol_act: dict[str, Any] | None = None,
 ) -> AssistantIntent:
-    functional_parse = parse_functional_relations(tokens, question_mark="?" in text)
-    if _is_assistant_identity_request(text, tokens):
+    # "why" follow-up: if the only token is "why" and the previous turn was assistant_identity
+    if tokens == ("why",) and parse_bundle is not None and parse_bundle.last_intent == "assistant_identity":
         return "assistant_identity"
-    if _is_assistant_status_request(text, tokens):
-        return "assistant_status"
-    # Bridge-eliminated: was _is_story_request (Phase 1)
-    # Action token required to prevent "What is a story?" → story
-    if set(tokens) & {"tell", "read", "make", "give"} and (
-        functional_parse is None
-        or functional_parse.speech_act in {"request", "yes_no_question", "wh_question"}
-    ) and _classify_from_frame_linker(
-        text, tokens, "story",
+
+    functional_parse = (
+        parse_bundle.functional_parse
+        if parse_bundle is not None
+        else parse_functional_relations(tokens, question_mark="?" in text, language=language)
+    )
+    atom_routing = uol_act is not None
+    atom_intent = (
+        _classify_from_atoms(uol_act, tokens, text)
+        if atom_routing
+        else _classify_from_functional_parse(functional_parse, tokens, text)
+    )
+    if atom_intent is not None:
+        return atom_intent
+
+    # Phase 7: Auto-correction — if the parse was derailed by an unknown predicate
+    # and there are multiple atoms, try re-classification ignoring the first unknown atom.
+    if atom_intent is None and uol_act is not None:
+        try:
+            content = uol_act.get("content", [])
+            if len(content) > 1:
+                first_pred = content[0].get("predicate", {}).get("semantic_class", "")
+                if first_pred in ("unknown", "semantic_unknown") or not first_pred:
+                    filtered = {"act": uol_act.get("act", ""), "content": list(content[1:])}
+                    corrected = _classify_from_atoms(filtered, tokens, text)
+                    if corrected is not None:
+                        return corrected
+        except Exception:
+            pass
+
+    question_like = (
+        is_question_like_act(uol_act)
+        if atom_routing
+        else _speech_act_is_question(functional_parse.speech_act) if functional_parse is not None else _surface_question_like(text, tokens)
+    )
+    request_like = (
+        is_request_like_act(uol_act)
+        if atom_routing
+        else _speech_act_is_request(functional_parse.speech_act) if functional_parse is not None else _surface_request_like(tokens)
+    )
+    atom_candidates = (
+        _frame_linker_candidates_from_atoms(uol_act, tokens)
+        if atom_routing and uol_act is not None
+        else None
+    )
+
+    def _route_frame_match(
+        frame_id: str,
+        *,
+        collector_classes: frozenset[str] = frozenset(),
+        use_margin: bool = False,
+    ) -> bool:
+        if collector_classes:
+            _semantic_family_terms(tokens, semantic_classes=collector_classes)
+        if atom_candidates is not None:
+            return _frame_linker_candidate_matches(
+                atom_candidates,
+                frame_id,
+                use_margin=use_margin,
+            )
+        return _classify_from_frame_linker(
+            text,
+            tokens,
+            frame_id,
+            collector_classes=collector_classes,
+            use_margin=use_margin,
+        )
+
+    # Secondary: frame linker scoring for intents not yet fully atomized
+    # (operates on semantic classes, not raw English keywords)
+    # Story requires an explicit request verb AND question/request speech act
+    # to avoid "What is a story?" (definition) or "The same people tell stories" (statement)
+    story_action_present = bool(set(tokens) & {"tell", "read", "make", "give"})
+    story_speech_act_ok = request_like or question_like
+    if story_action_present and story_speech_act_ok and _route_frame_match(
+        "story",
         collector_classes=frozenset({"narrative_content"}),
         use_margin=False,
     ):
         return "story"
-    # Bridge-eliminated: was _is_weather_request (Phase 2)
-    if _classify_from_frame_linker(
-        text, tokens, "weather",
+    if _route_frame_match(
+        "weather",
         collector_classes=frozenset({"weather_phenomenon"}),
         use_margin=False,
     ):
         return "weather"
-    # Bridge-eliminated: was _is_common_sense_safety_request (Phase 3)
-    # Linker template already encodes both paths:
-    #   required_classes: ["undress_state"] (path A — OR gate)
-    #   required_all_classes: ["clothing_item", "public_place"] (path B — AND gate)
-    # Context gates and action tokens (go/walk) provide the same filtering.
-    if _classify_from_frame_linker(
-        text, tokens, "common_sense_safety",
+    if _route_frame_match(
+        "common_sense_safety",
         collector_classes=frozenset({"clothing_item", "public_place", "undress_state"}),
         use_margin=False,
     ):
         return "common_sense_safety"
-    # Bridge-eliminated: was _is_media_request (Phase 1)
-    if set(tokens) & {"play", "start"} and _classify_from_frame_linker(
-        text, tokens, "media_playback",
+    if set(tokens) & {"play", "start"} and _route_frame_match(
+        "media_playback",
         collector_classes=frozenset({
             "media_content", "media_descriptor",
             "physical_object.instrument",
@@ -1441,20 +2815,17 @@ def _classify_intent_from_uol_slots(
         use_margin=False,
     ):
         return "media_playback"
-    # Bridge-eliminated: was _is_health_advice_request (Phase 2)
-    if _has_urgent_health_frame(tokens):
-        return "health_advice"
-    if _classify_from_frame_linker(
-        text, tokens, "health_advice",
+    if _route_frame_match(
+        "health_advice",
         collector_classes=frozenset({"health_domain", "health_condition", "advice_action"}),
         use_margin=False,
     ):
         return "health_advice"
-    # Bridge-eliminated: was _is_social_contact_request (Phase 3)
-    # Linker context gate deny_phone_device handles phone disambiguation.
-    # Contact target check (social_relation/child_relation OR trusted name) is a
-    # runtime pre-filter because trusted names are not in the lexicon.
-    token_set = set(tokens)
+    if _is_private_cloud_export_request(text, tokens):
+        return "personal_memory"
+    # Social contact — frame linker + trusted name pre-filter
+    # Requires explicit contact-action signal AND request/question structure
+    # to avoid "Send my child's age to cloud" → social_contact
     has_social_relation = any(
         "social_relation" in _IN_MEMORY_LEXICON.get(t, frozenset())
         or "child_relation" in _IN_MEMORY_LEXICON.get(t, frozenset())
@@ -1463,46 +2834,42 @@ def _classify_intent_from_uol_slots(
     has_trusted_name = bool(
         trusted_contact_names and _matched_trusted_contact_name(tokens, trusted_contact_names)
     )
-    has_contact_target = has_social_relation or has_trusted_name
-    if not has_contact_target:
+    if not (has_social_relation or has_trusted_name):
         pass  # skip social_contact entirely
     else:
-        has_contact_action_token = bool(token_set & {"call", "phone", "ring", "reach"})
-        has_talk_context = bool(token_set & {"need", "help", "please"})
+        has_contact_action_token = bool(set(tokens) & {"call", "phone", "ring", "reach"})
+        has_talk_context = bool(set(tokens) & {"need", "help", "please"})
         contact_semantic = _semantic_family_terms(tokens, semantic_classes={"contact_action"})
         comm_semantic = _semantic_family_terms(tokens, semantic_classes={"communication_action"})
-        # Path A: explicit contact-action tokens or semantic class + any structure
-        if has_contact_action_token or (contact_semantic and (_is_request_like(tokens) or _is_question_like(text, tokens))):
-            if _classify_from_frame_linker(
-                text, tokens, "social_contact",
+        is_request_or_question = request_like or question_like
+        # Path A: explicit contact-action tokens OR contact semantic + structure
+        if has_contact_action_token or (contact_semantic and is_request_or_question):
+            if _route_frame_match(
+                "social_contact",
                 collector_classes=frozenset({"contact_action", "communication_action", "social_relation"}),
                 use_margin=False,
             ):
                 return "social_contact"
         # Path B: communication_action semantic class with talk/question context only
-        if comm_semantic and (has_talk_context or _is_question_like(text, tokens)):
-            if _classify_from_frame_linker(
-                text, tokens, "social_contact",
+        if comm_semantic and (has_talk_context or question_like):
+            if _route_frame_match(
+                "social_contact",
                 collector_classes=frozenset({"contact_action", "communication_action", "social_relation"}),
                 use_margin=False,
             ):
                 return "social_contact"
-    # Bridge-eliminated: was _is_personal_memory_frame (Phase 3)
-    # Fast path: private cloud export requests are personal_memory for policy gating.
-    if _is_private_cloud_export_request(text, tokens):
-        return "personal_memory"
-    # Lexical path via frame linker (routine_memory, household_memory, personal_memory).
-    if _classify_from_frame_linker(
-        text, tokens, "personal_memory",
+    if _route_frame_match(
+        "personal_memory",
         collector_classes=frozenset({"memory_recall", "personal_attribute", "child_relation", "social_relation"}),
         use_margin=False,
     ):
         return "personal_memory"
-    # Structural fallbacks for patterns not expressible as frame templates.
+    token_set = set(tokens)
+    # Structural fallbacks for patterns not yet expressible as atoms.
     if _is_child_memory_request(tokens):
         return "personal_memory"
     memory_cognition = _semantic_family_terms(tokens, semantic_classes={"memory_recall"})
-    memory_frame = _is_question_like(text, tokens) or _is_request_like(tokens) or bool(memory_cognition)
+    memory_frame = question_like or request_like or bool(memory_cognition)
     if _is_routine_memory_request(tokens):
         owned_or_recalled = bool(
             token_set & {"my", "our", "me", "i"} or memory_cognition or _about_targets_self(tokens)
@@ -1517,25 +2884,27 @@ def _classify_intent_from_uol_slots(
             return "personal_memory"
     if {"who", "am", "i"} <= token_set:
         return "personal_memory"
+    if _profile_attribute_requested(tokens) is not None:
+        return "personal_memory"
     first_person_targets = {"me", "my", "myself", "i"}
     if memory_cognition and token_set & first_person_targets:
-        if _classify_from_frame_linker(
-            text, tokens, "personal_memory",
+        if _route_frame_match(
+            "personal_memory",
             collector_classes=frozenset({"memory_recall", "personal_attribute", "child_relation", "social_relation"}),
         ):
             return "personal_memory"
     if _about_targets_self(tokens):
         return "personal_memory"
-    # Bridge-eliminated: was _is_autobiographical_debug_request (Phase 3)
-    if _autobiographical_question_or_command(text, tokens):
-        if _autobiographical_long_horizon_frame(text, tokens):
+    # Autobiographical fallback: token + semantic structure when atom coverage misses
+    if _autobiographical_question_or_command(text, tokens, question_like=question_like):
+        if _autobiographical_long_horizon_frame(text, tokens, question_like=question_like):
             return "autobiographical_memory"
-        if _autobiographical_session_summary_frame(text, tokens):
+        if _autobiographical_session_summary_frame(text, tokens, question_like=question_like):
             return "autobiographical_memory"
-        if _autobiographical_latest_event_frame(text, tokens):
+        if _autobiographical_latest_event_frame(text, tokens, question_like=question_like):
             return "autobiographical_memory"
-        if _classify_from_frame_linker(
-            text, tokens, "autobiographical_memory",
+        if _route_frame_match(
+            "autobiographical_memory",
             collector_classes=frozenset({"autobiographical_event", "autobiographical_action", "temporal_descriptor"}),
             use_margin=False,
         ):
@@ -1549,9 +2918,9 @@ def _classify_intent_from_uol_slots(
                 return "autobiographical_memory"
         if token_set & {"we", "our"} and (token_set & {"discuss", "discussed", "discussion", "chat", "chatted"}):
             return "autobiographical_memory"
-    # Bridge-eliminated: was _is_meal_suggestion_request (Phase 2)
-    if _classify_from_frame_linker(
-        text, tokens, "meal_suggestion",
+    # Meal suggestion fallback: frame linker when atoms miss non-English or edge cases
+    if _route_frame_match(
+        "meal_suggestion",
         collector_classes=frozenset({"food_item"}),
         use_margin=False,
     ):
@@ -1569,20 +2938,24 @@ def _classify_intent_from_uol_slots(
     # Frame linker catches high-confidence cases that even functional grammar
     # misses. Uses margin for non-migrated intents (prevents false positives).
     linker = _get_frame_linker()
-    candidates = linker.score(
-        tokens,
-        _IN_MEMORY_LEXICON,
-        is_question_like=_is_question_like(text, tokens),
-        is_request_like=_is_request_like(tokens),
+    candidates = (
+        atom_candidates
+        if atom_candidates is not None
+        else linker.score(
+            tokens,
+            _IN_MEMORY_LEXICON,
+            is_question_like=question_like,
+            is_request_like=request_like,
+        )
     )
     if candidates:
         # Apply UOL-aware reranker when functional parse is available.
-        if functional_parse is not None:
+        if functional_parse is not None and atom_candidates is None:
             reranker = _get_frame_reranker()
             reranked = reranker.rerank(
                 candidates, tokens, _IN_MEMORY_LEXICON,
-                is_question_like=_is_question_like(text, tokens),
-                is_request_like=_is_request_like(tokens),
+                is_question_like=question_like,
+                is_request_like=request_like,
                 token_roles=functional_parse.token_roles,
             )
             top = reranked[0]
@@ -1684,12 +3057,57 @@ _IN_MEMORY_LEXICON: dict[str, frozenset[str]] = build_legacy_in_memory_lexicon()
 # Wire the growing lexicon into the UOL grammar so acquired verbs lemmatize
 # and receive a semantic class even when not in the hardcoded _VERBS dict.
 set_uol_lexicon(_IN_MEMORY_LEXICON)
+
+
+def refresh_in_memory_lexicon(store: Any) -> int:
+    """Merge active store-backed lexical senses into the routing lexicon.
+
+    Queries ``lexemes`` JOIN ``lexical_senses`` for status='active' rows and
+    adds any term not already present in ``_IN_MEMORY_LEXICON``.  Existing
+    legacy entries are preserved (reserved/policy terms cannot be overwritten
+    at runtime).
+
+    Returns the number of new terms added.  Safe to call after every
+    successful ``lexicon_ingest()``; the operation is idempotent.
+    """
+    global _IN_MEMORY_LEXICON
+    try:
+        rows = store.connection.execute(
+            """
+            SELECT lx.normalized_lemma, ls.semantic_class_id
+            FROM lexemes lx
+            JOIN lexical_senses ls ON ls.lexeme_id = lx.lexeme_id
+            WHERE ls.status = 'active'
+            """
+        ).fetchall()
+    except Exception:
+        return 0
+    added = 0
+    for row in rows:
+        lemma = str(row["normalized_lemma"]).strip().lower()
+        class_id = str(row["semantic_class_id"]).strip().lower()
+        if not lemma or not class_id:
+            continue
+        existing = _IN_MEMORY_LEXICON.get(lemma)
+        if existing is None:
+            _IN_MEMORY_LEXICON[lemma] = frozenset({class_id})
+            added += 1
+        elif class_id not in existing:
+            _IN_MEMORY_LEXICON[lemma] = existing | frozenset({class_id})
+    set_uol_lexicon(_IN_MEMORY_LEXICON)
+    return added
+# Seed Igbo lemmas from contract so the UOL parser recognises them.
+try:
+    _igbo_lexicon_data = load_igbo_lexicon_seed()
+    seed_igbo_lexicon(_IN_MEMORY_LEXICON, _igbo_lexicon_data.get("entries", []))
+except Exception:
+    pass
 # Frame linker requires score >= template threshold + this margin to fire.
 # This prevents false positives on borderline matches while still catching
 # high-confidence cases that keyword classifiers miss.
 _FRAME_LINKER_CONFIRMATION_MARGIN = 0.20
-# Intents whose old keyword classifier has been replaced by the frame linker.
-# Add a family here after validating its template produces correct results.
+# Intents handled by the UOL atom classifier first; frame linker is secondary fallback.
+# These require stricter scoring to avoid false positives when atoms return None.
 _FRAME_LINKER_MIGRATED_INTENTS: frozenset[str] = frozenset({
     "weather", "story", "media_playback",
     "autobiographical_memory", "meal_suggestion",
@@ -1734,9 +3152,34 @@ def replace_installed_families(
     managed: frozenset[str] | None = None,
 ) -> None:
     """Override capability-manifest state (used for testing)."""
-    global _INSTALLED_FAMILIES, _ALL_MANAGED_FAMILIES
+    global _INSTALLED_FAMILIES, _ALL_MANAGED_FAMILIES, _CAPABILITY_PAYLOAD
     _INSTALLED_FAMILIES = installed
     _ALL_MANAGED_FAMILIES = managed
+    _CAPABILITY_PAYLOAD = None
+
+
+_CAPABILITY_PAYLOAD: dict[str, Any] | None = None
+
+
+def _capability_payload() -> dict[str, Any]:
+    global _CAPABILITY_PAYLOAD
+    if _CAPABILITY_PAYLOAD is None:
+        path = Path(__file__).resolve().parent.parent / "contracts" / "default_capability_manifest.v1.json"
+        _CAPABILITY_PAYLOAD = json.loads(path.read_text(encoding="utf-8"))
+    return _CAPABILITY_PAYLOAD
+
+
+def _capability_flag(family: str, key: str, default: bool = False) -> bool:
+    """Read a nested capability sub-flag, e.g. ``mood_affect.creative_behaviors``.
+
+    Unlike ``_is_family_installed`` (family install state only), this reads a
+    sub-key of an installed family. Returns *default* when the family is absent
+    or not installed.
+    """
+    fam = _capability_payload().get("families", {}).get(family)
+    if not isinstance(fam, dict) or not fam.get("installed"):
+        return default
+    return bool(fam.get(key, default))
 
 
 def _classify_from_frame_linker(
@@ -1746,6 +3189,7 @@ def _classify_from_frame_linker(
     *,
     collector_classes: frozenset[str] = frozenset(),
     use_margin: bool = False,
+    parse_bundle: _ParseBundle | None = None,
 ) -> bool:
     """Check if *frame_id* is the top-scoring candidate above its effective threshold.
 
@@ -1754,13 +3198,8 @@ def _classify_from_frame_linker(
     """
     if collector_classes:
         _semantic_family_terms(tokens, semantic_classes=collector_classes)
-    linker = _get_frame_linker()
-    candidates = linker.score(
-        tokens,
-        _IN_MEMORY_LEXICON,
-        is_question_like=_is_question_like(text, tokens),
-        is_request_like=_is_request_like(tokens),
-    )
+    parse_bundle = parse_bundle or _build_parse_bundle(text)
+    candidates = _frame_linker_candidates_for_parse_bundle(parse_bundle)
     needed = _FRAME_LINKER_CONFIRMATION_MARGIN if use_margin else 0.0
     if not candidates:
         return False
@@ -1776,6 +3215,47 @@ def _get_frame_linker() -> FrameLinker:
     if _FRAME_LINKER is None:
         _FRAME_LINKER = FrameLinker()
     return _FRAME_LINKER
+
+
+def _question_like_from_parse_bundle(parse_bundle: _ParseBundle) -> bool:
+    if parse_bundle.uol_act is not None:
+        return is_question_like_act(parse_bundle.uol_act)
+    if parse_bundle.functional_parse is not None:
+        return _speech_act_is_question(parse_bundle.functional_parse.speech_act)
+    return _surface_question_like(parse_bundle.text, parse_bundle.tokens)
+
+
+def _request_like_from_parse_bundle(parse_bundle: _ParseBundle) -> bool:
+    if parse_bundle.uol_act is not None:
+        return is_request_like_act(parse_bundle.uol_act)
+    if parse_bundle.functional_parse is not None:
+        return _speech_act_is_request(parse_bundle.functional_parse.speech_act)
+    return _surface_request_like(parse_bundle.tokens)
+
+
+def _speech_act_is_question(speech_act: str) -> bool:
+    return speech_act in {"question", "wh_question", "yes_no_question"}
+
+
+def _speech_act_is_request(speech_act: str) -> bool:
+    return speech_act in {"request", "command"}
+
+
+def _frame_linker_candidates_for_parse_bundle(
+    parse_bundle: _ParseBundle,
+) -> list[FrameCandidate]:
+    if parse_bundle.uol_act is not None:
+        return _frame_linker_candidates_from_atoms(
+            parse_bundle.uol_act,
+            parse_bundle.tokens,
+        )
+    linker = _get_frame_linker()
+    return linker.score(
+        parse_bundle.tokens,
+        _IN_MEMORY_LEXICON,
+        is_question_like=_question_like_from_parse_bundle(parse_bundle),
+        is_request_like=_request_like_from_parse_bundle(parse_bundle),
+    )
 
 
 def _get_frame_reranker() -> E3CandidateReranker:
@@ -1918,8 +3398,16 @@ def _about_targets_self(tokens: tuple[str, ...]) -> bool:
 
 
 
-def _autobiographical_question_or_command(text: str, tokens: tuple[str, ...]) -> bool:
-    return _is_question_like(text, tokens) or tokens[:1] in {
+def _autobiographical_question_or_command(
+    text: str,
+    tokens: tuple[str, ...],
+    *,
+    question_like: bool | None = None,
+) -> bool:
+    is_question = (
+        _surface_question_like(text, tokens) if question_like is None else question_like
+    )
+    return is_question or tokens[:1] in {
         ("summarize",),
         ("recap",),
         ("show",),
@@ -1928,9 +3416,74 @@ def _autobiographical_question_or_command(text: str, tokens: tuple[str, ...]) ->
     }
 
 
-def _autobiographical_long_horizon_frame(text: str, tokens: tuple[str, ...]) -> bool:
+def _autobiographical_memory_scope(parse_bundle: _ParseBundle) -> str:
+    text = parse_bundle.text
+    tokens = parse_bundle.tokens
     token_set = set(tokens)
-    if not _autobiographical_question_or_command(text, tokens):
+    question_like = _question_like_from_parse_bundle(parse_bundle)
+    if not _autobiographical_question_or_command(
+        text,
+        tokens,
+        question_like=question_like,
+    ):
+        return ""
+    if _autobiographical_long_horizon_frame(
+        text,
+        tokens,
+        question_like=question_like,
+    ):
+        return "long_horizon"
+    if _autobiographical_session_summary_frame(
+        text,
+        tokens,
+        question_like=question_like,
+    ):
+        return "session_summary"
+    if _autobiographical_latest_event_frame(
+        text,
+        tokens,
+        question_like=question_like,
+    ):
+        return "latest_event"
+    if _classify_from_frame_linker(
+        text,
+        tokens,
+        "autobiographical_memory",
+        collector_classes=frozenset(
+            {
+                "autobiographical_event",
+                "autobiographical_action",
+                "temporal_descriptor",
+            }
+        ),
+        use_margin=False,
+        parse_bundle=parse_bundle,
+    ):
+        return "event_query"
+    if token_set & {"we", "our"} and (
+        token_set & {"talk", "talked", "conversation", "conversations"}
+    ):
+        if (
+            _semantic_family_terms(tokens, semantic_classes={"autobiographical_action"})
+            or _semantic_family_terms(tokens, semantic_classes={"temporal_descriptor"})
+            or _semantic_family_terms(tokens, semantic_classes={"communication_action"})
+        ):
+            return "event_query"
+    if token_set & {"we", "our"} and (
+        token_set & {"discuss", "discussed", "discussion", "chat", "chatted"}
+    ):
+        return "event_query"
+    return ""
+
+
+def _autobiographical_long_horizon_frame(
+    text: str,
+    tokens: tuple[str, ...],
+    *,
+    question_like: bool | None = None,
+) -> bool:
+    token_set = set(tokens)
+    if not _autobiographical_question_or_command(text, tokens, question_like=question_like):
         return False
     day_span = "days" in token_set and bool(token_set & {"last", "few", "past", "over"})
     all_history = bool(
@@ -1943,9 +3496,14 @@ def _autobiographical_long_horizon_frame(text: str, tokens: tuple[str, ...]) -> 
     return day_span or all_history or long_term_memory
 
 
-def _autobiographical_session_summary_frame(text: str, tokens: tuple[str, ...]) -> bool:
+def _autobiographical_session_summary_frame(
+    text: str,
+    tokens: tuple[str, ...],
+    *,
+    question_like: bool | None = None,
+) -> bool:
     token_set = set(tokens)
-    if not _autobiographical_question_or_command(text, tokens):
+    if not _autobiographical_question_or_command(text, tokens, question_like=question_like):
         return False
     session_objects = {"session", "sessions", "conversation", "conversations"}
     summary_actions = {"summarize", "recap", "happened", "talk", "talked"}
@@ -1959,9 +3517,14 @@ def _autobiographical_session_summary_frame(text: str, tokens: tuple[str, ...]) 
     )
 
 
-def _autobiographical_latest_event_frame(text: str, tokens: tuple[str, ...]) -> bool:
+def _autobiographical_latest_event_frame(
+    text: str,
+    tokens: tuple[str, ...],
+    *,
+    question_like: bool | None = None,
+) -> bool:
     token_set = set(tokens)
-    if not _autobiographical_question_or_command(text, tokens):
+    if not _autobiographical_question_or_command(text, tokens, question_like=question_like):
         return False
     latest_scope = bool("last" in token_set or {"most", "recent"} <= token_set)
     event_object = bool(
@@ -1982,7 +3545,7 @@ def _autobiographical_latest_event_frame(text: str, tokens: tuple[str, ...]) -> 
 
 
 
-def _is_question_like(text: str, tokens: tuple[str, ...]) -> bool:
+def _surface_question_like(text: str, tokens: tuple[str, ...]) -> bool:
     return "?" in text or tokens[:1] in {
         ("who",),
         ("what",),
@@ -2002,7 +3565,7 @@ def _is_question_like(text: str, tokens: tuple[str, ...]) -> bool:
     }
 
 
-def _is_request_like(tokens: tuple[str, ...]) -> bool:
+def _surface_request_like(tokens: tuple[str, ...]) -> bool:
     token_set = set(tokens)
     return bool(
         tokens[:1]
@@ -2031,13 +3594,35 @@ def _tokenize(text: str) -> tuple[str, ...]:
     return tuple(re.findall(r"[a-z0-9']+", text.lower()))
 
 
-def _assistant_compositional_parse(
+def _compose_primary_frame(
     text: str,
     tokens: tuple[str, ...],
     intent: AssistantIntent,
+    *,
+    question_like: bool | None = None,
+    functional_parse: FunctionalParse | None = None,
 ) -> dict[str, Any] | None:
-    frame_match = AssistantFrameRegistry.match(text, tokens, intent)
-    return frame_match.to_composition() if frame_match is not None else None
+    if intent == "assistant_identity":
+        return _identity_composition(text, tokens)
+    if intent == "assistant_status":
+        return _self_status_composition(text, tokens, question_like=question_like)
+    if intent in {
+        "social_greeting",
+        "assistant_behavior",
+        "personal_goal_advice",
+        "open_domain",
+    }:
+        return _compose_functional_frame(
+            text,
+            tokens,
+            intent,
+            functional_parse=functional_parse,
+        )
+    return _compose_semantic_frame(
+        text,
+        tokens,
+        intent,
+    )
 
 
 def _assistant_frame_id(composition: dict[str, Any]) -> str:
@@ -2046,7 +3631,7 @@ def _assistant_frame_id(composition: dict[str, Any]) -> str:
     return f"{intent}.{pattern}"
 
 
-def _semantic_slot_composition(
+def _compose_semantic_frame(
     text: str,
     tokens: tuple[str, ...],
     intent: AssistantIntent,
@@ -2092,12 +3677,14 @@ def _semantic_slot_composition(
     }
 
 
-def _functional_relation_composition(
+def _compose_functional_frame(
     text: str,
     tokens: tuple[str, ...],
     intent: AssistantIntent,
+    *,
+    functional_parse: FunctionalParse | None = None,
 ) -> dict[str, Any] | None:
-    parse = parse_functional_relations(tokens, question_mark="?" in text)
+    parse = functional_parse or parse_functional_relations(tokens, question_mark="?" in text)
     if parse is None or functional_frame_kind(parse) != intent:
         return None
     payload = parse.to_dict()
@@ -2470,8 +4057,26 @@ def _first_present(tokens: tuple[str, ...], candidates: tuple[str, ...]) -> str:
     return next((token for token in tokens if token in candidate_set), "")
 
 
+def _detect_social_status(text: str) -> bool:
+    """Check if raw text contains a "how are you" -type social question.
+
+    Used as a fallback when UOL atoms overfit on noise tokens (e.g.
+    "lol, how are you?" where "lol" becomes the action).
+    """
+    lower = text.lower().strip().rstrip("?.,!;: ")
+    # Avoid false positives: "you doing" matches "what are you doing" (action Q, not status Q).
+    # Only match when the first word is "how" (how are you doing, how you doing).
+    if "you doing" in lower and not lower.startswith("how"):
+        return False
+    patterns = ("how are you", "how's it going", "how do you feel", "how are you doing", "how you doing")
+    return any(p in lower for p in patterns)
+
+
 def _self_status_composition(
-    text: str, tokens: tuple[str, ...]
+    text: str,
+    tokens: tuple[str, ...],
+    *,
+    question_like: bool | None = None,
 ) -> dict[str, Any] | None:
     token_set = set(tokens)
     if not tokens:
@@ -2487,7 +4092,9 @@ def _self_status_composition(
     if autobiographical_terms:
         return None
     command_like = tokens[:1] in {("show",), ("report",), ("summarize",), ("list",)}
-    question_or_command = _is_question_like(text, tokens) or command_like
+    question_or_command = (
+        _surface_question_like(text, tokens) if question_like is None else question_like
+    ) or command_like
     if not question_or_command:
         return None
     self_reference = bool(token_set & {"you", "your"})
@@ -2764,6 +4371,34 @@ def _matches_name_identity_frame(text: str, tokens: tuple[str, ...]) -> bool:
     return attribute_question or explicit_request or question_fragment
 
 
+def _profile_attribute_requested(tokens: tuple[str, ...]) -> str | None:
+    """First-person attribute recall question → 'name' | 'location' | 'age' | None.
+
+    Catches 'what is my name', 'where do I live', 'how old am I'. Requires a
+    question frame plus a first-person marker so it never fires on third-person
+    or non-questions. Returns None for anything else (falls through to routing).
+    """
+    token_set = set(tokens)
+    # Third-party / relational questions ("how old is my child", "my son's name")
+    # belong to child/household memory, not the user's own attributes.
+    if token_set & {
+        "child", "children", "son", "daughter", "kid", "kids", "baby",
+        "family", "household", "wife", "husband", "mom", "dad", "mother", "father",
+    }:
+        return None
+    if not (token_set & {"my", "i", "me", "mine", "am"}):
+        return None
+    if not (token_set & {"what", "where", "who", "how", "whats"}):
+        return None
+    if "name" in token_set and (token_set & {"my", "mine"}):
+        return "name"
+    if "location" in token_set or ("where" in token_set and token_set & {"live", "from", "located", "stay"}):
+        return "location"
+    if "age" in token_set or ("how" in token_set and "old" in token_set):
+        return "age"
+    return None
+
+
 def _is_possessive_name_question_fragment(tokens: tuple[str, ...]) -> bool:
     semantic_tokens = tuple(
         token for token in tokens if token not in {"please", "now", "really"}
@@ -3030,12 +4665,20 @@ def _assistant_uol(
     tokens: tuple[str, ...],
     intent: AssistantIntent,
     composition: dict[str, Any] | None = None,
+    *,
+    uol_act: dict[str, Any] | None = None,
 ) -> dict[str, Any]:
-    speech_act = (
-        "question"
-        if "?" in text or tokens[:1] in {("who",), ("what",), ("why",), ("how",)}
-        else "request"
-    )
+    speech_act = "request"
+    if uol_act is not None:
+        act_type = str(uol_act.get("act", ""))
+        if act_type == "question":
+            speech_act = "question"
+        elif act_type == "claim":
+            speech_act = "statement"
+        elif act_type:
+            speech_act = act_type
+    elif "?" in text or tokens[:1] in {("who",), ("what",), ("why",), ("how",)}:
+        speech_act = "question"
     subject = "user"
     action = _first_action_token(tokens)
     object_value = _object_hint(text, tokens, intent)
@@ -3169,7 +4812,7 @@ def _route_hint(
         return "device_action"
     if intent == "unknown":
         return "cloud_handoff"
-    if intent in {"personal_goal_advice", "open_domain"}:
+    if intent == "personal_goal_advice":
         return "cloud_handoff"
     return "local_answer"
 
@@ -3905,9 +5548,9 @@ def _debug_notes(
             ("give",),
             ("tell",),
         }
-        if _is_question_like(text, tokens):
+        if _surface_question_like(text, tokens):
             notes.append("question_mapped_by_semantic_parse_not_question_mark")
-        elif outward_request or _is_request_like(tokens):
+        elif outward_request or _surface_request_like(tokens):
             notes.append("request_mapped_by_semantic_parse_not_question_mark")
         else:
             notes.append("statement_mapped_by_semantic_parse_not_question_mark")
@@ -3944,24 +5587,17 @@ def _is_broad_personal_memory_request(tokens: tuple[str, ...]) -> bool:
 
 def _is_routine_memory_request(
     tokens: tuple[str, ...],
-
-
-
 ) -> bool:
     token_set = set(tokens)
     routine_terms = _semantic_family_terms(
         tokens,
         semantic_classes={"routine_concept"},
-
-
     )
     if routine_terms:
         return True
     day_terms = _semantic_family_terms(
         tokens,
         semantic_classes={"temporal_descriptor"},
-
-
     )
     return bool(
         ({"school"} & day_terms or {"work"} & day_terms)
@@ -4117,14 +5753,21 @@ def _has_token_sequence(tokens: tuple[str, ...], sequence: tuple[str, ...]) -> b
     )
 
 
+_URGENT_HEALTH_CACHE: dict[str, Any] | None = None
+
 def _has_urgent_health_frame(tokens: tuple[str, ...]) -> bool:
+    global _URGENT_HEALTH_CACHE
+    if _URGENT_HEALTH_CACHE is None:
+        from melm.contracts import load_contract_json
+        payload = load_contract_json("health_disclaimers.v1.json")
+        _URGENT_HEALTH_CACHE = {
+            "urgent_terms": set(payload.get("urgent_terms", [])),
+            "urgent_pairs": tuple(tuple(pair) for pair in payload.get("urgent_pairs", [])),
+        }
     token_set = set(tokens)
-    from melm.contracts import load_contract_json
-    payload = load_contract_json("health_disclaimers.v1.json")
-    urgent_terms = set(payload.get("urgent_terms", []))
-    urgent_pairs = tuple(tuple(pair) for pair in payload.get("urgent_pairs", []))
     return bool(
-        token_set & urgent_terms or _has_any_token_sequence(tokens, urgent_pairs)
+        token_set & _URGENT_HEALTH_CACHE["urgent_terms"]
+        or _has_any_token_sequence(tokens, _URGENT_HEALTH_CACHE["urgent_pairs"])
     )
 
 

@@ -276,6 +276,7 @@ class AssistantOSKernel:
         self.executed_jobs: list[str] = []
         self.last_synthesis: BoundedSynthesisResult | None = None
         self._pending_greeting_context: str | None = None
+        self._last_decision_intent: str | None = None
         self.last_response_integrity: ResponseIntegrityAssessment | None = None
         self._current_self_status: dict[str, Any] = {}
         if self.store is not None:
@@ -459,7 +460,8 @@ class AssistantOSKernel:
         decision = OnDeviceAssistantRouter(
             self.profile,
             store=self.store,
-        ).handle(utterance)
+        ).handle(utterance, last_intent=self._last_decision_intent)
+        self._last_decision_intent = decision.intent
         # Learned-fact lookup for open_domain / unknown: if we have a stored
         # fact matching the extracted topic, answer locally instead of handing
         # off to the cloud. If none exists and a research_provider is wired,

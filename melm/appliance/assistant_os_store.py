@@ -1633,6 +1633,51 @@ class AssistantOSStore:
         rows = self.connection.execute("SELECT key, value_json FROM self_state")
         return {str(row["key"]): _loads(row["value_json"]) for row in rows}
 
+    def save_self_identity(self, identity_dict: dict[str, Any]) -> None:
+        self.connection.execute(
+            """
+            INSERT INTO self_state(key, value_json, updated_at)
+            VALUES (?, ?, ?)
+            ON CONFLICT(key) DO UPDATE SET
+                value_json=excluded.value_json,
+                updated_at=excluded.updated_at
+            """,
+            ("self_identity", _json(identity_dict), _now()),
+        )
+        self.connection.commit()
+
+    def load_self_identity(self) -> dict[str, Any] | None:
+        row = self.connection.execute(
+            "SELECT value_json FROM self_state WHERE key = ?",
+            ("self_identity",),
+        ).fetchone()
+        if row is None:
+            return None
+        return _loads(row["value_json"])
+
+    def set_given_name(self, name: str) -> None:
+        self.connection.execute(
+            """
+            INSERT INTO self_state(key, value_json, updated_at)
+            VALUES (?, ?, ?)
+            ON CONFLICT(key) DO UPDATE SET
+                value_json=excluded.value_json,
+                updated_at=excluded.updated_at
+            """,
+            ("given_name", _json(name), _now()),
+        )
+        self.connection.execute(
+            """
+            INSERT INTO self_state(key, value_json, updated_at)
+            VALUES (?, ?, ?)
+            ON CONFLICT(key) DO UPDATE SET
+                value_json=excluded.value_json,
+                updated_at=excluded.updated_at
+            """,
+            ("has_name", _json(True), _now()),
+        )
+        self.connection.commit()
+
     def record_turn(
         self,
         *,
