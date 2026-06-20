@@ -1042,7 +1042,7 @@ class OnDeviceAssistantRouter:
         if intent == "story":
             return self._story(utterance)
         if intent == "assistant_identity":
-            return self._assistant_identity(utterance)
+            return self._assistant_identity(utterance, parse_bundle)
         if intent == "assistant_status":
             return self._assistant_status(utterance)
         if intent == "weather":
@@ -1165,7 +1165,7 @@ class OnDeviceAssistantRouter:
             reason="self_model_response_behavior",
         )
 
-    def _assistant_identity(self, utterance: str) -> AssistantDecision:
+    def _assistant_identity(self, utterance: str, parse_bundle: _ParseBundle | None = None) -> AssistantDecision:
         answer = (
             "I am MELM Local Assistant OS. I run local-first on this device, "
             "using local memory, cached tools, and confirmed actions before "
@@ -1175,17 +1175,30 @@ class OnDeviceAssistantRouter:
         pool = pools.get("assistant_identity", [])
         if pool:
             answer = pool[0].get("text", answer)
+        # Derive identity action from composition for evidence-key tagging
+        tokens = _tokenize(utterance)
+        composition = _identity_composition(utterance, tokens)
+        action = composition.get("action", "identify") if composition else "identify"
+        # "why" follow-up after identity explanation — override action
+        stripped = utterance.strip().lower().rstrip("?").strip()
+        if action == "identify" and parse_bundle is not None and \
+           parse_bundle.last_intent == "assistant_identity" and \
+           stripped in ("why", "why not"):
+            action = "explain_identity"
+        evidence = (
+            "self_model.name",
+            "self_model.purpose",
+            "self_model.local_capabilities",
+            "self_model.limits",
+        )
+        if action in ("suggest_name", "name_awareness", "name_origin", "explain_identity"):
+            evidence = evidence + (f"identity_action:{action}",)
         return AssistantDecision(
             utterance=utterance,
             intent="assistant_identity",
             route="local_answer",
             answer=answer,
-            evidence_keys=(
-                "self_model.name",
-                "self_model.purpose",
-                "self_model.local_capabilities",
-                "self_model.limits",
-            ),
+            evidence_keys=evidence,
             local_memory_used=True,
             confidence=0.97,
             reason="self_model_identity",
@@ -4316,6 +4329,24 @@ def _identity_composition(text: str, tokens: tuple[str, ...]) -> dict[str, Any] 
             topic_basis,
             "yourself:assistant_reflexive",
         )
+    # Name suggestion/awareness patterns — checked only when no higher-priority pattern matched
+    if not pattern:
+        name_tokens = {"name", "named", "call", "calling"}
+        if name_tokens & set(tokens):
+            if "what" in tokens and "should" in tokens and "i" in tokens and "you" in tokens:
+                pattern = "what_modal_i_call_you"
+                action = "suggest_name"
+                focus = "name"
+                basis = ("what:attribute_question", "should:deontic_modal", "i:self_deixis", "call:label_action", "you:assistant_deixis")
+            elif "name" in tokens and "your" in tokens and \
+                 any(q in tokens for q in ("do", "what", "did", "have", "who", "is", "are")):
+                if "yourself" in tokens:
+                    action = "name_origin"
+                else:
+                    action = "name_awareness"
+                focus = "name"
+                pattern = "name_awareness_question"
+                basis = ("name:identity_attribute", "your:assistant_possessive")
     if not pattern:
         return None
     notes: list[str] = []

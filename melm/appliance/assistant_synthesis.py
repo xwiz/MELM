@@ -126,6 +126,103 @@ def _handle_story(self: BoundedLocalSynthesizer, decision: AssistantDecision, ev
 
 
 def _handle_identity(self: BoundedLocalSynthesizer, decision: AssistantDecision, evidence: tuple[SynthesisEvidence, ...]) -> str | None:
+    evidence_set = set(decision.evidence_keys) if decision.evidence_keys else set()
+
+    if "identity_action:suggest_name" in evidence_set:
+        return _handle_identity_name_suggestion(self, decision, evidence)
+
+    if "identity_action:name_awareness" in evidence_set:
+        return _handle_identity_name_awareness(self, decision, evidence)
+
+    if "identity_action:name_origin" in evidence_set:
+        return _handle_identity_name_origin(self, decision, evidence)
+
+    if "identity_action:explain_identity" in evidence_set:
+        return _handle_identity_explain(self, decision, evidence)
+
+    return _handle_identity_derived(self, decision, evidence)
+
+
+def _handle_identity_derived(self: BoundedLocalSynthesizer, decision: AssistantDecision, evidence: tuple[SynthesisEvidence, ...]) -> str | None:
+    try:
+        if self.store is not None:
+            from .assistant_skill_self_identity import analyze_user_identity, derive_identity_narrative
+            user_id = getattr(self.profile, "user_id", "default")
+            identity = analyze_user_identity(self.store, user_id)
+            if identity is not None:
+                mood_id = "neutral"
+                if decision.session_mood is not None:
+                    mood_id = getattr(decision.session_mood, "mood_id", "neutral")
+                narrative = derive_identity_narrative(identity, mood_id)
+                if narrative is not None:
+                    return narrative
+    except Exception:
+        pass
+    summary = _assistant_identity_summary(evidence)
+    return summary if summary else None
+
+
+def _handle_identity_name_suggestion(self: BoundedLocalSynthesizer, decision: AssistantDecision, evidence: tuple[SynthesisEvidence, ...]) -> str | None:
+    try:
+        if self.store is not None:
+            from .assistant_skill_self_identity import analyze_user_identity, get_name_awareness_template
+            user_id = getattr(self.profile, "user_id", "default")
+            identity = analyze_user_identity(self.store, user_id)
+            if identity is not None:
+                result = get_name_awareness_template(identity, "name_suggestion")
+                if result is not None:
+                    return result
+    except Exception:
+        pass
+    summary = _assistant_identity_summary(evidence)
+    return summary if summary else None
+
+
+def _handle_identity_name_awareness(self: BoundedLocalSynthesizer, decision: AssistantDecision, evidence: tuple[SynthesisEvidence, ...]) -> str | None:
+    try:
+        if self.store is not None:
+            from .assistant_skill_self_identity import analyze_user_identity, get_name_awareness_template
+            user_id = getattr(self.profile, "user_id", "default")
+            identity = analyze_user_identity(self.store, user_id)
+            if identity is not None:
+                key = "has_name" if identity.has_name else "no_name"
+                result = get_name_awareness_template(identity, key)
+                if result is not None:
+                    return result
+    except Exception:
+        pass
+    summary = _assistant_identity_summary(evidence)
+    return summary if summary else None
+
+
+def _handle_identity_name_origin(self: BoundedLocalSynthesizer, decision: AssistantDecision, evidence: tuple[SynthesisEvidence, ...]) -> str | None:
+    return "My name was given to me. It's part of who I am now."
+
+
+def _handle_identity_explain(self: BoundedLocalSynthesizer, decision: AssistantDecision, evidence: tuple[SynthesisEvidence, ...]) -> str | None:
+    try:
+        if self.store is not None:
+            from .assistant_skill_self_identity import analyze_user_identity, derive_identity_explanation
+            user_id = getattr(self.profile, "user_id", "default")
+            identity = analyze_user_identity(self.store, user_id)
+            if identity is not None:
+                result = derive_identity_explanation(identity)
+                if result is not None:
+                    return result
+    except Exception:
+        pass
+    return "I see myself based on the things you ask me to do most often, especially the conversations that feel most meaningful."
+
+
+def _handle_identity_name_given(self: BoundedLocalSynthesizer, decision: AssistantDecision, evidence: tuple[SynthesisEvidence, ...]) -> str | None:
+    try:
+        if self.store is not None:
+            state = self.store.load_self_state() if hasattr(self.store, "load_self_state") else {}
+            given_name = state.get("given_name", None)
+            if given_name:
+                return f"You can call me {given_name}. That's the name you gave me."
+    except Exception:
+        pass
     summary = _assistant_identity_summary(evidence)
     return summary if summary else None
 
@@ -168,6 +265,8 @@ def _handle_common_sense_safety(self: BoundedLocalSynthesizer, decision: Assista
         return template if template else "Wear school clothes and carry rain protection because the forecast mentions rain."
     if decision.reason == "local_common_sense_policy":
         return _public_clothing_safety_answer(decision.utterance)
+    if decision.reason == "safety_policy_triggered":
+        return _public_clothing_safety_answer(decision.utterance)
     return None
 
 
@@ -187,6 +286,9 @@ def _handle_autobiographical_memory(self: BoundedLocalSynthesizer, decision: Ass
 
 
 def _handle_personal_memory(self: BoundedLocalSynthesizer, decision: AssistantDecision, evidence: tuple[SynthesisEvidence, ...]) -> str | None:
+    # Guard: knowledge write/contradiction decisions already have their pre-rendered answer
+    if decision.reason in ("knowledge_write", "knowledge_contradiction"):
+        return None
     summary = _personal_memory_summary(evidence)
     if summary:
         template = _load_answer_template(decision.intent, "personal_memory_summary")
@@ -208,6 +310,42 @@ def _handle_media_playback(self: BoundedLocalSynthesizer, decision: AssistantDec
             "There is no pending media action left to execute unless you ask again."
         )
     return None
+
+
+def _handle_music_generation(self: BoundedLocalSynthesizer, decision: AssistantDecision, evidence: tuple[SynthesisEvidence, ...]) -> str | None:
+    """Generate MIDI music from the request description."""
+    try:
+        from .assistant_music_midi import MusicDescription, MidiRenderer
+        desc = MusicDescription()
+        text_lower = decision.utterance.lower()
+        if "calm" in text_lower or "relaxing" in text_lower:
+            desc = MusicDescription(genre="classical", mood="calm", tempo_bpm=80)
+        elif "happy" in text_lower or "upbeat" in text_lower:
+            desc = MusicDescription(genre="waltz", mood="happy", tempo_bpm=130)
+        elif "jazz" in text_lower or "blues" in text_lower:
+            desc = MusicDescription(genre="jazz", mood="calm", tempo_bpm=120)
+        elif "sad" in text_lower or "melancholy" in text_lower:
+            desc = MusicDescription(genre="classical", mood="sad", tempo_bpm=60, mode="minor")
+        renderer = MidiRenderer()
+        midi_bytes = renderer.render(desc)
+        import tempfile, os
+        out_dir = os.path.join(os.path.dirname(__file__), "..", "generated_music")
+        os.makedirs(out_dir, exist_ok=True)
+        counter = 1
+        while os.path.exists(os.path.join(out_dir, f"{desc.genre}_{desc.mood}_{counter:03d}.mid")):
+            counter += 1
+        fname = f"{desc.genre}_{desc.mood}_{counter:03d}.mid"
+        fpath = os.path.join(out_dir, fname)
+        with open(fpath, "wb") as f:
+            f.write(midi_bytes)
+        return f"I composed a {desc.mood} {desc.genre} piece for you. Check {fname}"
+    except Exception as exc:
+        return f"I tried to compose some music but ran into an issue: {exc}"
+
+
+def _handle_music_discovery(self: BoundedLocalSynthesizer, decision: AssistantDecision, evidence: tuple[SynthesisEvidence, ...]) -> str | None:
+    """Handle music discovery response."""
+    return decision.answer
 
 
 def _handle_social_contact(self: BoundedLocalSynthesizer, decision: AssistantDecision, evidence: tuple[SynthesisEvidence, ...]) -> str | None:
@@ -261,6 +399,16 @@ def _handle_unknown(
     from .assistant_skill_research import (
         extract_topic, extract_action, format_open_domain_answer,
     )
+    # Social-pattern fallback: if utterance looks like a "how are you"
+    # question despite UOL parse derailment (e.g. "lol, how are you?"),
+    # answer with mood state instead of a generic handoff.
+    from .local_assistant_router import _detect_social_status
+    if _detect_social_status(decision.utterance):
+        mood = decision.session_mood
+        if mood and hasattr(mood, "mood_id") and mood.mood_id:
+            mood_label = str(mood.mood_id).replace("_", " ").title()
+            return f"I'm feeling {mood_label.lower()}. Thanks for asking."
+        return "I'm doing well, thanks for asking."
     learned = [e for e in evidence if e.kind == "learned_fact"]
     if learned:
         # Kernel already populated the learned answer on the decision.
@@ -270,21 +418,32 @@ def _handle_unknown(
     return format_open_domain_answer(topic=topic or "that", action=action)
 
 
-def _build_pool_key(intent: str, reason: str) -> str:
-    return f"{intent}:{reason}" if reason else intent
-
-
 def _pool_select(
     decision: AssistantDecision,
     profile: LocalAssistantProfile,
 ) -> str | None:
+    from datetime import datetime
     from melm.contracts import load_contract_json
+    from .assistant_mood_engine import _build_pool_key, _resolve_template
     try:
         pools = load_contract_json("response_pools.v1.json")
     except Exception:
         return None
-    key = _build_pool_key(decision.intent, decision.reason)
-    pool = pools.get(key) or pools.get(decision.intent)
+    mood = decision.session_mood
+    mood_id = getattr(mood, "mood_id", "neutral") if mood is not None else "neutral"
+    occ = decision.intent_occurrence
+    familiarity = getattr(decision, "familiarity", 0)
+    hour = datetime.now().hour
+    sensory_tag = "generic"
+    affect = getattr(decision, "utterance_affect", None)
+    if affect is not None:
+        tags = getattr(affect, "dominant_tags", None) or getattr(affect, "tags", None)
+        if tags:
+            sensory = [t for t in tags if t.startswith("sensory.")]
+            if sensory:
+                sensory_tag = sensory[0]
+    key = _build_pool_key(decision.intent, mood, occ, str(familiarity), str(hour), sensory_tag)
+    pool = _resolve_template(pools, key)
     if not pool:
         return None
     seed = _template_seed(decision, key)
@@ -309,6 +468,7 @@ def _template_seed(
 _ALWAYS_RESPOND_INTENTS: frozenset[str] = frozenset({
     "common_sense_safety", "health_advice", "social_greeting",
     "assistant_identity", "identity_switch", "identity_probe_detected",
+    "music_generation", "music_discovery",
 })
 
 _SHORT_CIRCUIT_REASONS: frozenset[str] = frozenset({
@@ -326,6 +486,8 @@ _ANSWER_HANDLERS: dict[str, Any] = {
     "autobiographical_memory": _handle_autobiographical_memory,
     "personal_memory": _handle_personal_memory,
     "media_playback": _handle_media_playback,
+    "music_generation": _handle_music_generation,
+    "music_discovery": _handle_music_discovery,
     "social_greeting": _handle_social_greeting,
     "social_contact": _handle_social_contact,
     "open_domain": _handle_open_domain,
@@ -554,7 +716,7 @@ class BoundedLocalSynthesizer:
                                 pass
                         valence = getattr(decision.session_mood, "valence", 0.0) if decision.session_mood else 0.0
                         arousal = getattr(decision.session_mood, "arousal", 0.0) if decision.session_mood else 0.0
-                        plan = plan_story(
+                        story_plan = plan_story(
                             utterance=decision.utterance,
                             functional_parse=decision.functional_parse,
                             user_name=self.profile.user_name,
@@ -567,7 +729,7 @@ class BoundedLocalSynthesizer:
                             arousal=arousal,
                         )
                         pipeline = StoryPromptPipeline()
-                        template_hint = pipeline.build_string(plan)
+                        template_hint = pipeline.build_string(story_plan)
                     else:
                         template_hint = f"{system}\n\n{user_msg}"
         except Exception:
@@ -597,7 +759,11 @@ class BoundedLocalSynthesizer:
         if result is not None and result.decoder != "template":
             v = verify_answer(plan, result.answer, packet)
             if v.passed:
-                return result.answer, result.decoder
+                answer = result.answer
+                if decision.intent == "story":
+                    name = self.profile.user_name or "the character"
+                    answer += f"\n\nWhat do you think {name} learned from this story?"
+                return answer, result.decoder
         return template_answer, "template"
 
     def _answer(
@@ -623,19 +789,52 @@ class BoundedLocalSynthesizer:
             from melm.contracts import load_contract_json
             _VERB_STATES_CACHE = load_contract_json("verb_states.v1.json")
             _VALENCE_DATA_CACHE = load_contract_json("state_valences.v1.json").get("valences", {})
-        from .assistant_os_kernel import _simple_tokenize
-        tokens = _simple_tokenize(decision.utterance)
-        verb = tokens[0].lower() if tokens else ""
+        from .local_assistant_router import _extract_verb
+        verb = _extract_verb(uol_act=decision.uol_act)
         if verb:
-            mc = derive_moral_context(verb, "biological_body", _VERB_STATES_CACHE, _VALENCE_DATA_CACHE)
+            mc = derive_moral_context(verb, "person", _VERB_STATES_CACHE, _VALENCE_DATA_CACHE)
             if mc.harm_severity == "high":
                 return _urgent_harm_answer(decision, mc)
         handler = _ANSWER_HANDLERS.get(decision.intent)
         if handler is not None:
             result = handler(self, decision, evidence)
             if result is not None:
+                result = _enforce_response_mode(result, decision.session_mood)
+                result = self._maybe_emoji(decision, result)
                 return result
-        return _render_contract_answer(decision, evidence, self.profile) or decision.answer
+        fallback = _render_contract_answer(decision, evidence, self.profile)
+        if fallback is None and decision.uol_act is not None:
+            from .assistant_decoder_atom import AtomTemplateBackend
+            _atom_gen = getattr(self, '_atom_backend', None)
+            if _atom_gen is None:
+                _atom_gen = AtomTemplateBackend()
+                self._atom_backend = _atom_gen
+            fallback = _atom_gen.generate(decision.intent, decision.uol_act, evidence)
+        if fallback is None:
+            fallback = decision.answer
+        fallback = _enforce_response_mode(fallback, decision.session_mood)
+        return self._maybe_emoji(decision, fallback)
+
+    def _maybe_emoji(self, decision: AssistantDecision, answer: str) -> str:
+        """Prepend mood emoji if capability enabled (default off for portability)."""
+        from .local_assistant_router import _capability_flag
+        if _capability_flag("mood_affect", "mood_emoji", False):
+            emoji_map = {
+                "neutral": "\U0001F610",
+                "calm": "\U0001F60C",
+                "happy": "\U0001F60A",
+                "excited": "\U0001F929",
+                "curious": "\U0001F914",
+                "annoyed": "\U0001F612",
+                "frustrated": "\U0001F624",
+                "hurt": "\U0001F622",
+                "sad": "\U0001F61E",
+                "listening": "\U0001F442",
+            }
+            mood_id = getattr(decision.session_mood, "mood_id", "neutral") if decision.session_mood else "neutral"
+            emoji = emoji_map.get(mood_id, "\U0001F610")
+            return f"{emoji} {answer}"
+        return answer
 
     def _get_behavior_engine(self):
         """Lazily create the BehaviorEngine, homed on the store so cooldown
@@ -1143,6 +1342,25 @@ class BoundedLocalSynthesizer:
             ),
             decoder_used="",
         )
+
+
+def _enforce_response_mode(answer: str, mood: Any) -> str:
+    """Truncate answer to response_mode.max_words from mood_states contract."""
+    if mood is None:
+        return answer
+    mode = getattr(mood, "response_mode", "normal")
+    try:
+        from melm.contracts import load_contract_json
+        states = load_contract_json("mood_states.v1.json")
+        modes_cfg = states.get("response_modes", {})
+        mode_cfg = modes_cfg.get(mode, {})
+        max_words = mode_cfg.get("max_words", 0)
+        if max_words and len(answer.split()) > max_words:
+            words = answer.split()
+            return " ".join(words[:max_words]) + "..."
+    except Exception:
+        pass
+    return answer
 
 
 def _policy(key: str, value: str) -> SynthesisEvidence:
