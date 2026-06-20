@@ -21,6 +21,7 @@
 - **Meaning is three-timescale**: T1 utterance meaning (UOL parse), T2 conversation meaning (personal_experience entity with outcome/polarity/learned_facts slots), T3 historical meaning (lexicon + entity store). Each level aggregates from below.
 - **UOL inline dicts are transitional**: The `_VERBS` and `_KNOWN_NOMINAL_DOMAINS` dicts in `functional_grammar.py` use private class names not in the taxonomy. They will be removed when UOL reads verb/noun classes from the lexical_senses table.
 - **personal_experience now has slots**: outcome (required), polarity, learned_fact_ids, follow_up, intent_achieved (see spec §14.3)
+- **T4 moral cognition**: action meaning is a fourth timescale derived from verb causality (see spec §16). `derive_moral_context()` is a pure function, not a pipeline stage. Two contracts: `verb_states.v1.json` (~50 verb entries) and `state_valences.v1.json` (~40 state→score mappings). No atomizer changes needed — engine reads existing UOL atoms. Replaces the 5 hardcoded duplication sites in the router. Total: ~205 new Python lines + ~18 KB contract data. Pi-compatible: pure dict lookups, no ML, stdlib-only.
 
 ## Progress
 ### Done
@@ -48,6 +49,31 @@
 - **C1+C2+C3: UOL reads from lexical_senses** — `_UOL_LEXICON` ref + `set_uol_lexicon()` in `functional_grammar.py`. `_lemma()` and `_semantic_class()` fall back to lexicon for verbs not in `_VERBS`. Wired into `local_assistant_router.py` at module init. 16 tests.
 - **C4: T2 personal_experience entity writer** — `assistant_experience_writer.py` with `record_conversation_experience()` wired into kernel `_remember()`. Writes `outcome`/`polarity`/`intent_achieved`/`learned_fact_ids`/`follow_up` slots from synthesis result. 23 tests.
 - **Fixed `seed_class_schemas()` bug** — `class_schema_slots` INSERT for personal_experience referenced nonexistent `updated_at` column. Removed column ref to match table DDL. Unblocks 4 entity architecture tests.
+- **G4: Unified `AffectSignal`** — deleted engine's duplicate, single `uol_types.AffectSignal` with all 11 fields (valence, arousal, confidence, source, recovery_signals, is_complaint, mood_id, dominant_tags, identity_claim, identity_probe). Updated all consumers.
+- **G5: Fixed `load_mood_regions()` key** (`"regions"` → `"moods"`). Contract now consumable.
+- **G12: Fixed `_filter_recovery()` and `_is_complaint()`** — check semantic tags (`"recovery_signal"`, `"complaint"`) not lemma-strings.
+- **G16: Extracted `_BE_FORMS` frozenset** to module-level constant (4 inline constructs removed).
+- **G2: Router calls `compute_utterance_affect(lemmas, uol_act, lexicon)`** instead of `infer_affect()`. Added `lemmas` to `_ParseBundle`. All three tiers (lexicon, UOL, perception) now run.
+- **G1: Added `decay_mood()` pure function** (6h valence / 1.5h arousal half-lives, configurable baselines). Added `last_updated` to `MoodState`. Applied decay in `update_session_mood()` (between-turn) and `initial_mood_from_baseline()` (T3 summaries). 12h annoyed → near-neutral without positive input.
+- **G13: Fixed `MAX(event_id)` lexicographic bug** → `ORDER BY rowid DESC LIMIT 1` in both `count_intent_occurrences_in_session` and `count_utterance_occurrences_in_session`.
+- **G6/G7/G9/G14/G15: Fixed 5 store bugs** — entity_id collision (uuid), SQL WHERE filters (user_id/session_id), non-deterministic hash (sha256), missing commit (update_lexical_sense).
+- **G3: Wired store persistence** — kernel `_remember()` calls `set_mood_state()`; `handle()` calls `record_session_summary()` + `set_ambient_mood()`. Router `_load_or_init_mood()` passes real store.
+- **G8/G11: Added running tally + ring buffer** — `_intent_tallies` (per-session per-intent) and `_event_ring_buffer` (bounded 50 entries) to store. O(1) per turn instead of O(history) COUNT.
+- **32-test competition test** — `docs/sentience_competition_test.py` covers all acceptance scenarios (temporal decay, affect detection, EMA integration, cross-session, store persistence, running tally, T3 baseline, identity probes, O(L) efficiency, unified class, contract loading). 32/32 pass.
+- **106 regression tests pass** — store, synthesis, kernel, context gates, meaning invariant. Zero regressions.
+- **T5 moral cognition: contracts + engine + router patches (×5) + synthesis + authority** — `verb_states.v1.json` (59 verbs), `state_valences.v1.json` (98 valences), `reasoning/implications.py` with `derive_moral_context()` pure function + `record_verb_candidate()` ring buffer. Patched 5 router duplication sites: Sites 1-3 (urgent health → moral engine), Site 4 `_safety()` (verb from parse bundle + `_resolve_patient_type()` mapping + contract triggers), Site 5 `_health()` (removed hardcoded text). Synthesis `_answer()` short-circuits on high harm_severity. Authority `build_answer_plan()` accepts optional `MoralContext`. 14 engine tests + 5 moral contract tests. **223 total tests, 0 failures.**
+- **T5 bugfix: fixed dead code in synthesis `_answer()`** — `decision.tokens` field didn't exist on `AssistantDecision` dataclass, making the entire moral cognition check unreachable. Replaced with `_simple_tokenize(decision.utterance)` + contract caching via module-level globals (never re-reads from disk).
+- **T5 bugfix: `_has_urgent_health_frame()` contract caching** — was loading `health_disclaimers.v1.json` from disk on every call (4+ call sites per utterance). Now cached via `_URGENT_HEALTH_CACHE` module-level dict.
+- **T5 bugfix: `_safety()` verb extraction from UOL parse** — was using `tokens[0]` (first word of utterance, e.g. "i" or "can") instead of the actual verb. Now accepts `parse_bundle` and uses `_extract_verb()`.
+- **T5 bugfix: patient type → semantic class mapping** — `_extract_patient_type()` returned raw surface text (e.g. "john", "wall") which never matched `verb_states.v1.json` semantic class labels (e.g. "person", "physical_object"). Added `_PATIENT_TYPE_CLASS_MAP` dict and `_resolve_patient_type()` function. Default fallback is "person".
+- **T5 bugfix: missing valence entries** — "bruised" (-0.4) and "in_pain" (-0.5) scores were missing from `state_valences.v1.json`, silently scoring 0.0 for hit/hurt/assault/batter/injure/wound/torture verbs. Added both entries.
+- **T5 bugfix: `record_verb_candidate()` wired into router** — the runtime learning pathway (ring buffer → session entity) was defined but never called from production code. Wired at Sites 1-3 (classification) and Site 4 (`_safety()`) with lazy imports.
+- **T5 bugfix: contract loaders not exported from `melm/contracts/__init__.py`** — `load_verb_states`, `load_state_valences`, `validate_verb_states`, `validate_state_valences` added to imports and `__all__`.
+- **T5 bugfix: registry hash drift resolved** — `assistant_identity.v1` hash was MD5 but `check_compatibility()` uses SHA256 (12 pre-existing failures). `state_valences.v1` hash updated after adding entries. Both now match SHA256.
+- **Curiosity/background plan grounded** — `docs/curiosity_context_agreement_impl_plan.md` updated with Part I (Ground-Truth Assessment): codebase reality vs plan assumptions, 20 findings, P0-P3 recommendations, passive-over-threaded architecture recommendation.
+- **Self-identity test file** — `tests/test_assistant_self_identity_mvp.py` with 28 tests across 5 test classes (skill pure functions, router name patterns, kernel integration, store persistence, edge cases). Covers higher-mean-polarity wins, per-user isolation, min_data_points gate, name awareness/origin routing, full pipeline integration.
+- **Router name-awareness pattern expansion** — `_identity_composition()` in `local_assistant_router.py` now matches `"your"` OR `"you"` (without `"my"`) OR `"yourself"` alongside `"name"` for name_awareness/name_origin frames. Fixes "Do you have a name?" and "Did you name yourself?" routing to `assistant_identity`.
+- **Fixed `datetime.utcnow()` deprecation** — `assistant_skill_self_identity.py:123` replaced with `datetime.now(timezone.utc)`. Zero deprecation warnings.
 
 ### In Progress
 - **(none)**
@@ -66,14 +92,15 @@
 - Legacy hardcoded data (e.g. health disclaimer texts, safety policies) must be migrated to contracts per the priority table in `docs/assistant_os_spec.md` §11.1.
 
 ## Next Steps
-1. **Phase 4: Build skill module pattern** — `assistant_skill_meal.py`, `assistant_skill_story.py`, `assistant_skill_memory.py` complete.
-2. **Pi benchmark** — install on Pi 4/5, measure tok/s/TTFT/RSS with llguidanceBackend + small CausalLM.
-3. **BitNet b1.58 1B backend** — when Pi benchmark validates need for smaller/quantized decoder.
+1. **Pi benchmark** — install on Pi 4/5, measure tok/s/TTFT/RSS with llguidanceBackend + small CausalLM.
+2. **Phase 5 (optional): Creative behaviors** — mood_narrative, curiosity_follow_up, fatigue_pacing, distress_callback, rhythm_observation. Capability-gated off by default.
+3. **curiosity_context_agreement_impl_plan** — execute Phase 1 (schema + contracts), then Phase 2-6 per grounded plan at `docs/curiosity_context_agreement_impl_plan.md §I`.
+4. **BitNet b1.58 1B backend** — when Pi benchmark validates need for smaller/quantized decoder.
 
 
 ## Critical Context
-- **391 core tests pass** (57 router, 70 lexicon, 27 frame_linker, 75 entity, 24 authority, 38 reranker, 18 decoder, 29 llguidance, 6 contracts, 4 eval, 2 lifecycle, rest jobs/cli, 17 meaning_invariant, 16 uol_lexicon, 23 experience_writer). 0 regressions.
-- **18 registered contracts** in `registry.v1.json` (sense_candidate, semantic_classes, wn_supersense_map, verbnet_map, reserved_lexemes, router_lexicon_families, frame_templates, food_tags, health_disclaimers, safety_policies, story_components, weather_concepts, meal_scopes, assistant_identity, answer_templates, capability_manifest, memory_insights, router_semantic_aliases).
+- **~1,359 core tests pass** (key suites: 57 router, 70 lexicon, 27 frame_linker, 75 entity, 24 authority, 38 reranker, 18 decoder, 29 llguidance, 40 contracts, 17 meaning_invariant, 16 uol_lexicon, 23 experience_writer, 32 sentience_competition, 19 skill_base, 16 context_gates, 14 store_mvp, 14 kernel_mvp, 14 synthesis_mvp, 14 implications, 26 story_planning, 10 story_prompt, 9 story_cache, 7 story_integration, 28 self_identity, 28 moral_negation). 0 regressions.
+- **54 registered contracts** in `registry.v1.json` (includes sense_candidate, semantic_classes, wn_supersense_map, verbnet_map, reserved_lexemes, router_lexicon_families, frame_templates, food_tags, health_disclaimers, safety_policies, story_components, weather_concepts, meal_scopes, assistant_identity, answer_templates, capability_manifest, memory_insights, router_semantic_aliases, verb_states, state_valences, story_plan_schema, and 33 others).
 - **M3 sealed dictionary**: 72 words across 11 intent categories. Ingest/promote ≥80%, routing agreement ≥80%, retention ≥80%.
 - **9/9 classifiers migrated** to frame linker.
 - **`_FRAME_LINKER_MIGRATED_INTENTS`**: 8 intents — weather, story, media_playback, autobiographical_memory, meal_suggestion, common_sense_safety, social_contact, health_advice.
@@ -120,3 +147,13 @@
 - **`melm/appliance/functional_grammar.py`** — UOL lexicon integration: `_UOL_LEXICON` ref, `set_uol_lexicon()`, lexicon fallback in `_lemma()` and `_semantic_class()`. 16 tests.
 - **`melm/appliance/assistant_skill_base.py`** — Skill protocol: `SkillManifest`, `Skill` structural protocol, `SkillRegistry`. 19 tests.
 - **`melm/appliance/assistant_frame_ranker.py`** — E3 reranker with UOL token_roles consumption (_predicate_action_alignment_score, _object_alignment_score). 38 tests.
+- **`melm/appliance/uol_types.py`** — Unified `AffectSignal` with all 11 fields, updated `UolAct.to_dict()` serialization.
+- **`melm/appliance/assistant_mood_engine.py`** — `decay_mood()`, fixed `load_mood_regions()` key, fixed `_filter_recovery()`/`_is_complaint()`, `_BE_FORMS` constant, `last_updated` on `MoodState`, decay in `update_session_mood()` and `initial_mood_from_baseline()`.
+- **`melm/appliance/local_assistant_router.py`** — `compute_utterance_affect(lemmas, uol_act, lexicon)` replaces `infer_affect()`, `_ParseBundle.lemmas` field, `_load_or_init_mood` passes real store.
+- **`melm/appliance/assistant_os_store.py`** — `_intent_tallies` + `_event_ring_buffer`, `get_intent_tally()`, `get_recent_events()`, fixed `set_mood_state` (uuid), `current_mood_state` (WHERE clause), `query_session_summaries` (SQL filter), `write_anonymous_fact` (hashlib), `update_lexical_sense` (commit), `MAX(event_id)` fix.
+- **`melm/appliance/assistant_os_kernel.py`** — store passed to router, `_remember()` calls `set_mood_state()`, `handle()` calls `record_session_summary()` + `set_ambient_mood()`.
+- **`docs/final-sentience-gap-fixes.md`** — consolidated gap-fix plan (16 gaps, performance benchmarks, DeepSeek lessons, anti-regression invariants, sequencing).
+- **`docs/sentience-competition-test.py`** — 32 acceptance tests for all sentience scenarios. Run: `python docs/sentience_competition_test.py`.
+- **NAMELESS verb_state exploration** — analyzed 1,795 verb causality entries across 353 files at `C:\dev\nameless_vector\verb_state\`. Schema: verb → goals, mechanisms, pre/post states (physical/emotional/mental/positional) for subject and object. 115 verbs carry `_if_sentient` qualifiers on final object states — the natural bridge to moral cognition. Entity type overlap with our system is partial (193 subject types, 645 object types; `biological_body`, `object`, `concept`, `place` overlap).
+- **Moral cognition design** — `docs/assistant_os_spec.md §16`: defines T4 action meaning timescale, `derive_moral_context()` pure function, `verb_states.v1.json` + `state_valences.v1.json` contracts, integration plan to replace 5 router duplication sites. Total cost: ~205 Python lines + ~18 KB JSON. No atomizer changes, no new pipeline stage, pure stdlib.
+- **Moral cognition implementation plan** — `docs/moral_cognition_impl_plan.md`: 6-phase implementation plan with exact file lines, before/after patches, contract schemas, engine code, test plan, and documentation cleanup for 5 stale docs. Covers 3 learning pathways: NAMELESS seed extraction (`scripts/extract_nameless_verb_states.py`), VerbNet/Wikipedia offline extraction (`scripts/extract_verbnet_verb_states.py`), and runtime chat learning (bounded ring buffer → session entity → offline consolidation script). All offline extraction runs on dev machine only; runtime is bounded ring buffer + flush to personal_experience slot.
