@@ -13,6 +13,8 @@ import json
 from pathlib import Path
 import re
 import sqlite3
+import hashlib
+import uuid
 from typing import Any, Iterable
 
 from .local_assistant_router import LocalAssistantProfile
@@ -155,6 +157,21 @@ class StoredPromotion:
     created_at: str = ""
 
 
+@dataclass
+class MoodState:
+    mood_id: str
+    valence: float
+    arousal: float
+    response_mode: str
+    engagement_level: float = 0.0
+    is_listening: int = 0
+    trigger_reason: str = ""
+    user_id: str = ""
+    session_id: str = ""
+    turn_count: int = 0
+    last_updated: str = ""
+
+
 class AssistantOSStore:
     """Small SQLite ledger for assistant memory, policy, state, and inventory."""
 
@@ -165,6 +182,20 @@ class AssistantOSStore:
         self.connection = sqlite3.connect(str(path))
         self.connection.row_factory = sqlite3.Row
         self._active_session_id = ""
+        # In-memory running tallies for O(1) per-turn counting (G3)
+        self._intent_tallies: dict[tuple[str, str], int] = {}
+        self._event_ring_buffer: list[dict] = []
+        self._MAX_RING_BUFFER = 50
+        # Persistent home for the creative-behavior engine (cooldown state lives
+        # across turns; the synthesizer is rebuilt per turn). Opaque object.
+        self._behavior_engine: Any = None
+        # Per-session itinerary/working-memory scenarios (slice 9).
+        # INTENTIONALLY session/process-scoped working memory: persists across
+        # the per-turn router rebuild (this store object is long-lived) but
+        # resets on process restart by design. A trip plan is within-conversation
+        # working memory, so cross-session persistence is a deliberate non-goal
+        # for this layer (not entity-store/UOL-spine backed). See ADTC Issue 8a.
+        self._scenarios: dict[str, dict] = {}
         self._configure()
         self.initialize()
 
@@ -188,6 +219,7 @@ class AssistantOSStore:
                 local_only INTEGER NOT NULL,
                 cloud_eligible INTEGER NOT NULL DEFAULT 0,
                 scope TEXT NOT NULL DEFAULT 'private_local',
+                negated INTEGER NOT NULL DEFAULT 0,
                 updated_at TEXT NOT NULL
             );
 
@@ -611,6 +643,7 @@ class AssistantOSStore:
         self._ensure_entity_tables()
         self._ensure_entity_slots_columns()
         self._ensure_learning_ledger_tables()
+        self._ensure_lexical_senses_affect_columns()
         self.connection.execute(
             """
             INSERT INTO metadata(key, value) VALUES (?, ?)
@@ -784,7 +817,7 @@ class AssistantOSStore:
         age = profile.age
         location = profile.location
         culture = profile.culture
-        fact_rows = self.connection.execute("SELECT key, value, consent FROM user_facts").fetchall()
+        fact_rows = self.connection.execute("SELECT key, value, consent, negated FROM user_facts").fetchall()
         revoked_keys = {str(row["key"]) for row in fact_rows if not bool(row["consent"])}
 
         # Try entity store for facts first
@@ -1142,6 +1175,114 @@ class AssistantOSStore:
             "DELETE FROM entity_relations WHERE relation_id = ?", (relation_id,),
         )
 
+    # ── World fact CRUD (MVP3 knowledge typing) ───────────────────────────
+
+    def set_world_fact(
+        self,
+        entity_id: str,
+        subject: str,
+        relation: str,
+        object: str,
+        polarity: str,
+        provenance: str,
+        confidence: float,
+        source_utterance: str = "",
+    ) -> None:
+        now = _now()
+        self.add_entity(
+            entity_id=entity_id,
+            kind="world_fact",
+            label=f"{subject} {relation} {object} [{polarity}]",
+            semantic_class_id="world_fact",
+            canonical_lemma=f"{subject} {relation} {object}",
+        )
+        slots = {
+            "subject": subject,
+            "relation": relation,
+            "object": object,
+            "polarity": polarity,
+            "provenance": provenance,
+            "confidence": confidence,
+            "source_utterance": source_utterance,
+            "created_at": now,
+        }
+        for slot_name, value in slots.items():
+            self.set_entity_slot(entity_id, slot_name, value, provenance="world_fact")
+
+    def query_world_fact(
+        self,
+        subject: str,
+        relation: str,
+        object_val: str | None = None,
+    ) -> list[dict]:
+        """Query world facts matching (subject, relation, optional object)."""
+        if not subject:
+            return []
+        def _like_escape(s: str) -> str:
+            return s.replace("\\", "\\\\").replace("%", "\\%").replace("_", "\\_")
+        escaped_subject = _like_escape(subject)
+        escaped_relation = _like_escape(relation)
+        lemma_pattern = (
+            f"%{escaped_subject}%{escaped_relation}%{_like_escape(object_val)}%"
+            if object_val
+            else f"%{escaped_subject}%{escaped_relation}%"
+        )
+        rows = self.connection.execute(
+            """
+            SELECT e.entity_id, e.canonical_lemma
+            FROM entities e
+            WHERE e.kind='world_fact'
+              AND e.canonical_lemma LIKE ? ESCAPE '\\'
+            ORDER BY e.created_at DESC
+            """,
+            (lemma_pattern,),
+        ).fetchall()
+        result = []
+        for row in rows:
+            fact = {}
+            slot_rows = self.connection.execute(
+                "SELECT slot_name, value_json FROM entity_slots WHERE entity_id=?",
+                (row["entity_id"],),
+            ).fetchall()
+            for sr in slot_rows:
+                fact[str(sr["slot_name"])] = _loads(sr["value_json"])
+            result.append(fact)
+        return result
+
+    def find_contradicting_facts(
+        self,
+        subject: str,
+        relation: str,
+        object_val: str,
+        polarity: str,
+    ) -> list[dict]:
+        """Find world facts matching the proposition key with a different polarity."""
+        lemma = f"{subject} {relation} {object_val}"
+        rows = self.connection.execute(
+            """
+            SELECT s1.entity_id, s1.value_json AS current_polarity,
+                   s2.value_json AS current_confidence
+            FROM entity_slots s1
+            JOIN entity_slots s2 ON s1.entity_id = s2.entity_id
+            JOIN entities e ON e.entity_id = s1.entity_id
+            WHERE e.kind='world_fact'
+              AND s1.slot_name='polarity'
+              AND s2.slot_name='confidence'
+              AND e.canonical_lemma = ?
+              AND s1.value_json != ?
+            LIMIT 5
+            """,
+            (lemma, json.dumps(polarity)),
+        ).fetchall()
+        return [
+            {
+                "entity_id": row["entity_id"],
+                "polarity": _loads(row["current_polarity"]),
+                "confidence": float(_loads(row["current_confidence"], default=0)),
+            }
+            for row in rows
+        ]
+
     # ── Learning ledger CRUD ──────────────────────────────────────────────
 
     def add_atlas_edge(
@@ -1361,6 +1502,7 @@ class AssistantOSStore:
         local_only: bool = True,
         cloud_eligible: bool = False,
         scope: str = "private_local",
+        negated: bool = False,
         preserve_policy: bool = False,
     ) -> None:
         if preserve_policy:
@@ -1382,9 +1524,9 @@ class AssistantOSStore:
             """
             INSERT INTO user_facts(
                 key, value, source, confidence, consent, local_only,
-                cloud_eligible, scope, updated_at
+                cloud_eligible, scope, negated, updated_at
             )
-            VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?)
+            VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
             ON CONFLICT(key) DO UPDATE SET
                 value=excluded.value,
                 source=excluded.source,
@@ -1393,6 +1535,7 @@ class AssistantOSStore:
                 local_only=excluded.local_only,
                 cloud_eligible=excluded.cloud_eligible,
                 scope=excluded.scope,
+                negated=excluded.negated,
                 updated_at=excluded.updated_at
             """,
             (
@@ -1404,6 +1547,7 @@ class AssistantOSStore:
                 int(local_only),
                 int(cloud_eligible and not local_only),
                 safe_scope,
+                int(negated),
                 _now(),
             ),
         )
@@ -1600,6 +1744,60 @@ class AssistantOSStore:
             ),
         )
         self.connection.commit()
+
+        # Update in-memory running tallies and ring buffer (G3)
+        key = (session_id, intent)
+        self._intent_tallies[key] = self._intent_tallies.get(key, 0) + 1
+        self._event_ring_buffer.append({
+            "event_id": event_id, "intent": intent, "session_id": session_id,
+            "timestamp": now, "event_type": intent,
+        })
+        if len(self._event_ring_buffer) > self._MAX_RING_BUFFER:
+            self._event_ring_buffer = self._event_ring_buffer[-self._MAX_RING_BUFFER:]
+
+    def get_intent_tally(self, session_id: str, intent: str) -> int:
+        """O(1) per-turn count of intent occurrences in a session."""
+        return self._intent_tallies.get((session_id, intent), 0)
+
+    def set_current_scenario(self, session_id: str, scenario: dict) -> None:
+        """Bind the active working-memory scenario for a session (slice 9).
+
+        Stored in-memory and keyed by ``session_id``. This is intentionally
+        session/process-scoped working memory: it survives the per-turn router
+        rebuild but is cleared on process restart by design. Cross-session
+        persistence is a deliberate non-goal here (see ADTC Issue 8a).
+        """
+        self._scenarios[session_id] = scenario
+
+    def get_current_scenario(self, session_id: str) -> dict | None:
+        """Return the working-memory scenario for *session_id*, or None.
+
+        Sessions are isolated (no scenario leaks across ``session_id``), and a
+        freshly constructed store starts clean — both consequences of the
+        intentionally session/process-scoped design (see ADTC Issue 8a).
+        """
+        return self._scenarios.get(session_id)
+
+    def previous_intent(self, session_id: str) -> str:
+        """Intent of the most recently recorded turn in *session_id*.
+
+        Reads the in-memory ring buffer (O(window)); empty string if no prior
+        turn. Used for behavior context (prev_intent); short-horizon, so a
+        process restart resetting the buffer is acceptable.
+        """
+        for event in reversed(self._event_ring_buffer):
+            if event.get("session_id") == session_id:
+                return str(event.get("intent", ""))
+        return ""
+
+    def get_recent_events(self, session_id: str, window_seconds: int = 30) -> list[dict]:
+        """Return ring-buffer events for a session within the time window."""
+        from datetime import datetime, timezone, timedelta
+        cutoff = (datetime.now(timezone.utc) - timedelta(seconds=window_seconds)).isoformat()
+        return [
+            e for e in self._event_ring_buffer
+            if e["session_id"] == session_id and e["timestamp"] >= cutoff
+        ]
 
     def record_synthesis_trace(
         self,
@@ -1870,7 +2068,6 @@ class AssistantOSStore:
         return str(row["session_id"]) if row is not None else ""
 
     def next_event_id(self) -> str:
-        self.connection.execute("BEGIN IMMEDIATE")
         row = self.connection.execute(
             "SELECT value FROM metadata WHERE key='event_counter'"
         ).fetchone()
@@ -1879,7 +2076,6 @@ class AssistantOSStore:
             "INSERT OR REPLACE INTO metadata(key, value) VALUES ('event_counter', ?)",
             (str(next_index),),
         )
-        self.connection.commit()
         return f"os_e{next_index}"
 
     def latest_event_id(self) -> str:
@@ -2162,6 +2358,192 @@ class AssistantOSStore:
 
     def load_memory_digest(self, digest_id: str = "long_horizon_latest") -> dict[str, Any]:
         return self.load_inventory("memory_digest").get(digest_id, {})
+
+    def count_intent_occurrences_in_session(self, intent: str, session_id: str) -> int:
+        row = self.connection.execute(
+            "SELECT COUNT(*) AS cnt FROM events WHERE intent=? AND session_id=? AND event_id != (SELECT event_id FROM events WHERE session_id=? ORDER BY rowid DESC LIMIT 1)",
+            (intent, session_id, session_id),
+        ).fetchone()
+        return int(row["cnt"]) if row else 0
+
+    def count_utterance_occurrences_in_session(self, utterance: str, session_id: str) -> int:
+        row = self.connection.execute(
+            "SELECT COUNT(*) AS cnt FROM events WHERE utterance=? AND session_id=? AND event_id != (SELECT event_id FROM events WHERE session_id=? ORDER BY rowid DESC LIMIT 1)",
+            (utterance, session_id, session_id),
+        ).fetchone()
+        return int(row["cnt"]) if row else 0
+
+    def count_intents_rapid_window(self, intent: str, session_id: str, window_seconds: int = 30) -> int:
+        from datetime import datetime, timezone, timedelta
+        cutoff = (datetime.now(timezone.utc) - timedelta(seconds=window_seconds)).isoformat()
+        row = self.connection.execute(
+            "SELECT COUNT(*) AS cnt FROM events WHERE intent=? AND session_id=? AND created_at >= ?",
+            (intent, session_id, cutoff),
+        ).fetchone()
+        return int(row["cnt"]) if row else 0
+
+    def current_mood_state(self, session_id: str, user_id: str) -> MoodState | None:
+        rows = self.connection.execute("""
+            SELECT e.entity_id FROM entities e
+            WHERE e.semantic_class_id='mood_state'
+              AND EXISTS (
+                  SELECT 1 FROM entity_slots s
+                  WHERE s.entity_id = e.entity_id AND s.slot_name = 'user_id' AND s.value_json = ?
+              )
+              AND EXISTS (
+                  SELECT 1 FROM entity_slots s
+                  WHERE s.entity_id = e.entity_id AND s.slot_name = 'session_id' AND s.value_json = ?
+              )
+            ORDER BY e.created_at DESC LIMIT 1
+        """, (json.dumps(user_id), json.dumps(session_id))).fetchall()
+        for r in rows:
+            entity_id = str(r["entity_id"])
+            slots = self.get_entity_slots(entity_id)
+            slot_map = {}
+            for s in slots:
+                slot_map[s.slot_name] = _loads(s.value_json, default=s.value_json)
+            return MoodState(
+                mood_id=str(slot_map.get("mood_id", entity_id)),
+                valence=float(slot_map.get("valence", 0.0)),
+                arousal=float(slot_map.get("arousal", 0.0)),
+                response_mode=str(slot_map.get("response_mode", "engaged")),
+                engagement_level=float(slot_map.get("engagement_level", 0.0)),
+                is_listening=int(slot_map.get("is_listening", 0)),
+                trigger_reason=str(slot_map.get("trigger_reason", "")),
+                user_id=str(slot_map.get("user_id", user_id)),
+                session_id=str(slot_map.get("session_id", session_id)),
+                turn_count=int(slot_map.get("turn_count", 0)),
+            )
+        return None
+
+    def set_mood_state(self, mood: MoodState) -> None:
+        now = _now()
+        entity_id = f"mood_{uuid.uuid4().hex[:12]}"
+        self.add_entity(entity_id, "object", f"mood_{mood.turn_count}", "mood_state")
+        for slot_name in ("mood_id", "valence", "arousal", "response_mode", "engagement_level", "is_listening", "trigger_reason", "user_id", "session_id", "turn_count"):
+            self.set_entity_slot(entity_id, slot_name, getattr(mood, slot_name, ""), provenance="mood_tracker")
+        self.connection.commit()
+
+    def record_session_summary(self, summary: Any) -> None:
+        now = _now()
+        if hasattr(summary, "get"):
+            sid = str(summary.get("session_id", ""))
+            uid = str(summary.get("user_id", ""))
+            avg_v = float(summary.get("avg_valence", summary.get("valence", 0.0)))
+            avg_a = float(summary.get("avg_arousal", summary.get("arousal", 0.0)))
+            trend = float(summary.get("valence_trend", 0.0))
+            tc = int(summary.get("turn_count", 0))
+            lu = str(summary.get("last_updated", now))
+        elif hasattr(summary, "valence"):
+            sid = summary.session_id or ""
+            uid = summary.user_id or ""
+            avg_v = summary.valence
+            avg_a = summary.arousal
+            trend = 0.0
+            tc = summary.turn_count
+            lu = str(getattr(summary, "last_updated", now))
+        else:
+            return
+        entity_id = f"mood_summary_{sid}_{uuid.uuid4().hex[:6]}"
+        self.add_entity(entity_id, "object", f"session_summary_{sid}", "mood_session_summary")
+        self.set_entity_slot(entity_id, "avg_valence", avg_v, provenance="mood_tracker")
+        self.set_entity_slot(entity_id, "avg_arousal", avg_a, provenance="mood_tracker")
+        self.set_entity_slot(entity_id, "valence_trend", trend, provenance="mood_tracker")
+        self.set_entity_slot(entity_id, "turn_count", tc, provenance="mood_tracker")
+        self.set_entity_slot(entity_id, "session_id", sid, provenance="mood_tracker")
+        self.set_entity_slot(entity_id, "user_id", uid, provenance="mood_tracker")
+        self.set_entity_slot(entity_id, "last_updated", lu, provenance="mood_tracker")
+        self.connection.commit()
+
+    def query_session_summaries(self, user_id: str, limit: int = 10) -> list[dict]:
+        bounded_limit = max(1, min(100, limit))
+        rows = self.connection.execute("""
+            SELECT e.entity_id FROM entities e
+            WHERE e.semantic_class_id='mood_session_summary'
+              AND EXISTS (
+                  SELECT 1 FROM entity_slots s
+                  WHERE s.entity_id = e.entity_id AND s.slot_name = 'user_id' AND s.value_json = ?
+              )
+            ORDER BY e.created_at DESC LIMIT ?
+        """, (json.dumps(user_id), bounded_limit)).fetchall()
+        results = []
+        for r in rows:
+            entity_id = str(r["entity_id"])
+            slots = self.get_entity_slots(entity_id)
+            slot_map = {}
+            for s in slots:
+                slot_map[s.slot_name] = _loads(s.value_json, default=s.value_json)
+            results.append({
+                    "avg_valence": float(slot_map.get("avg_valence", 0.0)),
+                    "avg_arousal": float(slot_map.get("avg_arousal", 0.0)),
+                    "valence_trend": float(slot_map.get("valence_trend", 0.0)),
+                    "turn_count": int(slot_map.get("turn_count", 0)),
+                    "session_id": str(slot_map.get("session_id", "")),
+                    "user_id": str(slot_map.get("user_id", "")),
+                    "last_updated": str(slot_map.get("last_updated", "")),
+                })
+        return results
+
+    def load_ambient_mood(self) -> dict | None:
+        rows = self.connection.execute(
+            "SELECT entity_id FROM entities WHERE semantic_class_id='mood_ambient' ORDER BY created_at DESC LIMIT 1",
+        ).fetchall()
+        for r in rows:
+            entity_id = str(r["entity_id"])
+            slots = self.get_entity_slots(entity_id)
+            slot_map = {}
+            for s in slots:
+                slot_map[s.slot_name] = _loads(s.value_json, default=s.value_json)
+            return {
+                "valence": float(slot_map.get("valence", 0.0)),
+                "arousal": float(slot_map.get("arousal", 0.0)),
+                "updated_at": str(slot_map.get("updated_at", "")),
+            }
+        return None
+
+    def set_ambient_mood(self, valence: float, arousal: float) -> None:
+        now = _now()
+        entity_id = "mood_ambient_singleton"
+        self.add_entity(entity_id, "object", "AmbientMood", "mood_ambient")
+        self.set_entity_slot(entity_id, "valence", valence, provenance="mood_tracker")
+        self.set_entity_slot(entity_id, "arousal", arousal, provenance="mood_tracker")
+        self.set_entity_slot(entity_id, "updated_at", now, provenance="mood_tracker")
+        self.connection.commit()
+
+    def write_anonymous_fact(self, fact_text: str, semantic_class: str, privacy_level: str, session_hash: str) -> None:
+        if privacy_level == "private":
+            raise ValueError("private facts cannot be written to anonymous_fact")
+        now = _now()
+        entity_id = f"anon_fact_{hashlib.sha256(f'{fact_text}:{session_hash}'.encode('utf-8')).hexdigest()[:20]}"
+        self.add_entity(entity_id, "object", f"anon_{semantic_class}", "anonymous_fact")
+        self.set_entity_slot(entity_id, "fact_text", fact_text, provenance="anonymous_fact_writer")
+        self.set_entity_slot(entity_id, "semantic_class", semantic_class, provenance="anonymous_fact_writer")
+        self.set_entity_slot(entity_id, "privacy_level", privacy_level, provenance="anonymous_fact_writer")
+        self.set_entity_slot(entity_id, "session_hash", session_hash, provenance="anonymous_fact_writer")
+        self.set_entity_slot(entity_id, "timestamp", now, provenance="anonymous_fact_writer")
+        self.connection.commit()
+
+    def query_anonymous_facts(self, semantic_class: str, limit: int = 5) -> list[dict]:
+        bounded_limit = max(1, min(100, limit))
+        rows = self.connection.execute(
+            "SELECT entity_id FROM entities WHERE semantic_class_id='anonymous_fact' ORDER BY created_at DESC LIMIT ?",
+            (bounded_limit,),
+        ).fetchall()
+        results = []
+        for r in rows:
+            entity_id = str(r["entity_id"])
+            slots = self.get_entity_slots(entity_id)
+            slot_map = {}
+            for s in slots:
+                slot_map[s.slot_name] = _loads(s.value_json, default=s.value_json)
+            if str(slot_map.get("semantic_class", "")) == semantic_class:
+                results.append({
+                    "fact_text": str(slot_map.get("fact_text", "")),
+                    "semantic_class": str(slot_map.get("semantic_class", "")),
+                    "privacy_level": str(slot_map.get("privacy_level", "")),
+                    "timestamp": str(slot_map.get("timestamp", "")),
+                })
+        return results
 
     def save_opportunity(
         self,
@@ -2566,6 +2948,13 @@ class AssistantOSStore:
             )
         }
 
+    def update_lexical_sense(self, sense_id: str, *, polarity_score: float = 0.0, affect_tags: str = "[]") -> None:
+        self.connection.execute(
+            "UPDATE lexical_senses SET polarity_score=?, affect_tags=?, updated_at=? WHERE sense_id=?",
+            (polarity_score, affect_tags, _now(), sense_id),
+        )
+        self.connection.commit()
+
     def _configure(self) -> None:
         self.connection.execute("PRAGMA foreign_keys=ON")
         if str(self.path) != ":memory:":
@@ -2612,6 +3001,7 @@ class AssistantOSStore:
         migrations = (
             ("cloud_eligible", "ALTER TABLE user_facts ADD COLUMN cloud_eligible INTEGER NOT NULL DEFAULT 0"),
             ("scope", "ALTER TABLE user_facts ADD COLUMN scope TEXT NOT NULL DEFAULT 'private_local'"),
+            ("negated", "ALTER TABLE user_facts ADD COLUMN negated INTEGER NOT NULL DEFAULT 0"),
         )
         for column, statement in migrations:
             if column not in columns:
@@ -2782,6 +3172,14 @@ class AssistantOSStore:
         if pending:
             self.connection.commit()
 
+    def _ensure_lexical_senses_affect_columns(self) -> None:
+        rows = self.connection.execute("PRAGMA table_info(lexical_senses)").fetchall()
+        columns = {str(row["name"]) for row in rows}
+        if "polarity_score" not in columns:
+            self.connection.execute("ALTER TABLE lexical_senses ADD COLUMN polarity_score REAL DEFAULT 0.0")
+        if "affect_tags" not in columns:
+            self.connection.execute("ALTER TABLE lexical_senses ADD COLUMN affect_tags TEXT DEFAULT '[]'")
+
     def _resolve_session_selector(self, session_id: str) -> str:
         requested = session_id.strip()
         if requested and requested.lower() != "latest":
@@ -2808,10 +3206,18 @@ class AssistantOSStore:
 
         self._active_session_id = _validated_session_id(session_id)
 
+    def current_session_id(self) -> str:
+        """Public accessor for the active local session id.
+
+        Allocates a fresh session id if none is active (same allocation
+        ``record_turn`` performs), so mood, occurrence tallies, and recorded
+        turns all key off the same session.
+        """
+        return self._current_session_id()
+
     def _current_session_id(self) -> str:
         if self._active_session_id:
             return self._active_session_id
-        self.connection.execute("BEGIN IMMEDIATE")
         row = self.connection.execute(
             "SELECT value FROM metadata WHERE key='session_counter'"
         ).fetchone()
@@ -2820,7 +3226,6 @@ class AssistantOSStore:
             "INSERT OR REPLACE INTO metadata(key, value) VALUES ('session_counter', ?)",
             (str(next_index),),
         )
-        self.connection.commit()
         self._active_session_id = f"session_{next_index}"
         return self._active_session_id
 
@@ -2933,6 +3338,7 @@ def seed_class_schemas(store: AssistantOSStore) -> None:
             ("personal_experience", "learned_fact_ids", "json", 0, "Entity IDs of facts created during this experience"),
             ("personal_experience", "follow_up", "text", 0, "Follow-up needed: check_tomorrow | monitor | null"),
             ("personal_experience", "intent_achieved", "text", 0, "Whether the primary intent was achieved: yes | partial | no"),
+            ("personal_experience", "user_id", "text", 0, "User identifier this experience belongs to"),
         ],
     )
     store.connection.execute(
@@ -2946,6 +3352,151 @@ def seed_class_schemas(store: AssistantOSStore) -> None:
             ("learned_fact", "summary", "text", 1, "Brief summary of the fact"),
             ("learned_fact", "source", "text", 0, "Provenance: web URL, user_taught, etc."),
             ("learned_fact", "learned_at", "text", 1, "ISO timestamp when the fact was learned"),
+            ("learned_fact", "negated", "text", 0, "Whether the fact is negated (\"true\"/\"false\")"),
+        ],
+    )
+    # world_fact — typed proposition with truth model (MVP3 knowledge-typing)
+    store.connection.execute(
+        "INSERT INTO class_schemas(semantic_class_id, parent_class_id, label, base_entity_kind, description, updated_at) VALUES (?, ?, ?, ?, ?, ?)",
+        ("world_fact", "abstract", "WorldFact", "object", "A typed proposition about the world with truth state", now),
+    )
+    store.connection.executemany(
+        "INSERT INTO class_schema_slots(semantic_class_id, slot_name, value_type, required, description) VALUES (?, ?, ?, ?, ?)",
+        [
+            ("world_fact", "subject", "text", 1, "Canonical subject (from atom subject/agent role)"),
+            ("world_fact", "relation", "text", 1, "Canonical relation ID (from spine, e.g. is_a, capital_of)"),
+            ("world_fact", "object", "text", 1, "Canonical object (from atom theme/object role)"),
+            ("world_fact", "polarity", "text", 1, "Truth state: asserted | negated"),
+            ("world_fact", "provenance", "text", 1, "Source: seed | user | cloud"),
+            ("world_fact", "confidence", "real", 1, "Confidence 0.0-1.0"),
+            ("world_fact", "source_utterance", "text", 0, "Raw utterance that produced this fact"),
+            ("world_fact", "created_at", "text", 1, "ISO timestamp"),
+        ],
+    )
+    # uol_parse — per-turn UOL atom snapshot (T1 meaning layer)
+    store.connection.execute(
+        "INSERT INTO class_schemas(semantic_class_id, parent_class_id, label, base_entity_kind, description, updated_at) VALUES (?, ?, ?, ?, ?, ?)",
+        ("uol_parse", "abstract", "UolParse", "object", "A per-turn UOL atom parse (T1 meaning layer)", now),
+    )
+    store.connection.executemany(
+        "INSERT INTO class_schema_slots(semantic_class_id, slot_name, value_type, required, description) VALUES (?, ?, ?, ?, ?)",
+        [
+            ("uol_parse", "uol_json", "json", 1, "Serialized UOL act dict"),
+            ("uol_parse", "event_id", "text", 1, "FK to events table"),
+        ],
+    )
+    affect_schemas = (
+        ("mood_state", "abstract", "MoodState", "object",
+         "Assistant affective state snapshot per turn"),
+        ("mood_session_summary", "abstract", "MoodSessionSummary", "object",
+         "T3 cross-session mood aggregate per user"),
+        ("mood_ambient", "abstract", "MoodAmbient", "object",
+         "Device-wide mood aggregate - no user attribution"),
+        ("anonymous_fact", "abstract", "AnonymousFact", "object",
+         "Cross-session fact with identity stripped for safe sharing"),
+    )
+    store.connection.executemany(
+        "INSERT INTO class_schemas(semantic_class_id, parent_class_id, label, base_entity_kind, description, updated_at) VALUES (?, ?, ?, ?, ?, ?)",
+        [(sid, pid, lbl, bk, desc, now) for sid, pid, lbl, bk, desc in affect_schemas],
+    )
+    store.connection.executemany(
+        "INSERT INTO class_schema_slots(semantic_class_id, slot_name, value_type, required, description) VALUES (?, ?, ?, ?, ?)",
+        [
+            ("mood_state", "mood_id", "text", 1, "Mood state identifier"),
+            ("mood_state", "valence", "real", 1, "Valence -1.0 to +1.0"),
+            ("mood_state", "arousal", "real", 1, "Arousal 0.0 to 1.0"),
+            ("mood_state", "response_mode", "text", 1, "Response mode: engaged | concise | playful | defer"),
+            ("mood_state", "engagement_level", "real", 0, "Engagement 0.0 to 1.0"),
+            ("mood_state", "is_listening", "integer", 0, "1 if assistant is in listen-only mode"),
+            ("mood_state", "trigger_reason", "text", 0, "What triggered this mood state"),
+            ("mood_state", "user_id", "text", 0, "User identifier"),
+            ("mood_state", "session_id", "text", 0, "Session identifier"),
+            ("mood_state", "turn_count", "integer", 0, "Turn count at snapshot"),
+            ("mood_session_summary", "avg_valence", "real", 1, "Average valence across session"),
+            ("mood_session_summary", "avg_arousal", "real", 1, "Average arousal across session"),
+            ("mood_session_summary", "valence_trend", "real", 0, "Valence trend slope"),
+            ("mood_session_summary", "turn_count", "integer", 0, "Number of turns in session"),
+            ("mood_session_summary", "session_id", "text", 0, "Session identifier"),
+            ("mood_session_summary", "user_id", "text", 0, "User identifier"),
+            ("mood_ambient", "valence", "real", 1, "Ambient valence -1.0 to +1.0"),
+            ("mood_ambient", "arousal", "real", 1, "Ambient arousal 0.0 to 1.0"),
+            ("mood_ambient", "updated_at", "text", 1, "ISO timestamp of last update"),
+            ("anonymous_fact", "fact_text", "text", 1, "Fact text with identity stripped"),
+            ("anonymous_fact", "semantic_class", "text", 1, "Semantic class of the fact"),
+            ("anonymous_fact", "privacy_level", "text", 1, "Privacy level: anonymous | aggregated"),
+            ("anonymous_fact", "session_hash", "text", 0, "Hashed session identifier"),
+            ("anonymous_fact", "timestamp", "text", 1, "ISO timestamp of fact recording"),
+        ],
+    )
+    # ── curiosity/context/agreement schemas (Phase 1A) ─────────────────
+    store.connection.execute(
+        "INSERT OR IGNORE INTO class_schemas(semantic_class_id, parent_class_id, label, base_entity_kind, description, updated_at) VALUES (?, ?, ?, ?, ?, ?)",
+        ("cognition", "abstract", "Cognition", "object", "Cognitive states and processes", now),
+    )
+    store.connection.execute(
+        "INSERT INTO class_schemas(semantic_class_id, parent_class_id, label, base_entity_kind, description, updated_at) VALUES (?, ?, ?, ?, ?, ?)",
+        ("deferred_task", "abstract", "DeferredTask", "abstract", "A task deferred for later by the assistant or user", now),
+    )
+    store.connection.executemany(
+        "INSERT INTO class_schema_slots(semantic_class_id, slot_name, value_type, required, description) VALUES (?, ?, ?, ?, ?)",
+        [
+            ("deferred_task", "topic", "text", 1, "Topic of the deferred task"),
+            ("deferred_task", "action", "text", 1, "Action to perform"),
+            ("deferred_task", "status", "text", 1, "Status: queued | running | completed | failed | cancelled"),
+            ("deferred_task", "scheduled_at", "text", 1, "ISO timestamp when task was scheduled"),
+            ("deferred_task", "due_at", "text", 0, "ISO timestamp when task is due"),
+            ("deferred_task", "priority", "real", 0, "Priority level"),
+            ("deferred_task", "result_summary", "text", 0, "Summary of the result"),
+            ("deferred_task", "result_entity_id", "text", 0, "Entity ID of the result"),
+            ("deferred_task", "owner_session_id", "text", 0, "Session ID that owns this task"),
+            ("deferred_task", "engagement_prompt", "text", 0, "Prompt to engage user about this task"),
+        ],
+    )
+    store.connection.execute(
+        "INSERT INTO class_schemas(semantic_class_id, parent_class_id, label, base_entity_kind, description, updated_at) VALUES (?, ?, ?, ?, ?, ?)",
+        ("novelty_candidate", "cognition", "NoveltyCandidate", "abstract", "A candidate novel concept detected in user speech", now),
+    )
+    store.connection.executemany(
+        "INSERT INTO class_schema_slots(semantic_class_id, slot_name, value_type, required, description) VALUES (?, ?, ?, ?, ?)",
+        [
+            ("novelty_candidate", "surface_form", "text", 1, "Surface form of the novel term"),
+            ("novelty_candidate", "utterance_context", "text", 1, "Full utterance context"),
+            ("novelty_candidate", "detection_reason", "text", 1, "Why this was flagged as novel"),
+            ("novelty_candidate", "decomposition", "text", 0, "Morphological or semantic decomposition"),
+            ("novelty_candidate", "proposed_class_id", "text", 0, "Proposed semantic class ID"),
+            ("novelty_candidate", "review_status", "text", 1, "Status: flagged | reviewed | accepted | rejected"),
+            ("novelty_candidate", "confidence", "real", 1, "Confidence in novelty detection"),
+        ],
+    )
+    store.connection.execute(
+        "INSERT INTO class_schemas(semantic_class_id, parent_class_id, label, base_entity_kind, description, updated_at) VALUES (?, ?, ?, ?, ?, ?)",
+        ("user_commitment", "abstract", "UserCommitment", "abstract", "A commitment made by the user to do something", now),
+    )
+    store.connection.executemany(
+        "INSERT INTO class_schema_slots(semantic_class_id, slot_name, value_type, required, description) VALUES (?, ?, ?, ?, ?)",
+        [
+            ("user_commitment", "commitment_type", "text", 1, "Type: appointment | promise_to_inform | promise_to_return | reminder_request"),
+            ("user_commitment", "topic", "text", 1, "Topic of the commitment"),
+            ("user_commitment", "promised_time", "text", 0, "Human-readable promised time"),
+            ("user_commitment", "parsed_time", "text", 0, "Parsed ISO timestamp"),
+            ("user_commitment", "status", "text", 1, "Status: pending | fulfilled | broken | expired"),
+            ("user_commitment", "user_utterance", "text", 0, "Original user utterance"),
+            ("user_commitment", "session_id", "text", 0, "Session where commitment was made"),
+            ("user_commitment", "follow_up_entity_id", "text", 0, "Entity ID for follow-up"),
+        ],
+    )
+    store.connection.execute(
+        "INSERT INTO class_schemas(semantic_class_id, parent_class_id, label, base_entity_kind, description, updated_at) VALUES (?, ?, ?, ?, ?, ?)",
+        ("epistemic_state", "cognition", "EpistemicState", "abstract", "Epistemic state of the user detected during conversation", now),
+    )
+    store.connection.executemany(
+        "INSERT INTO class_schema_slots(semantic_class_id, slot_name, value_type, required, description) VALUES (?, ?, ?, ?, ?)",
+        [
+            ("epistemic_state", "state_type", "text", 1, "Type: confusion | curiosity | expectation | surprise"),
+            ("epistemic_state", "topic", "text", 1, "Topic of the epistemic state"),
+            ("epistemic_state", "valence", "real", 0, "Valence -1.0 to +1.0"),
+            ("epistemic_state", "source_event_id", "text", 0, "Event ID that triggered this state"),
+            ("epistemic_state", "resolved_at", "text", 0, "ISO timestamp when resolved"),
         ],
     )
 
@@ -2987,7 +3538,7 @@ def migrate_self_facts_to_entities(store: AssistantOSStore) -> int:
     if existing_self is None:
         store.add_entity("self", "self", "Self", "person")
     rows = store.connection.execute(
-        "SELECT key, value FROM user_facts WHERE consent=1 ORDER BY key"
+        "SELECT key, value, negated FROM user_facts WHERE consent=1 ORDER BY key"
     ).fetchall()
     created = 0
     for row in rows:

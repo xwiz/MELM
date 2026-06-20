@@ -9,6 +9,7 @@ in ``seed_class_schemas()``:
     learned_fact_ids — JSON array of fact entity IDs (initially [])
     follow_up        — next-action hint (initially None)
     intent_achieved  — yes / partial / no
+    user_id          — user identifier this experience belongs to
 
 This is T2 (conversation meaning) in the three-timescale meaning model.
 T1 (utterance meaning) is the UOL parse.  T3 (historical meaning) is the

@@ -167,6 +167,21 @@ class TestRecordConversationExperience:
         assert json.loads(slots["polarity"]) == 0.0
         assert json.loads(slots["follow_up"]) is None
         assert json.loads(slots["learned_fact_ids"]) == []
+        assert json.loads(slots["user_id"]) == "default"
+
+    def test_user_id_slot_is_set(self) -> None:
+        decision = _make_decision()
+        synthesis = _make_synthesis(applied=True)
+        record_conversation_experience(self.store, decision, synthesis, user_id="user_alice")
+        slots = self._set_slots()
+        assert json.loads(slots["user_id"]) == "user_alice"
+
+    def test_user_id_defaults_to_default(self) -> None:
+        decision = _make_decision()
+        synthesis = _make_synthesis(applied=True)
+        record_conversation_experience(self.store, decision, synthesis)
+        slots = self._set_slots()
+        assert json.loads(slots["user_id"]) == "default"
 
     def test_escalated_outcome_when_boundary_crossed(self) -> None:
         decision = _make_decision()
