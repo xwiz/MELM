@@ -55,6 +55,7 @@ class LocalDeviceActionExecutor:
         mode: ActionMode = "dry-run",
         media_player_command: str = "",
         call_command: str = "",
+        tts_command: str = "",
         timeout_seconds: float = 5.0,
     ) -> None:
         if mode not in {"dry-run", "real"}:
@@ -62,6 +63,7 @@ class LocalDeviceActionExecutor:
         self.mode: ActionMode = mode
         self.media_player_command = media_player_command
         self.call_command = call_command
+        self.tts_command = tts_command
         self.timeout_seconds = timeout_seconds
 
     def execute(self, pending: dict[str, Any], *, store: Any | None = None) -> DeviceActionExecutionResult:
@@ -70,6 +72,8 @@ class LocalDeviceActionExecutor:
             return self._execute_media(pending, store=store)
         if action_type == "call_contact":
             return self._execute_call(pending, store=store)
+        if action_type == "say_tts":
+            return self._execute_tts(pending)
         return DeviceActionExecutionResult(
             action_id=str(pending.get("action_id", "")),
             action_type=action_type,
@@ -199,6 +203,33 @@ class LocalDeviceActionExecutor:
                 "stderr": completed.stderr[:500],
                 **(payload or {}),
             },
+        )
+
+    def _execute_tts(self, pending: dict[str, Any]) -> DeviceActionExecutionResult:
+        text = str(pending.get("target", ""))
+        if not text:
+            return self._blocked_real_action(pending, "say_tts", text, "empty_tts_text")
+        if self.mode == "dry-run":
+            return DeviceActionExecutionResult(
+                action_id=str(pending.get("action_id", "")),
+                action_type="say_tts",
+                target=text,
+                mode=self.mode,
+                status="prepared",
+                side_effect_executed=False,
+                reason="dry_run_no_side_effect",
+                resolved_target=text[:50],
+                payload={"text_length": len(text)},
+            )
+        if not self.tts_command:
+            return self._blocked_real_action(pending, "say_tts", text, "missing_tts_command")
+        return self._run_command(
+            pending,
+            action_type="say_tts",
+            target=text,
+            command=(*_command_argv(self.tts_command), text),
+            resolved_target=text[:50],
+            payload={"text_length": len(text)},
         )
 
     def _blocked_real_action(

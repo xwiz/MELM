@@ -1,0 +1,45 @@
+{
+  "schema_id": "melm.music_style_templates.v1",
+  "templates": {
+    "waltz": {
+      "time_signature": "3/4",
+      "tempo_range": [80, 140],
+      "chord_voicing": "triad",
+      "bass_pattern": "root_fifth",
+      "arpeggio_pattern": "ascending",
+      "scale_preference": "major"
+    },
+    "lullaby": {
+      "time_signature": "4/4",
+      "tempo_range": [60, 90],
+      "chord_voicing": "open",
+      "bass_pattern": "slow_alternating",
+      "arpeggio_pattern": "gentle",
+      "scale_preference": "major"
+    },
+    "jazz": {
+      "time_signature": "4/4",
+      "tempo_range": [100, 180],
+      "chord_voicing": "seventh",
+      "bass_pattern": "walking",
+      "arpeggio_pattern": "syncopated",
+      "scale_preference": "blues"
+    },
+    "classical": {
+      "time_signature": "4/4",
+      "tempo_range": [60, 160],
+      "chord_voicing": "triad",
+      "bass_pattern": "alberti",
+      "arpeggio_pattern": "broken",
+      "scale_preference": "major_minor"
+    },
+    "ambient": {
+      "time_signature": "4/4",
+      "tempo_range": [40, 70],
+      "chord_voicing": "sustained",
+      "bass_pattern": "drone",
+      "arpeggio_pattern": "slow",
+      "scale_preference": "modal"
+    }
+  }
+}
