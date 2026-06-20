@@ -1,0 +1,56 @@
+{
+  "schema_id": "melm.mood_faces.v1",
+  "faces": {
+    "neutral": {
+      "eyes": ["·"],
+      "mouths": ["─", "▲", ">", "▼"],
+      "accents": null
+    },
+    "calm": {
+      "eyes": ["‿"],
+      "mouths": ["~"],
+      "accents": null
+    },
+    "happy": {
+      "eyes": ["✧"],
+      "mouths": ["‿", "◡", "◠", "○"],
+      "accents": null
+    },
+    "excited": {
+      "eyes": ["★"],
+      "mouths": ["◕", "◠", "◡", "△"],
+      "accents": null
+    },
+    "curious": {
+      "eyes": ["•"],
+      "mouths": ["◡", "◠", "△", "◇"],
+      "accents": null
+    },
+    "annoyed": {
+      "eyes": ["▀"],
+      "mouths": ["^", ">", "<", "×"],
+      "accents": null
+    },
+    "frustrated": {
+      "eyes": ["█"],
+      "mouths": ["╯╰", "╰╯", "↑↓", "↓↑"],
+      "accents": null
+    },
+    "hurt": {
+      "eyes": [";;"],
+      "mouths": ["╲╱", "╱╲", "∥∥", "····"],
+      "accents": null
+    },
+    "sad": {
+      "eyes": [";;"],
+      "mouths": ["╲╱", "╱╲", "∥∥", "····"],
+      "accents": null
+    },
+    "listening": {
+      "eyes": ["·"],
+      "mouths": ["○"],
+      "accents": null
+    }
+  },
+  "valence_boundaries": [0.2, 0.5, 0.8]
+}

@@ -1,0 +1,25 @@
+{
+  "schema_id": "melm.igbo_greetings.v1",
+  "language": "igbo",
+  "region": "West Africa",
+  "greetings": {
+    "general": "Ndeewo",
+    "morning": "Ụtụtụ ọma",
+    "afternoon": "Ehihie ọma",
+    "evening": "Mgbede ọma",
+    "how_are_you": "Kedu?",
+    "response": "Adị m mma. Daalụ.",
+    "welcome": "Nnọọ",
+    "goodbye": "Ka o mesịa"
+  },
+  "phonetic_notes": {
+    "general": "N-deh-wo",
+    "morning": "U-too-too oh-ma",
+    "afternoon": "Eh-ee-hee-eh oh-ma",
+    "evening": "M-geh-deh oh-ma",
+    "response": "Ah-dee m mmah. Dah-loo.",
+    "welcome": "Nnoh-oh",
+    "goodbye": "Kah oh meh-see-ah"
+  },
+  "usage_context": "Igbo is spoken by ~45 million people in Nigeria (primarily the South-East). These greetings are appropriate for informal and formal contexts."
+}

@@ -1,0 +1,14 @@
+{
+  "schema_id": "melm.perception_affect_map.v1",
+  "default_priming": {"valence": 0.0, "arousal": 0.3, "urgency": "low"},
+  "stimuli": {
+    "smoke":   {"valence": -0.35, "arousal": 0.70, "urgency": "high"},
+    "burning": {"valence": -0.45, "arousal": 0.80, "urgency": "high"},
+    "fire":    {"valence": -0.50, "arousal": 0.90, "urgency": "high"},
+    "blood":   {"valence": -0.55, "arousal": 0.85, "urgency": "high"},
+    "bang":    {"valence": -0.20, "arousal": 0.65, "urgency": "medium"},
+    "noise":   {"valence": 0.00, "arousal": 0.35, "urgency": "low"},
+    "music":   {"valence": 0.30, "arousal": 0.30, "urgency": "none"},
+    "sunset":  {"valence": 0.60, "arousal": 0.20, "urgency": "none"}
+  }
+}

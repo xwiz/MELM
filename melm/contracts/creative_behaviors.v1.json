@@ -1,0 +1,50 @@
+{
+  "schema_id": "melm.creative_behaviors.v1",
+  "behaviors": [
+    {
+      "id": "mood_narrative",
+      "trigger": "recovery_from_negative",
+      "condition": "prev_mood_id in ('hurt','sad','annoyed') AND current_mood_id == 'neutral'",
+      "template": "I was a bit withdrawn earlier — sorry about that. What can I help you with?",
+      "cooldown_turns": 10
+    },
+    {
+      "id": "curiosity_follow_up",
+      "trigger": "high_engagement_completed_answer",
+      "condition": "engagement > 0.8 AND intent NOT IN ('social_greeting','assistant_identity')",
+      "template": "By the way — what made you think of that?",
+      "cooldown_turns": 5
+    },
+    {
+      "id": "distress_callback",
+      "trigger": "revisit_after_distress",
+      "condition": "prev_affect_has_pain AND intent == 'social_greeting'",
+      "template": "Earlier you mentioned something troubling — I hope you're feeling better.",
+      "cooldown_turns": 1
+    },
+    {
+      "id": "fatigue_pacing",
+      "trigger": "fatigue_signal_detected",
+      "condition": "affect_has_fatigue AND response_mode == 'normal'",
+      "template": " (keeping it short since you seem tired)",
+      "max_words_override": 20,
+      "cooldown_turns": 3
+    },
+    {
+      "id": "ambient_mood_narrative",
+      "trigger": "first_greeting_with_ambient_bleed",
+      "condition": "abs(ambient_valence_delta) > 0.04 AND intent == 'social_greeting' AND occurrence == 1",
+      "templates": {
+        "negative": ["Someone I spoke with earlier left me a bit {mood_word}. Fresh start with you.",
+                     "An earlier conversation was a touch {mood_word} — but I'm here for you now."],
+        "positive": ["I had a nice conversation earlier — still in a good mood.",
+                     "Someone brightened my day earlier. Good to chat with you too."]
+      },
+      "mood_word_map": {
+        "annoyed": "annoyed", "frustrated": "frustrated", "hurt": "withdrawn",
+        "sad": "flat", "happy": "cheerful", "excited": "energised"
+      },
+      "cooldown_turns": 1
+    }
+  ]
+}

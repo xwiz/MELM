@@ -1,0 +1,11 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "melm.deferred_task_templates.v1",
+  "schema_id": "melm.deferred_task_templates.v1",
+  "templates": {
+    "task_completed": "By the way, I finished looking into {topic}. {summary}",
+    "task_running": "I am still working on researching {topic} — I will let you know when I have something.",
+    "task_failed": "I tried to look into {topic} but ran into a problem: {error}",
+    "curiosity_surfacing": "I came across the word '{surface_form}' earlier and wondered what you make of it."
+  }
+}

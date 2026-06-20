@@ -1,0 +1,25 @@
+{
+  "schema_id": "melm.swahili_greetings.v1",
+  "language": "swahili",
+  "region": "East Africa",
+  "greetings": {
+    "general": "Habari",
+    "morning": "Habari za asubuhi",
+    "afternoon": "Habari za mchana",
+    "evening": "Habari za jioni",
+    "how_are_you": "Habari yako?",
+    "response": "Nzuri, asante",
+    "welcome": "Karibu",
+    "goodbye": "Kwa heri"
+  },
+  "phonetic_notes": {
+    "general": "Ha-ba-ri",
+    "morning": "Ha-ba-ri za a-soo-boo-hee",
+    "afternoon": "Ha-ba-ri za mcha-na",
+    "evening": "Ha-ba-ri za jio-nee",
+    "response": "N-zoo-ree, a-san-teh",
+    "welcome": "Ka-ree-boo",
+    "goodbye": "Kwa heh-ree"
+  },
+  "usage_context": "Swahili is spoken by ~200 million people across East Africa (Kenya, Tanzania, Uganda, Rwanda, Burundi, DRC). These greetings are appropriate for all social contexts."
+}

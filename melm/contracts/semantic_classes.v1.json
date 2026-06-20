@@ -77,6 +77,19 @@
     {"class_id": "undress_state", "parent_id": "state", "policy_flags": []},
     {"class_id": "clothing_item", "parent_id": "physical_object", "policy_flags": []},
     {"class_id": "wellness_activity", "parent_id": "action", "policy_flags": []},
-    {"class_id": "learned_fact", "parent_id": "abstract", "policy_flags": []}
+    {"class_id": "learned_fact", "parent_id": "abstract", "policy_flags": []},
+    {"class_id": "mood_state", "parent_id": "abstract", "policy_flags": []},
+    {"class_id": "affect_expression", "parent_id": "state", "policy_flags": []},
+    {"class_id": "recovery_signal", "parent_id": "communication_content", "policy_flags": []},
+    {"class_id": "deferred_task", "parent_id": "abstract", "policy_flags": []},
+    {"class_id": "epistemic_state", "parent_id": "cognition", "policy_flags": []},
+    {"class_id": "novelty_candidate", "parent_id": "cognition", "policy_flags": []},
+    {"class_id": "uol_parse", "parent_id": "abstract", "label": "UolParse", "description": "A per-turn UOL atom parse", "entity_kind": "object"},
+    {"class_id": "user_commitment", "parent_id": "abstract", "policy_flags": ["privacy_relevant"]},
+    {"class_id": "world_fact", "parent_id": "abstract", "policy_flags": []},
+    {"class_id": "is_a", "parent_id": "relation", "policy_flags": []},
+    {"class_id": "capital_of", "parent_id": "relation", "policy_flags": []},
+    {"class_id": "located_in", "parent_id": "relation", "policy_flags": []},
+    {"class_id": "has", "parent_id": "relation", "policy_flags": []}
   ]
 }

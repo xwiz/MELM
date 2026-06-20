@@ -353,6 +353,8 @@ def _resolve_max_entries(max_entries: int | None) -> int | None:
 
     The environment variable allows sub-processes (CLI commands) to inherit
     the limit without threading CLI flags through every sub-command.
+    A default of 5000 is used when nothing is specified, preventing
+    multi-minute hangs from very large seed files (e.g. 165k WordNet entries).
     """
     if max_entries is not None:
         return max_entries
@@ -361,8 +363,8 @@ def _resolve_max_entries(max_entries: int | None) -> int | None:
         try:
             return int(env_val)
         except (ValueError, TypeError):
-            return None
-    return None
+            return 5000
+    return 5000
 
 
 def seed_bulk_lexicon(

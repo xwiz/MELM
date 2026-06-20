@@ -1,0 +1,11 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "melm.agreement_templates.v1",
+  "schema_id": "melm.agreement_templates.v1",
+  "templates": {
+    "commitment_fulfilled": "Great to see you back. I was hoping to hear about {topic}.",
+    "commitment_broken": "I was waiting to hear about {topic}, but I am glad you are here now.",
+    "commitment_due": "Right on time. I would love to hear about {topic} whenever you are ready.",
+    "commitment_expired": "No worries if now is not the time — we can revisit {topic} later."
+  }
+}

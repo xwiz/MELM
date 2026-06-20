@@ -1,0 +1,26 @@
+{
+  "schema_id": "melm.noise_tokens.v1",
+  "description": "Informal/filler tokens that should be stripped from UOL parsing and fed into affect",
+  "entries": {
+    "lol":   {"valence": 0.15, "arousal": 0.30, "tags": ["informal", "amused"], "strip_from_parse": true},
+    "haha":  {"valence": 0.20, "arousal": 0.30, "tags": ["informal", "amused"], "strip_from_parse": true},
+    "hehe":  {"valence": 0.15, "arousal": 0.20, "tags": ["informal", "amused"], "strip_from_parse": true},
+    "lmao":  {"valence": 0.30, "arousal": 0.50, "tags": ["informal", "amused", "high_arousal"], "strip_from_parse": true},
+    "rofl":  {"valence": 0.30, "arousal": 0.60, "tags": ["informal", "amused", "high_arousal"], "strip_from_parse": true},
+    "rotfl": {"valence": 0.30, "arousal": 0.55, "tags": ["informal", "amused", "high_arousal"], "strip_from_parse": true},
+    "hmm":   {"valence": 0.00, "arousal": 0.10, "tags": ["informal", "hesitation"], "strip_from_parse": true},
+    "uh":    {"valence": 0.00, "arousal": 0.05, "tags": ["informal", "hesitation"], "strip_from_parse": true},
+    "um":    {"valence": 0.00, "arousal": 0.05, "tags": ["informal", "hesitation"], "strip_from_parse": true},
+    "oh":    {"valence": 0.05, "arousal": 0.20, "tags": ["informal", "realization"], "strip_from_parse": true},
+    "ah":    {"valence": 0.05, "arousal": 0.15, "tags": ["informal", "realization"], "strip_from_parse": true},
+    "well":  {"valence": 0.00, "arousal": 0.05, "tags": ["informal", "filler"], "strip_from_parse": true},
+    "nah":   {"valence": -0.10, "arousal": 0.10, "tags": ["informal", "negative"], "strip_from_parse": true},
+    "ugh":   {"valence": -0.30, "arousal": 0.35, "tags": ["informal", "negative", "complaint"], "strip_from_parse": true},
+    "meh":   {"valence": -0.15, "arousal": 0.05, "tags": ["informal", "negative", "disinterest"], "strip_from_parse": true},
+    "yay":   {"valence": 0.40, "arousal": 0.50, "tags": ["informal", "positive", "high_arousal"], "strip_from_parse": true},
+    "woohoo":{"valence": 0.50, "arousal": 0.70, "tags": ["informal", "positive", "high_arousal"], "strip_from_parse": true},
+    "darn":  {"valence": -0.20, "arousal": 0.25, "tags": ["informal", "negative"], "strip_from_parse": true},
+    "wow":   {"valence": 0.30, "arousal": 0.60, "tags": ["informal", "positive", "surprise"], "strip_from_parse": true}
+  },
+  "fallback_strip": true
+}

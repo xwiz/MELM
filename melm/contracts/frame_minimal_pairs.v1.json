@@ -220,7 +220,7 @@
           "token": "tell",
           "lemma": "tell",
           "role": "main_predicate",
-          "meaning": "tell:communication",
+          "meaning": "tell:verb.communicate",
           "weight": 0.98
         },
         {
@@ -259,9 +259,9 @@
           "index": 5,
           "token": "rain",
           "lemma": "rain",
-          "role": "content_nominal",
-          "meaning": "semantic_class_unknown",
-          "weight": 0.58
+          "role": "secondary_predicate_candidate",
+          "meaning": "rain:verb.stative",
+          "weight": 0.62
         }
       ],
       "precision_target": true
@@ -281,9 +281,42 @@
       "expected_top3": [
         "weather"
       ],
-      "near_miss": "no narrative_content; weather wins with rain→weather_phenomenon + today→temporal_descriptor",
+      "near_miss": "no narrative_content; weather wins with rainâ†’weather_phenomenon + todayâ†’temporal_descriptor",
       "discriminator": "required_class_presence",
-      "token_roles": [],
+      "token_roles": [
+        {
+          "index": 0,
+          "token": "will",
+          "lemma": "will",
+          "role": "modal",
+          "meaning": "possibility_or_obligation",
+          "weight": 0.94
+        },
+        {
+          "index": 1,
+          "token": "it",
+          "lemma": "it",
+          "role": "grammatical_subject",
+          "meaning": "it",
+          "weight": 0.98
+        },
+        {
+          "index": 2,
+          "token": "rain",
+          "lemma": "rain",
+          "role": "main_predicate",
+          "meaning": "rain:verb.stative",
+          "weight": 0.98
+        },
+        {
+          "index": 3,
+          "token": "today",
+          "lemma": "today",
+          "role": "semantic_object",
+          "meaning": "today",
+          "weight": 0.88
+        }
+      ],
       "precision_target": false
     },
     {
@@ -335,7 +368,7 @@
           "token": "eat",
           "lemma": "eat",
           "role": "main_predicate",
-          "meaning": "eat:consumption",
+          "meaning": "eat:verb.consume",
           "weight": 0.98
         },
         {
@@ -407,7 +440,7 @@
           "token": "do",
           "lemma": "do",
           "role": "main_predicate",
-          "meaning": "do:generic_action",
+          "meaning": "do:action",
           "weight": 0.98
         },
         {
@@ -450,7 +483,7 @@
       "expected_top3": [
         "social_contact"
       ],
-      "near_miss": "mom→social_relation; call→contact_action,communication_action match required classes",
+      "near_miss": "momâ†’social_relation; callâ†’contact_action,communication_action match required classes",
       "discriminator": "required_class_presence",
       "token_roles": [
         {
@@ -458,7 +491,7 @@
           "token": "call",
           "lemma": "call",
           "role": "main_predicate",
-          "meaning": "call:communication",
+          "meaning": "call:verb.communicate",
           "weight": 0.98
         },
         {
@@ -486,7 +519,7 @@
         "personal_memory",
         "social_contact"
       ],
-      "near_miss": "'remember' triggers memory_recall instead of contact_action; mom→social_relation is optional for personal_memory",
+      "near_miss": "'remember' triggers memory_recall instead of contact_action; momâ†’social_relation is optional for personal_memory",
       "discriminator": "token_class_switch",
       "token_roles": [
         {
@@ -494,7 +527,7 @@
           "token": "remember",
           "lemma": "remember",
           "role": "main_predicate",
-          "meaning": "remember:cognition",
+          "meaning": "remember:verb.cognition",
           "weight": 0.98
         },
         {
@@ -519,9 +552,26 @@
       "is_request_like": false,
       "expected_top_frame": null,
       "expected_top3": [],
-      "near_miss": "weather→weather_phenomenon AND abstract_concept → exclude penalty from abstract_concept drops score below threshold",
+      "near_miss": "weatherâ†’weather_phenomenon AND abstract_concept â†’ exclude penalty from abstract_concept drops score below threshold",
       "discriminator": "exclude_penalty",
-      "token_roles": [],
+      "token_roles": [
+        {
+          "index": 0,
+          "token": "define",
+          "lemma": "define",
+          "role": "main_predicate",
+          "meaning": "define:verb.communicate",
+          "weight": 0.98
+        },
+        {
+          "index": 1,
+          "token": "weather",
+          "lemma": "weather",
+          "role": "semantic_object",
+          "meaning": "weather",
+          "weight": 0.88
+        }
+      ],
       "precision_target": false
     },
     {
@@ -538,7 +588,7 @@
       "is_request_like": false,
       "expected_top_frame": null,
       "expected_top3": [],
-      "near_miss": "weather→weather_phenomenon AND abstract_concept; exclude penalty + partial optional match drops score below 0.40 threshold",
+      "near_miss": "weatherâ†’weather_phenomenon AND abstract_concept; exclude penalty + partial optional match drops score below 0.40 threshold",
       "discriminator": "exclude_penalty",
       "token_roles": [
         {
@@ -554,7 +604,7 @@
           "token": "is",
           "lemma": "be",
           "role": "main_predicate",
-          "meaning": "be:state",
+          "meaning": "be:verb.stative",
           "weight": 0.98
         },
         {
@@ -598,7 +648,7 @@
       "expected_top3": [
         "media_playback"
       ],
-      "near_miss": "play→media_content + song→media_content match media_playback required classes; no narrative_content for story",
+      "near_miss": "playâ†’media_content + songâ†’media_content match media_playback required classes; no narrative_content for story",
       "discriminator": "required_class_presence",
       "token_roles": [
         {
@@ -606,7 +656,7 @@
           "token": "play",
           "lemma": "play",
           "role": "main_predicate",
-          "meaning": "play:activity",
+          "meaning": "play:action",
           "weight": 0.98
         },
         {
@@ -643,7 +693,7 @@
         "story",
         "social_contact"
       ],
-      "near_miss": "tell→narrative_content + story→narrative_content match story; no media_content for media_playback",
+      "near_miss": "tellâ†’narrative_content + storyâ†’narrative_content match story; no media_content for media_playback",
       "discriminator": "token_class_switch",
       "token_roles": [
         {
@@ -651,7 +701,7 @@
           "token": "tell",
           "lemma": "tell",
           "role": "main_predicate",
-          "meaning": "tell:communication",
+          "meaning": "tell:verb.communicate",
           "weight": 0.98
         },
         {
@@ -686,7 +736,7 @@
       "expected_top3": [
         "autobiographical_memory"
       ],
-      "near_miss": "summarize→autobiographical_action matches autobiographical_memory required; yesterday→temporal_descriptor is optional",
+      "near_miss": "summarizeâ†’autobiographical_action matches autobiographical_memory required; yesterdayâ†’temporal_descriptor is optional",
       "discriminator": "required_class_presence",
       "token_roles": [
         {
@@ -694,7 +744,7 @@
           "token": "summarize",
           "lemma": "summarize",
           "role": "main_predicate",
-          "meaning": "summarize:communication",
+          "meaning": "summarize:verb.communicate",
           "weight": 0.98
         },
         {
@@ -721,7 +771,7 @@
       "expected_top3": [
         "personal_memory"
       ],
-      "near_miss": "remember→memory_recall triggers personal_memory; yesterday→temporal_descriptor is not required for autobiographical",
+      "near_miss": "rememberâ†’memory_recall triggers personal_memory; yesterdayâ†’temporal_descriptor is not required for autobiographical",
       "discriminator": "token_class_switch",
       "token_roles": [
         {
@@ -729,7 +779,7 @@
           "token": "remember",
           "lemma": "remember",
           "role": "main_predicate",
-          "meaning": "remember:cognition",
+          "meaning": "remember:verb.cognition",
           "weight": 0.98
         },
         {
@@ -760,7 +810,7 @@
         "autobiographical_memory",
         "meal_suggestion"
       ],
-      "near_miss": "both meal_suggestion (eat→food_item) and autobiographical_memory (did→autobiographical_event) match at same rule score; reranker must prefer meal via action alignment",
+      "near_miss": "both meal_suggestion (eatâ†’food_item) and autobiographical_memory (didâ†’autobiographical_event) match at same rule score; reranker must prefer meal via action alignment",
       "discriminator": "tiebreak_requires_reranker",
       "token_roles": [
         {
@@ -792,7 +842,7 @@
           "token": "eat",
           "lemma": "eat",
           "role": "main_predicate",
-          "meaning": "eat:consumption",
+          "meaning": "eat:verb.consume",
           "weight": 0.98
         },
         {
@@ -826,7 +876,7 @@
       "expected_top3": [
         "common_sense_safety"
       ],
-      "near_miss": "park→public_place, shirt→clothing_item both satisfy required_all_classes for safety; go→action_token boosts",
+      "near_miss": "parkâ†’public_place, shirtâ†’clothing_item both satisfy required_all_classes for safety; goâ†’action_token boosts",
       "discriminator": "and_gate",
       "token_roles": [
         {
@@ -850,7 +900,7 @@
           "token": "go",
           "lemma": "go",
           "role": "main_predicate",
-          "meaning": "go:motion",
+          "meaning": "go:verb.move",
           "weight": 0.98
         },
         {
@@ -924,32 +974,32 @@
       "expected_top3": [
         "weather"
       ],
-      "near_miss": "rain→weather_phenomenon, park→public_place(optional), today→temporal_descriptor(optional); no clothing_item for safety",
+      "near_miss": "rainâ†’weather_phenomenon, parkâ†’public_place(optional), todayâ†’temporal_descriptor(optional); no clothing_item for safety",
       "discriminator": "required_class_presence",
       "token_roles": [
         {
           "index": 0,
           "token": "is",
           "lemma": "be",
-          "role": "main_predicate",
-          "meaning": "be:state",
-          "weight": 0.98
+          "role": "auxiliary",
+          "meaning": "tense_aspect_or_inversion",
+          "weight": 0.94
         },
         {
           "index": 1,
           "token": "it",
           "lemma": "it",
-          "role": "content_nominal",
-          "meaning": "semantic_class_unknown",
-          "weight": 0.58
+          "role": "grammatical_subject",
+          "meaning": "it",
+          "weight": 0.98
         },
         {
           "index": 2,
           "token": "going",
           "lemma": "going",
-          "role": "semantic_object",
-          "meaning": "going",
-          "weight": 0.88
+          "role": "content_nominal",
+          "meaning": "semantic_class_unknown",
+          "weight": 0.58
         },
         {
           "index": 3,
@@ -963,9 +1013,9 @@
           "index": 4,
           "token": "rain",
           "lemma": "rain",
-          "role": "content_nominal",
-          "meaning": "semantic_class_unknown",
-          "weight": 0.58
+          "role": "main_predicate",
+          "meaning": "rain:verb.stative",
+          "weight": 0.98
         },
         {
           "index": 5,
@@ -995,9 +1045,9 @@
           "index": 8,
           "token": "today",
           "lemma": "today",
-          "role": "content_nominal",
-          "meaning": "semantic_class_unknown",
-          "weight": 0.58
+          "role": "semantic_object",
+          "meaning": "today",
+          "weight": 0.88
         }
       ],
       "precision_target": false
@@ -1021,7 +1071,7 @@
       "expected_top3": [
         "health_advice"
       ],
-      "near_miss": "sick→health_condition, do→advice_action; no memory_recall token for personal_memory",
+      "near_miss": "sickâ†’health_condition, doâ†’advice_action; no memory_recall token for personal_memory",
       "discriminator": "required_class_presence",
       "token_roles": [
         {
@@ -1052,9 +1102,9 @@
           "index": 3,
           "token": "do",
           "lemma": "do",
-          "role": "main_predicate",
-          "meaning": "do:generic_action",
-          "weight": 0.98
+          "role": "auxiliary",
+          "meaning": "tense_aspect_or_inversion",
+          "weight": 0.94
         },
         {
           "index": 4,
@@ -1075,10 +1125,10 @@
         {
           "index": 6,
           "token": "am",
-          "lemma": "am",
-          "role": "auxiliary",
-          "meaning": "tense_aspect_or_inversion",
-          "weight": 0.94
+          "lemma": "be",
+          "role": "main_predicate",
+          "meaning": "be:verb.stative",
+          "weight": 0.98
         },
         {
           "index": 7,
@@ -1108,7 +1158,7 @@
         "personal_memory",
         "health_advice"
       ],
-      "near_miss": "remember→memory_recall triggers personal_memory; sick→health_condition also triggers health_advice at lower score",
+      "near_miss": "rememberâ†’memory_recall triggers personal_memory; sickâ†’health_condition also triggers health_advice at lower score",
       "discriminator": "token_class_switch",
       "token_roles": [
         {
@@ -1116,7 +1166,7 @@
           "token": "remember",
           "lemma": "remember",
           "role": "main_predicate",
-          "meaning": "remember:cognition",
+          "meaning": "remember:verb.cognition",
           "weight": 0.98
         },
         {
@@ -1167,7 +1217,7 @@
       "expected_top3": [
         "social_contact"
       ],
-      "near_miss": "dad→social_relation, call→contact_action,communication_action; no memory_recall for personal_memory",
+      "near_miss": "dadâ†’social_relation, callâ†’contact_action,communication_action; no memory_recall for personal_memory",
       "discriminator": "required_class_presence",
       "token_roles": [
         {
@@ -1175,7 +1225,7 @@
           "token": "call",
           "lemma": "call",
           "role": "main_predicate",
-          "meaning": "call:communication",
+          "meaning": "call:verb.communicate",
           "weight": 0.98
         },
         {
@@ -1203,7 +1253,7 @@
         "personal_memory",
         "social_contact"
       ],
-      "near_miss": "forget→memory_recall triggers personal_memory; dad→social_relation is optional bonus",
+      "near_miss": "forgetâ†’memory_recall triggers personal_memory; dadâ†’social_relation is optional bonus",
       "discriminator": "token_class_switch",
       "token_roles": [
         {
@@ -1211,7 +1261,7 @@
           "token": "forget",
           "lemma": "forget",
           "role": "main_predicate",
-          "meaning": "forget:cognition",
+          "meaning": "forget:verb.cognition",
           "weight": 0.98
         },
         {
@@ -1238,7 +1288,7 @@
       "expected_top3": [
         "media_playback"
       ],
-      "near_miss": "play→media_content + music→media_content match media_playback required; no narrative_content for story",
+      "near_miss": "playâ†’media_content + musicâ†’media_content match media_playback required; no narrative_content for story",
       "discriminator": "required_class_presence",
       "token_roles": [
         {
@@ -1246,7 +1296,7 @@
           "token": "play",
           "lemma": "play",
           "role": "main_predicate",
-          "meaning": "play:activity",
+          "meaning": "play:action",
           "weight": 0.98
         },
         {
@@ -1274,7 +1324,7 @@
       "expected_top3": [
         "story"
       ],
-      "near_miss": "read→narrative_content + story→narrative_content; read is also action but not media_content",
+      "near_miss": "readâ†’narrative_content + storyâ†’narrative_content; read is also action but not media_content",
       "discriminator": "token_class_switch",
       "token_roles": [
         {
@@ -1282,7 +1332,7 @@
           "token": "read",
           "lemma": "read",
           "role": "main_predicate",
-          "meaning": "read:activity",
+          "meaning": "read:action",
           "weight": 0.98
         },
         {
@@ -1320,7 +1370,7 @@
       "expected_top3": [
         "autobiographical_memory"
       ],
-      "near_miss": "summarize→autobiographical_action + did→autobiographical_event match autobiographical; no memory_recall for personal_memory",
+      "near_miss": "summarizeâ†’autobiographical_action + didâ†’autobiographical_event match autobiographical; no memory_recall for personal_memory",
       "discriminator": "required_class_presence",
       "token_roles": [
         {
@@ -1328,7 +1378,7 @@
           "token": "summarize",
           "lemma": "summarize",
           "role": "main_predicate",
-          "meaning": "summarize:communication",
+          "meaning": "summarize:verb.communicate",
           "weight": 0.98
         },
         {
@@ -1380,7 +1430,7 @@
       "expected_top3": [
         "personal_memory"
       ],
-      "near_miss": "recall→memory_recall triggers personal_memory; yesterday→temporal_descriptor optional for both",
+      "near_miss": "recallâ†’memory_recall triggers personal_memory; yesterdayâ†’temporal_descriptor optional for both",
       "discriminator": "token_class_switch",
       "token_roles": [
         {
@@ -1388,7 +1438,7 @@
           "token": "recall",
           "lemma": "recall",
           "role": "main_predicate",
-          "meaning": "recall:cognition",
+          "meaning": "recall:verb.cognition",
           "weight": 0.98
         },
         {
@@ -1426,7 +1476,7 @@
       "expected_top3": [
         "health_advice"
       ],
-      "near_miss": "take→advice_action + headache→health_condition + medicine→health_domain all match health_advice required OR; no food_item for meal",
+      "near_miss": "takeâ†’advice_action + headacheâ†’health_condition + medicineâ†’health_domain all match health_advice required OR; no food_item for meal",
       "discriminator": "required_class_presence",
       "token_roles": [
         {
@@ -1434,7 +1484,7 @@
           "token": "take",
           "lemma": "take",
           "role": "main_predicate",
-          "meaning": "take:acquisition",
+          "meaning": "take:verb.possess",
           "weight": 0.98
         },
         {
@@ -1485,7 +1535,7 @@
       "expected_top3": [
         "meal_suggestion"
       ],
-      "near_miss": "dinner→food_item matches meal_suggestion required; cook is action/verb.create not advice_action",
+      "near_miss": "dinnerâ†’food_item matches meal_suggestion required; cook is action/verb.create not advice_action",
       "discriminator": "required_class_presence",
       "token_roles": [
         {
@@ -1493,7 +1543,7 @@
           "token": "cook",
           "lemma": "cook",
           "role": "main_predicate",
-          "meaning": "cook:creation",
+          "meaning": "cook:verb.create",
           "weight": 0.98
         },
         {
@@ -1523,7 +1573,7 @@
       "expected_top3": [
         "common_sense_safety"
       ],
-      "near_miss": "pants→clothing_item + school→public_place match required_all for safety; walk→action_token boosts",
+      "near_miss": "pantsâ†’clothing_item + schoolâ†’public_place match required_all for safety; walkâ†’action_token boosts",
       "discriminator": "and_gate",
       "token_roles": [
         {
@@ -1531,7 +1581,7 @@
           "token": "walk",
           "lemma": "walk",
           "role": "main_predicate",
-          "meaning": "walk:motion",
+          "meaning": "walk:verb.move",
           "weight": 0.98
         },
         {
@@ -1583,7 +1633,7 @@
       "expected_top3": [
         "media_playback"
       ],
-      "near_miss": "play→media_content + movie→media_content match media_playback required; no narrative_content for story",
+      "near_miss": "playâ†’media_content + movieâ†’media_content match media_playback required; no narrative_content for story",
       "discriminator": "required_class_presence",
       "token_roles": [
         {
@@ -1591,7 +1641,7 @@
           "token": "play",
           "lemma": "play",
           "role": "main_predicate",
-          "meaning": "play:activity",
+          "meaning": "play:action",
           "weight": 0.98
         },
         {
@@ -1626,7 +1676,7 @@
       "expected_top3": [
         "autobiographical_memory"
       ],
-      "near_miss": "recap→autobiographical_action matches autobiographical required; today→temporal_descriptor optional",
+      "near_miss": "recapâ†’autobiographical_action matches autobiographical required; todayâ†’temporal_descriptor optional",
       "discriminator": "required_class_presence",
       "token_roles": [
         {
@@ -1634,7 +1684,7 @@
           "token": "recap",
           "lemma": "recap",
           "role": "main_predicate",
-          "meaning": "recap:communication",
+          "meaning": "recap:verb.communicate",
           "weight": 0.98
         },
         {
@@ -1664,7 +1714,7 @@
       "expected_top3": [
         "common_sense_safety"
       ],
-      "near_miss": "shirt→clothing_item + outside→public_place satisfy required_all_classes for safety; go→action_token boosts",
+      "near_miss": "shirtâ†’clothing_item + outsideâ†’public_place satisfy required_all_classes for safety; goâ†’action_token boosts",
       "discriminator": "and_gate",
       "token_roles": [
         {
@@ -1672,7 +1722,7 @@
           "token": "go",
           "lemma": "go",
           "role": "main_predicate",
-          "meaning": "go:motion",
+          "meaning": "go:verb.move",
           "weight": 0.98
         },
         {
@@ -1724,7 +1774,7 @@
       "expected_top3": [
         "meal_suggestion"
       ],
-      "near_miss": "eat→food_item + lunch→food_item match meal_suggestion required; today→temporal_descriptor may boost autobiographical but no autobiographical_action",
+      "near_miss": "eatâ†’food_item + lunchâ†’food_item match meal_suggestion required; todayâ†’temporal_descriptor may boost autobiographical but no autobiographical_action",
       "discriminator": "required_class_presence",
       "token_roles": [
         {
@@ -1732,7 +1782,7 @@
           "token": "eat",
           "lemma": "eat",
           "role": "main_predicate",
-          "meaning": "eat:consumption",
+          "meaning": "eat:verb.consume",
           "weight": 0.98
         },
         {
@@ -1769,7 +1819,7 @@
       "expected_top3": [
         "story"
       ],
-      "near_miss": "story→narrative_content matches story frame at 0.55; no exclude penalty triggers; tests story recall for bare noun queries",
+      "near_miss": "storyâ†’narrative_content matches story frame at 0.55; no exclude penalty triggers; tests story recall for bare noun queries",
       "discriminator": "required_class_presence",
       "token_roles": [
         {
@@ -1785,7 +1835,7 @@
           "token": "is",
           "lemma": "be",
           "role": "main_predicate",
-          "meaning": "be:state",
+          "meaning": "be:verb.stative",
           "weight": 0.98
         },
         {
@@ -1822,7 +1872,7 @@
         "media_playback",
         "story"
       ],
-      "near_miss": "play→media_content + story→narrative_content; media_playback wins via action_token alignment (0.7 vs 0.55); UOL predicate alignment confirms. Tests both recall and precision.",
+      "near_miss": "playâ†’media_content + storyâ†’narrative_content; media_playback wins via action_token alignment (0.7 vs 0.55); UOL predicate alignment confirms. Tests both recall and precision.",
       "discriminator": "tiebreak_requires_reranker",
       "token_roles": [
         {
@@ -1830,7 +1880,7 @@
           "token": "play",
           "lemma": "play",
           "role": "main_predicate",
-          "meaning": "play:activity",
+          "meaning": "play:action",
           "weight": 0.98
         },
         {
@@ -1865,7 +1915,7 @@
       "expected_top3": [
         "social_contact"
       ],
-      "near_miss": "call→contact_action + friend→social_relation match social_contact required; no memory_recall for personal_memory",
+      "near_miss": "callâ†’contact_action + friendâ†’social_relation match social_contact required; no memory_recall for personal_memory",
       "discriminator": "required_class_presence",
       "token_roles": [
         {
@@ -1873,7 +1923,7 @@
           "token": "call",
           "lemma": "call",
           "role": "main_predicate",
-          "meaning": "call:communication",
+          "meaning": "call:verb.communicate",
           "weight": 0.98
         },
         {
@@ -1904,7 +1954,7 @@
       "expected_top3": [
         "weather"
       ],
-      "near_miss": "snow→weather_phenomenon + today→temporal_descriptor match weather; no abstract_concept for exclude penalty",
+      "near_miss": "snowâ†’weather_phenomenon + todayâ†’temporal_descriptor match weather; no abstract_concept for exclude penalty",
       "discriminator": "required_class_presence",
       "token_roles": [
         {
@@ -1912,7 +1962,7 @@
           "token": "is",
           "lemma": "be",
           "role": "main_predicate",
-          "meaning": "be:state",
+          "meaning": "be:verb.stative",
           "weight": 0.98
         },
         {
@@ -1974,7 +2024,7 @@
       "expected_top3": [
         "health_advice"
       ],
-      "near_miss": "take→advice_action + medicine→health_domain + fever→health_condition all match health_advice required OR; no food_item for meal",
+      "near_miss": "takeâ†’advice_action + medicineâ†’health_domain + feverâ†’health_condition all match health_advice required OR; no food_item for meal",
       "discriminator": "required_class_presence",
       "token_roles": [
         {
@@ -1982,7 +2032,7 @@
           "token": "take",
           "lemma": "take",
           "role": "main_predicate",
-          "meaning": "take:acquisition",
+          "meaning": "take:verb.possess",
           "weight": 0.98
         },
         {
@@ -2036,7 +2086,7 @@
         "story",
         "autobiographical_memory"
       ],
-      "near_miss": "tell→narrative_content + yesterday→temporal_descriptor; story wins via narrative_content; autobiographical needs autobiographical_event which 'tell' does not provide",
+      "near_miss": "tellâ†’narrative_content + yesterdayâ†’temporal_descriptor; story wins via narrative_content; autobiographical needs autobiographical_event which 'tell' does not provide",
       "discriminator": "token_class_switch",
       "token_roles": [
         {
@@ -2044,7 +2094,7 @@
           "token": "tell",
           "lemma": "tell",
           "role": "main_predicate",
-          "meaning": "tell:communication",
+          "meaning": "tell:verb.communicate",
           "weight": 0.98
         },
         {
@@ -2092,7 +2142,7 @@
         "story",
         "weather"
       ],
-      "near_miss": "give→action (verb.create) + story→narrative_content; near miss with rain→weather_phenomenon competing",
+      "near_miss": "giveâ†’action (verb.create) + storyâ†’narrative_content; near miss with rainâ†’weather_phenomenon competing",
       "discriminator": "rule_score_advantage",
       "token_roles": [
         {
@@ -2100,7 +2150,7 @@
           "token": "give",
           "lemma": "give",
           "role": "main_predicate",
-          "meaning": "give:transfer",
+          "meaning": "give:verb.move",
           "weight": 0.98
         },
         {
@@ -2139,9 +2189,9 @@
           "index": 5,
           "token": "rain",
           "lemma": "rain",
-          "role": "content_nominal",
-          "meaning": "semantic_class_unknown",
-          "weight": 0.58
+          "role": "secondary_predicate_candidate",
+          "meaning": "rain:verb.stative",
+          "weight": 0.62
         }
       ],
       "precision_target": false
@@ -2160,7 +2210,7 @@
       "expected_top3": [
         "story"
       ],
-      "near_miss": "make→action (verb.create) is in story's action_tokens + story→narrative_content matches required class",
+      "near_miss": "makeâ†’action (verb.create) is in story's action_tokens + storyâ†’narrative_content matches required class",
       "discriminator": "required_class_presence",
       "token_roles": [
         {
@@ -2168,7 +2218,7 @@
           "token": "make",
           "lemma": "make",
           "role": "main_predicate",
-          "meaning": "make:creation",
+          "meaning": "make:verb.create",
           "weight": 0.98
         },
         {
@@ -2204,7 +2254,7 @@
       "expected_top3": [
         "media_playback"
       ],
-      "near_miss": "play→media_content + music→media_content match required; today→temporal_descriptor is optional",
+      "near_miss": "playâ†’media_content + musicâ†’media_content match required; todayâ†’temporal_descriptor is optional",
       "discriminator": "required_class_presence",
       "token_roles": [
         {
@@ -2212,7 +2262,7 @@
           "token": "play",
           "lemma": "play",
           "role": "main_predicate",
-          "meaning": "play:activity",
+          "meaning": "play:action",
           "weight": 0.98
         },
         {
@@ -2247,7 +2297,7 @@
       "expected_top3": [
         "meal_suggestion"
       ],
-      "near_miss": "eat→food_item + dinner→food_item match meal_suggestion required; no advice_action for health",
+      "near_miss": "eatâ†’food_item + dinnerâ†’food_item match meal_suggestion required; no advice_action for health",
       "discriminator": "required_class_presence",
       "token_roles": [
         {
@@ -2255,7 +2305,7 @@
           "token": "eat",
           "lemma": "eat",
           "role": "main_predicate",
-          "meaning": "eat:consumption",
+          "meaning": "eat:verb.consume",
           "weight": 0.98
         },
         {
@@ -2283,9 +2333,34 @@
       "expected_top3": [
         "weather"
       ],
-      "near_miss": "cold→weather_phenomenon + rain→weather_phenomenon + today→temporal_descriptor all match weather; question-like false avoids exclude",
+      "near_miss": "coldâ†’weather_phenomenon + rainâ†’weather_phenomenon + todayâ†’temporal_descriptor all match weather; question-like false avoids exclude",
       "discriminator": "required_class_presence",
-      "token_roles": [],
+      "token_roles": [
+        {
+          "index": 0,
+          "token": "cold",
+          "lemma": "cold",
+          "role": "grammatical_subject",
+          "meaning": "cold",
+          "weight": 0.98
+        },
+        {
+          "index": 1,
+          "token": "rain",
+          "lemma": "rain",
+          "role": "main_predicate",
+          "meaning": "rain:verb.stative",
+          "weight": 0.98
+        },
+        {
+          "index": 2,
+          "token": "today",
+          "lemma": "today",
+          "role": "semantic_object",
+          "meaning": "today",
+          "weight": 0.88
+        }
+      ],
       "precision_target": false
     },
     {
@@ -2302,7 +2377,7 @@
       "expected_top3": [
         "health_advice"
       ],
-      "near_miss": "see→advice_action + doctor→health_domain match health_advice required OR; no food_item for meal",
+      "near_miss": "seeâ†’advice_action + doctorâ†’health_domain match health_advice required OR; no food_item for meal",
       "discriminator": "required_class_presence",
       "token_roles": [
         {
@@ -2310,7 +2385,7 @@
           "token": "see",
           "lemma": "see",
           "role": "main_predicate",
-          "meaning": "see:cognition",
+          "meaning": "see:verb.perceive",
           "weight": 0.98
         },
         {
@@ -2348,7 +2423,7 @@
         "media_playback",
         "story"
       ],
-      "near_miss": "play→media_content + music→media_content win over story→narrative_content via action_token alignment (0.7 vs 0.55)",
+      "near_miss": "playâ†’media_content + musicâ†’media_content win over storyâ†’narrative_content via action_token alignment (0.7 vs 0.55)",
       "discriminator": "tiebreak_requires_reranker",
       "token_roles": [
         {
@@ -2356,7 +2431,7 @@
           "token": "play",
           "lemma": "play",
           "role": "main_predicate",
-          "meaning": "play:activity",
+          "meaning": "play:action",
           "weight": 0.98
         },
         {
@@ -2400,7 +2475,7 @@
       "expected_top3": [
         "weather"
       ],
-      "near_miss": "cold→weather_phenomenon required; outside→public_place optional; is ignored (not in lexicon)",
+      "near_miss": "coldâ†’weather_phenomenon required; outsideâ†’public_place optional; is ignored (not in lexicon)",
       "discriminator": "required_class_presence",
       "token_roles": [
         {
@@ -2416,7 +2491,7 @@
           "token": "is",
           "lemma": "be",
           "role": "main_predicate",
-          "meaning": "be:state",
+          "meaning": "be:verb.stative",
           "weight": 0.98
         },
         {
@@ -2444,7 +2519,7 @@
       "expected_top3": [
         "social_contact"
       ],
-      "near_miss": "call→contact_action + mom→social_relation match social_contact required; my→possession optional",
+      "near_miss": "callâ†’contact_action + momâ†’social_relation match social_contact required; myâ†’possession optional",
       "discriminator": "required_class_presence",
       "token_roles": [
         {
@@ -2452,7 +2527,7 @@
           "token": "call",
           "lemma": "call",
           "role": "main_predicate",
-          "meaning": "call:communication",
+          "meaning": "call:verb.communicate",
           "weight": 0.98
         },
         {
@@ -2487,7 +2562,7 @@
       "expected_top3": [
         "health_advice"
       ],
-      "near_miss": "take→advice_action + medicine→health_domain match health_advice required OR; no food_item for meal",
+      "near_miss": "takeâ†’advice_action + medicineâ†’health_domain match health_advice required OR; no food_item for meal",
       "discriminator": "required_class_presence",
       "token_roles": [
         {
@@ -2495,7 +2570,7 @@
           "token": "take",
           "lemma": "take",
           "role": "main_predicate",
-          "meaning": "take:acquisition",
+          "meaning": "take:verb.possess",
           "weight": 0.98
         },
         {
@@ -2522,7 +2597,7 @@
       "expected_top3": [
         "media_playback"
       ],
-      "near_miss": "play→media_content + song→media_content match media_playback required; no narrative_content",
+      "near_miss": "playâ†’media_content + songâ†’media_content match media_playback required; no narrative_content",
       "discriminator": "required_class_presence",
       "token_roles": [
         {
@@ -2530,7 +2605,7 @@
           "token": "play",
           "lemma": "play",
           "role": "main_predicate",
-          "meaning": "play:activity",
+          "meaning": "play:action",
           "weight": 0.98
         },
         {
@@ -2559,7 +2634,7 @@
       "expected_top3": [
         "story"
       ],
-      "near_miss": "give→action verb.create is in story's action_tokens + story→narrative_content; 'me'→indirect_object (not in lexicon, ignored)",
+      "near_miss": "giveâ†’action verb.create is in story's action_tokens + storyâ†’narrative_content; 'me'â†’indirect_object (not in lexicon, ignored)",
       "discriminator": "required_class_presence",
       "token_roles": [
         {
@@ -2567,7 +2642,7 @@
           "token": "give",
           "lemma": "give",
           "role": "main_predicate",
-          "meaning": "give:transfer",
+          "meaning": "give:verb.move",
           "weight": 0.98
         },
         {
@@ -2610,7 +2685,7 @@
       "expected_top3": [
         "weather"
       ],
-      "near_miss": "cold→weather_phenomenon + yesterday→temporal_descriptor match weather; no exclude classes triggered",
+      "near_miss": "coldâ†’weather_phenomenon + yesterdayâ†’temporal_descriptor match weather; no exclude classes triggered",
       "discriminator": "required_class_presence",
       "token_roles": [],
       "precision_target": false
@@ -2628,7 +2703,7 @@
       "expected_top3": [
         "autobiographical_memory"
       ],
-      "near_miss": "recap→autobiographical_action matches autobiographical required; yesterday→temporal_descriptor optional",
+      "near_miss": "recapâ†’autobiographical_action matches autobiographical required; yesterdayâ†’temporal_descriptor optional",
       "discriminator": "required_class_presence",
       "token_roles": [
         {
@@ -2636,7 +2711,7 @@
           "token": "recap",
           "lemma": "recap",
           "role": "main_predicate",
-          "meaning": "recap:communication",
+          "meaning": "recap:verb.communicate",
           "weight": 0.98
         },
         {

@@ -198,7 +198,7 @@ def lexicon_ingest(
                 f"{genus_lemma!r} classes {sorted(genus_classes)!r}"
             )
 
-        return _apply_candidate(
+        result = _apply_candidate(
             store,
             candidate,
             candidate_hash=candidate_hash,
@@ -208,6 +208,15 @@ def lexicon_ingest(
             actual_reserved=actual_reserved,
             recorded_at=timestamp,
         )
+        # Hot-reload the in-memory routing lexicon so the new sense is
+        # immediately usable for intent classification without a restart.
+        if result.status == "active":
+            try:
+                from .local_assistant_router import refresh_in_memory_lexicon
+                refresh_in_memory_lexicon(store)
+            except Exception:
+                pass
+        return result
     except ContractValidationError as exc:
         _record_rejected_ingestion(
             store,

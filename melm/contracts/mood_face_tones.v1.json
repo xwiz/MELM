@@ -1,0 +1,23 @@
+{
+  "schema_id": "melm.mood_face_tones.v1",
+  "tones": {
+    "transition_default": "transition_default.wav",
+    "transition_positive": "transition_positive.wav",
+    "transition_negative": "transition_negative.wav",
+    "transition_sharp_negative": "transition_sharp_negative.wav",
+    "thinking": "thinking.wav",
+    "listening": "listening.wav",
+    "recovery": "recovery.wav"
+  },
+  "mood_cues": {
+    "neutral": "neutral.wav",
+    "happy": "happy.wav",
+    "excited": "excited.wav",
+    "calm": "calm.wav",
+    "annoyed": "annoyed.wav",
+    "frustrated": "frustrated.wav",
+    "hurt": "hurt.wav",
+    "sad": "sad.wav",
+    "curious": "curious.wav"
+  }
+}

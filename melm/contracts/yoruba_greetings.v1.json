@@ -1,0 +1,25 @@
+{
+  "schema_id": "melm.yoruba_greetings.v1",
+  "language": "yoruba",
+  "region": "West Africa",
+  "greetings": {
+    "general": "Báwo ni?",
+    "morning": "Ẹ kú àárọ̀",
+    "afternoon": "Ẹ kú ọ̀sán",
+    "evening": "Ẹ kú ìrọ̀lẹ́",
+    "how_are_you": "Báwo ni?",
+    "response": "Mo wá dáadáa. Ẹ ṣéun.",
+    "welcome": "Ẹ kú àbọ̀",
+    "goodbye": "Ó dàbọ̀"
+  },
+  "phonetic_notes": {
+    "general": "Ba-wo ni",
+    "morning": "Eh-koo ah-ah-roh",
+    "afternoon": "Eh-koo aw-san",
+    "evening": "Eh-koo ee-roh-leh",
+    "response": "Moh wah dah-dah. Eh sheh-un.",
+    "welcome": "Eh-koo ah-boh",
+    "goodbye": "Oh dah-boh"
+  },
+  "usage_context": "Yoruba is spoken by ~45 million people in Nigeria, Benin, and Togo. These greetings are appropriate for informal and formal contexts."
+}

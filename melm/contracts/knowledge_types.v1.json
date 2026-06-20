@@ -1,0 +1,19 @@
+{
+  "schema_id": "melm.knowledge_types.v1",
+  "version": "1.0.0",
+  "type_markers": {
+    "opinion_markers": ["best", "worst", "should", "better", "greatest", "terrible", "delicious", "disgusting"],
+    "literary_stems": ["what has", "what am i", "riddle", "knock knock", "the early bird", "all that glitters"],
+    "provenance_confidence": {
+      "seed": 0.95,
+      "user": 0.6,
+      "cloud": 0.5
+    }
+  },
+  "truth_arbitration": {
+    "contradiction_prompt": "That differs from what I have — I recorded that {proposition}. Are you correcting me, or testing me?",
+    "contradiction_ack": "I have updated that; thanks for the correction.",
+    "assert_ack": "I will remember that {proposition}.",
+    "negate_ack": "I will remember that {negation}."
+  }
+}

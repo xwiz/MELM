@@ -1,0 +1,16 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "melm.token_typability.v1",
+  "schema_id": "melm.token_typability.v1",
+  "description": "Thresholds and abbreviation map for token typability classification.",
+  "min_vowel_ratio": 0.15,
+  "max_consonant_run": 5,
+  "min_gibberish_len": 6,
+  "max_abbreviation_len": 5,
+  "known_abbreviations": [
+    "btw", "thx", "ty", "np", "yw", "idk", "tbh", "imo", "imho",
+    "lol", "lmao", "rofl", "smh", "wtf", "omg", "brb", "afk",
+    "gn", "gm", "gg", "wp", "ez", "pls", "plz", "rly", "srsly",
+    "omw", "irl", "asap", "fyi", "aka", "eta"
+  ]
+}

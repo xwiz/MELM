@@ -1,0 +1,17 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "melm.commitment_parsers.v1",
+  "schema_id": "melm.commitment_parsers.v1",
+  "commitment_cues": {
+    "promise_to_inform": ["will tell", "will let you know", "will share", "will report", "will update"],
+    "promise_to_return": ["will come back", "will return", "be right back", "talk later", "see you later"],
+    "reminder_request": ["remind me", "remind us", "set a reminder", "remind", "do not let me forget"],
+    "appointment": ["meet", "appointment", "schedule", "book", "reserve"]
+  },
+  "temporal_cues": {
+    "tomorrow": ["tomorrow", "next day"],
+    "next_week": ["next week", "next Monday", "next Tuesday", "next Wednesday", "next Thursday", "next Friday"],
+    "in_duration": ["in an hour", "in 2 hours", "in a minute", "in 5 minutes", "in a while"],
+    "later_today": ["this afternoon", "this evening", "tonight", "later today"]
+  }
+}

@@ -1,0 +1,15 @@
+{
+  "schema_id": "melm.geo_atlas.v1",
+  "default_road_speed_kmh": 60,
+  "places": {
+    "enugu": {"lat": 6.459964, "lon": 7.548949},
+    "lagos": {"lat": 6.454100, "lon": 3.394700},
+    "oniru": {"lat": 6.431000, "lon": 3.450000},
+    "ikeja": {"lat": 6.601800, "lon": 3.351500},
+    "nsukka": {"lat": 6.856700, "lon": 7.395800},
+    "abuja": {"lat": 9.057850, "lon": 7.495080},
+    "ibadan": {"lat": 7.377560, "lon": 3.947000},
+    "kano": {"lat": 12.000000, "lon": 8.516700},
+    "port harcourt": {"lat": 4.824170, "lon": 7.033560}
+  }
+}

@@ -1,0 +1,13 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "melm.background_task_policies.v1",
+  "schema_id": "melm.background_task_policies.v1",
+  "max_concurrent_jobs": 1,
+  "default_check_interval_seconds": 60,
+  "max_retries": 3,
+  "job_timeout_seconds": 300,
+  "deferral_policy": {
+    "max_deferred_per_session": 5,
+    "auto_research_timeout_seconds": 30
+  }
+}

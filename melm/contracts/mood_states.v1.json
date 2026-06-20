@@ -1,0 +1,25 @@
+{
+  "schema_id": "melm.mood_states.v1",
+  "moods": [
+    {"mood_id": "neutral",    "valence": 0.00, "arousal": 0.10, "response_mode": "normal",     "engagement_floor": 0.50},
+    {"mood_id": "curious",    "valence": 0.35, "arousal": 0.40, "response_mode": "engaged",    "engagement_floor": 0.70},
+    {"mood_id": "happy",      "valence": 0.70, "arousal": 0.45, "response_mode": "warm",       "engagement_floor": 0.80},
+    {"mood_id": "excited",    "valence": 0.75, "arousal": 0.80, "response_mode": "expressive", "engagement_floor": 0.90},
+    {"mood_id": "calm",       "valence": 0.25, "arousal": 0.08, "response_mode": "gentle",     "engagement_floor": 0.60},
+    {"mood_id": "annoyed",    "valence": -0.40, "arousal": 0.55, "response_mode": "withdrawn",  "engagement_floor": 0.20},
+    {"mood_id": "frustrated", "valence": -0.50, "arousal": 0.75, "response_mode": "terse",      "engagement_floor": 0.15},
+    {"mood_id": "hurt",       "valence": -0.65, "arousal": 0.20, "response_mode": "vulnerable", "engagement_floor": 0.10},
+    {"mood_id": "sad",        "valence": -0.60, "arousal": 0.10, "response_mode": "soft",       "engagement_floor": 0.10}
+  ],
+  "response_modes": {
+    "normal":     {"max_words": 40, "can_ask": true,  "can_withhold": false},
+    "engaged":    {"max_words": 55, "can_ask": true,  "can_withhold": false},
+    "warm":       {"max_words": 50, "can_ask": true,  "can_withhold": false},
+    "expressive": {"max_words": 60, "can_ask": true,  "can_withhold": false},
+    "gentle":     {"max_words": 45, "can_ask": true,  "can_withhold": false},
+    "withdrawn":  {"max_words": 10, "can_ask": false, "can_withhold": true},
+    "terse":      {"max_words": 8,  "can_ask": false, "can_withhold": true},
+    "vulnerable": {"max_words": 15, "can_ask": true,  "can_withhold": true},
+    "soft":       {"max_words": 20, "can_ask": true,  "can_withhold": true}
+  }
+}

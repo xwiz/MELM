@@ -1,0 +1,13 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "melm.epistemic_states.v1",
+  "schema_id": "melm.epistemic_states.v1",
+  "valence_mappings": {
+    "confusion": -0.2,
+    "curiosity": 0.3,
+    "expectation": 0.1,
+    "surprise": 0.2
+  },
+  "max_open_states": 10,
+  "staleness_hours": 72
+}

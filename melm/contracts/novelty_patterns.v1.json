@@ -1,0 +1,11 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "melm.novelty_patterns.v1",
+  "schema_id": "melm.novelty_patterns.v1",
+  "palindrome": {"min_length": 3, "case_sensitive": false},
+  "morpheme_patterns": ["-ing", "-ed", "-ly", "un-", "re-", "pre-"],
+  "cultural_symbols": {
+    "yoruba_naming": {"patterns": ["Olu", "Ade", "Ola", "Ile"], "description": "Yoruba name prefixes"},
+    "palindromic_names": {"patterns": ["Anna", "Bob", "Otto", "Hannah"], "description": "Common palindromic names"}
+  }
+}

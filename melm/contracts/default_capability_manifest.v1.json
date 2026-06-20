@@ -15,6 +15,8 @@
     "social_greeting": {"installed": true, "handler": "builtin"},
     "assistant_behavior": {"installed": true, "handler": "builtin"},
     "personal_goal_advice": {"installed": true, "handler": "builtin"},
-    "open_domain": {"installed": true, "handler": "builtin"}
+    "open_domain": {"installed": true, "handler": "builtin"},
+    "mood_affect": {"installed": true, "handler": "builtin", "creative_behaviors": false},
+    "reasoning": {"installed": true, "handler": "builtin"}
   }
 }

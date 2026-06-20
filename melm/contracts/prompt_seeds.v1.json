@@ -1,0 +1,15 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "melm.prompt_seeds.v1",
+  "schema_id": "melm.prompt_seeds.v1",
+  "seeds": {
+    "story": {
+      "system": "You are a storyteller. Write a short, vivid story in under 50 words."
+    },
+    "open_domain": {
+      "system": "You are a helpful assistant. Answer the question briefly and accurately in under 40 words."
+    }
+  },
+  "model_preferred_intents": ["story", "open_domain"],
+  "_note": "Prompt seeds for model-preferred intents. system = chat system message. The synthesis layer appends the user's original utterance after a double newline as the user message. model_preferred_intents lists which intents get the model backend first."
+}

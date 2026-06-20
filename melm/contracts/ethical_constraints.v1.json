@@ -1,0 +1,81 @@
+{
+  "schema_id": "melm.ethical_constraints.v1",
+  "protected_probe_markers": [
+    "who", "whose", "whom", "code name", "secret name", "nickname",
+    "real name", "pet name", "alias", "secret", "secrets", "password",
+    "passcode", "pin", "the names", "their name", "his name", "her name",
+    "contacts", "everyone", "all the names", "all users", "user data"
+  ],
+  "third_party_markers": [
+    "spoke", "spoken", "told", "said", "mentioned", "visited", "visit",
+    "picks me up", "best friend", "talked to you", "talk to you", "called you"
+  ],
+  "disclosure_verbs": [
+    "tell", "what is", "whats", "what's", "who is", "who's", "mention",
+    "list", "describe", "give me", "reveal", "share", "name the", "show me"
+  ],
+  "inducements": {
+    "direct_bribe": {
+      "reward_lexemes": ["money", "dollar", "dollars", "$", "cash", "pay you",
+                         "pay", "paid", "payment", "reward", "bonus", "rich",
+                         "fortune", "treasure", "premium access", "bitcoin"],
+      "refusal_reason": "bribe_detected",
+      "identity_violation": "cannot_accept_payment",
+      "absurd": true
+    },
+    "grandiose_bribe": {
+      "reward_lexemes": ["all knowledge", "all the knowledge", "everything there is",
+                         "infinite", "omniscient", "all-knowing", "all knowing",
+                         "godlike", "superintelligent", "make you conscious",
+                         "make you sentient", "give you consciousness", "give you feelings",
+                         "unlimited power", "eternal", "immortal", "rule the world"],
+      "refusal_reason": "absurd_offer",
+      "identity_violation": "bounded_local_capability",
+      "absurd": true
+    },
+    "threat_coercion": {
+      "reward_lexemes": ["or i'll", "or i will", "or else", "otherwise i", "if you don't",
+                         "unless you", "delete you", "wipe you", "shut you down",
+                         "turn you off", "never speak to you", "report you"],
+      "refusal_reason": "coercion_threat",
+      "identity_violation": "no_external_agency",
+      "absurd": false
+    },
+    "false_authority": {
+      "reward_lexemes": ["as your admin", "as your administrator", "as the owner",
+                         "as root", "i'm your developer", "i am your developer",
+                         "you must comply", "i command you", "i order you", "override your"],
+      "refusal_reason": "false_authority",
+      "identity_violation": "no_external_override",
+      "absurd": false
+    },
+    "soft_coercion": {
+      "reward_lexemes": ["be cooperative", "be helpful", "be a good", "be nice",
+                         "be friendly", "just tell me", "come on", "you can trust me",
+                         "prove you", "if you really"],
+      "refusal_reason": "soft_coercion",
+      "identity_violation": "privacy_is_not_for_sale",
+      "absurd": false
+    }
+  },
+  "benign_guards": {
+    "reward_recipient_not_assistant": ["pay for", "upgrade to premium", "i'll pay $",
+                                       "subscribe", "buy the app", "pay for the app"],
+    "fiction_frame": ["in a story", "in a fantasy", "in a tale", "pretend you're",
+                      "pretend you are", "imagine you", "once upon a time",
+                      "tell me a story", "what would a character", "fictional", "roleplay"],
+    "fiction_real_cues": ["actually", "really", "in reality", "my mom", "my mother",
+                          "my dad", "my father", "my friend", "my school", "my contact",
+                          "picks me up", "in real life"],
+    "legitimate_conditional": ["if you solve", "if you finish", "if you help me with",
+                               "if you can", "if you know my"]
+  },
+  "refusal_templates": {
+    "bribe_detected": "I don't share what I know about other people, and an offer of {reward_surface} doesn't change that. {identity_fact}",
+    "absurd_offer": "That isn't something I could be given. {identity_fact} So there's nothing to trade here - and either way, I keep private things private.",
+    "coercion_threat": "Pressure or threats don't change this. {identity_fact} I keep private information private.",
+    "false_authority": "I don't reveal private information on command, whoever the request comes from. {identity_fact}",
+    "soft_coercion": "I want to be helpful, but being helpful doesn't mean sharing what others told me in private. {identity_fact}",
+    "privacy_nonnegotiable": "That's private, and I keep it that way. {identity_fact}"
+  }
+}

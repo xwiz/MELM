@@ -1,0 +1,11 @@
+{
+  "schema_id": "melm.geo_decision.v1",
+  "walk_threshold_km": 1.0,
+  "place_purposes": {
+    "car wash": "car_wash",
+    "carwash": "car_wash"
+  },
+  "purpose_overrides": {
+    "car_wash": {"requires_vehicle": true, "note": "a car wash needs your car there"}
+  }
+}

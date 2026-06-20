@@ -1,0 +1,13 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "melm.research_deferral_triggers.v1",
+  "schema_id": "melm.research_deferral_triggers.v1",
+  "defer_when": {
+    "provider_unavailable": true,
+    "network_unreachable": false,
+    "utterance_contains_defer_keywords": true,
+    "turn_count_exceeds": 50
+  },
+  "defer_keywords": ["later", "remind me", "next time", "look that up", "research that", "find out"],
+  "immediate_keywords": ["now", "quick", "urgent", "immediately"]
+}

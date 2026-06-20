@@ -11,7 +11,7 @@
     "model_id": {"type": "string", "minLength": 1},
     "backend": {
       "type": "string",
-      "enum": ["template", "llguidance", "bitnet", "remote"]
+      "enum": ["template", "llguidance", "llamacpp", "bitnet", "remote"]
     },
     "parameters_b": {"type": "number", "minimum": 0.001},
     "max_tokens": {"type": "integer", "minimum": 1},
