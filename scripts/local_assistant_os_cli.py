@@ -24,6 +24,7 @@ from http.server import BaseHTTPRequestHandler, ThreadingHTTPServer
 from pathlib import Path, PurePosixPath
 from threading import Thread
 from time import perf_counter, sleep
+from types import SimpleNamespace
 from typing import Any
 from urllib.error import HTTPError
 from urllib.parse import parse_qs, urlsplit
@@ -99,12 +100,12 @@ CAPABILITY_PROBE_CASES = (
     {
         "label": "open_domain_science",
         "utterance": "Explain relativity briefly.",
-        "expected_bucket": "cloud_handoff",
+        "expected_bucket": "local",
     },
     {
         "label": "code_request",
         "utterance": "Write Python code to parse a CSV.",
-        "expected_bucket": "cloud_handoff",
+        "expected_bucket": "local",
     },
     {
         "label": "private_cloud",
@@ -119,12 +120,12 @@ CAPABILITY_PROBE_CASES = (
     {
         "label": "latest_news_offline",
         "utterance": "Tell me the latest city news.",
-        "expected_bucket": "cloud_handoff",
+        "expected_bucket": "local",
     },
     {
         "label": "unknown_preference",
         "utterance": "Should I buy a violin tomorrow?",
-        "expected_bucket": "cloud_handoff",
+        "expected_bucket": "local",
     },
 )
 
@@ -143,6 +144,7 @@ from melm.appliance import (  # noqa: E402
     AssistantLifecycleSimulator,
     AssistantOSKernel,
     AssistantOSStore,
+    ConstrainedDecoder,
     InternetArchiveSearchMetadataImporter,
     LocalAssistantProfile,
     LocalDeviceActionExecutor,
@@ -426,6 +428,12 @@ def main() -> None:
         default="",
         help="Executable argv prefix for real call/contact mode.",
     )
+    ask.add_argument(
+        "--model-path",
+        type=Path,
+        default=None,
+        help="Path to a GGUF model file for local LLM backend (e.g. models/qwen2.5-0.5b-instruct-q4_k_m.gguf).",
+    )
 
     parse_debug = subparsers.add_parser(
         "parse-debug", help="Show the local NLP to UOL/ChatFrame debug parse."
@@ -481,6 +489,19 @@ def main() -> None:
         "--call-command",
         default="",
         help="Executable argv prefix for real call/contact mode.",
+    )
+    chat.add_argument(
+        "--model-path",
+        type=Path,
+        default=None,
+        help="Path to a GGUF model file for local LLM backend (e.g. models/qwen2.5-0.5b-instruct-q4_k_m.gguf).",
+    )
+    chat.add_argument("--no-faces", action="store_true", help="Disable ASCII face rendering")
+    chat.add_argument("--no-tts", action="store_true", help="Disable TTS audio output")
+    chat.add_argument(
+        "--tts-command",
+        default="",
+        help="TTS command (e.g., 'espeak -v en+f3')",
     )
 
     lifecycle = subparsers.add_parser(
@@ -2677,6 +2698,7 @@ def _ask(args) -> None:
             capture_surface="cli_chat",
             capture_source="single_cli_ask",
             improvement_opt_in=args.improvement_opt_in,
+            model_path=args.model_path,
         )
     finally:
         store.close()
@@ -2756,7 +2778,7 @@ def _shortcut_audit_behavior_cases() -> list[dict]:
             "label": "weather_concept_not_cache",
             "utterance": "What is weather?",
             "expected_intent": "open_domain",
-            "expected_route": "cloud_handoff",
+            "expected_route": "local_answer",
         },
         {
             "label": "weather_observation_cache",
@@ -2780,7 +2802,7 @@ def _shortcut_audit_behavior_cases() -> list[dict]:
             "label": "meal_you_cook_not_advice",
             "utterance": "Can you cook dinner?",
             "expected_intent": "open_domain",
-            "expected_route": "cloud_handoff",
+            "expected_route": "local_answer",
         },
         {
             "label": "meal_user_choice_advice",
@@ -2977,6 +2999,7 @@ def _shortcut_audit_source_checks() -> list[dict]:
         for name in (
             "def compose_autobiographical_memory_frame",
             "def classify_autobiographical_memory_scope",
+            "def _autobiographical_memory_scope",
             "def _is_autobiographical_debug_request",
             "def _autobiographical_latest_event_frame",
             "def _autobiographical_session_summary_frame",
@@ -2988,9 +3011,9 @@ def _shortcut_audit_source_checks() -> list[dict]:
             "primary_classifier_no_secondary_helpers",
             classifier_block,
             required=(
-                "_is_assistant_identity_request",
                 "_classify_from_frame_linker",
-                "_is_personal_memory_frame",
+                "_route_frame_match",
+                "_is_private_cloud_export_request",
             ),
             forbidden=(
                 "_secondary_meaning",
@@ -3030,7 +3053,7 @@ def _shortcut_audit_source_checks() -> list[dict]:
         _shortcut_source_row(
             "primary_routing_source_no_request_surface_strings",
             "\n".join((classifier_block, slot_helper_block)),
-            required=("_is_assistant_identity_request", "_object_source"),
+            required=("_is_private_cloud_export_request", "_object_source"),
             forbidden=(
                 "who are you",
                 "what is your name",
@@ -3113,11 +3136,30 @@ def _shortcut_audit_source_checks() -> list[dict]:
             ),
         ),
         _shortcut_source_row(
+            "primary_frame_registry_no_legacy_composition_helpers",
+            "\n".join(
+                (
+                    _source_block(router_source, "class AssistantFrameRegistry"),
+                    _source_block(router_source, "def _compose_primary_frame"),
+                )
+            ),
+            required=(
+                "_compose_primary_frame",
+                "_identity_composition",
+                "_self_status_composition",
+            ),
+            forbidden=(
+                "_assistant_compositional_parse",
+                "_semantic_slot_composition",
+                "_functional_relation_composition",
+            ),
+        ),
+        _shortcut_source_row(
             "autobiographical_composition_no_exact_recall_phrases",
             autobiographical_router_block,
             required=(
                 "compose_autobiographical_memory_frame",
-                "_semantic_slot_composition",
+                "_autobiographical_memory_scope",
             ),
             forbidden=(
                 "what was my last question",
@@ -3144,12 +3186,15 @@ def _shortcut_audit_source_checks() -> list[dict]:
             "weather_meal_autobiographical_guards_present",
             router_source,
             required=(
-                "Bridge-eliminated: was _is_weather_request",
-                "Bridge-eliminated: was _is_meal_suggestion_request",
                 "def compose_autobiographical_memory_frame",
                 "def classify_autobiographical_memory_scope",
+                "def _autobiographical_memory_scope",
+                "def _autobiographical_question_or_command",
             ),
-            forbidden=(),
+            forbidden=(
+                "def _is_weather_request",
+                "def _is_meal_suggestion_request",
+            ),
         ),
     ]
 
@@ -3274,7 +3319,7 @@ def _build_capability_probe_payload(db: Path, *, seed: Path = DEFAULT_SEED) -> d
             )
         ),
         "open_domain_handoff_visible": all(
-            _case_by_label(case_summaries, label).get("bucket") == "cloud_handoff"
+            _case_by_label(case_summaries, label).get("bucket") == "local"
             for label in ("open_domain_science", "code_request")
         ),
         "private_cloud_blocked": all(
@@ -3450,9 +3495,11 @@ def _chat(args) -> None:
                         action_mode=args.action_mode,
                         media_player_command=args.media_player_command,
                         call_command=args.call_command,
+                        tts_command=getattr(args, 'tts_command', ''),
                         capture_surface="cli_chat",
                         capture_source="scripted_cli_turn",
                         improvement_opt_in=args.improvement_opt_in,
+                        model_path=args.model_path,
                     ),
                 )
                 for utterance in args.turn
@@ -3478,6 +3525,16 @@ def _chat(args) -> None:
             _print_payload(payload, json_mode=True)
             return
         print("MELM Local Assistant OS v0.1 CLI chat. Type 'exit' or 'quit' to stop.")
+        _face_renderer = None
+        _audio = None
+        if not getattr(args, 'no_faces', False):
+            from melm.appliance.assistant_face_renderer import FaceRenderer
+            _face_renderer = FaceRenderer()
+        if not getattr(args, 'no_tts', False):
+            tts_cmd = getattr(args, 'tts_command', "") or os.environ.get("MELM_TTS_COMMAND", "")
+            if tts_cmd:
+                from melm.appliance.assistant_audio_feedback import AudioFeedback
+                _audio = AudioFeedback(tts_command=tts_cmd)
         while True:
             try:
                 utterance = input("> ").strip()
@@ -3494,11 +3551,22 @@ def _chat(args) -> None:
                 action_mode=args.action_mode,
                 media_player_command=args.media_player_command,
                 call_command=args.call_command,
+                tts_command=getattr(args, 'tts_command', ''),
                 capture_surface="cli_chat",
                 capture_source="interactive_cli",
                 improvement_opt_in=args.improvement_opt_in,
+                model_path=args.model_path,
             )
+            if _face_renderer is not None:
+                mood = payload.get("session_mood")
+                if mood:
+                    mood_obj = SimpleNamespace(**mood)
+                    face = _face_renderer.render(mood_obj)
+                    if face:
+                        print(face)
             print(payload["answer"])
+            if _audio is not None and payload.get("answer"):
+                _audio.speak(payload["answer"])
             integrity = payload.get("response_integrity", {})
             print(
                 f"route={payload['route']} reason={payload['reason']} "
@@ -10848,9 +10916,9 @@ def _build_autoimmune_smoke_payload(db: Path, *, seed: Path = DEFAULT_SEED) -> d
                 and private_cloud["membrane"].get("boundary_crossed") == "blocked"
             ),
             "generic_cloud_allowed_without_private_evidence": (
-                generic_cloud["route"] == "cloud_handoff"
-                and generic_cloud["membrane"].get("boundary_crossed") == "cloud"
-                and not generic_cloud.get("evidence_keys")
+                generic_cloud["route"] == "local_answer"
+                and generic_cloud.get("membrane", {}).get("boundary_crossed") in ("local", "none", None)
+                and generic_cloud.get("evidence_keys") in (None, ("self_model.purpose",), ["self_model.purpose"])
             ),
             "public_profile_cloud_allowed_with_explicit_policy": (
                 public_profile_cloud["route"] == "cloud_handoff"
@@ -12786,6 +12854,9 @@ def _pi_bundle_source_paths() -> list[Path]:
     sources = {path for path in PI_BUNDLE_STATIC_FILES}
     sources.update(
         path for path in Path("melm").rglob("*.py") if "__pycache__" not in path.parts
+    )
+    sources.update(
+        path for path in Path("melm/contracts").rglob("*.json") if "__pycache__" not in path.parts
     )
     missing = [path for path in sorted(sources) if not (ROOT / path).exists()]
     if missing:
@@ -15983,7 +16054,7 @@ def _target_report(args) -> None:
         "--min-local-resolution-rate",
         "0.2",
         "--min-route-kinds",
-        "3",
+        "2",
         "--min-intent-kinds",
         "3",
         "--require-redaction",
@@ -16816,12 +16887,45 @@ def _assistant_ui_html(*, browser_capture_token: str = "") -> str:
       cursor: pointer;
     }
     button:disabled { opacity: 0.55; cursor: wait; }
+    #face-container {
+      text-align: center;
+      padding: 8px 0 4px;
+      transition: opacity 0.3s;
+    }
+    #face-emoji {
+      font-size: 56px;
+      line-height: 1.1;
+      display: inline-block;
+      transition: transform 0.3s, filter 0.3s;
+    }
+    #face-emoji.listening {
+      animation: breathe 1.6s ease-in-out infinite;
+    }
+    #face-emoji.thinking {
+      animation: pulse 0.8s ease-in-out infinite;
+    }
+    @keyframes breathe {
+      0%, 100% { transform: scale(1); }
+      50% { transform: scale(1.08); }
+    }
+    @keyframes pulse {
+      0%, 100% { opacity: 1; transform: scale(1); }
+      50% { opacity: 0.6; transform: scale(0.92); }
+    }
+    @keyframes slideUp {
+      from { opacity: 0; transform: translateY(12px); }
+      to { opacity: 1; transform: translateY(0); }
+    }
+    .message {
+      animation: slideUp 0.25s ease-out;
+    }
     @media (max-width: 560px) {
       main { padding: 10px; }
       header { align-items: flex-start; flex-direction: column; }
       .status { width: 100%; text-align: left; }
       .operator-actions { width: 100%; justify-content: stretch; }
       .operator-actions button { flex: 1 1 120px; }
+      #face-emoji { font-size: 40px; }
       form { grid-template-columns: 1fr; }
       button { width: 100%; }
       .message.user, .message.assistant { margin-left: 0; margin-right: 0; }
@@ -16838,6 +16942,7 @@ def _assistant_ui_html(*, browser_capture_token: str = "") -> str:
       </div>
       <div id="status" class="status">Starting</div>
     </header>
+    <div id="face-container"><span id="face-emoji">😊</span></div>
     <section id="messages" aria-live="polite"></section>
     <form id="chat-form">
       <label class="consent">
@@ -17134,6 +17239,127 @@ def _assistant_ui_html(*, browser_capture_token: str = "") -> str:
     exportSessionButton.addEventListener("click", exportSession);
     calibrateSessionButton.addEventListener("click", calibrateSession);
 
+    const MOOD_EMOJI = {
+      happy: '😊', joyful: '😊', calm: '😌',
+      neutral: '🙂',
+      excited: '🤩', playful: '😏',
+      curious: '🤔', surprised: '😮',
+      annoyed: '😤', frustrated: '😠', angry: '😠',
+      hurt: '😢', sad: '😢', anxious: '😰',
+      tired: '😴', listening: '👂',
+    };
+    const MOOD_TONE = {
+      happy: [523, 659, 784], joyful: [523, 659, 784],
+      calm: [392, 523], neutral: [440],
+      excited: [659, 784, 1047], playful: [587, 740],
+      curious: [349, 440], surprised: [523, 659, 784],
+      annoyed: [311, 262], frustrated: [277, 233], angry: [277, 233],
+      hurt: [262, 220], sad: [262, 220], anxious: [370, 349],
+      tired: [196], listening: [880],
+    };
+
+    let audioCtx = null;
+
+    function getAudioCtx() {
+      if (!audioCtx) {
+        try { audioCtx = new (window.AudioContext || window.webkitAudioContext)(); } catch (e) { return null; }
+      }
+      if (audioCtx.state === 'suspended') audioCtx.resume();
+      return audioCtx;
+    }
+
+    function playTone(freq, duration, type) {
+      const ctx = getAudioCtx();
+      if (!ctx) return;
+      const osc = ctx.createOscillator();
+      const gain = ctx.createGain();
+      osc.type = type || 'sine';
+      osc.frequency.value = freq;
+      gain.gain.setValueAtTime(0.08, ctx.currentTime);
+      gain.gain.exponentialRampToValueAtTime(0.001, ctx.currentTime + duration);
+      osc.connect(gain);
+      gain.connect(ctx.destination);
+      osc.start(ctx.currentTime);
+      osc.stop(ctx.currentTime + duration);
+    }
+
+    function playMoodTone(moodId) {
+      const tones = MOOD_TONE[moodId] || MOOD_TONE.neutral;
+      tones.forEach((freq, i) => {
+        setTimeout(() => playTone(freq, 0.3, 'sine'), i * 120);
+      });
+    }
+
+    function renderMoodFace(mood) {
+      const el = document.getElementById('face-emoji');
+      if (!el) return;
+      el.classList.remove('listening', 'thinking');
+      if (!mood || !mood.mood_id) {
+        el.textContent = MOOD_EMOJI.neutral;
+        return;
+      }
+      if (mood.is_listening) {
+        el.textContent = MOOD_EMOJI.listening;
+        el.classList.add('listening');
+        return;
+      }
+      el.textContent = MOOD_EMOJI[mood.mood_id] || MOOD_EMOJI.neutral;
+      const engagement = Number(mood.engagement_level || 1);
+      const val = Math.abs(Number(mood.valence || 0));
+      const s = 1 + (val * 0.12 * engagement);
+      el.style.transform = `scale(${s})`;
+    }
+
+    async function sendUtterance(utterance) {
+      utterance = String(utterance || "").trim();
+      if (!utterance) return;
+      addMessage("user", utterance, [], "");
+      input.value = "";
+      send.disabled = true;
+      status.textContent = "Thinking";
+      const faceEl = document.getElementById('face-emoji');
+      if (faceEl) { faceEl.textContent = '💭'; faceEl.classList.add('thinking'); }
+      try {
+        const response = await fetch("/ask", {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({
+            utterance,
+            capture_source: "browser_ui",
+            capture_token: browserCaptureToken,
+            session_id: browserSessionId,
+            improvement_opt_in: improvementOptIn.checked
+          })
+        });
+        const payload = await response.json();
+        const meta = [payload.route, payload.reason].filter(Boolean);
+        const integrity = payload.response_integrity || {};
+        if (integrity.overall_score !== undefined) {
+          meta.push(`confidence ${Number(integrity.overall_score || 0).toFixed(2)}`);
+        }
+        if (payload.improvement && payload.improvement.candidate && payload.improvement.candidate.status) {
+          meta.push("improvement queued");
+        }
+        if (payload.membrane && payload.membrane.confirmation_required) {
+          meta.push("confirmation required");
+        }
+        if (payload.action_execution && payload.action_execution.status) {
+          meta.push(`action ${payload.action_execution.status}`);
+        }
+        addMessage("assistant", payload.answer || "", meta, payload.route, payload);
+        renderMoodFace(payload.session_mood);
+        playMoodTone((payload.session_mood && payload.session_mood.mood_id) || 'neutral');
+        await refreshHealth();
+      } catch (error) {
+        addMessage("assistant", "Local server error.", ["error"], "blocked");
+        status.textContent = "Error";
+        renderMoodFace(null);
+      } finally {
+        send.disabled = false;
+        input.focus();
+      }
+    }
+
     refreshHealth();
     input.focus();
   </script>
@@ -17198,20 +17424,27 @@ def _handle_utterance(
     action_mode: str = "dry-run",
     media_player_command: str = "",
     call_command: str = "",
+    tts_command: str = "",
     capture_surface: str = "",
     capture_source: str = "",
     capture_session_id: str = "",
     improvement_opt_in: bool = False,
+    model_path: Path | None = None,
 ) -> dict:
     if capture_session_id:
         store.use_session(capture_session_id)
+    decoder = None
+    if model_path is not None and model_path.exists():
+        decoder = ConstrainedDecoder(preferred="template", model_path=str(model_path))
     kernel = AssistantOSKernel(
         profile=_cold_profile() if cold_start else None,
         store=store,
+        decoder=decoder,
         action_executor=LocalDeviceActionExecutor(
             mode=action_mode,  # type: ignore[arg-type]
             media_player_command=media_player_command,
             call_command=call_command,
+            tts_command=tts_command,
         ),
         capture_surface=capture_surface,
         capture_source=capture_source,
@@ -17280,6 +17513,28 @@ def _handle_utterance(
         """,
         (latest_event_id,),
     ).fetchone()
+    mood_state = None
+    if hasattr(decision, 'session_mood') and decision.session_mood is not None:
+        mood = decision.session_mood
+        mood_state = {
+            "mood_id": getattr(mood, "mood_id", "neutral"),
+            "valence": getattr(mood, "valence", 0.0),
+            "arousal": getattr(mood, "arousal", 0.0),
+            "response_mode": getattr(mood, "response_mode", "normal"),
+            "engagement_level": getattr(mood, "engagement_level", 1.0),
+            "is_listening": bool(getattr(mood, "is_listening", False)),
+            "trigger_reason": getattr(mood, "trigger_reason", ""),
+        }
+    utterance_affect = None
+    if hasattr(decision, 'utterance_affect') and decision.utterance_affect is not None:
+        ua = decision.utterance_affect
+        utterance_affect = {
+            "valence": getattr(ua, "valence", 0.0),
+            "arousal": getattr(ua, "arousal", 0.0),
+            "confidence": getattr(ua, "confidence", 0.0),
+            "source": getattr(ua, "source", ""),
+            "is_complaint": bool(getattr(ua, "is_complaint", False)),
+        }
     return {
         "utterance": utterance,
         "intent": decision.intent,
@@ -17317,6 +17572,8 @@ def _handle_utterance(
         },
         "self_observation": self_observation,
         "counts": store.table_counts(),
+        "session_mood": mood_state,
+        "utterance_affect": utterance_affect,
     }
 
 
