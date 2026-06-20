@@ -8,7 +8,7 @@ from __future__ import annotations
 
 import json
 from dataclasses import dataclass, field
-from datetime import datetime
+from datetime import datetime, timezone
 from typing import Any
 
 from melm.contracts import load_self_identity
@@ -120,7 +120,7 @@ def analyze_user_identity(
         per_intent_mean_polarities=per_intent_mean_polarities,
         has_name=has_name,
         given_name=given_name,
-        derived_at=datetime.utcnow().isoformat(),
+        derived_at=datetime.now(timezone.utc).isoformat(),
     )
 
 

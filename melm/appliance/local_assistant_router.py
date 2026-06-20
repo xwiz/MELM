@@ -4338,7 +4338,8 @@ def _identity_composition(text: str, tokens: tuple[str, ...]) -> dict[str, Any] 
                 action = "suggest_name"
                 focus = "name"
                 basis = ("what:attribute_question", "should:deontic_modal", "i:self_deixis", "call:label_action", "you:assistant_deixis")
-            elif "name" in tokens and "your" in tokens and \
+            elif "name" in tokens and \
+                 ("your" in tokens or ("you" in tokens and "my" not in tokens) or "yourself" in tokens) and \
                  any(q in tokens for q in ("do", "what", "did", "have", "who", "is", "are")):
                 if "yourself" in tokens:
                     action = "name_origin"
