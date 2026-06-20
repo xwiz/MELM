@@ -10,6 +10,7 @@ dependencies = []
 data = ["huggingface-hub>=0.33"]
 tokenizers = ["tokenizers>=0.21"]
 training = ["torch>=2.6"]
+llamacpp = ["llama-cpp-python>=0.3", "psutil>=5.9"]
 dev = []
 
 [project.scripts]
@@ -25,4 +26,7 @@ include = ["melm*"]
 testpaths = ["tests"]
 addopts = [
     "--deselect=tests/test_local_assistant_os_cli_mvp.py::LocalAssistantOSCliMvpTests::test_cli_pi_bundle_builds_portable_self_checked_bundle",
+]
+markers = [
+    "slow: heavy tests that need the full bulk-lexicon seed (run with MELM_BULK_MAX_ENTRIES=0 pytest -m slow)",
 ]

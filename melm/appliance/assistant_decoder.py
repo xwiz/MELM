@@ -8,6 +8,7 @@ Architecture:
 Backend registry:
     - template: zero-dep, returns template_hint as-is
     - llguidance: CFG-constrained HuggingFace generation (optional, requires llguidance)
+    - llamacpp: GGUF model via llama-cpp-python (optional, requires llama-cpp-python + .gguf)
     - bitnet: TQ2_0/TQ1_0 + LoRA (future)
 """
 
@@ -17,6 +18,7 @@ from dataclasses import dataclass, field
 from typing import Any, Protocol
 
 from .assistant_authority import AnswerPlan, DecoderResult
+from .assistant_decoder_llama_cpp import LlamaCppBackend
 
 
 @dataclass(frozen=True)
@@ -56,10 +58,11 @@ class ConstrainedDecoder:
     is returned. If all backends fail, returns None (caller falls back to template).
     """
 
-    def __init__(self, preferred: str = "template") -> None:
+    def __init__(self, preferred: str = "template", *, model_path: str = "") -> None:
         self._backends: dict[str, DecoderBackend] = {}
         self._preferred = preferred
         self._register_defaults()
+        self.register(LlamaCppBackend(model_path=model_path))
 
     def _register_defaults(self) -> None:
         self.register(TemplateBackend())
