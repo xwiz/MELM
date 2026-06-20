@@ -1612,6 +1612,137 @@ def load_self_identity_facts() -> dict[str, Any]:
 
 
 # ---------------------------------------------------------------------------
+# Self-identity derivation contract (Task 1)
+# ---------------------------------------------------------------------------
+
+
+def validate_self_identity(data: dict[str, Any]) -> None:
+    """Validate self_identity.v1.json contract.
+
+    Checks: analysis_window_days (positive int), min_data_points (positive int),
+    identity_labels (dict of intent → {label, frame}), identity_narratives
+    (dict of mood_id → str), name_awareness_templates (dict of key → str).
+    """
+    if data.get("schema_id") != "melm.self_identity.v1":
+        _fail("$.schema_id", "must equal 'melm.self_identity.v1'")
+    window = data.get("analysis_window_days")
+    if not isinstance(window, int) or window < 1:
+        _fail("$.analysis_window_days", "must be a positive integer")
+    min_pts = data.get("min_data_points")
+    if not isinstance(min_pts, int) or min_pts < 1:
+        _fail("$.min_data_points", "must be a positive integer")
+    labels = data.get("identity_labels")
+    if not isinstance(labels, dict) or not labels:
+        _fail("$.identity_labels", "must be a non-empty object")
+    for intent, entry in labels.items():
+        ipath = f"$.identity_labels.{intent}"
+        if not isinstance(intent, str) or not intent:
+            _fail(ipath, "intent key must be a non-empty string")
+        if not isinstance(entry, dict):
+            _fail(ipath, "must be an object with 'label' and 'frame'")
+        if "label" not in entry or not isinstance(entry["label"], str) or not entry["label"]:
+            _fail(f"{ipath}.label", "must be a non-empty string")
+        if "frame" not in entry or not isinstance(entry["frame"], str) or not entry["frame"]:
+            _fail(f"{ipath}.frame", "must be a non-empty string")
+    narratives = data.get("identity_narratives")
+    if not isinstance(narratives, dict) or not narratives:
+        _fail("$.identity_narratives", "must be a non-empty object")
+    for mood_id, template in narratives.items():
+        npath = f"$.identity_narratives.{mood_id}"
+        if not isinstance(mood_id, str) or not mood_id:
+            _fail(npath, "mood_id must be a non-empty string")
+        if not isinstance(template, str) or not template:
+            _fail(npath, "must be a non-empty string")
+    templates = data.get("name_awareness_templates")
+    if not isinstance(templates, dict) or not templates:
+        _fail("$.name_awareness_templates", "must be a non-empty object")
+    for key, val in templates.items():
+        tpath = f"$.name_awareness_templates.{key}"
+        if not isinstance(key, str) or not key:
+            _fail(tpath, "key must be a non-empty string")
+        if not isinstance(val, str) or not val:
+            _fail(tpath, "must be a non-empty string")
+
+
+def load_self_identity() -> dict[str, Any]:
+    payload = load_contract_json("self_identity.v1.json")
+    validate_self_identity(payload)
+    return dict(payload)
+
+
+# ---------------------------------------------------------------------------
+# Knowledge types / world relations contracts (MVP3 foundation)
+# ---------------------------------------------------------------------------
+
+
+def validate_knowledge_types(payload: dict[str, Any]) -> None:
+    if payload.get("schema_id") != "melm.knowledge_types.v1":
+        _fail("$.schema_id", "must equal 'melm.knowledge_types.v1'")
+    type_markers = payload.get("type_markers")
+    if not isinstance(type_markers, dict):
+        _fail("$.type_markers", "must be an object")
+    opinion = type_markers.get("opinion_markers")
+    if not isinstance(opinion, list) or not opinion:
+        _fail("$.type_markers.opinion_markers", "must be a non-empty array of strings")
+    for m in opinion:
+        if not isinstance(m, str) or not m:
+            _fail("$.type_markers.opinion_markers", "each entry must be a non-empty string")
+    literary = type_markers.get("literary_stems")
+    if not isinstance(literary, list) or not literary:
+        _fail("$.type_markers.literary_stems", "must be a non-empty array of strings")
+    for s in literary:
+        if not isinstance(s, str) or not s:
+            _fail("$.type_markers.literary_stems", "each entry must be a non-empty string")
+    provenance = type_markers.get("provenance_confidence")
+    if not isinstance(provenance, dict):
+        _fail("$.type_markers.provenance_confidence", "must be an object")
+    for key in ("seed", "user", "cloud"):
+        val = provenance.get(key)
+        if not isinstance(val, (int, float)):
+            _fail(f"$.type_markers.provenance_confidence.{key}", "must be a number")
+    truth = payload.get("truth_arbitration")
+    if not isinstance(truth, dict):
+        _fail("$.truth_arbitration", "must be an object")
+    for key in ("contradiction_prompt", "contradiction_ack", "assert_ack", "negate_ack"):
+        val = truth.get(key)
+        if not isinstance(val, str) or not val:
+            _fail(f"$.truth_arbitration.{key}", "must be a non-empty string")
+
+
+def load_knowledge_types() -> dict[str, Any]:
+    payload = load_contract_json("knowledge_types.v1.json")
+    validate_knowledge_types(payload)
+    return dict(payload)
+
+
+def validate_world_relations(payload: dict[str, Any]) -> None:
+    if payload.get("schema_id") != "melm.world_relations.v1":
+        _fail("$.schema_id", "must equal 'melm.world_relations.v1'")
+    pred_map = payload.get("predicate_to_relation")
+    if not isinstance(pred_map, dict) or not pred_map:
+        _fail("$.predicate_to_relation", "must be a non-empty object")
+    for pred, entry in pred_map.items():
+        path = f"$.predicate_to_relation.{pred}"
+        if not isinstance(entry, dict):
+            _fail(path, "must be an object")
+        for key in ("pattern", "relation_id", "confidence"):
+            if key not in entry:
+                _fail(path, f"missing required property {key!r}")
+        if not isinstance(entry.get("pattern"), str) or not entry["pattern"]:
+            _fail(f"{path}.pattern", "must be a non-empty string")
+        if not isinstance(entry.get("relation_id"), str) or not entry["relation_id"]:
+            _fail(f"{path}.relation_id", "must be a non-empty string")
+        if not isinstance(entry.get("confidence"), (int, float)):
+            _fail(f"{path}.confidence", "must be a number")
+
+
+def load_world_relations() -> dict[str, Any]:
+    payload = load_contract_json("world_relations.v1.json")
+    validate_world_relations(payload)
+    return dict(payload)
+
+
+# ---------------------------------------------------------------------------
 # Verb states / moral cognition contracts (T4)
 # ---------------------------------------------------------------------------
 
@@ -1879,3 +2010,210 @@ def get_contract_info(schema_short_name: str) -> dict[str, Any] | None:
         return dict(registry.require(full_id))
     except ContractValidationError:
         return None
+
+
+# ---------------------------------------------------------------------------
+# Music contracts (Phase 1a)
+# ---------------------------------------------------------------------------
+
+def validate_music_style_templates(payload: dict[str, Any]) -> None:
+    if payload.get("schema_id") != "melm.music_style_templates.v1":
+        _fail("$.schema_id", "must equal 'melm.music_style_templates.v1'")
+    templates = payload.get("templates")
+    if not isinstance(templates, dict) or not templates:
+        _fail("$.templates", "must be a non-empty object")
+    for name, tmpl in templates.items():
+        tpath = f"$.templates.{name}"
+        if not isinstance(tmpl, dict):
+            _fail(tpath, "must be an object")
+        for key in ("time_signature", "tempo_range", "chord_voicing", "bass_pattern", "arpeggio_pattern", "scale_preference"):
+            if key not in tmpl:
+                _fail(tpath, f"missing required property {key!r}")
+        if not isinstance(tmpl.get("time_signature"), str) or not tmpl["time_signature"]:
+            _fail(f"{tpath}.time_signature", "must be a non-empty string")
+        tr = tmpl.get("tempo_range")
+        if not isinstance(tr, list) or len(tr) != 2 or not all(isinstance(v, int) for v in tr):
+            _fail(f"{tpath}.tempo_range", "must be a list of 2 ints")
+        for key in ("chord_voicing", "bass_pattern", "arpeggio_pattern", "scale_preference"):
+            val = tmpl.get(key)
+            if not isinstance(val, str) or not val:
+                _fail(f"{tpath}.{key}", "must be a non-empty string")
+
+
+def load_music_style_templates() -> dict[str, Any]:
+    payload = load_contract_json("music_style_templates.v1.json")
+    validate_music_style_templates(payload)
+    return dict(payload)
+
+
+def validate_music_genre_scales(payload: dict[str, Any]) -> None:
+    if payload.get("schema_id") != "melm.music_genre_scales.v1":
+        _fail("$.schema_id", "must equal 'melm.music_genre_scales.v1'")
+    scales = payload.get("scales")
+    if not isinstance(scales, dict) or not scales:
+        _fail("$.scales", "must be a non-empty object")
+    for name, intervals in scales.items():
+        spath = f"$.scales.{name}"
+        if not isinstance(intervals, list) or not intervals:
+            _fail(spath, "must be a non-empty list")
+        for v in intervals:
+            if not isinstance(v, int) or not 0 <= v <= 11:
+                _fail(spath, "each interval must be an int in 0..11")
+    genre_map = payload.get("genre_scale_map")
+    if not isinstance(genre_map, dict) or not genre_map:
+        _fail("$.genre_scale_map", "must be a non-empty object")
+    for genre, scale in genre_map.items():
+        if not isinstance(genre, str) or not genre:
+            _fail(f"$.genre_scale_map.{genre!r}", "key must be a non-empty string")
+        if scale not in scales:
+            _fail(f"$.genre_scale_map.{genre!r}", f"unknown scale {scale!r}")
+
+
+def load_music_genre_scales() -> dict[str, Any]:
+    payload = load_contract_json("music_genre_scales.v1.json")
+    validate_music_genre_scales(payload)
+    return dict(payload)
+
+
+def validate_mood_faces(payload: dict[str, Any]) -> None:
+    if payload.get("schema_id") != "melm.mood_faces.v1":
+        _fail("$.schema_id", "must equal 'melm.mood_faces.v1'")
+    faces = payload.get("faces")
+    if not isinstance(faces, dict) or not faces:
+        _fail("$.faces", "must be a non-empty object")
+    for name, face in faces.items():
+        fpath = f"$.faces.{name}"
+        if not isinstance(face, dict):
+            _fail(fpath, "must be an object")
+        eyes = face.get("eyes")
+        if not isinstance(eyes, list) or not eyes or not all(isinstance(e, str) for e in eyes):
+            _fail(f"{fpath}.eyes", "must be a non-empty list of strings")
+        mouths = face.get("mouths")
+        if not isinstance(mouths, list) or not mouths or not all(isinstance(m, str) for m in mouths):
+            _fail(f"{fpath}.mouths", "must be a non-empty list of strings")
+    vbs = payload.get("valence_boundaries")
+    if not isinstance(vbs, list) or len(vbs) != 3 or not all(isinstance(v, (int, float)) and v > 0 for v in vbs):
+        _fail("$.valence_boundaries", "must be a list of 3 positive floats")
+
+
+def load_mood_faces() -> dict[str, Any]:
+    payload = load_contract_json("mood_faces.v1.json")
+    validate_mood_faces(payload)
+    return dict(payload)
+
+
+def validate_mood_face_tones(payload: dict[str, Any]) -> None:
+    if payload.get("schema_id") != "melm.mood_face_tones.v1":
+        _fail("$.schema_id", "must equal 'melm.mood_face_tones.v1'")
+    tones = payload.get("tones")
+    if not isinstance(tones, dict) or not tones:
+        _fail("$.tones", "must be a non-empty object")
+    for key, val in tones.items():
+        if not isinstance(key, str) or not key:
+            _fail(f"$.tones.{key!r}", "key must be a non-empty string")
+        if not isinstance(val, str) or not val:
+            _fail(f"$.tones.{key!r}", "value must be a non-empty string")
+    mood_cues = payload.get("mood_cues")
+    if not isinstance(mood_cues, dict) or not mood_cues:
+        _fail("$.mood_cues", "must be a non-empty object")
+    for key, val in mood_cues.items():
+        if not isinstance(key, str) or not key:
+            _fail(f"$.mood_cues.{key!r}", "key must be a non-empty string")
+        if not isinstance(val, str) or not val:
+            _fail(f"$.mood_cues.{key!r}", "value must be a non-empty string")
+
+
+def load_mood_face_tones() -> dict[str, Any]:
+    payload = load_contract_json("mood_face_tones.v1.json")
+    validate_mood_face_tones(payload)
+    return dict(payload)
+
+
+def validate_noise_tokens(payload: dict[str, Any]) -> None:
+    if payload.get("schema_id") != "melm.noise_tokens.v1":
+        _fail("$.schema_id", "must equal 'melm.noise_tokens.v1'")
+    entries = payload.get("entries")
+    if not isinstance(entries, dict) or not entries:
+        _fail("$.entries", "must be a non-empty object")
+    for token, entry in entries.items():
+        path = f"$.entries.{token}"
+        if not isinstance(token, str) or not token:
+            _fail(path, "token must be a non-empty string")
+        if not isinstance(entry, dict):
+            _fail(path, "must be an object")
+        for key in ("valence", "arousal", "tags", "strip_from_parse"):
+            if key not in entry:
+                _fail(path, f"missing required property {key!r}")
+        if not isinstance(entry["valence"], (int, float)):
+            _fail(f"{path}.valence", "must be a number")
+        if not isinstance(entry["arousal"], (int, float)):
+            _fail(f"{path}.arousal", "must be a number")
+        if not isinstance(entry["tags"], list) or not entry["tags"]:
+            _fail(f"{path}.tags", "must be a non-empty array of strings")
+        for tag in entry["tags"]:
+            if not isinstance(tag, str) or not tag:
+                _fail(f"{path}.tags", "each tag must be a non-empty string")
+        if not isinstance(entry["strip_from_parse"], bool):
+            _fail(f"{path}.strip_from_parse", "must be a boolean")
+    if "fallback_strip" in payload and not isinstance(payload["fallback_strip"], bool):
+        _fail("$.fallback_strip", "must be a boolean")
+
+
+def load_noise_tokens() -> dict[str, Any]:
+    payload = load_contract_json("noise_tokens.v1.json")
+    validate_noise_tokens(payload)
+    return dict(payload["entries"])
+
+
+def validate_normalization_expansions(payload: dict[str, Any]) -> None:
+    if payload.get("schema_id") != "melm.normalization_expansions.v1":
+        _fail("$.schema_id", "must equal 'melm.normalization_expansions.v1'")
+    entries = payload.get("entries")
+    if not isinstance(entries, list) or not entries:
+        _fail("$.entries", "must be a non-empty array")
+    seen: set[str] = set()
+    for index, entry in enumerate(entries):
+        path = f"$.entries[{index}]"
+        if not isinstance(entry, dict):
+            _fail(path, "must be an object")
+        raw = entry.get("raw")
+        if not isinstance(raw, str) or not raw:
+            _fail(f"{path}.raw", "must be a non-empty string")
+        if raw in seen:
+            _fail(f"{path}.raw", f"duplicate raw form {raw!r}")
+        seen.add(raw)
+        std = entry.get("standard")
+        if not isinstance(std, str) or not std:
+            _fail(f"{path}.standard", "must be a non-empty string")
+        cat = entry.get("category")
+        if not isinstance(cat, str) or not cat:
+            _fail(f"{path}.category", "must be a non-empty string")
+
+
+def load_normalization_expansions() -> dict[str, Any]:
+    payload = load_contract_json("normalization_expansions.v1.json")
+    validate_normalization_expansions(payload)
+    return payload
+
+
+def validate_token_typability(payload: dict[str, Any]) -> None:
+    if payload.get("schema_id") != "melm.token_typability.v1":
+        _fail("$.schema_id", "must equal 'melm.token_typability.v1'")
+    for key in ("min_vowel_ratio", "max_consonant_run", "min_gibberish_len", "max_abbreviation_len"):
+        if not isinstance(payload.get(key), (int, float)):
+            _fail(f"$.{key}", "must be a number")
+    known = payload.get("known_abbreviations", [])
+    if not isinstance(known, list):
+        _fail("$.known_abbreviations", "must be a list")
+    for entry in known:
+        if not isinstance(entry, str) or not entry:
+            _fail("$.known_abbreviations", "each entry must be a non-empty string")
+
+
+def load_token_typability() -> dict[str, Any]:
+    try:
+        payload = load_contract_json("token_typability.v1.json")
+        validate_token_typability(payload)
+        return dict(payload)
+    except ContractValidationError:
+        return {}  # fail-open: no contract → no classification

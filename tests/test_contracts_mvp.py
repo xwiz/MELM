@@ -4,10 +4,12 @@ from melm.contracts import (
     ContractRegistry,
     ContractValidationError,
     load_contract_json,
+    load_function_words,
     load_pi_benchmark,
     load_uol_normative_cases,
     validate_class_maps,
     validate_contract_registry,
+    validate_function_words,
     validate_router_lexicon_families,
     validate_semantic_class_registry,
     validate_sense_candidate,
@@ -213,6 +215,160 @@ class ContractMvpTests(unittest.TestCase):
         self.assertIsInstance(go_no_go["template_fallback_ready"], bool)
         self.assertIsInstance(go_no_go["model_loaded"], bool)
         self.assertIsInstance(go_no_go["pi_target_met"], bool)
+
+    def test_function_words_reject_unknown_answer_type(self) -> None:
+        payload = load_function_words()
+        mutated = {
+            **payload,
+            "entries": [dict(entry) for entry in payload["entries"]],
+        }
+        mutated["entries"][0]["answer_type"] = "mystery"
+        with self.assertRaisesRegex(ContractValidationError, "answer_type"):
+            validate_function_words(mutated)
+
+
+class ContractMvpMoralTests(unittest.TestCase):
+    """Contract integration tests for T4 moral cognition contracts."""
+
+    def test_verb_states_contract_loads(self):
+        """verb_states.v1.json can be loaded and validated."""
+        from melm.contracts.validation import load_verb_states
+        data = load_verb_states()
+        self.assertIn("verbs", data)
+        self.assertGreater(len(data["verbs"]), 0)
+        self.assertIn("hit", data["verbs"])
+
+    def test_state_valences_contract_loads(self):
+        """state_valences.v1.json can be loaded and validated."""
+        from melm.contracts.validation import load_state_valences
+        data = load_state_valences()
+        self.assertIn("valences", data)
+        self.assertGreater(len(data["valences"]), 0)
+
+    def test_verb_states_hit_has_expected_structure(self):
+        """The hit verb entry has the expected nested structure."""
+        from melm.contracts.validation import load_verb_states
+        data = load_verb_states()
+        hit = data["verbs"]["hit"]
+        self.assertIn("patient_states", hit)
+        self.assertIn("patient_types", hit)
+        self.assertIn("subject_mental", hit)
+        self.assertIsInstance(hit["patient_types"], list)
+        self.assertIn("person", hit["patient_types"])
+
+    def test_state_valences_symmetry(self):
+        """Common harmful states have negative valences."""
+        from melm.contracts.validation import load_state_valences
+        data = load_state_valences()
+        valences = data["valences"]
+        for harmful in ("dead", "traumatized", "hurt", "injured"):
+            self.assertLess(valences.get(harmful, 0), 0,
+                            f"{harmful} should have negative valence")
+
+    def test_state_valences_positive(self):
+        """Positive states have positive valences."""
+        from melm.contracts.validation import load_state_valences
+        data = load_state_valences()
+        valences = data["valences"]
+        for positive in ("rescued", "healed", "loved", "safe"):
+            self.assertGreater(valences.get(positive, 0), 0,
+                               f"{positive} should have positive valence")
+
+
+class ContractMvpFoundationTests(unittest.TestCase):
+    """Contract integration tests for Phase 0 foundation contracts."""
+
+    def test_validate_knowledge_types(self):
+        from melm.contracts.validation import validate_knowledge_types
+        data = {
+            "schema_id": "melm.knowledge_types.v1",
+            "version": "1.0.0",
+            "type_markers": {
+                "opinion_markers": ["best"],
+                "literary_stems": ["what has"],
+                "provenance_confidence": {"seed": 0.95, "user": 0.6, "cloud": 0.5},
+            },
+            "truth_arbitration": {
+                "contradiction_prompt": "test",
+                "contradiction_ack": "test",
+                "assert_ack": "test",
+                "negate_ack": "test",
+            },
+        }
+        validate_knowledge_types(data)
+
+    def test_validate_knowledge_types_missing_field(self):
+        from melm.contracts.validation import ContractValidationError, validate_knowledge_types
+        with self.assertRaises(ContractValidationError):
+            validate_knowledge_types({})
+
+    def test_load_knowledge_types(self):
+        from melm.contracts.validation import load_knowledge_types
+        data = load_knowledge_types()
+        self.assertEqual(data["schema_id"], "melm.knowledge_types.v1")
+
+    def test_validate_world_relations(self):
+        from melm.contracts.validation import validate_world_relations
+        data = {
+            "schema_id": "melm.world_relations.v1",
+            "version": "1.0.0",
+            "predicate_to_relation": {
+                "be": {"pattern": "copula", "relation_id": "is_a", "confidence": 0.8},
+            },
+        }
+        validate_world_relations(data)
+
+    def test_validate_world_relations_missing_field(self):
+        from melm.contracts.validation import ContractValidationError, validate_world_relations
+        with self.assertRaises(ContractValidationError):
+            validate_world_relations({})
+
+    def test_load_world_relations(self):
+        from melm.contracts.validation import load_world_relations
+        data = load_world_relations()
+        self.assertEqual(data["schema_id"], "melm.world_relations.v1")
+
+
+
+class ContractMvpSelfIdentityTests(unittest.TestCase):
+    """Contract integration tests for self_identity.v1.json."""
+
+    def test_validate_self_identity(self):
+        from melm.contracts.validation import validate_self_identity
+        data = {
+            "schema_id": "melm.self_identity.v1",
+            "analysis_window_days": 30,
+            "min_data_points": 3,
+            "identity_labels": {
+                "story": {"label": "a storyteller", "frame": "sharing stories"},
+                "weather": {"label": "a weather watcher", "frame": "checking the weather"},
+            },
+            "identity_narratives": {
+                "neutral": "I see myself as {label}.",
+                "happy": "I feel like {label}.",
+            },
+            "name_awareness_templates": {
+                "no_name": "You could call me {label}.",
+                "why": "You asked me to {frame} {count} times.",
+            },
+        }
+        validate_self_identity(data)
+
+    def test_validate_self_identity_rejects_empty(self):
+        from melm.contracts.validation import ContractValidationError, validate_self_identity
+        with self.assertRaises(ContractValidationError):
+            validate_self_identity({})
+
+    def test_load_self_identity(self):
+        from melm.contracts.validation import load_self_identity
+        data = load_self_identity()
+        self.assertEqual(data["schema_id"], "melm.self_identity.v1")
+        self.assertIn("identity_labels", data)
+        self.assertIn("identity_narratives", data)
+        self.assertIn("name_awareness_templates", data)
+        self.assertGreater(len(data["identity_labels"]), 0)
+        self.assertGreater(len(data["identity_narratives"]), 0)
+        self.assertGreater(len(data["name_awareness_templates"]), 0)
 
 
 if __name__ == "__main__":

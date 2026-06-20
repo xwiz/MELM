@@ -36,7 +36,7 @@
       "failure_behavior": "quarantine unknown class IDs and disable affected mapping",
       "safety_critical": true,
       "version": "1.0.0",
-      "schema_hash": "d0e364c92bab06f5"
+      "schema_hash": "f095a2f10d7ed233"
     },
     {
       "schema_id": "melm.wn_supersense_map.v1",
@@ -657,7 +657,7 @@
       "failure_behavior": "mood engine uses hardcoded default lexicon",
       "safety_critical": false,
       "version": "1.0.0",
-      "schema_hash": "ebf9cd1f575beb02"
+      "schema_hash": "93da86250212462c"
     },
     {
       "schema_id": "melm.response_pools.v1",
@@ -674,7 +674,24 @@
       "failure_behavior": "synthesis uses existing handler templates",
       "safety_critical": false,
       "version": "1.0.0",
-      "schema_hash": "2285c2377def3318"
+      "schema_hash": "b39fcca9397d40d6"
+    },
+    {
+      "schema_id": "melm.token_typability.v1",
+      "path": "token_typability.v1.json",
+      "owner": "reasoning",
+      "producers": [
+        "release tooling"
+      ],
+      "consumers": [
+        "assistant_reasoning_typability"
+      ],
+      "validator": "melm.contracts.validate_token_typability",
+      "compatible_predecessors": [],
+      "failure_behavior": "no gibberish/abbreviation detection, all tokens treated as words",
+      "safety_critical": false,
+      "version": "1.0.0",
+      "schema_hash": "7e14689d42b9a03f"
     },
     {
       "schema_id": "melm.perception_affect_map.v1",
@@ -907,6 +924,123 @@
       "safety_critical": false,
       "version": "1.0.0",
       "schema_hash": "671070c87c7cb704"
+    },
+    {
+      "schema_id": "melm.music_style_templates.v1",
+      "path": "music_style_templates.v1.json",
+      "owner": "kernel/music",
+      "producers": ["release tooling"],
+      "consumers": ["assistant_music_midi"],
+      "validator": "melm.contracts.validate_music_style_templates",
+      "compatible_predecessors": [],
+      "failure_behavior": "MIDI generation uses hardcoded style defaults",
+      "safety_critical": false,
+      "version": "1.0.0",
+      "schema_hash": "4a1438aa3b65c139"
+    },
+    {
+      "schema_id": "melm.music_genre_scales.v1",
+      "path": "music_genre_scales.v1.json",
+      "owner": "kernel/music",
+      "producers": ["release tooling"],
+      "consumers": ["assistant_music_midi"],
+      "validator": "melm.contracts.validate_music_genre_scales",
+      "compatible_predecessors": [],
+      "failure_behavior": "MIDI generation uses hardcoded major scale only",
+      "safety_critical": false,
+      "version": "1.0.0",
+      "schema_hash": "a78656c87ad9ccea"
+    },
+    {
+      "schema_id": "melm.mood_faces.v1",
+      "path": "mood_faces.v1.json",
+      "owner": "kernel/ux",
+      "producers": ["release tooling"],
+      "consumers": ["assistant_face_renderer"],
+      "validator": "melm.contracts.validate_mood_faces",
+      "compatible_predecessors": [],
+      "failure_behavior": "face renderer uses hardcoded ASCII faces",
+      "safety_critical": false,
+      "version": "1.0.0",
+      "schema_hash": "2857d5a559c29f48"
+    },
+    {
+      "schema_id": "melm.mood_face_tones.v1",
+      "path": "mood_face_tones.v1.json",
+      "owner": "kernel/ux",
+      "producers": ["release tooling"],
+      "consumers": ["assistant_audio_feedback"],
+      "validator": "melm.contracts.validate_mood_face_tones",
+      "compatible_predecessors": [],
+      "failure_behavior": "audio feedback disabled",
+      "safety_critical": false,
+      "version": "1.0.0",
+      "schema_hash": "a8ddf2d7bd15966a"
+    },
+    {
+      "schema_id": "melm.noise_tokens.v1",
+      "path": "noise_tokens.v1.json",
+      "owner": "kernel/router",
+      "producers": ["release tooling"],
+      "consumers": ["assistant_router", "assistant_mood_engine"],
+      "validator": "melm.contracts.validate_noise_tokens",
+      "compatible_predecessors": [],
+      "failure_behavior": "noise tokens not stripped from parse; affect detection falls back to default lexicon",
+      "safety_critical": false,
+      "version": "1.0.0",
+      "schema_hash": "4425e4cc36cfe821"
+    },
+    {
+      "schema_id": "melm.normalization_expansions.v1",
+      "path": "normalization_expansions.v1.json",
+      "owner": "meaning-core",
+      "producers": ["release tooling"],
+      "consumers": ["language_adapters"],
+      "validator": "melm.contracts.validate_normalization_expansions",
+      "compatible_predecessors": [],
+      "failure_behavior": "disable Layer 0 surface expansion; pass text through uncorrected",
+      "safety_critical": false,
+      "version": "1.0.0",
+      "schema_hash": "17467bcef5a984d4"
+    },
+    {
+      "schema_id": "melm.knowledge_types.v1",
+      "path": "knowledge_types.v1.json",
+      "owner": "meaning-core",
+      "producers": ["release tooling"],
+      "consumers": ["world knowledge store", "fact assertion pipeline"],
+      "validator": "melm.contracts.validate_knowledge_types",
+      "compatible_predecessors": [],
+      "failure_behavior": "knowledge typing falls back to untyped fact storage",
+      "safety_critical": false,
+      "version": "1.0.0",
+      "schema_hash": "940e73d22dd1250d"
+    },
+    {
+      "schema_id": "melm.world_relations.v1",
+      "path": "world_relations.v1.json",
+      "owner": "meaning-core",
+      "producers": ["release tooling"],
+      "consumers": ["world knowledge store", "fact assertion pipeline"],
+      "validator": "melm.contracts.validate_world_relations",
+      "compatible_predecessors": [],
+      "failure_behavior": "predicate-to-relation mapping falls back to empty dict",
+      "safety_critical": false,
+      "version": "1.0.0",
+      "schema_hash": "a1e2cd7153e58fa1"
+    },
+    {
+      "schema_id": "melm.self_identity.v1",
+      "path": "self_identity.v1.json",
+      "owner": "sentience",
+      "producers": ["release tooling"],
+      "consumers": ["assistant_skill_self_identity"],
+      "validator": "melm.contracts.validate_self_identity",
+      "compatible_predecessors": [],
+      "failure_behavior": "fall back to hardcoded identity templates",
+      "safety_critical": false,
+      "version": "1.0.0",
+      "schema_hash": "9a1d50075cb5be56"
     }
   ],
   "version": "1.0.0"
