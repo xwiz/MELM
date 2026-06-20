@@ -319,6 +319,140 @@ class FrameLinker:
                 return False
         return True
 
+    def score_atoms(
+        self,
+        act_dict: dict,
+        lexicon: dict,
+        tokens: tuple[str, ...] | None = None,
+    ) -> list:
+        """Score frame templates against a serialized UolAct dict.
+
+        Matches required_classes against atom predicate semantic_class and role
+        semantic classes. Matches action_tokens against atom predicate IDs.
+        Returns FrameCandidate list sorted by score descending.
+        """
+        content = act_dict.get("content", [])
+        if not content:
+            return []
+
+        # Collect all semantic classes from atoms
+        atom_classes: set[str] = set()
+        pred_ids: set[str] = set()
+        role_values: set[str] = set()
+
+        for atom in content:
+            predicate = atom.get("predicate", {})
+            pred_id = str(predicate.get("id", "")).strip().lower()
+            sem_class = str(predicate.get("semantic_class", "")).strip().lower()
+            if pred_id:
+                pred_ids.add(pred_id)
+            if sem_class and sem_class != "unknown":
+                atom_classes.add(sem_class)
+                # Also add class prefixes (e.g. "verb.consume" → "verb.consume" and "verb")
+                if "." in sem_class:
+                    atom_classes.add(sem_class.split(".")[0])
+            for role in atom.get("roles", []):
+                role_val = str(role.get("value", "")).strip().lower()
+                if role_val:
+                    role_values.add(role_val)
+                # Role-level semantic class annotations (future-proofing)
+                role_sc = str(role.get("semantic_class", "")).strip().lower()
+                if role_sc:
+                    atom_classes.add(role_sc)
+
+        # Derive speech act flags
+        act_type = str(act_dict.get("act", ""))
+        is_question_like = act_type in {"question"}
+        is_request_like = act_type in {"request", "command"}
+        token_tuple = tuple(str(t).lower() for t in (tokens or ()))
+        token_set = set(token_tuple) if token_tuple else set(role_values) | pred_ids
+
+        # Map raw tokens and role values to semantic classes via the runtime lexicon.
+        for value in token_set | role_values:
+            if value in lexicon:
+                atom_classes.update(lexicon[value])
+
+        candidates = []
+        for fid, tmpl in self._templates.items():
+            gates = tmpl.get("context_gates", {})
+            if token_tuple and not self._check_context_gates(
+                token_set,
+                token_tuple,
+                lexicon,
+                is_question_like,
+                is_request_like,
+                gates,
+            ):
+                continue
+            act_cfg = tmpl["activation"]
+            required_classes = [str(c) for c in act_cfg.get("required_classes", [])]
+            required_all = [str(c) for c in act_cfg.get("required_all_classes", [])]
+            optional_classes = [str(c) for c in act_cfg.get("optional_classes", [])]
+            exclude_classes = [str(c) for c in act_cfg.get("exclude_classes", [])]
+            action_tokens = [str(t) for t in act_cfg.get("action_tokens", [])]
+
+            # required_classes: ANY match in atom_classes
+            required_score = 0.0
+            if required_classes:
+                if atom_classes & set(required_classes):
+                    required_score = _WEIGHT_REQUIRED
+
+            # required_all_classes: ALL must be in atom_classes
+            if required_all:
+                if set(required_all) <= atom_classes:
+                    required_score = max(required_score, _WEIGHT_REQUIRED)
+
+            # action_tokens treated as predicate IDs
+            action_score = 0.0
+            if action_tokens and (pred_ids & set(action_tokens)):
+                action_score = _WEIGHT_ACTION
+
+            # optional_classes
+            optional_score = 0.0
+            if optional_classes:
+                matched = atom_classes & set(optional_classes)
+                optional_score = (len(matched) / len(optional_classes)) * _WEIGHT_OPTIONAL
+
+            # exclude_classes
+            exclude_penalty = 0.0
+            if exclude_classes and (atom_classes & set(exclude_classes)):
+                exclude_penalty = _WEIGHT_EXCLUDE_PENALTY
+
+            # structure score from speech act
+            structure_score = 0.0
+            if is_question_like or is_request_like:
+                structure_score = _WEIGHT_STRUCTURE
+
+            score = required_score + action_score + optional_score + structure_score - exclude_penalty
+            bonuses = tmpl.get("context_score", {})
+            if bonuses:
+                score += self._compute_context_bonus(
+                    token_set,
+                    is_question_like,
+                    is_request_like,
+                    bonuses,
+                )
+            score = max(0.0, min(1.0, score))
+
+            threshold = float(tmpl["threshold"])
+            if score >= threshold:
+                candidates.append(FrameCandidate(
+                    frame_id=fid,
+                    intent=str(tmpl["intent"]),
+                    score=round(score, 4),
+                    score_components={
+                        "required": round(required_score, 4),
+                        "action": round(action_score, 4),
+                        "optional": round(optional_score, 4),
+                        "structure": round(structure_score, 4),
+                        "exclude_penalty": round(exclude_penalty, 4),
+                    },
+                    threshold=threshold,
+                ))
+
+        candidates.sort(key=lambda c: (-c.score, c.frame_id))
+        return candidates
+
     def _compute_context_bonus(
         self,
         token_set: set[str],

@@ -22,129 +22,222 @@ def set_uol_lexicon(lexicon: dict[str, frozenset[str]]) -> None:
     _UOL_LEXICON = lexicon
 
 
-_GREETINGS = {"hello", "hey", "hi", "hiya"}
-_WH_WORDS = {"how", "what", "when", "where", "which", "who", "why"}
-_MODALS = {"can", "could", "may", "might", "must", "shall", "should", "will", "would"}
-_AUXILIARIES = {
-    "am",
-    "are",
-    "be",
-    "been",
-    "being",
-    "did",
-    "do",
-    "does",
-    "had",
-    "has",
-    "have",
-    "is",
-    "was",
-    "were",
-}
-_NEGATIONS = {"never", "no", "not"}
-_DETERMINERS = {"a", "an", "any", "some", "the", "this", "that", "these", "those"}
-_PREPOSITIONS = {
-    "about",
-    "at",
-    "for",
-    "from",
-    "in",
-    "into",
-    "of",
-    "on",
-    "over",
-    "through",
-    "to",
-    "with",
-}
-_CONJUNCTIONS = {"and", "but", "or"}
-_FREQUENCY = {"always", "never", "often", "rarely", "sometimes", "usually"}
-_EQUIVALENCE = {"same", "similar"}
-_POLITENESS = {"kindly", "please"}
-_DISCOURSE_PARTICLES = {"there"}
-_PRONOUNS = {
-    "i": ("user", "agent"),
-    "me": ("user", "patient"),
-    "my": ("user", "possessor"),
-    "myself": ("user", "reflexive"),
-    "we": ("user_group", "agent"),
-    "us": ("user_group", "patient"),
-    "our": ("user_group", "possessor"),
-    "ourselves": ("user_group", "reflexive"),
-    "you": ("assistant", "agent_or_patient"),
-    "your": ("assistant", "possessor"),
-    "yourself": ("assistant", "reflexive"),
-    "people": ("people", "human_collective"),
-    "someone": ("someone", "human_indefinite"),
-}
-_VERBS = {
-    "acknowledge": ("acknowledge", "verb.communicate"),
-    "advise": ("advise", "verb.communicate"),
-    "answer": ("answer", "verb.communicate"),
-    "ask": ("ask", "verb.communicate"),
-    "be": ("be", "verb.stative"),
-    "bring": ("bring", "verb.move"),
-    "buy": ("buy", "verb.possess"),
-    "breathe": ("breathe", "verb.stative"),
-    "call": ("call", "verb.communicate"),
-    "cancel": ("cancel", "verb.communicate"),
-    "cook": ("cook", "verb.create"),
-    "define": ("define", "verb.communicate"),
-    "describe": ("describe", "verb.communicate"),
-    "do": ("do", "action"),
-    "eat": ("eat", "verb.consume"),
-    "explain": ("explain", "verb.communicate"),
-    "feel": ("feel", "verb.cognition"),
-    "fly": ("fly", "verb.move"),
-    "forget": ("forget", "verb.cognition"),
-    "give": ("give", "verb.move"),
-    "go": ("go", "verb.move"),
-    "grow": ("grow", "verb.change"),
-    "have": ("have", "verb.possess"),
-    "help": ("help", "verb.social"),
-    "improve": ("improve", "verb.change"),
-    "know": ("know", "verb.cognition"),
-    "like": ("like", "verb.emotion"),
-    "list": ("list", "verb.communicate"),
-    "live": ("live", "verb.stative"),
-    "make": ("make", "verb.create"),
-    "need": ("need", "verb.stative"),
-    "play": ("play", "action"),
-    "rain": ("rain", "verb.stative"),
-    "reach": ("reach", "verb.communicate"),
-    "read": ("read", "action"),
-    "recall": ("recall", "verb.cognition"),
-    "recap": ("recap", "verb.communicate"),
-    "recommend": ("recommend", "verb.communicate"),
-    "remember": ("remember", "verb.cognition"),
-    "ring": ("ring", "verb.communicate"),
-    "repeat": ("repeat", "action"),
-    "say": ("say", "verb.communicate"),
-    "see": ("see", "verb.cognition"),
-    "share": ("share", "verb.communicate"),
-    "show": ("show", "verb.communicate"),
-    "sleep": ("sleep", "verb.stative"),
-    "speak": ("speak", "verb.communicate"),
-    "start": ("start", "verb.change"),
-    "summarize": ("summarize", "verb.communicate"),
-    "suggest": ("suggest", "verb.communicate"),
-    "swallow": ("swallow", "verb.consume"),
-    "tell": ("tell", "verb.communicate"),
-    "talk": ("talk", "verb.communicate"),
-    "upload": ("upload", "verb.move"),
-    "use": ("use", "verb.consume"),
-    "take": ("take", "verb.possess"),
-    "walk": ("walk", "verb.move"),
-    "want": ("want", "verb.stative"),
-    "work": ("work", "verb.stative"),
-    "write": ("write", "verb.create"),
-}
+# ---------------------------------------------------------------------------
+# Contract-based role / predicate lookups (language-agnostic)
+# ---------------------------------------------------------------------------
+# These helpers read from melm.contracts.  The exported legacy names
+# (``_VERBS``, ``_WH_WORDS``, etc.) are compatibility projections from the
+# contracts, not independent vocabulary sources.
+
+_FUNCTION_WORDS: dict[str, dict[str, Any]] | None = None
+_PREDICATE_INVENTORY: dict[str, dict[str, Any]] | None = None
+_CONTENT_DOMAINS: dict[str, dict[str, Any]] | None = None
+
+
+def _load_function_words() -> dict[str, dict[str, Any]]:
+    global _FUNCTION_WORDS
+    if _FUNCTION_WORDS is not None:
+        return _FUNCTION_WORDS
+    try:
+        from melm.contracts import load_function_words
+
+        payload = load_function_words()
+        _FUNCTION_WORDS = {}
+        for entry in payload.get("entries", []):
+            lang = str(entry.get("language", "en")).strip().lower()
+            lemma = str(entry.get("lemma", "")).strip().lower()
+            _FUNCTION_WORDS[(lang, lemma)] = dict(entry)
+        return _FUNCTION_WORDS
+    except Exception:
+        _FUNCTION_WORDS = {}
+        return _FUNCTION_WORDS
+
+
+def _load_predicate_inventory() -> dict[str, dict[str, Any]]:
+    global _PREDICATE_INVENTORY, _CONTENT_DOMAINS
+    if _PREDICATE_INVENTORY is not None:
+        return _PREDICATE_INVENTORY
+    try:
+        from melm.contracts import load_predicate_inventory
+
+        payload = load_predicate_inventory()
+        _PREDICATE_INVENTORY = {}
+        for entry in payload.get("predicates", []):
+            lang = str(entry.get("language", "en")).strip().lower()
+            lemma = str(entry.get("lemma", "")).strip().lower()
+            _PREDICATE_INVENTORY[(lang, lemma)] = dict(entry)
+        _CONTENT_DOMAINS = {}
+        for entry in payload.get("content_domains", []):
+            lemma = str(entry.get("lemma", "")).strip().lower()
+            _CONTENT_DOMAINS[lemma] = dict(entry)
+        return _PREDICATE_INVENTORY
+    except Exception:
+        _PREDICATE_INVENTORY = {}
+        _CONTENT_DOMAINS = {}
+        return _PREDICATE_INVENTORY
+
+
+def _get_role(lemma: str, language: str = "en") -> str:
+    """Return the universal UOL role for a lemma, e.g. 'wh_word', 'modal', 'pronoun'."""
+    fw = _load_function_words()
+    entry = fw.get((language, lemma))
+    if entry is not None:
+        return str(entry.get("role", "")).strip().lower()
+    # Compatibility fallback to contract-projected English constants.
+    if lemma in _GREETINGS:
+        return "greeting"
+    if lemma in _WH_WORDS:
+        return "wh_word"
+    if lemma in _MODALS:
+        return "modal"
+    if lemma in _AUXILIARIES:
+        return "auxiliary"
+    if lemma in _NEGATIONS:
+        return "negation"
+    if lemma in _DETERMINERS:
+        return "determiner"
+    if lemma in _PREPOSITIONS:
+        return "preposition"
+    if lemma in _CONJUNCTIONS:
+        return "conjunction"
+    if lemma in _FREQUENCY:
+        return "frequency"
+    if lemma in _EQUIVALENCE:
+        return "equivalence"
+    if lemma in _POLITENESS:
+        return "politeness"
+    if lemma in _DISCOURSE_PARTICLES:
+        return "discourse_particle"
+    if lemma in _PRONOUNS:
+        return "pronoun"
+    return ""
+
+
+def _get_subrole(lemma: str, language: str = "en") -> str:
+    """Return the subrole for a lemma, e.g. 'agent', 'possessor', 'possibility'."""
+    fw = _load_function_words()
+    entry = fw.get((language, lemma))
+    if entry is not None:
+        return str(entry.get("subrole", "")).strip().lower()
+    # Compatibility fallback for projected pronouns only.
+    pronoun = _PRONOUNS.get(lemma)
+    if pronoun is not None:
+        return pronoun[1]
+    return ""
+
+
+def _get_referent(lemma: str, language: str = "en") -> str:
+    """Return the canonical referent for a pronoun, e.g. 'user', 'assistant'."""
+    fw = _load_function_words()
+    entry = fw.get((language, lemma))
+    if entry is not None:
+        return str(entry.get("referent", "")).strip().lower()
+    # Transitional fallback
+    pronoun = _PRONOUNS.get(lemma)
+    if pronoun is not None:
+        return pronoun[0]
+    return ""
+
+
+def _get_predicate(lemma: str, language: str = "en") -> dict[str, Any] | None:
+    """Return the predicate entry for a lemma, or None if not a known predicate."""
+    pi = _load_predicate_inventory()
+    entry = pi.get((language, lemma))
+    if entry is not None:
+        return entry
+    # Compatibility fallback to the contract-projected English predicate export.
+    verb = _VERBS.get(lemma)
+    if verb is not None:
+        canonical, semantic_class = verb
+        return {
+            "lemma": lemma,
+            "predicate_id": canonical,
+            "kind": "event",
+            "semantic_class": semantic_class,
+            "language": "en",
+        }
+    return None
+
+
+def _get_predicate_id(lemma: str, language: str = "en") -> str:
+    pred = _get_predicate(lemma, language=language)
+    return str(pred["predicate_id"]) if pred is not None else ""
+
+
+def _get_content_domain(lemma: str) -> str:
+    """Return the content domain label for a nominal lemma, or None."""
+    _load_predicate_inventory()  # ensures _CONTENT_DOMAINS is loaded
+    entry = _CONTENT_DOMAINS.get(lemma) if _CONTENT_DOMAINS is not None else None
+    if entry is not None:
+        return str(entry.get("domain", ""))
+    # Compatibility fallback to the contract-projected English content-domain export.
+    return _KNOWN_NOMINAL_DOMAINS.get(lemma)
+
+
+def _role_lemmas(role: str) -> set[str]:
+    return {
+        lemma
+        for (language, lemma), entry in _load_function_words().items()
+        if language == "en" and entry.get("role") == role
+    }
+
+
+def _pronoun_projection() -> dict[str, tuple[str, str]]:
+    return {
+        lemma: (
+            str(entry.get("referent", "")).strip().lower(),
+            str(entry.get("subrole", "")).strip().lower(),
+        )
+        for (language, lemma), entry in _load_function_words().items()
+        if language == "en" and entry.get("role") == "pronoun"
+    }
+
+
+def _verb_projection() -> dict[str, tuple[str, str]]:
+    return {
+        lemma: (
+            str(entry.get("predicate_id", "")).strip(),
+            str(entry.get("semantic_class", "")).strip(),
+        )
+        for (language, lemma), entry in _load_predicate_inventory().items()
+        if language == "en"
+    }
+
+
+def _content_domain_projection() -> dict[str, str]:
+    _load_predicate_inventory()
+    if _CONTENT_DOMAINS is None:
+        return {}
+    return {
+        lemma: str(entry.get("domain", "")).strip()
+        for lemma, entry in _CONTENT_DOMAINS.items()
+    }
+
+
+_GREETINGS = _role_lemmas("greeting")
+_WH_WORDS = _role_lemmas("wh_word")
+_MODALS = _role_lemmas("modal")
+_AUXILIARIES = _role_lemmas("auxiliary")
+_NEGATIONS = _role_lemmas("negation")
+_DETERMINERS = _role_lemmas("determiner")
+_PREPOSITIONS = _role_lemmas("preposition")
+_CONJUNCTIONS = _role_lemmas("conjunction")
+_FREQUENCY = _role_lemmas("frequency")
+_EQUIVALENCE = _role_lemmas("equivalence")
+_POLITENESS = _role_lemmas("politeness")
+_DISCOURSE_PARTICLES = _role_lemmas("discourse_particle")
+_PRONOUNS = _pronoun_projection()
+_VERBS = _verb_projection()
+_KNOWN_NOMINAL_DOMAINS = _content_domain_projection()
+
+
 def _verb_info(token: str) -> tuple[str, str] | None:
     """Return (canonical, semantic_class) for a verb.
 
-    Checks ``_VERBS`` first (the hardcoded seed set), then falls back to the
-    runtime lexicon (``_UOL_LEXICON``) which contains acquired / bulk-seeded
-    verbs.  Returns ``None`` when *token* is not known in either source.
+    Checks the contract-projected ``_VERBS`` compatibility export first, then
+    falls back to the runtime lexicon (``_UOL_LEXICON``), which contains
+    acquired / bulk-seeded verbs. Returns ``None`` when *token* is not known
+    in either source.
 
     Only matches lexical entries whose semantic class starts with ``verb.``
     (pure verb senses).  Noun entries like ``narrative_content`` or
@@ -159,19 +252,6 @@ def _verb_info(token: str) -> tuple[str, str] | None:
         if first.startswith("verb."):
             return (token, first)
     return None
-
-
-_KNOWN_NOMINAL_DOMAINS = {
-    "career": "career",
-    "health": "health",
-    "job": "career",
-    "memory": "memory",
-    "people": "people",
-    "person": "person",
-    "purpose": "purpose",
-    "thing": "thing",
-    "work": "work",
-}
 
 
 @dataclass(frozen=True)
@@ -213,13 +293,18 @@ class FunctionalParse:
         }
 
 
-def parse_functional_relations(tokens: tuple[str, ...], *, question_mark: bool = False) -> FunctionalParse | None:
+def parse_functional_relations(
+    tokens: tuple[str, ...],
+    *,
+    question_mark: bool = False,
+    language: str = "en",
+) -> FunctionalParse | None:
     """Produce a ranked relation parse from functional and lexical biases."""
 
     if not tokens:
         return None
-    lemmas = tuple(_lemma(token) for token in tokens)
-    if all(token in _GREETINGS or token in _POLITENESS or token in _DISCOURSE_PARTICLES for token in lemmas):
+    lemmas = tuple(_lemma(token, language=language) for token in tokens)
+    if all(_get_role(token, language=language) in {"greeting", "politeness", "discourse_particle"} for token in lemmas):
         roles = tuple(
             _role(index, token, lemma, "discourse_greeting", "social_opening", 1.0)
             for index, (token, lemma) in enumerate(zip(tokens, lemmas))
@@ -247,19 +332,19 @@ def parse_functional_relations(tokens: tuple[str, ...], *, question_mark: bool =
             pattern="greeting_interjection",
         )
 
-    speech_act = _speech_act(lemmas, question_mark=question_mark)
-    subject_index, subject = _subject(lemmas, speech_act)
-    predicate_candidates = _predicate_candidates(lemmas, subject_index, speech_act)
+    speech_act = _speech_act(lemmas, question_mark=question_mark, language=language)
+    subject_index, subject = _subject(lemmas, speech_act, language=language)
+    predicate_candidates = _predicate_candidates(lemmas, subject_index, speech_act, language=language)
     if not predicate_candidates:
         return None
     primary = predicate_candidates[0]
     predicate_index = int(primary["index"])
     action = str(primary["action"])
     semantic_class = str(primary["semantic_class"])
-    complement = _complement_predicate(lemmas, predicate_index)
+    complement = _complement_predicate(lemmas, predicate_index, language=language)
     complement_index = int(complement["index"]) if complement else -1
     complement_action = str(complement["action"]) if complement else ""
-    indirect_object = _indirect_object(lemmas, predicate_index, complement_index)
+    indirect_object = _indirect_object(lemmas, predicate_index, complement_index, language=language)
     object_value, object_index, possessor, nominal_relations = _object(
         tokens,
         lemmas,
@@ -268,12 +353,13 @@ def parse_functional_relations(tokens: tuple[str, ...], *, question_mark: bool =
         action=action,
         complement_action=complement_action,
         indirect_object=indirect_object,
+        language=language,
     )
     target = _target(subject, speech_act)
     modifiers = {
-        "frequency": tuple(token for token in lemmas if token in _FREQUENCY),
-        "equivalence": tuple(token for token in lemmas if token in _EQUIVALENCE),
-        "negation": tuple(token for token in lemmas if token in _NEGATIONS),
+        "frequency": tuple(token for token in lemmas if _get_role(token, language=language) == "frequency"),
+        "equivalence": tuple(token for token in lemmas if _get_role(token, language=language) == "equivalence"),
+        "negation": tuple(token for token in lemmas if _get_role(token, language=language) == "negation"),
     }
     token_roles, semantic_unknown = _token_roles(
         tokens,
@@ -284,6 +370,7 @@ def parse_functional_relations(tokens: tuple[str, ...], *, question_mark: bool =
         object_index=object_index,
         indirect_object=indirect_object,
         possessor=possessor,
+        language=language,
     )
     covered = sum(1 for item in token_roles if item["role"] != "unresolved_token")
     syntactic_coverage = round(covered / max(1, len(tokens)), 3)
@@ -356,6 +443,7 @@ def functional_frame_kind(parse: FunctionalParse | None) -> str:
         )
     ):
         return "assistant_behavior"
+    object_domain = _get_content_domain(parse.object)
     if (
         (
             (
@@ -369,15 +457,16 @@ def functional_frame_kind(parse: FunctionalParse | None) -> str:
             )
             or complement_class == "verb.change"
         )
-        and parse.object in {"career", "work"}
+        and object_domain in {"career", "work"}
     ):
         return "personal_goal_advice"
+    action_predicate_id = _get_predicate_id(parse.action)
     if (
         parse.speech_act in {"yes_no_question", "wh_question", "request", "statement"}
         and (
             parse.object
             or parse.complement_action
-            or parse.action in {"be", "work"}
+            or action_predicate_id in {"be", "work"}
             or (
                 parse.speech_act in {"yes_no_question", "wh_question"}
                 and parse.action
@@ -389,34 +478,38 @@ def functional_frame_kind(parse: FunctionalParse | None) -> str:
     return ""
 
 
-def _speech_act(lemmas: tuple[str, ...], *, question_mark: bool) -> str:
+def _speech_act(lemmas: tuple[str, ...], *, question_mark: bool, language: str = "en") -> str:
     first = lemmas[0]
-    if first in _WH_WORDS:
+    first_role = _get_role(first, language=language)
+    if first_role == "wh_word":
         return "wh_question"
-    if first in _MODALS or first in _AUXILIARIES:
+    if first_role in {"modal", "auxiliary"}:
         return "yes_no_question"
     if question_mark:
         return "question"
-    if _verb_info(first) is not None or first in _POLITENESS:
+    if _get_predicate(first, language=language) is not None or first_role == "politeness":
         return "request"
     return "statement"
 
 
-def _subject(lemmas: tuple[str, ...], speech_act: str) -> tuple[int, str]:
+def _subject(lemmas: tuple[str, ...], speech_act: str, language: str = "en") -> tuple[int, str]:
+    # Find the first agent pronoun
     if speech_act in {"yes_no_question", "wh_question"}:
-        for index, token in enumerate(lemmas[1:], start=1):
-            if token in _PRONOUNS and _PRONOUNS[token][1] in {"agent", "agent_or_patient"}:
-                return index, _PRONOUNS[token][0]
-    for index, token in enumerate(lemmas):
-        if token in _PRONOUNS and _PRONOUNS[token][1] in {"agent", "agent_or_patient"}:
-            return index, _PRONOUNS[token][0]
+        search_range = enumerate(lemmas[1:], start=1)
+    else:
+        search_range = enumerate(lemmas)
+    for index, token in search_range:
+        if _get_role(token, language=language) == "pronoun" and _get_subrole(token, language=language) in {"agent", "agent_or_patient"}:
+            return index, _get_referent(token, language=language) or token
+
+    # No agent pronoun: find the first predicate, then look for a nominal subject before it
     predicate_indexes = [
         index
         for index, token in enumerate(lemmas)
-        if _verb_info(token) is not None
+        if _get_predicate(token, language=language) is not None
         and not (
-            token in _AUXILIARIES
-            and any(_verb_info(item) is not None and item != token for item in lemmas[index + 1 :])
+            _get_role(token, language=language) == "auxiliary"
+            and any(_get_predicate(item, language=language) is not None and item != token for item in lemmas[index + 1 :])
         )
         and not (
             index + 1 < len(lemmas)
@@ -425,19 +518,16 @@ def _subject(lemmas: tuple[str, ...], speech_act: str) -> tuple[int, str]:
         )
     ]
     if predicate_indexes:
-        predicate_index = predicate_indexes[-1] if lemmas[predicate_indexes[0]] in _AUXILIARIES else predicate_indexes[0]
-        search_start = 1 if lemmas[0] in _WH_WORDS or lemmas[0] in _MODALS or lemmas[0] in _AUXILIARIES else 0
+        first_pred_role = _get_role(lemmas[predicate_indexes[0]], language=language)
+        predicate_index = predicate_indexes[-1] if first_pred_role == "auxiliary" else predicate_indexes[0]
+        first_role = _get_role(lemmas[0], language=language)
+        search_start = 1 if first_role in {"wh_word", "modal", "auxiliary"} else 0
         for index in range(search_start, predicate_index):
             token = lemmas[index]
-            if token in _WH_WORDS or token in _MODALS or token in _AUXILIARIES:
+            token_role = _get_role(token, language=language)
+            if token_role in {"wh_word", "modal", "auxiliary", "determiner", "preposition", "conjunction", "frequency", "equivalence", "negation", "politeness", "pronoun"}:
                 continue
-            if token in _DETERMINERS or token in _PREPOSITIONS or token in _CONJUNCTIONS:
-                continue
-            if token in _FREQUENCY or token in _EQUIVALENCE or token in _NEGATIONS or token in _POLITENESS:
-                continue
-            if token in _PRONOUNS:
-                continue
-            return index, _KNOWN_NOMINAL_DOMAINS.get(token, token)
+            return index, _get_content_domain(token) or token
     if speech_act == "request":
         return -1, "user"
     return -1, "user"
@@ -447,11 +537,12 @@ def _predicate_candidates(
     lemmas: tuple[str, ...],
     subject_index: int,
     speech_act: str,
+    language: str = "en",
 ) -> list[dict[str, Any]]:
     candidates: list[dict[str, Any]] = []
     for index, token in enumerate(lemmas):
-        verb = _verb_info(token)
-        if verb is None:
+        pred = _get_predicate(token, language=language)
+        if pred is None:
             continue
         if (
             index + 1 < len(lemmas)
@@ -459,9 +550,12 @@ def _predicate_candidates(
             and any(item == "be" for item in lemmas[index + 2 :])
         ):
             continue
-        if token == "be" and any(_verb_info(item) and item != "be" for item in lemmas[index + 1 :]):
+        # English-specific: "be" before another predicate is usually auxiliary
+        # (e.g. "What is he eating?"). Skip for other languages where copula
+        # can precede predicate-derived nouns (e.g. Igbo "gini bu eri?").
+        if language == "en" and _get_predicate_id(token, language=language) == "be" and any(_get_predicate(item, language=language) is not None and item != "be" for item in lemmas[index + 1 :]):
             continue
-        if token in _AUXILIARIES and any(_verb_info(item) and item != token for item in lemmas[index + 1 :]):
+        if _get_role(token, language=language) == "auxiliary" and any(_get_predicate(item, language=language) is not None and item != token for item in lemmas[index + 1 :]):
             continue
         score = 0.52
         if index > subject_index:
@@ -472,51 +566,47 @@ def _predicate_candidates(
             score += 0.18
         if speech_act == "request" and index <= 1:
             score += 0.12
-        canonical, semantic_class = verb
         candidates.append(
             {
                 "index": index,
                 "token": token,
-                "action": canonical,
-                "semantic_class": semantic_class,
+                "action": pred["predicate_id"],
+                "semantic_class": pred["semantic_class"],
                 "score": round(min(1.0, max(0.0, score)), 3),
             }
         )
     return sorted(candidates, key=lambda item: (-float(item["score"]), int(item["index"])))
 
 
-def _complement_predicate(lemmas: tuple[str, ...], predicate_index: int) -> dict[str, Any] | None:
+def _complement_predicate(lemmas: tuple[str, ...], predicate_index: int, language: str = "en") -> dict[str, Any] | None:
     for index in range(predicate_index + 1, len(lemmas)):
         token = lemmas[index]
-        verb = _verb_info(token)
-        if verb is None:
+        pred = _get_predicate(token, language=language)
+        if pred is None:
             continue
         previous = lemmas[index - 1] if index > 0 else ""
+        prev_role = _get_role(previous, language=language)
+        prev_subrole = _get_subrole(previous, language=language)
         intervening_pronoun = (
             index == predicate_index + 2
-            and previous in _PRONOUNS
-            and _PRONOUNS[previous][1] in {"patient", "agent_or_patient"}
+            and prev_role == "pronoun"
+            and prev_subrole in {"patient", "agent_or_patient"}
         )
-        if previous == "to" or intervening_pronoun or lemmas[predicate_index] in {"help", "like"}:
-            canonical, semantic_class = verb
+        if previous == "to" or intervening_pronoun or _get_predicate_id(lemmas[predicate_index], language=language) in {"help", "like"}:
             return {
                 "index": index,
-                "action": canonical,
-                "semantic_class": semantic_class,
+                "action": pred["predicate_id"],
+                "semantic_class": pred["semantic_class"],
             }
     return None
 
 
-def _indirect_object(lemmas: tuple[str, ...], predicate_index: int, complement_index: int) -> str:
+def _indirect_object(lemmas: tuple[str, ...], predicate_index: int, complement_index: int, language: str = "en") -> str:
     end = complement_index if complement_index > predicate_index else len(lemmas)
     for token in lemmas[predicate_index + 1 : end]:
-        pronoun = _PRONOUNS.get(token)
-        if pronoun and pronoun[1] in {"patient", "agent_or_patient", "human_collective", "human_indefinite"}:
-            return pronoun[0]
-    if lemmas[predicate_index] == "tell":
-        for token in lemmas[predicate_index + 1 :]:
-            if token in {"people", "person", "someone"}:
-                return token
+        if _get_role(token, language=language) == "pronoun" and _get_subrole(token, language=language) in {"patient", "agent_or_patient", "human_collective", "human_indefinite"}:
+            return _get_referent(token, language=language) or token
+    # "tell" can take a human collective / indefinite as indirect object; already caught above
     return ""
 
 
@@ -529,6 +619,7 @@ def _object(
     action: str,
     complement_action: str,
     indirect_object: str,
+    language: str = "en",
 ) -> tuple[str, int, str, list[dict[str, Any]]]:
     start = complement_index + 1 if complement_index >= 0 else predicate_index + 1
     candidates: list[tuple[int, str, str, str]] = []
@@ -537,33 +628,36 @@ def _object(
     active_relation = ""
     for index in range(start, len(lemmas)):
         token = lemmas[index]
-        if token in _PRONOUNS:
-            referent, role = _PRONOUNS[token]
-            if role == "possessor":
+        token_role = _get_role(token, language=language)
+        token_subrole = _get_subrole(token, language=language)
+        if token_role == "pronoun":
+            referent = _get_referent(token, language=language)
+            if token_subrole == "possessor":
                 pending_possessor = referent
                 continue
-            if role == "reflexive":
+            if token_subrole == "reflexive":
                 candidates.append((index, referent, pending_possessor, active_relation))
                 continue
             if referent == indirect_object:
                 continue
-        if token in _MODALS or token in _AUXILIARIES or token in _NEGATIONS:
+        if token_role in {"modal", "auxiliary", "negation"}:
             continue
-        if token in _PREPOSITIONS:
+        if token_role == "preposition":
             active_relation = token
             continue
-        if token in _DETERMINERS or token in _CONJUNCTIONS:
+        if token_role in {"determiner", "conjunction"}:
             continue
-        if token in _FREQUENCY or token in _EQUIVALENCE or token in _POLITENESS:
+        if token_role in {"frequency", "equivalence", "politeness"}:
             continue
-        if _verb_info(token) is not None:
+        if _get_predicate(token, language=language) is not None:
             previous = lemmas[index - 1] if index > 0 else ""
-            nominal_by_relation = previous in _PREPOSITIONS or previous in _DETERMINERS
+            prev_role = _get_role(previous, language=language)
+            nominal_by_relation = prev_role == "preposition" or prev_role == "determiner"
             nominal_after_communication = action in {"answer", "ask", "describe", "explain", "say", "tell"} and index > start
             gerund_nominal = tokens[index].endswith("ing") and index != complement_index
             if not nominal_by_relation and not nominal_after_communication and not gerund_nominal:
                 continue
-        canonical = _KNOWN_NOMINAL_DOMAINS.get(token, token)
+        canonical = _get_content_domain(token) or token
         candidates.append((index, canonical, pending_possessor, active_relation))
         pending_possessor = ""
     if not candidates:
@@ -615,6 +709,7 @@ def _token_roles(
     object_index: int,
     indirect_object: str,
     possessor: str,
+    language: str = "en",
 ) -> tuple[list[dict[str, Any]], list[str]]:
     roles: list[dict[str, Any]] = []
     semantic_unknown: list[str] = []
@@ -622,62 +717,69 @@ def _token_roles(
         if index == subject_index:
             role, meaning, weight = (
                 "grammatical_subject",
-                _PRONOUNS.get(lemma, (_KNOWN_NOMINAL_DOMAINS.get(lemma, lemma), ""))[0],
+                _get_referent(lemma, language=language) or _get_content_domain(lemma) or lemma,
                 0.98,
             )
         elif index == predicate_index:
-            verb = _verb_info(lemma)
-            canonical, semantic_class = verb or (lemma, "unknown")
+            pred = _get_predicate(lemma, language=language)
+            canonical, semantic_class = (pred["predicate_id"], pred["semantic_class"]) if pred else (lemma, "unknown")
             role, meaning, weight = "main_predicate", f"{canonical}:{semantic_class}", 0.98
         elif index == complement_index:
-            verb = _verb_info(lemma)
-            canonical, semantic_class = verb or (lemma, "unknown")
+            pred = _get_predicate(lemma, language=language)
+            canonical, semantic_class = (pred["predicate_id"], pred["semantic_class"]) if pred else (lemma, "unknown")
             role, meaning, weight = "complement_predicate", f"{canonical}:{semantic_class}", 0.92
         elif index == object_index:
-            role, meaning, weight = "semantic_object", _KNOWN_NOMINAL_DOMAINS.get(lemma, lemma), 0.88
-            if lemma not in _KNOWN_NOMINAL_DOMAINS and lemma not in _PRONOUNS:
+            role, meaning, weight = "semantic_object", _get_content_domain(lemma) or lemma, 0.88
+            if _get_content_domain(lemma) is None and _get_role(lemma, language=language) != "pronoun":
                 semantic_unknown.append(lemma)
-        elif lemma in _GREETINGS:
-            role, meaning, weight = "discourse_greeting", "social_opening", 1.0
-        elif lemma in _WH_WORDS:
-            role, meaning, weight = "interrogative", "requested_information_dimension", 0.96
-        elif lemma in _MODALS:
-            role, meaning, weight = "modal", "possibility_or_obligation", 0.94
-        elif lemma in _AUXILIARIES:
-            role, meaning, weight = "auxiliary", "tense_aspect_or_inversion", 0.94
-        elif lemma in _NEGATIONS:
-            role, meaning, weight = "negation", "predicate_polarity", 0.94
-        elif lemma in _FREQUENCY:
-            role, meaning, weight = "frequency_modifier", lemma, 0.9
-        elif lemma in _EQUIVALENCE:
-            role, meaning, weight = "equivalence_modifier", lemma, 0.88
-        elif lemma in _DETERMINERS:
-            role, meaning, weight = "determiner", "nominal_scope", 0.9
-        elif lemma in _PREPOSITIONS:
-            role, meaning, weight = "relation_marker", lemma, 0.88
-        elif lemma in _CONJUNCTIONS:
-            role, meaning, weight = "clause_link", lemma, 0.86
-        elif lemma in _POLITENESS:
-            role, meaning, weight = "politeness", "request_softener", 0.9
-        elif lemma in _DISCOURSE_PARTICLES:
-            role, meaning, weight = "discourse_particle", lemma, 0.86
-        elif lemma in _PRONOUNS:
-            referent, pronoun_role = _PRONOUNS[lemma]
-            if pronoun_role == "possessor" and referent == possessor:
-                role, meaning, weight = "possessor", referent, 0.92
-            elif referent == indirect_object and pronoun_role in {"patient", "agent_or_patient"}:
-                role, meaning, weight = "indirect_object", referent, 0.92
-            elif pronoun_role == "reflexive":
-                role, meaning, weight = "reflexive_object", referent, 0.94
-            else:
-                role, meaning, weight = "pronoun_relation", f"{referent}:{pronoun_role}", 0.82
-        elif (verb := _verb_info(lemma)) is not None:
-            canonical, semantic_class = verb
-            role, meaning, weight = "secondary_predicate_candidate", f"{canonical}:{semantic_class}", 0.62
         else:
-            role, meaning, weight = "content_nominal", _KNOWN_NOMINAL_DOMAINS.get(lemma, "semantic_class_unknown"), 0.58
-            if lemma not in _KNOWN_NOMINAL_DOMAINS:
-                semantic_unknown.append(lemma)
+            lemma_role = _get_role(lemma, language=language)
+            if lemma_role == "greeting":
+                role, meaning, weight = "discourse_greeting", "social_opening", 1.0
+            elif lemma_role == "wh_word":
+                role, meaning, weight = "interrogative", "requested_information_dimension", 0.96
+            elif lemma_role == "modal":
+                role, meaning, weight = "modal", "possibility_or_obligation", 0.94
+            elif lemma_role == "auxiliary":
+                role, meaning, weight = "auxiliary", "tense_aspect_or_inversion", 0.94
+            elif lemma_role == "negation":
+                role, meaning, weight = "negation", "predicate_polarity", 0.94
+            elif lemma_role == "frequency":
+                role, meaning, weight = "frequency_modifier", lemma, 0.9
+            elif lemma_role == "equivalence":
+                role, meaning, weight = "equivalence_modifier", lemma, 0.88
+            elif lemma_role == "determiner":
+                role, meaning, weight = "determiner", "nominal_scope", 0.9
+            elif lemma_role == "preposition":
+                role, meaning, weight = "relation_marker", lemma, 0.88
+            elif lemma_role == "conjunction":
+                role, meaning, weight = "clause_link", lemma, 0.86
+            elif lemma_role == "politeness":
+                role, meaning, weight = "politeness", "request_softener", 0.9
+            elif lemma_role == "discourse_particle":
+                role, meaning, weight = "discourse_particle", lemma, 0.86
+            elif lemma_role == "pronoun":
+                referent = _get_referent(lemma, language=language)
+                pronoun_role = _get_subrole(lemma, language=language)
+                if pronoun_role == "possessor" and referent == possessor:
+                    role, meaning, weight = "possessor", referent, 0.92
+                elif referent == indirect_object and pronoun_role in {"patient", "agent_or_patient"}:
+                    role, meaning, weight = "indirect_object", referent, 0.92
+                elif pronoun_role == "reflexive":
+                    role, meaning, weight = "reflexive_object", referent, 0.94
+                else:
+                    role, meaning, weight = "pronoun_relation", f"{referent}:{pronoun_role}", 0.82
+            else:
+                pred = _get_predicate(lemma, language=language)
+                if pred is not None:
+                    role, meaning, weight = "secondary_predicate_candidate", f"{pred['predicate_id']}:{pred['semantic_class']}", 0.62
+                else:
+                    domain = _get_content_domain(lemma)
+                    if domain is not None:
+                        role, meaning, weight = "content_nominal", domain, 0.58
+                    else:
+                        role, meaning, weight = "content_nominal", "semantic_class_unknown", 0.58
+                        semantic_unknown.append(lemma)
         roles.append(_role(index, token, lemma, role, meaning, weight))
     return roles, list(dict.fromkeys(semantic_unknown))
 
@@ -699,8 +801,9 @@ def _pattern(
 
 
 def _semantic_class(action: str) -> str:
-    if action in _VERBS:
-        return _VERBS[action][1]
+    pred = _get_predicate(action)
+    if pred is not None:
+        return pred["semantic_class"]
     if action in _UOL_LEXICON:
         classes = _UOL_LEXICON[action]
         if classes:
@@ -708,8 +811,23 @@ def _semantic_class(action: str) -> str:
     return ""
 
 
-def _lemma(token: str) -> str:
+def _lemma(token: str, language: str = "en") -> str:
+    if language != "en":
+        return token
+    # n't → not expansion (Phase 2)
+    if token.endswith("n't"):
+        base = token[:-3]
+        nt_irregular = {
+            "wo": "will", "ca": "can", "sha": "shall", "ma": "may",
+            "ai": "be", "does": "do", "doe": "do", "is": "be",
+            "are": "be", "were": "be", "was": "be", "have": "have",
+            "has": "have", "had": "have", "did": "do",
+        }
+        return nt_irregular.get(base, base)
+
     irregular = {
+        "am": "be",
+        "are": "be",
         "bought": "buy",
         "did": "do",
         "does": "do",
