@@ -135,3 +135,19 @@ Run the state-resolution benchmark directly with:
 ```powershell
 python scripts\run_state_resolution_benchmark.py --out-json reports\state_resolution.json
 ```
+
+## ADTC speed/efficiency profiles (`adtc_profile_*`)
+
+The `adtc_profile_<host>.json` and `adtc_profile.md` files are the ADTC speed (30%)
+and efficiency (20%) evidence, produced by `scripts\profile_adtc.py`. A run on a
+developer machine (template backend, no model) is only a **smoke** proving the
+harness works — it is not submission evidence. The binding gate is a profile
+committed from an **8 GB ARM/laptop-class target device** running the GGUF model and
+showing interactive tokens/sec, peak RSS under the memory budget, and no OOM or
+thermal throttling across the turn set. Until such a target-hardware file is
+committed here, ADTC readiness for speed/efficiency is **"unproven."**
+
+```powershell
+python scripts\profile_adtc.py
+python scripts\profile_adtc.py --model-path models\qwen2.5-0.5b-instruct-q4_k_m.gguf
+```
