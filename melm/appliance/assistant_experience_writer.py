@@ -31,6 +31,7 @@ def record_conversation_experience(
     store: AssistantOSStore,
     decision: AssistantDecision,
     synthesis: BoundedSynthesisResult | None,
+    user_id: str = "default",
 ) -> str | None:
     """Write a ``personal_experience`` entity for a single conversation turn.
 
@@ -43,6 +44,8 @@ def record_conversation_experience(
     synthesis:
         The ``BoundedSynthesisResult`` from the synthesizer, or *None* when
         synthesis was bypassed (e.g. privacy control with no applied answer).
+    user_id:
+        The user identifier to store on the entity slot (default ``"default"``).
 
     Returns
     -------
@@ -84,6 +87,10 @@ def record_conversation_experience(
     )
     store.set_entity_slot(
         entity_id, "intent_achieved", intent_achieved,
+        provenance="experience_writer",
+    )
+    store.set_entity_slot(
+        entity_id, "user_id", user_id,
         provenance="experience_writer",
     )
     # Check for novelty candidates and set follow_up if found

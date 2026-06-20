@@ -704,7 +704,10 @@ class AssistantOSKernel:
                     reason=self.last_synthesis.reason,
                     boundary_crossed=self.last_synthesis.boundary_crossed,
                 )
-            record_conversation_experience(self.store, decision, self.last_synthesis)
+            record_conversation_experience(self.store, decision, self.last_synthesis, user_id=self.profile.user_id)
+            # Persist UOL atoms per turn (B5)
+            from .assistant_atom_persistence import record_uol_parse
+            record_uol_parse(self.store, event.event_id, decision.uol_act)
             # Persist mood state after each turn (G3)
             if decision.session_mood is not None:
                 self.store.set_mood_state(decision.session_mood)
