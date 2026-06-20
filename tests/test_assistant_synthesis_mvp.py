@@ -253,7 +253,7 @@ class AssistantSynthesisMvpTests(unittest.TestCase):
             safety_synthesis = kernel.last_synthesis
             weather = kernel.handle("What is the weather today?")
             weather_synthesis = kernel.last_synthesis
-            kernel.handle("Play calm piano.")
+            kernel.handle("Play some music.")
             cancel = kernel.handle("Cancel that.")
             cancel_synthesis = kernel.last_synthesis
         finally:

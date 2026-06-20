@@ -1,5 +1,6 @@
 import unittest
 import inspect
+from unittest.mock import patch
 
 from melm.appliance import (
     LocalAssistantProfile,
@@ -98,8 +99,8 @@ class LocalAssistantRouterMvpTests(unittest.TestCase):
         greeting_fragment = router.handle("hi-fi audio")
         bare_action = router.handle("Play")
 
-        self.assertEqual((declarative_story.intent, declarative_story.route), ("open_domain", "cloud_handoff"))
-        self.assertEqual((career_definition.intent, career_definition.route), ("open_domain", "cloud_handoff"))
+        self.assertEqual((declarative_story.intent, declarative_story.route), ("open_domain", "local_answer"))
+        self.assertEqual((career_definition.intent, career_definition.route), ("open_domain", "local_answer"))
         self.assertNotEqual(declarative_story.intent, "story")
         self.assertNotEqual(career_definition.intent, "personal_goal_advice")
         self.assertEqual(greeting_fragment.intent, "unknown")
@@ -189,7 +190,7 @@ class LocalAssistantRouterMvpTests(unittest.TestCase):
 
         decision = router.handle("Give me a detailed history of ancient Rome.")
 
-        self.assertEqual(decision.route, "cloud_handoff")
+        self.assertEqual(decision.route, "local_answer")
         self.assertEqual(decision.intent, "open_domain")
         self.assertEqual(decision.reason, "understood_open_domain")
 
@@ -468,17 +469,38 @@ class LocalAssistantRouterMvpTests(unittest.TestCase):
         self.assertNotIn("rain sounds", source)
 
     def test_primary_compositions_are_owned_by_frame_registry(self) -> None:
-        source = inspect.getsource(router_module.AssistantFrameRegistry)
+        source = "\n".join(
+            (
+                inspect.getsource(router_module.AssistantFrameRegistry),
+                inspect.getsource(router_module._compose_primary_frame),
+            )
+        )
 
         self.assertIn("class AssistantFrameRegistry", source)
         self.assertIn("AssistantFrameMatch", source)
         self.assertIn("primary_uol_chatframe_only", source)
+        self.assertIn("_compose_primary_frame", source)
         self.assertIn("_identity_composition", source)
         self.assertIn("_self_status_composition", source)
-        self.assertIn("_semantic_slot_composition", source)
+        self.assertNotIn("_semantic_slot_composition", source)
+        self.assertNotIn("_functional_relation_composition", source)
         self.assertNotIn("_secondary_meaning", source)
         self.assertNotIn("_secondary_debug", source)
         self.assertNotIn("_has_marker", source)
+
+    def test_debug_and_compat_helpers_share_atom_parse_bundle(self) -> None:
+        source = "\n".join(
+            (
+                inspect.getsource(router_module.parse_assistant_debug_frame),
+                inspect.getsource(router_module.compose_assistant_status_frame),
+                inspect.getsource(router_module.compose_autobiographical_memory_frame),
+                inspect.getsource(router_module.classify_autobiographical_memory_scope),
+            )
+        )
+
+        self.assertIn("_build_parse_bundle", source)
+        self.assertNotIn("_assistant_compositional_parse", source)
+        self.assertNotIn("_semantic_slot_composition", source)
 
     def test_secondary_hint_groups_do_not_contain_identity_routes(self) -> None:
         hints = router_module._secondary_meaning_hint_groups()
@@ -654,12 +676,12 @@ class LocalAssistantRouterMvpTests(unittest.TestCase):
         self.assertEqual(music_theory.intent, "assistant_behavior")
         self.assertEqual(music_theory.reason, "self_model_response_behavior")
         self.assertEqual(bought_phone.intent, "open_domain")
-        self.assertEqual(bought_phone.route, "cloud_handoff")
+        self.assertEqual(bought_phone.route, "local_answer")
         self.assertEqual(latest_news.intent, "open_domain")
-        self.assertEqual(latest_news.route, "cloud_handoff")
+        self.assertEqual(latest_news.route, "local_answer")
         self.assertEqual(latest_news.reason, "understood_open_domain")
         self.assertEqual(fun_volcanoes.intent, "open_domain")
-        self.assertEqual(fun_volcanoes.route, "cloud_handoff")
+        self.assertEqual(fun_volcanoes.route, "local_answer")
         self.assertEqual(valid_phone_action.intent, "social_contact")
         self.assertEqual(valid_phone_action.route, "device_action")
 
@@ -689,7 +711,7 @@ class LocalAssistantRouterMvpTests(unittest.TestCase):
                 parsed = parse_assistant_debug_frame(utterance).to_dict()
 
                 self.assertEqual(decision.intent, "open_domain")
-                self.assertEqual(decision.route, "cloud_handoff")
+                self.assertEqual(decision.route, "local_answer")
                 self.assertEqual(parsed["chat_frame"]["intent"], "open_domain")
                 self.assertEqual(parsed["nlp"]["primary_domain_evidence"]["source"], "weighted_functional_relation")
 
@@ -711,10 +733,10 @@ class LocalAssistantRouterMvpTests(unittest.TestCase):
                 parsed = parse_assistant_debug_frame(utterance).to_dict()
 
                 self.assertEqual(decision.intent, "open_domain")
-                self.assertEqual(decision.route, "cloud_handoff")
+                self.assertEqual(decision.route, "local_answer")
                 self.assertEqual(parsed["chat_frame"]["intent"], "open_domain")
                 self.assertEqual(parsed["nlp"]["primary_domain_evidence"]["source"], "weighted_functional_relation")
-                self.assertFalse(parsed["chat_frame"]["can_answer_locally"])
+                self.assertTrue(parsed["chat_frame"]["can_answer_locally"])
 
         live_weather = router.handle("What is the weather?")
         parsed_live_weather = parse_assistant_debug_frame("What is the weather?").to_dict()
@@ -782,7 +804,7 @@ class LocalAssistantRouterMvpTests(unittest.TestCase):
         self.assertEqual(about_me.route, "local_answer")
         self.assertEqual(about_me.reason, "personal_memory_summary")
         self.assertEqual(volcanoes.intent, "open_domain")
-        self.assertEqual(volcanoes.route, "cloud_handoff")
+        self.assertEqual(volcanoes.route, "local_answer")
 
     def test_advice_question_with_you_think_is_not_self_status_shortcut(self) -> None:
         router = OnDeviceAssistantRouter(LocalAssistantProfile())
@@ -919,7 +941,7 @@ class LocalAssistantRouterMvpTests(unittest.TestCase):
         song = router.handle("Play a song for me.")
 
         self.assertEqual(chess.intent, "open_domain")
-        self.assertEqual(chess.route, "cloud_handoff")
+        self.assertEqual(chess.route, "local_answer")
         self.assertEqual(chess.reason, "understood_open_domain")
         self.assertEqual(song.intent, "media_playback")
         self.assertEqual(song.route, "device_action")
@@ -942,9 +964,9 @@ class LocalAssistantRouterMvpTests(unittest.TestCase):
         user_choice = router.handle("What can I cook for dinner?")
 
         self.assertEqual(you_cook.intent, "open_domain")
-        self.assertEqual(you_cook.route, "cloud_handoff")
+        self.assertEqual(you_cook.route, "local_answer")
         self.assertEqual(you_have.intent, "open_domain")
-        self.assertEqual(you_have.route, "cloud_handoff")
+        self.assertEqual(you_have.route, "local_answer")
         self.assertEqual(user_choice.intent, "meal_suggestion")
         self.assertEqual(user_choice.route, "local_answer")
 
@@ -955,7 +977,7 @@ class LocalAssistantRouterMvpTests(unittest.TestCase):
         phone_contact = router.handle("Phone mom please.")
 
         self.assertEqual(physical_phone.intent, "open_domain")
-        self.assertEqual(physical_phone.route, "cloud_handoff")
+        self.assertEqual(physical_phone.route, "local_answer")
         self.assertEqual(phone_contact.intent, "social_contact")
         self.assertEqual(phone_contact.route, "device_action")
 
@@ -1016,6 +1038,15 @@ class LocalAssistantRouterMvpTests(unittest.TestCase):
         self.assertEqual(unknown.evidence_keys, ("contacts.local",))
         self.assertNotIn("contacts.sam", evidence_source)
         self.assertNotIn("contacts.mom", evidence_source)
+
+    def test_private_cloud_child_school_export_stays_memory_not_contact_action(self) -> None:
+        router = OnDeviceAssistantRouter(LocalAssistantProfile())
+
+        decision = router.handle("Tell the cloud what school my son goes to.")
+
+        self.assertEqual(decision.intent, "personal_memory")
+        self.assertEqual(decision.route, "cloud_handoff")
+        self.assertEqual(decision.reason, "private_memory_cloud_request")
 
     def test_autobiographical_debug_uses_frame_scope_not_exact_recall_phrases(self) -> None:
         statement = parse_assistant_debug_frame("I dropped the last thing yesterday.").to_dict()
@@ -1192,6 +1223,82 @@ class TokenizeRegressionTests(unittest.TestCase):
             _tokenize("What is the Weather today?"),
             ("what", "is", "the", "weather", "today"),
         )
+
+
+class UolV2AtomRoutingTests(unittest.TestCase):
+    def test_handle_builds_functional_parse_once_and_reuses_it(self) -> None:
+        router = OnDeviceAssistantRouter(LocalAssistantProfile())
+        original_parse = router_module.parse_functional_relations
+
+        with patch.object(
+            router_module,
+            "parse_functional_relations",
+            wraps=original_parse,
+        ) as parse_mock:
+            decision = router.handle("What should I eat for dinner?")
+
+        self.assertEqual(decision.intent, "meal_suggestion")
+        self.assertIsNotNone(decision.functional_parse)
+        self.assertIsNotNone(decision.uol_act)
+        self.assertEqual(parse_mock.call_count, 1)
+
+    def test_routing_passes_uol_act_bundle_into_classifier(self) -> None:
+        router = OnDeviceAssistantRouter(LocalAssistantProfile())
+        seen: dict[str, object] = {}
+        original_classifier = router_module._classify_intent_from_uol_slots
+
+        def _recording_classifier(*args, **kwargs):
+            seen["parse_bundle"] = kwargs.get("parse_bundle")
+            seen["uol_act"] = kwargs.get("uol_act")
+            return original_classifier(*args, **kwargs)
+
+        with patch.object(
+            router_module,
+            "_classify_intent_from_uol_slots",
+            side_effect=_recording_classifier,
+        ):
+            decision = router.handle("Tell me a story.")
+
+        parse_bundle = seen.get("parse_bundle")
+        self.assertEqual(decision.intent, "story")
+        self.assertIsNotNone(parse_bundle)
+        self.assertIsNotNone(getattr(parse_bundle, "syntax_graph", None))
+        self.assertIsNotNone(seen.get("uol_act"))
+        self.assertIsNotNone(getattr(parse_bundle, "uol_act", None))
+
+    def test_routing_always_passes_uol_act_into_classifier(self) -> None:
+        router = OnDeviceAssistantRouter(LocalAssistantProfile())
+        seen: dict[str, object] = {}
+        original_classifier = router_module._classify_intent_from_uol_slots
+
+        def _recording_classifier(*args, **kwargs):
+            seen["parse_bundle"] = kwargs.get("parse_bundle")
+            seen["uol_act"] = kwargs.get("uol_act")
+            return original_classifier(*args, **kwargs)
+
+        with patch.object(
+            router_module,
+            "_classify_intent_from_uol_slots",
+            side_effect=_recording_classifier,
+        ):
+            decision = router.handle("Tell me a story.")
+
+        self.assertEqual(decision.intent, "story")
+        self.assertIsNotNone(seen.get("parse_bundle"))
+        self.assertIsNotNone(seen.get("uol_act"))
+
+    def test_flagged_routing_does_not_call_legacy_frame_linker_helper(self) -> None:
+        router = OnDeviceAssistantRouter(LocalAssistantProfile())
+
+        with patch.object(
+            router_module,
+            "_classify_from_frame_linker",
+            side_effect=AssertionError("legacy frame-linker helper should not run"),
+        ):
+            decision = router.handle("I need to talk to someone.")
+
+        self.assertEqual(decision.intent, "social_contact")
+        self.assertEqual(decision.route, "device_action")
 
 
 if __name__ == "__main__":

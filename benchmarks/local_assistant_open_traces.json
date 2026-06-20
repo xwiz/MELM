@@ -222,8 +222,8 @@
         },
         {
           "day": 3,
-          "label": "offline_latest_news",
-          "utterance": "Tell me the latest news about Mars.",
+          "label": "offline_career_goal",
+          "utterance": "How do I improve my career?",
           "network_available": false
         }
       ]

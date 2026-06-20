@@ -59,7 +59,7 @@ class AssistantOpenTraceMvpTests(unittest.TestCase):
             adult = next(item for item in report.scenarios if item.name == "adult_household_memory_and_offline_boundaries")
             meal = next(turn for turn in adult.turns if turn.label == "meal")
             self.assertNotIn("You could eat You could eat", meal.answer)
-            self.assertEqual(next(turn for turn in adult.turns if turn.label == "offline_latest_news").reason, "cloud_unavailable")
+            self.assertEqual(next(turn for turn in adult.turns if turn.label == "offline_career_goal").reason, "cloud_unavailable")
 
     def test_parse_debug_maps_memory_domains_to_specific_uol_objects(self) -> None:
         household = parse_assistant_debug_frame("What do you know about this household?").to_dict()
@@ -108,11 +108,11 @@ class AssistantOpenTraceMvpTests(unittest.TestCase):
             baseline = payload["baseline_comparison"]
             self.assertTrue(baseline["passed"])
             self.assertEqual(baseline["schema"], "melm.local_assistant_transcript_baseline_comparison.v1")
-            self.assertEqual(baseline["current"]["local_or_device_resolved"], 17)
+            self.assertEqual(baseline["current"]["local_or_device_resolved"], 18)
             self.assertEqual(baseline["best_baseline"]["strategy"], "local_state_router_no_lifecycle")
-            self.assertEqual(baseline["best_baseline"]["local_or_device_resolved"], 7)
-            self.assertEqual(baseline["wins"]["local_resolution_rate_gain_vs_best_baseline"], 0.4)
-            self.assertEqual(baseline["wins"]["cloud_handoff_reduction_vs_best_baseline"], 6)
+            self.assertEqual(baseline["best_baseline"]["local_or_device_resolved"], 14)
+            self.assertEqual(baseline["wins"]["local_resolution_rate_gain_vs_best_baseline"], 0.16)
+            self.assertEqual(baseline["wins"]["cloud_handoff_reduction_vs_best_baseline"], 2)
             self.assertEqual(baseline["wins"]["capability_advantages"]["profile_updates_vs_best_baseline"], 2)
             self.assertEqual(baseline["wins"]["capability_advantages"]["private_cloud_blocks_vs_best_baseline"], 1)
             self.assertTrue(all(baseline["checks"].values()))

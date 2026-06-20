@@ -100,6 +100,7 @@ def _store_class_schema_ids() -> set[str]:
     return {
         "entity", "person", "event", "place", "object",
         "competition", "personal_experience",
+        "uol_parse", "world_fact",
     }
 
 

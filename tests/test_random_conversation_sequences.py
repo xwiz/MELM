@@ -140,6 +140,8 @@ class RandomConversationInvariantTests(unittest.TestCase):
             "social_greeting",
             "assistant_behavior",
             "personal_goal_advice",
+            "music_generation",
+            "music_discovery",
             "open_domain",
             "unknown",
         }

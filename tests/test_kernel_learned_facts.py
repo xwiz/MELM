@@ -38,8 +38,8 @@ class KernelLearnedFactTests(unittest.TestCase):
     def test_open_domain_acknowledges_topic_without_fact(self):
         decision = self.kernel.decide("Tell me about Pluto")
         self.assertIn("pluto", decision.answer.lower())
-        # Route stays cloud_handoff because no learned fact exists
-        self.assertEqual(decision.route, "cloud_handoff")
+        # Route is local_answer because open_domain uses model backend
+        self.assertEqual(decision.route, "local_answer")
 
     def test_learned_fact_wired_to_experience(self):
         record_learned_fact(self.store, "Mars", "Mars is the fourth planet from the Sun.")
@@ -102,7 +102,7 @@ class KernelLearnedFactTests(unittest.TestCase):
             research_provider=provider,
         )
         decision = kernel.decide("Tell me about XYZUnknown")
-        self.assertEqual(decision.route, "cloud_handoff")
+        self.assertEqual(decision.route, "local_answer")
         self.assertIn("xyzunknown", decision.answer.lower())
 
 

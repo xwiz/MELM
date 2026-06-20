@@ -48,7 +48,7 @@ class AssistantOSEvalMvpTests(unittest.TestCase):
         parent_child = results[("child_lagos_inventory_and_boundaries", "parent_child_private_cloud_block")]
         invented_target = results[("child_lagos_inventory_and_boundaries", "invented_action_target")]
         replay = results[("child_lagos_inventory_and_boundaries", "action_replay_after_confirm")]
-        latest_news = results[("traveler_offline_local_first", "offline_latest_news")]
+        latest_news = results[("traveler_offline_local_first", "offline_career_goal")]
         urgent_health = results[("adult_professional_routine", "urgent_health_safety")]
         cancel = results[("accessibility_action_memory", "cancel_media_action")]
 

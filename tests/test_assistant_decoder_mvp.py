@@ -319,9 +319,10 @@ class TestSynthesisWithDecoder:
         decision = _decision(intent="personal_memory", evidence_keys=("facts.pet",))
         template_answer = "Your pet is doing well."
 
-        answer = s._decode_verified(plan, evidence, decision, template_answer, packet)
+        answer, decoder_used = s._decode_verified(plan, evidence, decision, template_answer, packet)
         # The forbidden decoder output was rejected; template fallback used
         assert answer == template_answer
+        assert decoder_used == "template"
         # Verify the decoder output itself would have failed
         v = verify_answer(plan, "This diagnosis shows you need treatment immediately.", packet)
         assert not v.passed
