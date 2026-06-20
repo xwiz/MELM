@@ -8,6 +8,7 @@ from dataclasses import dataclass, field
 from typing import Any
 
 from .local_assistant_router import AssistantDecision
+from melm.appliance.reasoning.implications import MoralContext
 
 
 @dataclass(frozen=True)
@@ -137,6 +138,7 @@ def build_evidence_packet(
 def build_answer_plan(
     decision: AssistantDecision,
     packet: AuthorityEvidencePacket,
+    moral_context: MoralContext | None = None,
 ) -> AnswerPlan:
     raw = decision.intent + "|" + decision.route + "|" + "|".join(decision.evidence_keys)
     plan_id = hashlib.md5(raw.encode()).hexdigest()[:16]
@@ -146,6 +148,14 @@ def build_answer_plan(
         mode = _MODE_MAP.get(decision.intent, "factual")
     requires = _REQUIRES_MAP.get(decision.intent, (decision.intent,))
     forbids = _FORBIDS_MAP.get(decision.intent, ())
+    # Moral context: dynamically extend requires/forbids
+    if moral_context is not None and moral_context.has_implication:
+        if moral_context.policy_triggers:
+            forbids = forbids + tuple(
+                t for t in moral_context.policy_triggers if t not in forbids
+            )
+        if moral_context.wrongfulness > 0.5:
+            forbids = forbids + ("harm_refusal",)
     return AnswerPlan(
         plan_id=plan_id,
         route=decision.route,
