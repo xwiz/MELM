@@ -79,6 +79,9 @@ from .assistant_synthesis import (
     SYNTHESIS_QUALITY_FLOOR,
     SynthesisEvidence,
 )
+from .assistant_atom_persistence import (
+    record_uol_parse,
+)
 from .assistant_authority import (
     AnswerPlan,
     AuthorityEvidenceItem,
@@ -391,6 +394,7 @@ __all__ = [
     "parse_assistant_debug_frame",
     "parse_uol_candidates",
     "persist_self_observation",
+    "record_uol_parse",
     "classify_autobiographical_memory_scope",
     "compose_autobiographical_memory_frame",
     "ConstrainedDecoder",
