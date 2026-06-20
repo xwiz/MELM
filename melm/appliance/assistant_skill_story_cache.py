@@ -41,7 +41,8 @@ def find_liked_story_style(store: Any | None) -> StoryPlan | None:
             liked_plans.append(e)
     if not liked_plans:
         return None
-    latest = liked_plans[-1]
+    liked_plans.sort(key=lambda e: getattr(e, "updated_at", ""), reverse=True)
+    latest = liked_plans[0]
     try:
         return StoryPlan.from_dict(json.loads(latest.plan_json))
     except (json.JSONDecodeError, TypeError):

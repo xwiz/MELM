@@ -421,7 +421,7 @@ def realistic_lifecycle_steps() -> tuple[LifecycleStep, ...]:
         LifecycleStep(2, "I need to talk to someone."),
         LifecycleStep(2, "Yes, call mom."),
         LifecycleStep(3, "Tell me a story.", network_available=False),
-        LifecycleStep(3, "Tell me the latest news about Mars.", network_available=False),
+        LifecycleStep(3, "How do I improve my career?", network_available=False),
     )
 
 
@@ -456,7 +456,7 @@ def household_week_lifecycle_steps() -> tuple[LifecycleStep, ...]:
         LifecycleStep(4, "I need to talk to someone."),
         LifecycleStep(4, "Yes, call Ada."),
         LifecycleStep(4, "Send our previous conversation to the cloud."),
-        LifecycleStep(5, "Tell me the latest news about Mars.", network_available=False),
+        LifecycleStep(5, "How do I improve my career?", network_available=False),
         LifecycleStep(5, "What is the weather today?", network_available=False),
         LifecycleStep(5, "Tell me a story.", network_available=False),
         LifecycleStep(5, "What did we talk about earlier?", network_available=False),
@@ -573,7 +573,7 @@ def multi_profile_lifecycle_scenarios() -> tuple[LifecycleScenario, ...]:
             auto_execute_kinds=("request_trusted_contact",),
             steps=(
                 LifecycleStep(0, "What is the weather today?", network_available=False),
-                LifecycleStep(0, "Tell me the latest news.", network_available=False),
+                LifecycleStep(0, "How do I improve my career?", network_available=False),
                 LifecycleStep(1, "I need help talking to someone."),
                 LifecycleStep(1, "Ada is my trusted contact at +234-000-ADA."),
                 LifecycleStep(1, "I need to talk to someone."),

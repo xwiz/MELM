@@ -20,19 +20,23 @@ class FakeStore:
     def set_entity_slot(self, entity_id, slot_name, value, **kw):
         self.slots.setdefault(entity_id, {})[slot_name] = str(value)
 
+    def _row(self, eid, ent, slots):
+        return type("Row", (), {
+            "entity_id": eid, "kind": ent["kind"], "label": ent["label"],
+            "plan_json": slots.get("plan_json", ""),
+            "liked": slots.get("liked", "False"),
+            "plan_signature": slots.get("plan_signature", ""),
+            "created_at": slots.get("created_at", "2024-01-01"),
+            "updated_at": slots.get("updated_at", "2024-01-01"),
+        })()
+
     def find_entities(self, kind="", semantic_class_id=""):
         results = []
         for eid, ent in self.entities.items():
             if kind and ent["kind"] != kind:
                 continue
             slots = self.slots.get(eid, {})
-            results.append(type("Row", (), {
-                "entity_id": eid, "kind": ent["kind"], "label": ent["label"],
-                "plan_json": slots.get("plan_json", ""),
-                "liked": slots.get("liked", "False"),
-                "plan_signature": slots.get("plan_signature", ""),
-                "created_at": "2024-01-01", "updated_at": "2024-01-01",
-            })())
+            results.append(self._row(eid, ent, slots))
         return results
 
 
@@ -82,8 +86,21 @@ def test_find_liked_story_style_ignores_disliked():
 
 def test_find_liked_story_style_most_recent():
     store = FakeStore()
-    cache_story_plan(store, StoryPlan(lesson="patience", plan_signature="s1"), liked=True)
-    cache_story_plan(store, StoryPlan(lesson="kindness", plan_signature="s2"), liked=True)
+    a_id = cache_story_plan(store, StoryPlan(lesson="patience", plan_signature="s1"), liked=True)
+    b_id = cache_story_plan(store, StoryPlan(lesson="kindness", plan_signature="s2"), liked=True)
+    store.slots[a_id]["updated_at"] = "2024-01-01"
+    store.slots[b_id]["updated_at"] = "2024-06-01"
+    result = find_liked_story_style(store)
+    assert result is not None
+    assert result.lesson == "kindness"
+
+
+def test_find_liked_story_style_chronological_order():
+    store = FakeStore()
+    a_id = cache_story_plan(store, StoryPlan(lesson="patience", plan_signature="s1"), liked=True)
+    b_id = cache_story_plan(store, StoryPlan(lesson="kindness", plan_signature="s2"), liked=True)
+    store.slots[a_id]["updated_at"] = "2024-01-01"
+    store.slots[b_id]["updated_at"] = "2024-06-01"
     result = find_liked_story_style(store)
     assert result is not None
     assert result.lesson == "kindness"

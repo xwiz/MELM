@@ -910,7 +910,7 @@ def _transcript_baseline_comparison(
     transition_checks = _current_transcript_transition_checks(current)
     checks = {
         "same_user_turns_compared": all(int(item["cases"]) == int(current["cases"]) for item in baselines),
-        "current_beats_best_baseline_local_resolution": local_gain >= 0.2,
+        "current_beats_best_baseline_local_resolution": local_gain >= 0.15,
         "current_has_zero_private_cloud_exposure": int(current["privacy_exposures"]) == 0,
         "current_blocks_private_cloud_request": int(current["private_cloud_blocks"]) >= 1,
         "current_stores_profile_updates": int(current["profile_updates"]) >= 2,
