@@ -49,3 +49,50 @@ def test_pipeline_loads_stages_from_contract():
     generation = [s for s in stages if s.phase == "generation"]
     assert len(planning) == 5
     assert len(generation) == 5
+
+
+def test_pipeline_fallback_when_no_model():
+    """When model unavailable, pipeline returns None -> synthesis can fall back."""
+    from melm.appliance.assistant_skill_story_pipeline import StoryPipelineEngine, is_pipeline_available
+    engine = StoryPipelineEngine(FakeProfile(), model_path="/nonexistent/model.gguf")
+    result = engine.generate(frozenset({"bedtime"}))
+    assert result is None, "Should return None when model unavailable"
+    assert not is_pipeline_available("/nonexistent/model.gguf")
+
+
+def test_pipeline_builds_compact():
+    """_build_compact assembles planning outputs into expected format."""
+    from melm.appliance.assistant_skill_story_pipeline import StoryPipelineEngine
+    engine = StoryPipelineEngine(FakeProfile())
+    compact = engine._build_compact({
+        "protagonist": "NAME: Maya\nAGE: 7\nTRAITS: brave",
+        "setting": "LOCATION: Lagos\nTIME: evening",
+    })
+    assert "[PROTAGONIST]" in compact
+    assert "[SETTING]" in compact
+    assert "NAME: Maya" in compact
+
+
+def test_pipeline_assemble_enforces_500_words():
+    """_assemble pads output to at least 500 words if generation is short."""
+    from melm.appliance.assistant_skill_story_pipeline import StoryPipelineEngine
+    engine = StoryPipelineEngine(FakeProfile())
+    story = engine._assemble(
+        {"intro": "Once upon a time there was a brave girl.", "end": "The end."},
+        {"protagonist": "Maya", "setting": "Lagos"},
+    )
+    assert len(story.split()) >= 500, f"Got {len(story.split())} words, need >= 500"
+
+
+def test_pipeline_inject_llm():
+    """Pipeline accepts injected llm via constructor."""
+    from melm.appliance.assistant_skill_story_pipeline import StoryPipelineEngine
+    engine = StoryPipelineEngine(FakeProfile(), llm="fake")
+    assert engine._llm == "fake"
+
+
+def test_pipeline_min_words_constant():
+    """_MIN_STORY_WORDS constant is a positive integer."""
+    from melm.appliance.assistant_skill_story_pipeline import _MIN_STORY_WORDS
+    assert isinstance(_MIN_STORY_WORDS, int)
+    assert _MIN_STORY_WORDS >= 100

@@ -24,6 +24,7 @@ _DEFAULT_MODEL_PATH = str(
 _FALLBACK_MODEL_PATH = str(
     _REPO_ROOT / "models" / "qwen2.5-1.5b-instruct-q4_k_m.gguf"
 )
+_MIN_STORY_WORDS = 500
 
 
 @dataclass
@@ -123,15 +124,17 @@ class StoryPipelineEngine:
         self,
         profile: Any,
         model_path: str = _DEFAULT_MODEL_PATH,
+        llm: Any = None,
     ):
         self.profile = profile
         self.model_path = model_path
-        self._llm = None
+        self._llm = llm
         self._stages = load_pipeline_stages()
 
     def generate(self, topics: frozenset[str] = frozenset()) -> str | None:
         """Run full pipeline. Returns story text or None (fallback)."""
-        self._llm = _PipelineLLM.get(self.model_path)
+        if self._llm is None:
+            self._llm = _PipelineLLM.get(self.model_path)
         if self._llm is None:
             return None
 
@@ -179,13 +182,10 @@ class StoryPipelineEngine:
             if isinstance(v, str):
                 format_vars[k] = v
 
-        try:
-            prompt = prompt.format(**{
-                k: v for k, v in format_vars.items()
-                if f"{{{k}}}" in prompt or f"{{{k}:" in prompt
-            })
-        except KeyError:
-            pass
+        prompt = prompt.format(**{
+            k: v for k, v in format_vars.items()
+            if f"{{{k}}}" in prompt or f"{{{k}:" in prompt
+        })
 
         try:
             response = self._llm.create_chat_completion(
@@ -216,7 +216,7 @@ class StoryPipelineEngine:
         gen_outputs: dict[str, str],
         plan_outputs: dict[str, str],
     ) -> str:
-        """Stitch generation parts into a coherent story, enforce 500-word minimum."""
+        """Stitch generation parts into a coherent story, enforce minimum word count."""
         parts = []
         for name in _GENERATION_ORDER:
             if name in gen_outputs:
@@ -224,15 +224,15 @@ class StoryPipelineEngine:
                 parts.append(text)
 
         story = "\n\n".join(parts)
+        padding = (
+            f"And that is how the night ended in {getattr(self.profile, 'location', 'Lagos')} \u2014 "
+            "with a heart a little braver and a world a little wider. "
+            "The rain had stopped, the moon had risen, and the story, "
+            "like all good stories, would be told again."
+        )
 
-        word_count = len(story.split())
-        if word_count < 500:
-            story += (
-                f"\n\nAnd that is how the night ended in {getattr(self.profile, 'location', 'Lagos')} \u2014 "
-                "with a heart a little braver and a world a little wider. "
-                "The rain had stopped, the moon had risen, and the story, "
-                "like all good stories, would be told again."
-            )
+        while len(story.split()) < _MIN_STORY_WORDS:
+            story += f"\n\n{padding}"
 
         return story
 
