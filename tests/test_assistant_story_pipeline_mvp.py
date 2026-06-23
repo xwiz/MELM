@@ -150,6 +150,5 @@ def test_pipeline_respects_profile():
     engine = StoryPipelineEngine(LagosProfile())
     story = engine.generate(frozenset({"adventure"}))
     assert story is not None
-    # Location reliably appears in story output.
+    assert "Kofi" in story, f"Story should mention profile name 'Kofi', got: {story[:100]}"
     assert "Accra" in story, f"Story should mention location 'Accra', got: {story[:100]}"
-    # Note: 0.5B model is too small for reliable name injection; this is a known limitation.
