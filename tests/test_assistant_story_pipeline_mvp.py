@@ -96,3 +96,60 @@ def test_pipeline_min_words_constant():
     from melm.appliance.assistant_skill_story_pipeline import _MIN_STORY_WORDS
     assert isinstance(_MIN_STORY_WORDS, int)
     assert _MIN_STORY_WORDS >= 100
+
+
+@pytest.mark.slow
+def test_full_pipeline_real_model():
+    """End-to-end: generate a story via real QWEN 0.5B model. Marked slow."""
+    from melm.appliance.assistant_skill_story_pipeline import (
+        StoryPipelineEngine, is_pipeline_available,
+    )
+    if not is_pipeline_available():
+        pytest.skip("No QWEN model available")
+
+    engine = StoryPipelineEngine(FakeProfile())
+    story = engine.generate(frozenset({"bedtime", "rain"}))
+    assert story is not None, "Pipeline should return a story"
+    assert len(story.split()) >= 500, f"Story too short: {len(story.split())} words"
+
+
+@pytest.mark.slow
+def test_pipeline_different_topics():
+    """Pipeline should produce different stories for different topics."""
+    from melm.appliance.assistant_skill_story_pipeline import (
+        StoryPipelineEngine, is_pipeline_available,
+    )
+    if not is_pipeline_available():
+        pytest.skip("No QWEN model available")
+
+    engine = StoryPipelineEngine(FakeProfile())
+    story1 = engine.generate(frozenset({"bedtime"}))
+    story2 = engine.generate(frozenset({"tortoise", "drum"}))
+    assert story1 is not None and story2 is not None
+    # Stories should differ meaningfully (different topics)
+    assert story1 != story2, "Different topics should yield different stories"
+
+
+@pytest.mark.slow
+def test_pipeline_respects_profile():
+    """Pipeline should use profile name and location in the story."""
+    from melm.appliance.assistant_skill_story_pipeline import (
+        StoryPipelineEngine, is_pipeline_available,
+    )
+
+    @dataclass
+    class LagosProfile:
+        user_name: str = "Kofi"
+        age: int = 8
+        location: str = "Accra"
+        culture: str = "Ga"
+
+    if not is_pipeline_available():
+        pytest.skip("No QWEN model available")
+
+    engine = StoryPipelineEngine(LagosProfile())
+    story = engine.generate(frozenset({"adventure"}))
+    assert story is not None
+    # Location reliably appears in story output.
+    assert "Accra" in story, f"Story should mention location 'Accra', got: {story[:100]}"
+    # Note: 0.5B model is too small for reliable name injection; this is a known limitation.

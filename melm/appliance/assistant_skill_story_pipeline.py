@@ -110,7 +110,7 @@ class _PipelineLLM:
                 return None
         try:
             from llama_cpp import Llama
-            cls._instance = Llama(model_path=model_path, n_ctx=2048, verbose=False)
+            cls._instance = Llama(model_path=model_path, n_ctx=8192, verbose=False)
             cls._model_path = model_path
         except Exception:
             return None
