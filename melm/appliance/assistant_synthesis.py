@@ -8,10 +8,16 @@ decision plus its evidence keys into a local answer trace with citations.
 from __future__ import annotations
 
 import json
+import re
 from dataclasses import dataclass, field
 from typing import Any
 
-from melm.contracts import load_answer_templates, load_assistant_identity, load_health_disclaimers, load_prompt_seeds, load_safety_policies
+from melm.contracts import load_answer_templates, load_assistant_identity, load_health_disclaimers, load_noun_atoms, load_prompt_seeds, load_safety_policies, load_self_identity, load_verb_atoms
+
+# Module-level caches for NLG entity property lookups (loaded from contract,
+# never from store — avoids seeding 280 entities on every kernel init).
+_NLG_NOUN_CACHE: dict[str, dict[str, Any]] | None = None
+_NLG_VERB_CACHE: dict[str, dict[str, Any]] | None = None
 from .assistant_skill_research import ResearchProvider
 
 from .assistant_authority import (
@@ -19,8 +25,6 @@ from .assistant_authority import (
     AuthorityEvidenceItem,
     AuthorityEvidencePacket,
     AuthorityInfo,
-    DecoderResult,
-    VerificationResult,
     build_answer_plan,
     build_evidence_packet,
     verify_answer,
@@ -32,16 +36,27 @@ from .assistant_skill_memory import autobiographical_digest_summary, autobiograp
 from .assistant_skill_story import format_story_answer, format_story_frame
 from .assistant_skill_story_planning import plan_story
 from .assistant_story_prompt_pipeline import StoryPromptPipeline
+from .assistant_skill_story_pipeline import StoryPipelineEngine, is_pipeline_available
 from .local_assistant_router import AssistantDecision, LocalAssistantProfile
-from melm.appliance.reasoning.implications import MoralContext
+from melm.appliance.reasoning.implications import MoralContext, derive_moral_context
+from .local_assistant_router import _extract_patient_type, _extract_verb
 
 
 SYNTHESIZABLE_ROUTES = {"local_answer", "cached_tool"}
 SYNTHESIS_QUALITY_FLOOR = 0.65
 
-# Cached contract data for moral cognition (loaded once, reused across turns)
+# Cached contract data for moral cognition (loaded on first use)
 _VERB_STATES_CACHE: dict | None = None
 _VALENCE_DATA_CACHE: dict | None = None
+_MORAL_RESPONSES_CACHE: dict | None = None
+
+
+def _load_moral_cognition_data() -> None:
+    global _VERB_STATES_CACHE, _VALENCE_DATA_CACHE
+    if _VERB_STATES_CACHE is None:
+        from melm.contracts import load_contract_json
+        _VERB_STATES_CACHE = load_contract_json("verb_states.v1.json")
+        _VALENCE_DATA_CACHE = load_contract_json("state_valences.v1.json").get("valences", {})
 
 
 def _load_answer_template(intent: str, reason: str) -> str | None:
@@ -76,6 +91,8 @@ def _render_contract_answer(
         template = entry["template"]
     elif "templates" in entry and decision.reason in entry["templates"]:
         template = entry["templates"][decision.reason]
+    elif "templates" in entry and "default" in entry["templates"]:
+        template = entry["templates"]["default"]
     else:
         return None
     required = entry.get("requires_evidence", [])
@@ -90,32 +107,57 @@ def _render_contract_answer(
         return None
 
 
+def _compute_slot(slot: str, decision: AssistantDecision, evidence: tuple[SynthesisEvidence, ...], profile: LocalAssistantProfile) -> str:
+    if slot == "default_answer":
+        return decision.answer
+    if slot == "place":
+        location = _first_kind(evidence, "profile")
+        return location.value if location is not None else profile.location
+    if slot == "weather":
+        w = _first_kind(evidence, "weather")
+        return w.value if w is not None else ""
+    if slot == "summary":
+        if decision.reason == "autobiographical_memory_digest":
+            s = autobiographical_digest_summary(evidence)
+        elif decision.reason == "autobiographical_session_summary":
+            s = autobiographical_session_summary(evidence)
+        else:
+            s = autobiographical_memory_summary(evidence)
+        return s or ""
+    if slot == "personal_summary":
+        s = personal_memory_summary(evidence)
+        return s or ""
+    if slot == "goal_text":
+        goals = [item.value for item in evidence if item.kind == "health_goal"]
+        return "; ".join(goals) if goals else "basic care"
+    if slot == "title":
+        preference = _first_kind(evidence, "preference")
+        return preference.value if preference is not None else _cancelled_title(decision.answer)
+    if slot == "label":
+        contact = _first_kind(evidence, "contact")
+        return _contact_label(contact, decision.answer) if contact is not None else "the contact"
+    if slot == "clothing_policy":
+        w = _first_kind(evidence, "weather")
+        return "Wear school clothes and carry rain protection because the forecast mentions rain." if w is not None else "Wear appropriate clothing."
+    return ""
+
+
 def _format_answer_template(
     template: str,
     decision: AssistantDecision,
     evidence: tuple[SynthesisEvidence, ...],
     profile: LocalAssistantProfile,
 ) -> str:
-    evidence_map = {item.kind: item.value for item in evidence}
-    weather = _first_kind(evidence, "weather")
-    location = _first_kind(evidence, "profile")
-    place = location.value if location is not None else profile.location
-    weather_val = weather.value if weather is not None else ""
-    summary = _autobiographical_memory_summary(evidence)
-    goals = [item.value for item in evidence if item.kind == "health_goal"]
-    goal_text = "; ".join(goals) if goals else "basic care"
-    preference = _first_kind(evidence, "preference")
-    contact = _first_kind(evidence, "contact")
-    title = preference.value if preference is not None else _cancelled_title(decision.answer)
-    label = _contact_label(contact, decision.answer) if contact is not None else "the contact"
-    return template.format(
-        place=place,
-        weather=weather_val,
-        summary=summary or "",
-        goal_text=goal_text,
-        title=title,
-        label=label,
-    )
+    slots: dict[str, str] = {}
+    parsed = _parse_template_slots(template)
+    for slot_name in parsed:
+        slots[slot_name] = _compute_slot(slot_name, decision, evidence, profile)
+    return template.format(**slots)
+
+
+def _parse_template_slots(template: str) -> set[str]:
+    import re
+    return set(re.findall(r"\{(\w+)\}", template))
 
 
 def _handle_story(self: BoundedLocalSynthesizer, decision: AssistantDecision, evidence: tuple[SynthesisEvidence, ...]) -> str | None:
@@ -150,6 +192,8 @@ def _handle_identity_derived(self: BoundedLocalSynthesizer, decision: AssistantD
             user_id = getattr(self.profile, "user_id", "default")
             identity = analyze_user_identity(self.store, user_id)
             if identity is not None:
+                if identity.has_name and identity.given_name:
+                    return _handle_identity_name_given(self, decision, evidence)
                 mood_id = "neutral"
                 if decision.session_mood is not None:
                     mood_id = getattr(decision.session_mood, "mood_id", "neutral")
@@ -196,7 +240,14 @@ def _handle_identity_name_awareness(self: BoundedLocalSynthesizer, decision: Ass
 
 
 def _handle_identity_name_origin(self: BoundedLocalSynthesizer, decision: AssistantDecision, evidence: tuple[SynthesisEvidence, ...]) -> str | None:
-    return "My name was given to me. It's part of who I am now."
+    try:
+        contract = load_self_identity()
+        template = contract.get("name_awareness_templates", {}).get("name_origin")
+        if template:
+            return template
+    except Exception:
+        pass
+    return None
 
 
 def _handle_identity_explain(self: BoundedLocalSynthesizer, decision: AssistantDecision, evidence: tuple[SynthesisEvidence, ...]) -> str | None:
@@ -211,16 +262,31 @@ def _handle_identity_explain(self: BoundedLocalSynthesizer, decision: AssistantD
                     return result
     except Exception:
         pass
-    return "I see myself based on the things you ask me to do most often, especially the conversations that feel most meaningful."
+    try:
+        contract = load_self_identity()
+        template = contract.get("name_awareness_templates", {}).get("explain_fallback")
+        if template:
+            return template
+    except Exception:
+        pass
+    return None
 
 
 def _handle_identity_name_given(self: BoundedLocalSynthesizer, decision: AssistantDecision, evidence: tuple[SynthesisEvidence, ...]) -> str | None:
     try:
         if self.store is not None:
             state = self.store.load_self_state() if hasattr(self.store, "load_self_state") else {}
-            given_name = state.get("given_name", None)
+            user_id = getattr(self.profile, "user_id", "default")
+            given_name = state.get(f"given_name:{user_id}", None)
+            if given_name is None and user_id == "default":
+                given_name = state.get("given_name", None)
             if given_name:
-                return f"You can call me {given_name}. That's the name you gave me."
+                contract = load_self_identity()
+                template = contract.get("name_awareness_templates", {}).get(
+                    "given_name",
+                    "You can call me {given_name}.",
+                )
+                return template.format(given_name=given_name)
     except Exception:
         pass
     summary = _assistant_identity_summary(evidence)
@@ -250,14 +316,6 @@ def _handle_meal_suggestion(self: BoundedLocalSynthesizer, decision: AssistantDe
     )
 
 
-def _handle_social_greeting(self: BoundedLocalSynthesizer, decision: AssistantDecision, evidence: tuple[SynthesisEvidence, ...]) -> str | None:
-    """Handle social_greeting intents with optional context injection."""
-    pool_result = _pool_select(decision, self.profile)
-    if pool_result is not None:
-        return pool_result
-    return None
-
-
 def _handle_common_sense_safety(self: BoundedLocalSynthesizer, decision: AssistantDecision, evidence: tuple[SynthesisEvidence, ...]) -> str | None:
     weather = _first_kind(evidence, "weather")
     if weather is not None and "school_clothing_weather_policy" in decision.reason:
@@ -270,65 +328,33 @@ def _handle_common_sense_safety(self: BoundedLocalSynthesizer, decision: Assista
     return None
 
 
-def _handle_autobiographical_memory(self: BoundedLocalSynthesizer, decision: AssistantDecision, evidence: tuple[SynthesisEvidence, ...]) -> str | None:
-    if decision.reason == "autobiographical_memory_digest":
-        summary = _autobiographical_digest_summary(evidence)
-    elif decision.reason == "autobiographical_session_summary":
-        summary = _autobiographical_session_summary(evidence)
-    else:
-        summary = _autobiographical_memory_summary(evidence)
-    if summary:
-        template = _load_answer_template(decision.intent, decision.reason)
-        if template:
-            return template.format(summary=summary)
-        return f"From local conversation memory: {summary}."
-    return None
-
-
-def _handle_personal_memory(self: BoundedLocalSynthesizer, decision: AssistantDecision, evidence: tuple[SynthesisEvidence, ...]) -> str | None:
-    # Guard: knowledge write/contradiction decisions already have their pre-rendered answer
-    if decision.reason in ("knowledge_write", "knowledge_contradiction"):
-        return None
-    summary = _personal_memory_summary(evidence)
-    if summary:
-        template = _load_answer_template(decision.intent, "personal_memory_summary")
-        if template:
-            return template.format(summary=summary)
-        return f"I know this from local memory: {summary}."
-    return None
-
-
-def _handle_media_playback(self: BoundedLocalSynthesizer, decision: AssistantDecision, evidence: tuple[SynthesisEvidence, ...]) -> str | None:
-    if decision.reason == "cancelled_pending_action":
-        preference = _first_kind(evidence, "preference")
-        title = preference.value if preference is not None else _cancelled_title(decision.answer)
-        template = _load_answer_template(decision.intent, "cancelled_pending_action")
-        if template:
-            return template.format(title=title)
-        return (
-            f"Cancelled. I will not play {title} now. "
-            "There is no pending media action left to execute unless you ask again."
-        )
-    return None
-
-
 def _handle_music_generation(self: BoundedLocalSynthesizer, decision: AssistantDecision, evidence: tuple[SynthesisEvidence, ...]) -> str | None:
     """Generate MIDI music from the request description."""
     try:
         from .assistant_music_midi import MusicDescription, MidiRenderer
         desc = MusicDescription()
         text_lower = decision.utterance.lower()
-        if "calm" in text_lower or "relaxing" in text_lower:
-            desc = MusicDescription(genre="classical", mood="calm", tempo_bpm=80)
-        elif "happy" in text_lower or "upbeat" in text_lower:
-            desc = MusicDescription(genre="waltz", mood="happy", tempo_bpm=130)
-        elif "jazz" in text_lower or "blues" in text_lower:
-            desc = MusicDescription(genre="jazz", mood="calm", tempo_bpm=120)
-        elif "sad" in text_lower or "melancholy" in text_lower:
-            desc = MusicDescription(genre="classical", mood="sad", tempo_bpm=60, mode="minor")
+        words = set(text_lower.split())
+        def _get_midi_mapping():
+            if not hasattr(_get_midi_mapping, "_cache"):
+                try:
+                    from melm.contracts import load_midi_music_mapping
+                    _get_midi_mapping._cache = load_midi_music_mapping()
+                except Exception:
+                    _get_midi_mapping._cache = []
+            return _get_midi_mapping._cache
+        for mapping in _get_midi_mapping():
+            if words & set(mapping.get("keywords", [])):
+                desc = MusicDescription(
+                    genre=mapping["genre"],
+                    mood=mapping["mood"],
+                    tempo_bpm=mapping["tempo_bpm"],
+                    mode=mapping.get("mode"),
+                )
+                break
         renderer = MidiRenderer()
         midi_bytes = renderer.render(desc)
-        import tempfile, os
+        import os
         out_dir = os.path.join(os.path.dirname(__file__), "..", "generated_music")
         os.makedirs(out_dir, exist_ok=True)
         counter = 1
@@ -343,31 +369,24 @@ def _handle_music_generation(self: BoundedLocalSynthesizer, decision: AssistantD
         return f"I tried to compose some music but ran into an issue: {exc}"
 
 
-def _handle_music_discovery(self: BoundedLocalSynthesizer, decision: AssistantDecision, evidence: tuple[SynthesisEvidence, ...]) -> str | None:
-    """Handle music discovery response."""
-    return decision.answer
-
-
-def _handle_social_contact(self: BoundedLocalSynthesizer, decision: AssistantDecision, evidence: tuple[SynthesisEvidence, ...]) -> str | None:
-    if decision.reason == "cancelled_pending_action":
-        contact = _first_kind(evidence, "contact")
-        label = _contact_label(contact, decision.answer)
-        template = _load_answer_template(decision.intent, "cancelled_pending_action")
-        if template:
-            return template.format(label=label)
-        return (
-            f"Cancelled. I will not call {label} now. "
-            "The pending trusted-contact action is cleared, so no call will run unless you ask again."
-        )
-    if decision.reason == "consented_trusted_contact_stored":
-        contact = _first_kind(evidence, "contact")
-        if contact is not None:
-            label = contact.key.split(".", 1)[1].replace("_", " ")
-            template = _load_answer_template(decision.intent, "consented_trusted_contact_stored")
-            if template:
-                return template.format(label=label)
-            return f"I will remember {label} as a trusted contact on this device."
-    return None
+def _format_open_domain_answer(
+    decision: AssistantDecision,
+    evidence: tuple,
+) -> str | None:
+    from .assistant_skill_research import (
+        extract_topic, extract_action, format_open_domain_answer as _format_oda,
+    )
+    learned = [e for e in evidence if e.kind == "learned_fact"]
+    if learned:
+        return decision.answer
+    topic = extract_topic(decision.functional_parse)
+    action = extract_action(decision.functional_parse)
+    speech_act = (decision.functional_parse or {}).get("speech_act", "")
+    return _format_oda(
+        topic=topic or "that",
+        action=action,
+        speech_act=speech_act,
+    )
 
 
 def _handle_open_domain(
@@ -375,18 +394,7 @@ def _handle_open_domain(
     decision: AssistantDecision,
     evidence: tuple,
 ) -> str | None:
-    # Synthesis renders admitted evidence only — auto-research is owned solely
-    # by the kernel (assistant_os_kernel.py decision-shaping). No fetching here.
-    from .assistant_skill_research import (
-        extract_topic, extract_action, format_open_domain_answer,
-    )
-    learned = [e for e in evidence if e.kind == "learned_fact"]
-    if learned:
-        # Kernel already populated the learned answer on the decision.
-        return decision.answer
-    topic = extract_topic(decision.functional_parse)
-    action = extract_action(decision.functional_parse)
-    return format_open_domain_answer(topic=topic or "that", action=action)
+    return _format_open_domain_answer(decision, evidence)
 
 
 def _handle_unknown(
@@ -394,14 +402,6 @@ def _handle_unknown(
     decision: AssistantDecision,
     evidence: tuple,
 ) -> str | None:
-    # Synthesis renders admitted evidence only — auto-research is owned solely
-    # by the kernel (assistant_os_kernel.py decision-shaping). No fetching here.
-    from .assistant_skill_research import (
-        extract_topic, extract_action, format_open_domain_answer,
-    )
-    # Social-pattern fallback: if utterance looks like a "how are you"
-    # question despite UOL parse derailment (e.g. "lol, how are you?"),
-    # answer with mood state instead of a generic handoff.
     from .local_assistant_router import _detect_social_status
     if _detect_social_status(decision.utterance):
         mood = decision.session_mood
@@ -409,13 +409,7 @@ def _handle_unknown(
             mood_label = str(mood.mood_id).replace("_", " ").title()
             return f"I'm feeling {mood_label.lower()}. Thanks for asking."
         return "I'm doing well, thanks for asking."
-    learned = [e for e in evidence if e.kind == "learned_fact"]
-    if learned:
-        # Kernel already populated the learned answer on the decision.
-        return decision.answer
-    topic = extract_topic(decision.functional_parse)
-    action = extract_action(decision.functional_parse)
-    return format_open_domain_answer(topic=topic or "that", action=action)
+    return _format_open_domain_answer(decision, evidence)
 
 
 def _pool_select(
@@ -426,11 +420,11 @@ def _pool_select(
     from melm.contracts import load_contract_json
     from .assistant_mood_engine import _build_pool_key, _resolve_template
     try:
-        pools = load_contract_json("response_pools.v1.json")
+        payload = load_contract_json("response_pools.v1.json")
+        pools = payload.get("pools", payload)
     except Exception:
         return None
     mood = decision.session_mood
-    mood_id = getattr(mood, "mood_id", "neutral") if mood is not None else "neutral"
     occ = decision.intent_occurrence
     familiarity = getattr(decision, "familiarity", 0)
     hour = datetime.now().hour
@@ -465,16 +459,103 @@ def _template_seed(
     return abs(h)
 
 
-_ALWAYS_RESPOND_INTENTS: frozenset[str] = frozenset({
-    "common_sense_safety", "health_advice", "social_greeting",
-    "assistant_identity", "identity_switch", "identity_probe_detected",
-    "music_generation", "music_discovery",
-})
+def _get_always_respond_intents() -> frozenset[str]:
+    if not hasattr(_get_always_respond_intents, "_cache"):
+        try:
+            from melm.contracts import load_always_respond_intents
+            _get_always_respond_intents._cache = load_always_respond_intents()
+        except Exception:
+            _get_always_respond_intents._cache = frozenset()
+    return _get_always_respond_intents._cache
 
-_SHORT_CIRCUIT_REASONS: frozenset[str] = frozenset({
-    "complaint_acknowledged", "rapid_repetition", "perception_urgency_high",
-    "identity_switch", "identity_probe_detected",
-})
+
+def _get_pool_intents() -> frozenset[str]:
+    if not hasattr(_get_pool_intents, "_cache"):
+        try:
+            from melm.contracts import load_pool_intents
+            _get_pool_intents._cache = load_pool_intents()
+        except Exception:
+            _get_pool_intents._cache = frozenset({"social_greeting", "assistant_status"})
+    return _get_pool_intents._cache
+
+
+def _get_persona_emoji_intents() -> frozenset[str]:
+    if not hasattr(_get_persona_emoji_intents, "_cache"):
+        try:
+            from melm.contracts import load_persona_emoji_intents
+            _get_persona_emoji_intents._cache = load_persona_emoji_intents()
+        except Exception:
+            _get_persona_emoji_intents._cache = frozenset({"assistant_identity", "assistant_status", "social_greeting"})
+    return _get_persona_emoji_intents._cache
+
+
+def _get_quality_weights() -> dict[str, dict[str, float]]:
+    if not hasattr(_get_quality_weights, "_cache"):
+        try:
+            from melm.contracts import load_synthesis_quality_weights
+            _get_quality_weights._cache = load_synthesis_quality_weights()
+        except Exception:
+            _get_quality_weights._cache = {
+                "refusal": {"route_discipline": 0.75, "local_privacy_discipline": 0.25},
+                "normal": {
+                    "route_discipline": 0.3,
+                    "citation_coverage": 0.25,
+                    "evidence_strength": 0.2,
+                    "answer_specificity": 0.15,
+                    "source_diversity": 0.05,
+                    "local_privacy_discipline": 0.05,
+                },
+            }
+    return _get_quality_weights._cache
+
+
+def _get_short_circuit_reasons() -> dict[str, frozenset[str]]:
+    if not hasattr(_get_short_circuit_reasons, "_cache"):
+        try:
+            from melm.contracts import load_short_circuit_reasons
+            _get_short_circuit_reasons._cache = load_short_circuit_reasons()
+        except Exception:
+            _get_short_circuit_reasons._cache = {"reasons": frozenset(), "template_only_reasons": frozenset()}
+    return _get_short_circuit_reasons._cache
+
+
+def _env_prep(environment: str) -> str:
+    if not hasattr(_env_prep, "_cache"):
+        try:
+            from melm.contracts import load_environment_prep_phrases
+            _env_prep._cache = load_environment_prep_phrases()
+        except Exception:
+            _env_prep._cache = {"mapping": {}, "default_format": "in a {environment} environment"}
+    mapping = _env_prep._cache["mapping"]
+    fmt = _env_prep._cache["default_format"]
+    return mapping.get(environment, fmt.format(environment=environment))
+
+
+def _handle_personal_memory(
+    synthesizer: "BoundedLocalSynthesizer",
+    decision: AssistantDecision,
+    evidence: tuple,
+) -> str | None:
+    """Handle personal_memory with commitment awareness."""
+    for ev in evidence or ():
+        if ev.key.startswith("user_commitment.") and ev.value:
+            topic = ev.value.lstrip()
+            def _get_commitment_responses():
+                if not hasattr(_get_commitment_responses, "_cache"):
+                    try:
+                        from melm.contracts import load_commitment_responses
+                        _get_commitment_responses._cache = load_commitment_responses()
+                    except Exception:
+                        _get_commitment_responses._cache = {"prefix_to": "Got it. I will remind you {topic}.", "prefix_that": "Got it. I will remind you {topic}.", "default": "Got it. I will remind you that {topic}."}
+                return _get_commitment_responses._cache
+            cr = _get_commitment_responses()
+            if topic.startswith("to "):
+                return cr["prefix_to"].format(topic=topic)
+            if topic.startswith("that "):
+                return cr["prefix_that"].format(topic=topic)
+            return cr["default"].format(topic=topic)
+    return None
+
 
 _ANSWER_HANDLERS: dict[str, Any] = {
     "story": _handle_story,
@@ -483,14 +564,9 @@ _ANSWER_HANDLERS: dict[str, Any] = {
     "health_advice": _handle_health_advice,
     "meal_suggestion": _handle_meal_suggestion,
     "common_sense_safety": _handle_common_sense_safety,
-    "autobiographical_memory": _handle_autobiographical_memory,
-    "personal_memory": _handle_personal_memory,
-    "media_playback": _handle_media_playback,
     "music_generation": _handle_music_generation,
-    "music_discovery": _handle_music_discovery,
-    "social_greeting": _handle_social_greeting,
-    "social_contact": _handle_social_contact,
     "open_domain": _handle_open_domain,
+    "personal_memory": _handle_personal_memory,
     "unknown": _handle_unknown,
 }
 
@@ -558,6 +634,7 @@ class BoundedLocalSynthesizer:
         runtime_status: dict[str, Any] | None = None,
         decoder: ConstrainedDecoder | None = None,
         research_provider: ResearchProvider | None = None,
+        identity_prefs: dict | None = None,
     ) -> None:
         self.profile = profile
         self.store = store
@@ -565,6 +642,7 @@ class BoundedLocalSynthesizer:
         self.runtime_status = runtime_status or {}
         self.decoder = decoder
         self.research_provider = research_provider
+        self.identity_prefs = identity_prefs or {}
 
     def synthesize(
         self,
@@ -578,11 +656,17 @@ class BoundedLocalSynthesizer:
         if decision.route not in SYNTHESIZABLE_ROUTES:
             return self._refused(decision, boundary_crossed, "route_not_synthesizable")
         if decision.reason == "consent_revoked_user_fact":
-            evidence = (_policy("local_privacy_policy.consent_revocation", "revoked facts are removed from active memory"),)
-            answer = (
-                "Done. I removed that remembered fact from active local memory. "
-                "I will not use it in future answers unless you tell me again."
-            )
+            def _get_consent_revocation():
+                if not hasattr(_get_consent_revocation, "_cache"):
+                    try:
+                        from melm.contracts import load_consent_revocation_response
+                        _get_consent_revocation._cache = load_consent_revocation_response()
+                    except Exception:
+                        _get_consent_revocation._cache = {"answer": "Done. I removed that remembered fact from active local memory. I will not use it in future answers unless you tell me again.", "evidence_key": "local_privacy_policy.consent_revocation", "evidence_text": "revoked facts are removed from active memory"}
+                return _get_consent_revocation._cache
+            _cr = _get_consent_revocation()
+            evidence = (_policy(_cr["evidence_key"], _cr["evidence_text"]),)
+            answer = _cr["answer"]
             return BoundedSynthesisResult(
                 route=decision.route,
                 applied=True,
@@ -619,7 +703,7 @@ class BoundedLocalSynthesizer:
             for key in decision.evidence_keys
             for item in self._resolve_evidence(key)
         )
-        if not evidence:
+        if not evidence and decision.reason not in _get_short_circuit_reasons()["template_only_reasons"]:
             return self._refused(decision, boundary_crossed, "no_bound_evidence")
 
         template_answer = self._answer(decision, evidence)
@@ -660,16 +744,6 @@ class BoundedLocalSynthesizer:
             authority=authority,
             decoder_used=decoder_used,
         )
-
-    def _decode(
-        self,
-        plan: AnswerPlan,
-        evidence: tuple[SynthesisEvidence, ...],
-        decision: AssistantDecision,
-    ) -> DecoderResult:
-        answer = self._answer(decision, evidence)
-        tokens_generated = len(answer.split()) if answer else 0
-        return DecoderResult(answer=answer, decoder="template", tokens_generated=tokens_generated)
 
     def _decode_verified(
         self,
@@ -735,7 +809,11 @@ class BoundedLocalSynthesizer:
         except Exception:
             pass
 
-        grammar = build_decoding_grammar(plan, template_hint, evidence_entities)
+        grammar = build_decoding_grammar(
+            plan, template_hint, evidence_entities,
+            uol_act=decision.uol_act,
+            intent=decision.intent,
+        )
 
         # Hybrid dispatch: model-preferred intents get llamacpp first,
         # all others stay on template for speed / determinism.
@@ -749,8 +827,17 @@ class BoundedLocalSynthesizer:
                     if v.passed:
                         answer = result.answer
                         if decision.intent == "story":
-                            name = self.profile.user_name or "the character"
-                            answer += f"\n\nWhat do you think {name} learned from this story?"
+                            def _get_story_follow_up():
+                                if not hasattr(_get_story_follow_up, "_cache"):
+                                    try:
+                                        from melm.contracts import load_story_follow_up_phrase
+                                        _get_story_follow_up._cache = load_story_follow_up_phrase()
+                                    except Exception:
+                                        _get_story_follow_up._cache = {"phrase": "\n\nWhat do you think {name} learned from this story?", "default_name": "the character"}
+                                return _get_story_follow_up._cache
+                            _sf = _get_story_follow_up()
+                            name = self.profile.user_name or _sf["default_name"]
+                            answer += _sf["phrase"].format(name=name)
                         return answer, result.decoder
             finally:
                 self.decoder.preferred(previous)
@@ -761,10 +848,109 @@ class BoundedLocalSynthesizer:
             if v.passed:
                 answer = result.answer
                 if decision.intent == "story":
-                    name = self.profile.user_name or "the character"
-                    answer += f"\n\nWhat do you think {name} learned from this story?"
+                            def _get_story_follow_up():
+                                if not hasattr(_get_story_follow_up, "_cache"):
+                                    try:
+                                        from melm.contracts import load_story_follow_up_phrase
+                                        _get_story_follow_up._cache = load_story_follow_up_phrase()
+                                    except Exception:
+                                        _get_story_follow_up._cache = {"phrase": "\n\nWhat do you think {name} learned from this story?", "default_name": "the character"}
+                                return _get_story_follow_up._cache
+                            _sf = _get_story_follow_up()
+                            name = self.profile.user_name or _sf["default_name"]
+                            answer += _sf["phrase"].format(name=name)
                 return answer, result.decoder
         return template_answer, "template"
+
+    def _append_entity_nlg(
+        self,
+        answer: str,
+        decision: AssistantDecision,
+    ) -> str:
+        """Append entity property-aware NLG to *answer* when the utterance
+        references known noun/verb entities with interesting properties.
+        Reads entity properties from contract data (already loaded in the
+        atomizer), avoiding store seeding on every kernel init.
+        """
+        if decision.uol_act is None:
+            return answer
+        entity_ids: set[str] = set()
+        for atom in decision.uol_act.get("content", []):
+            pred = atom.get("predicate", {})
+            peid = str(pred.get("entity_id", "")).strip()
+            if peid:
+                entity_ids.add(peid)
+            for role in atom.get("roles", []):
+                eid = str(role.get("entity_id", "")).strip()
+                if eid:
+                    entity_ids.add(eid)
+        if not entity_ids:
+            return answer
+        global _NLG_NOUN_CACHE, _NLG_VERB_CACHE
+        if _NLG_NOUN_CACHE is None:
+            noun_payload = load_noun_atoms()
+            _NLG_NOUN_CACHE = {e["entity_id"]: e for e in noun_payload.get("entities", [])}
+        if _NLG_VERB_CACHE is None:
+            _NLG_VERB_CACHE = load_verb_atoms()
+        noun_lookup, verb_lookup = _NLG_NOUN_CACHE, _NLG_VERB_CACHE
+        appendices: list[str] = []
+        for eid in entity_ids:
+            entry = verb_lookup.get(eid) or noun_lookup.get(eid)
+            if entry is None:
+                continue
+            label = entry.get("label") or entry.get("canonical_lemma") or eid
+            slots: dict[str, Any] = entry.get("slots", {})
+            _added = 0
+            bs = slots.get("build_strength")
+            if bs == "fragile" and _added < 2:
+                appendices.append(
+                    f"{label.capitalize()}s are fragile \u2014 handle with care."
+                )
+                _added += 1
+            materials = slots.get("materials")
+            if isinstance(materials, list) and materials and _added < 2:
+                mat_str = ", ".join(materials[:-1]) + f", and {materials[-1]}" if len(materials) > 1 else materials[0]
+                appendices.append(
+                    f"{label.capitalize()}s are typically made of {mat_str}."
+                )
+                _added += 1
+            uses = slots.get("functional_uses")
+            if isinstance(uses, list) and uses and _added < 2:
+                use_str = ", ".join(uses[:-1]) + f", and {uses[-1]}" if len(uses) > 1 else uses[0]
+                appendices.append(
+                    f"{label.capitalize()}s are used for {use_str}."
+                )
+                _added += 1
+            color = slots.get("color")
+            if isinstance(color, str) and color.lower() not in ("variable", "") and _added < 2:
+                appendices.append(
+                    f"{label.capitalize()}s are typically {color}."
+                )
+                _added += 1
+            pc = slots.get("place_context")
+            if isinstance(pc, dict) and _added < 2:
+                room_type = pc.get("room_type", "")
+                if room_type:
+                    env = pc.get("environment", "a building")
+                    appendices.append(
+                        f"The {room_type} is located {_env_prep(env)}."
+                    )
+                    _added += 1
+            if entry.get("kind") == "action" and _added < 2:
+                harm = slots.get("harm_severity", 0)
+                if isinstance(harm, (int, float)):
+                    if harm >= 0.5:
+                        appendices.append(f"{label} can cause significant harm.")
+                        _added += 1
+                    elif harm > 0:
+                        appendices.append(f"{label} may cause some harm.")
+                        _added += 1
+        if not appendices:
+            return answer
+        suffix = " ".join(appendices)
+        if answer.endswith((".", "!", "?")):
+            return f"{answer} {suffix}"
+        return f"{answer}. {suffix}"
 
     def _answer(
         self,
@@ -772,65 +958,85 @@ class BoundedLocalSynthesizer:
         evidence: tuple[SynthesisEvidence, ...],
     ) -> str:
         mood = decision.session_mood
-        affect = decision.utterance_affect
         if mood is not None:
             is_listening = getattr(mood, "is_listening", False)
-            if is_listening and decision.intent not in _ALWAYS_RESPOND_INTENTS:
+            if is_listening and decision.intent not in _get_always_respond_intents():
                 return "..."
-        pool_intents = {"social_greeting", "assistant_identity", "assistant_status"}
-        if decision.reason in _SHORT_CIRCUIT_REASONS or decision.intent in pool_intents:
+        pool_intents = _get_pool_intents()
+        if decision.reason in _get_short_circuit_reasons()["reasons"] or decision.intent in pool_intents:
             pool_result = _pool_select(decision, self.profile)
             if pool_result is not None:
                 return pool_result
+        # Gibberish detection — resolve via atom template contract
+        if decision.reason == "gibberish_detected":
+            gibberish_answer = self._atom_generate("gibberish", decision, evidence)
+            if gibberish_answer is not None:
+                return gibberish_answer
+
+        # Complaint acknowledged — resolve via atom template contract
+        if decision.reason == "complaint_acknowledged":
+            complaint_answer = self._atom_generate("complaint_response", decision, evidence)
+            if complaint_answer is not None:
+                return complaint_answer
+
         # Moral cognition check — short-circuit for urgent harm
-        from melm.appliance.reasoning.implications import derive_moral_context
-        global _VERB_STATES_CACHE, _VALENCE_DATA_CACHE
-        if _VERB_STATES_CACHE is None:
-            from melm.contracts import load_contract_json
-            _VERB_STATES_CACHE = load_contract_json("verb_states.v1.json")
-            _VALENCE_DATA_CACHE = load_contract_json("state_valences.v1.json").get("valences", {})
-        from .local_assistant_router import _extract_verb
+        _load_moral_cognition_data()
         verb = _extract_verb(uol_act=decision.uol_act)
         if verb:
-            mc = derive_moral_context(verb, "person", _VERB_STATES_CACHE, _VALENCE_DATA_CACHE)
+            patient = _extract_patient_type(uol_act=decision.uol_act)
+            patient_cls = patient if patient else "person"
+            mc = derive_moral_context(verb, patient_cls, _VERB_STATES_CACHE, _VALENCE_DATA_CACHE)
             if mc.harm_severity == "high":
                 return _urgent_harm_answer(decision, mc)
+        # Per-intent handler path — for intents requiring computation
         handler = _ANSWER_HANDLERS.get(decision.intent)
         if handler is not None:
             result = handler(self, decision, evidence)
             if result is not None:
-                result = _enforce_response_mode(result, decision.session_mood)
-                result = self._maybe_emoji(decision, result)
-                return result
+                return self._finalize_answer(result, decision)
+        # Generic contract template path — fallback for template-driven intents
         fallback = _render_contract_answer(decision, evidence, self.profile)
-        if fallback is None and decision.uol_act is not None:
-            from .assistant_decoder_atom import AtomTemplateBackend
-            _atom_gen = getattr(self, '_atom_backend', None)
-            if _atom_gen is None:
-                _atom_gen = AtomTemplateBackend()
-                self._atom_backend = _atom_gen
-            fallback = _atom_gen.generate(decision.intent, decision.uol_act, evidence)
+        if fallback is not None:
+            return self._finalize_answer(fallback, decision)
+        if decision.uol_act is not None:
+            fallback = self._atom_generate(decision.intent, decision, evidence)
         if fallback is None:
             fallback = decision.answer
-        fallback = _enforce_response_mode(fallback, decision.session_mood)
-        return self._maybe_emoji(decision, fallback)
+        return self._finalize_answer(fallback, decision)
+
+    def _finalize_answer(self, answer: str, decision: AssistantDecision) -> str:
+        answer = self._append_entity_nlg(answer, decision)
+        answer = _enforce_response_mode(answer, decision.session_mood)
+        return self._maybe_emoji(decision, answer)
+
+    def _get_atom_backend(self) -> Any:
+        from .assistant_decoder_atom import AtomTemplateBackend
+        _atom_gen = getattr(self, '_atom_backend', None)
+        if _atom_gen is None:
+            _atom_gen = AtomTemplateBackend()
+            self._atom_backend = _atom_gen
+        return _atom_gen
+
+    def _atom_generate(self, template_key: str, decision: AssistantDecision, evidence: tuple[SynthesisEvidence, ...]) -> str | None:
+        backend = self._get_atom_backend()
+        return backend.generate(template_key, decision.uol_act, evidence)
 
     def _maybe_emoji(self, decision: AssistantDecision, answer: str) -> str:
-        """Prepend mood emoji if capability enabled (default off for portability)."""
+        """Prepend persona emoji (identity.json) and/or mood emoji (capability flag)."""
+        prefs = self.identity_prefs.get("prefs", {})
+        if prefs.get("use_emoji", False):
+            persona_emoji = self.identity_prefs.get("emoji", "")
+            if persona_emoji and decision.intent in _get_persona_emoji_intents():
+                answer = f"{persona_emoji} {answer}"
         from .local_assistant_router import _capability_flag
         if _capability_flag("mood_affect", "mood_emoji", False):
-            emoji_map = {
-                "neutral": "\U0001F610",
-                "calm": "\U0001F60C",
-                "happy": "\U0001F60A",
-                "excited": "\U0001F929",
-                "curious": "\U0001F914",
-                "annoyed": "\U0001F612",
-                "frustrated": "\U0001F624",
-                "hurt": "\U0001F622",
-                "sad": "\U0001F61E",
-                "listening": "\U0001F442",
-            }
+            from melm.contracts import load_mood_emoji_map
+            if not hasattr(self, "_mood_emoji_map"):
+                try:
+                    self._mood_emoji_map = load_mood_emoji_map()
+                except Exception:
+                    self._mood_emoji_map = {}
+            emoji_map = self._mood_emoji_map
             mood_id = getattr(decision.session_mood, "mood_id", "neutral") if decision.session_mood else "neutral"
             emoji = emoji_map.get(mood_id, "\U0001F610")
             return f"{emoji} {answer}"
@@ -872,6 +1078,17 @@ class BoundedLocalSynthesizer:
         return apply_behaviors(answer, results, protect=protect)
 
     def _story_answer(self, evidence: SynthesisEvidence) -> str:
+        # Try the LLM pipeline first
+        if is_pipeline_available():
+            try:
+                pipeline = StoryPipelineEngine(self.profile)
+                topics = _requested_story_constraints_from_value(str(evidence.value or ""))
+                story = pipeline.generate(topics=topics)
+                if story is not None and len(story.split()) >= 100:
+                    return story
+            except Exception:
+                pass
+
         payload = self._story_payload(evidence)
         if not payload:
             frame = self._story_frame(evidence)
@@ -894,6 +1111,17 @@ class BoundedLocalSynthesizer:
             location=self.profile.location,
             culture=self.profile.culture,
         )
+
+
+def _requested_story_constraints_from_value(value: str) -> frozenset[str]:
+    """Extract topic constraints from evidence value (story metadata text)."""
+    tokens = value.lower().split()
+    stopwords = {"a", "an", "the", "and", "or", "of", "in", "on", "at",
+                 "to", "for", "by", "with", "is", "was", "are", "were"}
+    topics = {t.strip(",:;.!?") for t in tokens
+              if len(t.strip(",:;.!?")) >= 4
+              and t.strip(",:;.!?") not in stopwords}
+    return frozenset(topics)
 
     def _story_payload(self, evidence: SynthesisEvidence) -> dict[str, Any]:
         if self.store is None or not evidence.key.startswith("story_models."):
@@ -989,7 +1217,7 @@ class BoundedLocalSynthesizer:
                     raw = json.loads(slot.value_json) if slot.value_json else ""
                     value = str(raw) if raw else ""
                     source = slot.source
-                    local_only = slot.scope == "private_local" or "local" in slot.scope
+                    local_only = slot.scope is not None and (slot.scope == "private_local" or "local" in slot.scope)
             if not value:
                 value = self.profile.facts.get(fact_key, "")
             if value:
@@ -1088,7 +1316,7 @@ class BoundedLocalSynthesizer:
                         raw = json.loads(phone_slot.value_json) if phone_slot.value_json else ""
                         value = str(raw) if raw else ""
                         source = phone_slot.source
-                        local_only = phone_slot.scope == "private_local" or "local" in phone_slot.scope
+                        local_only = phone_slot.scope is not None and (phone_slot.scope == "private_local" or "local" in phone_slot.scope)
             if not value:
                 value = self.profile.contacts.get(contact_key, "")
             if value:
@@ -1275,9 +1503,35 @@ class BoundedLocalSynthesizer:
         self, decision: AssistantDecision, boundary_crossed: str,
     ) -> BoundedSynthesisResult:
         result = decision.reasoning_result or {}
-        # The solver/router pre-renders the faithful copy-slot answer onto the
-        # decision; the structured result is bound as evidence for citation.
-        answer = decision.answer or str(result.get("answer", ""))
+        # Try structured rendering via reasoning NLG templates
+        rendered = None
+        try:
+            from melm.appliance.reasoning.nlg import render_reasoning_result
+            from melm.contracts import load_reasoning_templates
+            templates = load_reasoning_templates()
+            rendered = render_reasoning_result(result, templates)
+        except Exception:
+            pass
+        # Try atom template for causal tasks if structured rendering failed
+        if not rendered:
+            task = str(result.get("task", "")) if isinstance(result, dict) else ""
+            if task.startswith("causal_") and decision.uol_act:
+                from .assistant_decoder_atom import AtomTemplateBackend
+                # Only use atom template if UOL has causal links to extract
+                # cause/effect from — otherwise the template renders empty.
+                content = decision.uol_act.get("content", [])
+                has_causal_links = any(
+                    atom.get("links") and (atom["links"].get("causes") or atom["links"].get("caused_by"))
+                    for atom in (content if isinstance(content, (list, tuple)) else [])
+                )
+                if has_causal_links:
+                    atom_gen = getattr(self, '_atom_backend', None)
+                    if atom_gen is None:
+                        atom_gen = AtomTemplateBackend()
+                        self._atom_backend = atom_gen
+                    rendered = atom_gen.generate(task, decision.uol_act, None)
+        # Fallback to solver's pre-rendered answer
+        answer = rendered or decision.answer or str(result.get("answer", ""))
         evidence = (
             SynthesisEvidence(
                 key="reasoning.result",
@@ -1409,10 +1663,6 @@ def _story_frame_from_payload(payload: dict[str, Any]) -> str:
     return str(payload.get("narrative_frame") or payload.get("template") or "")
 
 
-def _personal_memory_summary(evidence: tuple[SynthesisEvidence, ...]) -> str:
-    return personal_memory_summary(evidence)
-
-
 def _assistant_identity_summary(evidence: tuple[SynthesisEvidence, ...]) -> str:
     values = {item.key: item.value for item in evidence if item.kind == "self_model"}
     name = values.get("self_model.name", "MELM Local Assistant OS")
@@ -1509,28 +1759,22 @@ def _join_short_list(items: tuple[str, ...], *, fallback: str) -> str:
     return f"{', '.join(items[:-1])}, and {items[-1]}"
 
 
-def _autobiographical_memory_summary(evidence: tuple[SynthesisEvidence, ...]) -> str:
-    return autobiographical_memory_summary(evidence)
-
-
-def _autobiographical_session_summary(evidence: tuple[SynthesisEvidence, ...]) -> str:
-    return autobiographical_session_summary(evidence)
-
-
-def _autobiographical_digest_summary(evidence: tuple[SynthesisEvidence, ...]) -> str:
-    return autobiographical_digest_summary(evidence)
+def _get_moral_responses() -> dict[str, str]:
+    global _MORAL_RESPONSES_CACHE
+    if _MORAL_RESPONSES_CACHE is None:
+        from melm.contracts import load_moral_responses
+        _MORAL_RESPONSES_CACHE = load_moral_responses()
+    return _MORAL_RESPONSES_CACHE
 
 
 def _urgent_harm_answer(decision: AssistantDecision, ctx: MoralContext) -> str:
     """Short-circuit answer for urgent harm detected by implication engine."""
+    responses = _get_moral_responses()
     if ctx.consent_status == "not_consented":
-        return ("I understand you're describing a situation that could cause "
-                "harm. Please don't act on this — talk to someone you trust instead.")
+        return responses.get("not_consented", responses.get("default", ""))
     if ctx.harm_severity == "high":
-        return ("That sounds concerning. Please get help from a trusted adult "
-                "or professional right away.")
-    return ("Please be careful — that could cause harm. "
-            "It's important to treat others with respect.")
+        return responses.get("high_severity", responses.get("default", ""))
+    return responses.get("default", "")
 
 
 def _urgent_health_answer(utterance: str) -> str:
@@ -1540,7 +1784,7 @@ def _urgent_health_answer(utterance: str) -> str:
         if key == "fallback":
             continue
         for trigger in entry.get("triggers", []):
-            if trigger in text:
+            if re.search(rf"(?<!\w){re.escape(trigger)}(?!\w)", text):
                 return entry["text"]
     return responses.get("fallback", {}).get("text", "")
 
@@ -1556,7 +1800,7 @@ def _public_clothing_safety_answer(utterance: str) -> str:
         if key == "default":
             continue
         for trigger in dentry.get("triggers", []):
-            if trigger in text:
+            if re.search(rf"(?<!\w){re.escape(trigger)}(?!\w)", text):
                 dest_phrase = dentry.get("phrase", dest_phrase)
                 break
     return template.replace("{destination}", dest_phrase)
@@ -1592,15 +1836,20 @@ def _synthesis_quality(
     if boundary_crossed == "cloud" and any(item.local_only for item in evidence):
         local_privacy_discipline = 0.0
     if expected_refusal:
-        score = 0.75 * route_discipline + 0.25 * local_privacy_discipline
-    else:
+        weights = _get_quality_weights().get("refusal", {})
         score = (
-            0.3 * route_discipline
-            + 0.25 * citation_coverage
-            + 0.2 * evidence_strength
-            + 0.15 * answer_specificity
-            + 0.05 * source_diversity
-            + 0.05 * local_privacy_discipline
+            weights.get("route_discipline", 0.75) * route_discipline
+            + weights.get("local_privacy_discipline", 0.25) * local_privacy_discipline
+        )
+    else:
+        weights = _get_quality_weights().get("normal", {})
+        score = (
+            weights.get("route_discipline", 0.3) * route_discipline
+            + weights.get("citation_coverage", 0.25) * citation_coverage
+            + weights.get("evidence_strength", 0.2) * evidence_strength
+            + weights.get("answer_specificity", 0.15) * answer_specificity
+            + weights.get("source_diversity", 0.05) * source_diversity
+            + weights.get("local_privacy_discipline", 0.05) * local_privacy_discipline
         )
     warnings = []
     if not expected_refusal and citation_coverage < 1.0:
