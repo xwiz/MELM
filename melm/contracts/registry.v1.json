@@ -17,7 +17,7 @@
       "failure_behavior": "reject candidate before any lexicon or atlas write",
       "safety_critical": true,
       "version": "1.0.0",
-      "schema_hash": "255593093293f6e7"
+      "schema_hash": "02199edcd5558d36"
     },
     {
       "schema_id": "melm.semantic_classes.v1",
@@ -36,7 +36,7 @@
       "failure_behavior": "quarantine unknown class IDs and disable affected mapping",
       "safety_critical": true,
       "version": "1.0.0",
-      "schema_hash": "f095a2f10d7ed233"
+      "schema_hash": "3fbaba9619182d14"
     },
     {
       "schema_id": "melm.wn_supersense_map.v1",
@@ -142,6 +142,41 @@
       "schema_hash": "4a264e117f56f856"
     },
     {
+      "schema_id": "melm.family_relation_terms.v1",
+      "path": "family_relation_terms.v1.json",
+      "owner": "kernel/router",
+      "producers": [
+        "release tooling"
+      ],
+      "consumers": [
+        "profile attribute detection",
+        "child memory routing"
+      ],
+      "validator": "melm.contracts.validate_family_relation_terms",
+      "compatible_predecessors": [],
+      "failure_behavior": "profile attribute and child memory detection uses hardcoded fallback sets",
+      "safety_critical": false,
+      "version": "1.0.0",
+      "schema_hash": "72574d17aa1c9cae"
+    },
+    {
+      "schema_id": "melm.autobiographical_scope_terms.v1",
+      "path": "autobiographical_scope_terms.v1.json",
+      "owner": "kernel/router",
+      "producers": [
+        "release tooling"
+      ],
+      "consumers": [
+        "autobiographical memory scoping"
+      ],
+      "validator": "melm.contracts.validate_autobiographical_scope_terms",
+      "compatible_predecessors": [],
+      "failure_behavior": "autobiographical scope detection uses hardcoded fallback sets",
+      "safety_critical": false,
+      "version": "1.0.0",
+      "schema_hash": "7a50fc8313baadca"
+    },
+    {
       "schema_id": "melm.health_disclaimers.v1",
       "path": "health_disclaimers.v1.json",
       "owner": "kernel/synthesis",
@@ -189,8 +224,8 @@
       "compatible_predecessors": [],
       "failure_behavior": "story uses hardcoded fallback image/challenge/lesson",
       "safety_critical": false,
-      "version": "1.0.0",
-      "schema_hash": "eadbb06112d003dd"
+      "version": "1.1.0",
+      "schema_hash": "fa1ecb92f95a6915"
     },
     {
       "schema_id": "melm.weather_concepts.v1",
@@ -207,7 +242,7 @@
       "failure_behavior": "weather concept detection uses hardcoded fallback terms",
       "safety_critical": false,
       "version": "1.0.0",
-      "schema_hash": "181ddf423f9d6d58"
+      "schema_hash": "5a4e02db475e77c7"
     },
     {
       "schema_id": "melm.meal_scopes.v1",
@@ -241,7 +276,7 @@
       "failure_behavior": "identity response uses hardcoded fallback text",
       "safety_critical": false,
       "version": "1.0.0",
-      "schema_hash": "a718194aae1133f0"
+      "schema_hash": "17afbb9a14af89b2"
     },
     {
       "schema_id": "melm.open_domain_templates.v1",
@@ -258,7 +293,7 @@
       "failure_behavior": "synthesis falls back to decision.answer",
       "safety_critical": false,
       "version": "1.0.0",
-      "schema_hash": "6b4e5bd48a4ced0c"
+       "schema_hash": "958731776ea6eeb0"
     },
     {
       "schema_id": "melm.answer_templates.v1",
@@ -275,7 +310,7 @@
       "failure_behavior": "synthesis falls back to decision.answer",
       "safety_critical": false,
       "version": "1.0.0",
-      "schema_hash": "da37d5d295cf2bab"
+      "schema_hash": "c749da5699064330"
     },
     {
       "schema_id": "melm.router_semantic_aliases.v1",
@@ -531,7 +566,7 @@
       "failure_behavior": "atomizer falls back to semantic_class_unknown",
       "safety_critical": true,
       "version": "1.0.0",
-      "schema_hash": "187988fd0fa61d19"
+      "schema_hash": "16f862d998b22d01"
     },
     {
       "schema_id": "melm.igbo_lexicon_seed.v1",
@@ -551,6 +586,23 @@
       "safety_critical": false,
       "version": "1.0.0",
       "schema_hash": "8843baa0790c52d3"
+    },
+    {
+      "schema_id": "melm.intent_evidence_sources.v1",
+      "path": "intent_evidence_sources.v1.json",
+      "owner": "kernel/synthesis",
+      "producers": [
+        "release tooling"
+      ],
+      "consumers": [
+        "evidence source assignment"
+      ],
+      "validator": "melm.contracts.validate_intent_evidence_sources",
+      "compatible_predecessors": [],
+      "failure_behavior": "evidence source falls back to 'none' string",
+      "safety_critical": false,
+      "version": "1.0.0",
+      "schema_hash": "65e36c406040158c"
     },
     {
       "schema_id": "melm.yoruba_greetings.v1",
@@ -640,7 +692,7 @@
       "failure_behavior": "mood engine uses hardcoded default regions",
       "safety_critical": false,
       "version": "1.0.0",
-      "schema_hash": "b14e7c409ab0e027"
+      "schema_hash": "0708565ae09347e2"
     },
     {
       "schema_id": "melm.affect_lexicon.v1",
@@ -674,7 +726,7 @@
       "failure_behavior": "synthesis uses existing handler templates",
       "safety_critical": false,
       "version": "1.0.0",
-      "schema_hash": "b39fcca9397d40d6"
+      "schema_hash": "d93189f0d3ba6282"
     },
     {
       "schema_id": "melm.token_typability.v1",
@@ -799,8 +851,13 @@
       "schema_id": "melm.verb_states.v1",
       "path": "verb_states.v1.json",
       "owner": "reasoning-core",
-      "producers": ["release tooling", "NAMELESS corpus extraction"],
-      "consumers": ["implication engine"],
+      "producers": [
+        "release tooling",
+        "NAMELESS corpus extraction"
+      ],
+      "consumers": [
+        "implication engine"
+      ],
       "validator": "melm.contracts.validate_verb_states",
       "compatible_predecessors": [],
       "failure_behavior": "implication engine returns None for all verbs (safe degraded mode)",
@@ -809,11 +866,33 @@
       "schema_hash": "9252b890bbb159db"
     },
     {
+      "schema_id": "melm.causal_effects.v1",
+      "path": "causal_effects.v1.json",
+      "owner": "reasoning-core",
+      "producers": [
+        "release tooling",
+        "extract_causal_effects.py"
+      ],
+      "consumers": [
+        "reasoning.solvers"
+      ],
+      "validator": "melm.contracts.validate_causal_effects",
+      "compatible_predecessors": [],
+      "failure_behavior": "causal solver returns no_cause_found / no_effect_found",
+      "safety_critical": false,
+      "version": "1.0.0",
+      "schema_hash": "8792d26b0f04b845"
+    },
+    {
       "schema_id": "melm.state_valences.v1",
       "path": "state_valences.v1.json",
       "owner": "reasoning-core",
-      "producers": ["release tooling"],
-      "consumers": ["implication engine"],
+      "producers": [
+        "release tooling"
+      ],
+      "consumers": [
+        "implication engine"
+      ],
       "validator": "melm.contracts.validate_state_valences",
       "compatible_predecessors": [],
       "failure_behavior": "all states scored 0.0 (safe degraded mode)",
@@ -822,11 +901,33 @@
       "schema_hash": "117820072a9effc7"
     },
     {
+      "schema_id": "melm.status_domain_terms.v1",
+      "path": "status_domain_terms.v1.json",
+      "owner": "kernel/router",
+      "producers": [
+        "release tooling"
+      ],
+      "consumers": [
+        "assistant status query routing"
+      ],
+      "validator": "melm.contracts.validate_status_domain_terms",
+      "compatible_predecessors": [],
+      "failure_behavior": "status query detection uses hardcoded fallback sets",
+      "safety_critical": false,
+      "version": "1.0.0",
+      "schema_hash": "2fa0e881451c34fb"
+    },
+    {
       "schema_id": "melm.deferred_task_templates.v1",
       "path": "deferred_task_templates.v1.json",
       "owner": "curiosity/context",
-      "producers": ["release tooling"],
-      "consumers": ["curiosity engine", "deferred task runner"],
+      "producers": [
+        "release tooling"
+      ],
+      "consumers": [
+        "curiosity engine",
+        "deferred task runner"
+      ],
       "validator": "melm.contracts.validate_deferred_task_templates",
       "compatible_predecessors": [],
       "failure_behavior": "curiosity surfacing falls back to generic prompt",
@@ -838,8 +939,13 @@
       "schema_id": "melm.novelty_patterns.v1",
       "path": "novelty_patterns.v1.json",
       "owner": "curiosity/context",
-      "producers": ["release tooling"],
-      "consumers": ["novelty detector", "lexicon acquisition"],
+      "producers": [
+        "release tooling"
+      ],
+      "consumers": [
+        "novelty detector",
+        "lexicon acquisition"
+      ],
       "validator": "melm.contracts.validate_novelty_patterns",
       "compatible_predecessors": [],
       "failure_behavior": "novelty detection uses hardcoded fallback patterns",
@@ -848,11 +954,34 @@
       "schema_hash": "fe931991c2240354"
     },
     {
+      "schema_id": "melm.atom_templates.v1",
+      "path": "atom_templates.v1.json",
+      "owner": "kernel/synthesis",
+      "producers": [
+        "release tooling"
+      ],
+      "consumers": [
+        "AtomTemplateBackend",
+        "assistant_synthesis"
+      ],
+      "validator": "melm.contracts.validate_atom_templates",
+      "compatible_predecessors": [],
+      "failure_behavior": "AtomTemplateBackend falls back to hardcoded defaults",
+      "safety_critical": false,
+      "version": "1.0.0",
+      "schema_hash": "44542addbda29051"
+    },
+    {
       "schema_id": "melm.agreement_templates.v1",
       "path": "agreement_templates.v1.json",
       "owner": "curiosity/context",
-      "producers": ["release tooling"],
-      "consumers": ["commitment tracker", "re-engagement handler"],
+      "producers": [
+        "release tooling"
+      ],
+      "consumers": [
+        "commitment tracker",
+        "re-engagement handler"
+      ],
       "validator": "melm.contracts.validate_agreement_templates",
       "compatible_predecessors": [],
       "failure_behavior": "re-engagement uses hardcoded fallback greeting",
@@ -864,8 +993,13 @@
       "schema_id": "melm.epistemic_states.v1",
       "path": "epistemic_states.v1.json",
       "owner": "curiosity/context",
-      "producers": ["release tooling"],
-      "consumers": ["epistemic state tracker", "mood engine"],
+      "producers": [
+        "release tooling"
+      ],
+      "consumers": [
+        "epistemic state tracker",
+        "mood engine"
+      ],
       "validator": "melm.contracts.validate_epistemic_states",
       "compatible_predecessors": [],
       "failure_behavior": "epistemic state defaults to empty mappings",
@@ -877,8 +1011,13 @@
       "schema_id": "melm.background_task_policies.v1",
       "path": "background_task_policies.v1.json",
       "owner": "curiosity/context",
-      "producers": ["release tooling"],
-      "consumers": ["background task runner", "deferral manager"],
+      "producers": [
+        "release tooling"
+      ],
+      "consumers": [
+        "background task runner",
+        "deferral manager"
+      ],
       "validator": "melm.contracts.validate_background_task_policies",
       "compatible_predecessors": [],
       "failure_behavior": "background task runner uses hardcoded defaults",
@@ -890,8 +1029,13 @@
       "schema_id": "melm.research_deferral_triggers.v1",
       "path": "research_deferral_triggers.v1.json",
       "owner": "curiosity/context",
-      "producers": ["release tooling"],
-      "consumers": ["deferral manager", "research router"],
+      "producers": [
+        "release tooling"
+      ],
+      "consumers": [
+        "deferral manager",
+        "research router"
+      ],
       "validator": "melm.contracts.validate_research_deferral_triggers",
       "compatible_predecessors": [],
       "failure_behavior": "research request defaults to immediate execution",
@@ -903,8 +1047,13 @@
       "schema_id": "melm.commitment_parsers.v1",
       "path": "commitment_parsers.v1.json",
       "owner": "curiosity/context",
-      "producers": ["release tooling"],
-      "consumers": ["commitment tracker", "temporal cue parser"],
+      "producers": [
+        "release tooling"
+      ],
+      "consumers": [
+        "commitment tracker",
+        "temporal cue parser"
+      ],
       "validator": "melm.contracts.validate_commitment_parsers",
       "compatible_predecessors": [],
       "failure_behavior": "commitment detection uses hardcoded fallback cues",
@@ -916,8 +1065,13 @@
       "schema_id": "melm.story_plan_schema.v1",
       "path": "story_plan_schema.v1.json",
       "owner": "story",
-      "producers": ["story planner"],
-      "consumers": ["story prompt pipeline", "story cache"],
+      "producers": [
+        "story planner"
+      ],
+      "consumers": [
+        "story prompt pipeline",
+        "story cache"
+      ],
       "validator": "melm.contracts.validate_story_plan_schema",
       "compatible_predecessors": [],
       "failure_behavior": "reject story plan serialization",
@@ -929,21 +1083,29 @@
       "schema_id": "melm.music_style_templates.v1",
       "path": "music_style_templates.v1.json",
       "owner": "kernel/music",
-      "producers": ["release tooling"],
-      "consumers": ["assistant_music_midi"],
+      "producers": [
+        "release tooling"
+      ],
+      "consumers": [
+        "assistant_music_midi"
+      ],
       "validator": "melm.contracts.validate_music_style_templates",
       "compatible_predecessors": [],
       "failure_behavior": "MIDI generation uses hardcoded style defaults",
       "safety_critical": false,
-      "version": "1.0.0",
-      "schema_hash": "4a1438aa3b65c139"
+      "version": "1.1.0",
+      "schema_hash": "9afaaf8bdf8d2bf3"
     },
     {
       "schema_id": "melm.music_genre_scales.v1",
       "path": "music_genre_scales.v1.json",
       "owner": "kernel/music",
-      "producers": ["release tooling"],
-      "consumers": ["assistant_music_midi"],
+      "producers": [
+        "release tooling"
+      ],
+      "consumers": [
+        "assistant_music_midi"
+      ],
       "validator": "melm.contracts.validate_music_genre_scales",
       "compatible_predecessors": [],
       "failure_behavior": "MIDI generation uses hardcoded major scale only",
@@ -955,8 +1117,12 @@
       "schema_id": "melm.mood_faces.v1",
       "path": "mood_faces.v1.json",
       "owner": "kernel/ux",
-      "producers": ["release tooling"],
-      "consumers": ["assistant_face_renderer"],
+      "producers": [
+        "release tooling"
+      ],
+      "consumers": [
+        "assistant_face_renderer"
+      ],
       "validator": "melm.contracts.validate_mood_faces",
       "compatible_predecessors": [],
       "failure_behavior": "face renderer uses hardcoded ASCII faces",
@@ -965,11 +1131,84 @@
       "schema_hash": "2857d5a559c29f48"
     },
     {
+      "schema_id": "melm.mood_emoji_map.v1",
+      "path": "mood_emoji_map.v1.json",
+      "owner": "kernel/synthesis",
+      "producers": [
+        "release tooling"
+      ],
+      "consumers": [
+        "synthesis answer emoji annotation"
+      ],
+      "validator": "melm.contracts.validate_mood_emoji_map",
+      "compatible_predecessors": [],
+      "failure_behavior": "emoji annotation degrades gracefully to no emoji",
+      "safety_critical": false,
+      "version": "1.0.0",
+      "schema_hash": "6697ed77bd3c0b54"
+    },
+    {
+      "schema_id": "melm.always_respond_intents.v1",
+      "path": "always_respond_intents.v1.json",
+      "owner": "kernel/synthesis",
+      "producers": [
+        "release tooling"
+      ],
+      "consumers": [
+        "listening-mode silence bypass gate"
+      ],
+      "validator": "melm.contracts.validate_always_respond_intents",
+      "compatible_predecessors": [],
+      "failure_behavior": "all intents are silenced in listening mode (conservative fallback)",
+      "safety_critical": true,
+      "version": "1.0.0",
+      "schema_hash": "bf5704d36a9b9ce9"
+    },
+    {
+      "schema_id": "melm.short_circuit_reasons.v1",
+      "path": "short_circuit_reasons.v1.json",
+      "owner": "kernel/synthesis",
+      "producers": [
+        "release tooling"
+      ],
+      "consumers": [
+        "answer path short-circuit gate",
+        "template-only evidence bypass gate"
+      ],
+      "validator": "melm.contracts.validate_short_circuit_reasons",
+      "compatible_predecessors": [],
+      "failure_behavior": "all reasons proceed through normal answer path (conservative fallback)",
+      "safety_critical": true,
+      "version": "1.0.0",
+      "schema_hash": "46b4ffd46e04e6e4"
+    },
+    {
+      "schema_id": "melm.environment_prep_phrases.v1",
+      "path": "environment_prep_phrases.v1.json",
+      "owner": "kernel/synthesis",
+      "producers": [
+        "release tooling"
+      ],
+      "consumers": [
+        "NLG entity location descriptions"
+      ],
+      "validator": "melm.contracts.validate_environment_prep_phrases",
+      "compatible_predecessors": [],
+      "failure_behavior": "generic 'in a {environment} environment' phrasing used",
+      "safety_critical": false,
+      "version": "1.0.0",
+      "schema_hash": "d229df76d29a5cdf"
+    },
+    {
       "schema_id": "melm.mood_face_tones.v1",
       "path": "mood_face_tones.v1.json",
       "owner": "kernel/ux",
-      "producers": ["release tooling"],
-      "consumers": ["assistant_audio_feedback"],
+      "producers": [
+        "release tooling"
+      ],
+      "consumers": [
+        "assistant_audio_feedback"
+      ],
       "validator": "melm.contracts.validate_mood_face_tones",
       "compatible_predecessors": [],
       "failure_behavior": "audio feedback disabled",
@@ -978,11 +1217,69 @@
       "schema_hash": "a8ddf2d7bd15966a"
     },
     {
+      "schema_id": "melm.noun_atoms.v1",
+      "path": "noun_atoms.v1.json",
+      "owner": "meaning-core",
+      "producers": [
+        "release tooling"
+      ],
+      "consumers": [
+        "UOL atomizer",
+        "entity store seeder"
+      ],
+      "validator": "melm.contracts.validate_noun_atoms",
+      "compatible_predecessors": [],
+      "failure_behavior": "RoleAssignment enrichment silently degrades to pass-through; noun entity store seeding fails gracefully",
+      "safety_critical": false,
+      "version": "1.0.0",
+      "schema_hash": "50f5ab309e91047c"
+    },
+    {
+      "schema_id": "melm.modifier_atoms.v1",
+      "path": "modifier_atoms.v1.json",
+      "owner": "meaning-core",
+      "producers": [
+        "release tooling"
+      ],
+      "consumers": [
+        "UOL atomizer",
+        "enrichment functions"
+      ],
+      "validator": "melm.contracts.validate_modifier_atoms",
+      "compatible_predecessors": [],
+      "failure_behavior": "Modifier enrichment silently degrades to pass-through; adjectives fall back to NOUN role assignment",
+      "safety_critical": false,
+      "version": "1.1.0",
+      "schema_hash": "97f1d611bf03bf1e"
+    },
+    {
+      "schema_id": "melm.patient_type_map.v1",
+      "path": "patient_type_map.v1.json",
+      "owner": "moral-cognition",
+      "producers": [
+        "release tooling"
+      ],
+      "consumers": [
+        "moral cognition engine (local_assistant_router)"
+      ],
+      "validator": "melm.contracts.validate_patient_type_map",
+      "compatible_predecessors": [],
+      "failure_behavior": "Patient type resolution falls back to default 'person' class",
+      "safety_critical": false,
+      "version": "1.0.0",
+      "schema_hash": "c21e3d11aa8f4ce7"
+    },
+    {
       "schema_id": "melm.noise_tokens.v1",
       "path": "noise_tokens.v1.json",
       "owner": "kernel/router",
-      "producers": ["release tooling"],
-      "consumers": ["assistant_router", "assistant_mood_engine"],
+      "producers": [
+        "release tooling"
+      ],
+      "consumers": [
+        "assistant_router",
+        "assistant_mood_engine"
+      ],
       "validator": "melm.contracts.validate_noise_tokens",
       "compatible_predecessors": [],
       "failure_behavior": "noise tokens not stripped from parse; affect detection falls back to default lexicon",
@@ -994,8 +1291,12 @@
       "schema_id": "melm.normalization_expansions.v1",
       "path": "normalization_expansions.v1.json",
       "owner": "meaning-core",
-      "producers": ["release tooling"],
-      "consumers": ["language_adapters"],
+      "producers": [
+        "release tooling"
+      ],
+      "consumers": [
+        "language_adapters"
+      ],
       "validator": "melm.contracts.validate_normalization_expansions",
       "compatible_predecessors": [],
       "failure_behavior": "disable Layer 0 surface expansion; pass text through uncorrected",
@@ -1004,11 +1305,33 @@
       "schema_hash": "17467bcef5a984d4"
     },
     {
+      "schema_id": "melm.agreement_rules.v1",
+      "path": "agreement_rules.v1.json",
+      "owner": "meaning-core",
+      "producers": [
+        "release tooling"
+      ],
+      "consumers": [
+        "normalization.agreement"
+      ],
+      "validator": "melm.contracts.validate_agreement_rules",
+      "compatible_predecessors": [],
+      "failure_behavior": "fall back to module-level constants in agreement.py",
+      "safety_critical": false,
+      "version": "1.0.0",
+      "schema_hash": "f7a21e9dab41d9ae"
+    },
+    {
       "schema_id": "melm.knowledge_types.v1",
       "path": "knowledge_types.v1.json",
       "owner": "meaning-core",
-      "producers": ["release tooling"],
-      "consumers": ["world knowledge store", "fact assertion pipeline"],
+      "producers": [
+        "release tooling"
+      ],
+      "consumers": [
+        "world knowledge store",
+        "fact assertion pipeline"
+      ],
       "validator": "melm.contracts.validate_knowledge_types",
       "compatible_predecessors": [],
       "failure_behavior": "knowledge typing falls back to untyped fact storage",
@@ -1020,27 +1343,506 @@
       "schema_id": "melm.world_relations.v1",
       "path": "world_relations.v1.json",
       "owner": "meaning-core",
-      "producers": ["release tooling"],
-      "consumers": ["world knowledge store", "fact assertion pipeline"],
+      "producers": [
+        "release tooling"
+      ],
+      "consumers": [
+        "world knowledge store",
+        "fact assertion pipeline"
+      ],
       "validator": "melm.contracts.validate_world_relations",
       "compatible_predecessors": [],
       "failure_behavior": "predicate-to-relation mapping falls back to empty dict",
       "safety_critical": false,
-      "version": "1.0.0",
-      "schema_hash": "a1e2cd7153e58fa1"
+      "version": "1.1.0",
+      "schema_hash": "543ccc657466231f"
     },
     {
       "schema_id": "melm.self_identity.v1",
       "path": "self_identity.v1.json",
       "owner": "sentience",
-      "producers": ["release tooling"],
-      "consumers": ["assistant_skill_self_identity"],
+      "producers": [
+        "release tooling"
+      ],
+      "consumers": [
+        "assistant_skill_self_identity"
+      ],
       "validator": "melm.contracts.validate_self_identity",
       "compatible_predecessors": [],
       "failure_behavior": "fall back to hardcoded identity templates",
       "safety_critical": false,
       "version": "1.0.0",
-      "schema_hash": "9a1d50075cb5be56"
+      "schema_hash": "98f2b49d778a9620"
+    },
+    {
+      "schema_id": "melm.causal_cues.v1",
+      "path": "causal_cues.v1.json",
+      "owner": "reasoning",
+      "producers": [
+        "release tooling"
+      ],
+      "consumers": [
+        "task_router._detect_causal"
+      ],
+      "validator": "melm.contracts.validate_causal_cues",
+      "compatible_predecessors": [],
+      "failure_behavior": "_detect_causal falls back to inline cue logic",
+      "safety_critical": false,
+      "version": "1.0.0",
+      "schema_hash": "3fc6ac65666c750a"
+    },
+    {
+      "schema_id": "melm.causal_link_markers.v1",
+      "path": "causal_link_markers.v1.json",
+      "owner": "UOL",
+      "producers": [
+        "release tooling"
+      ],
+      "consumers": [
+        "uol_atomizer",
+        "language_adapters"
+      ],
+      "validator": "melm.contracts.validate_causal_link_markers",
+      "compatible_predecessors": [],
+      "failure_behavior": "atomizer emits no causal atom links",
+      "safety_critical": false,
+      "version": "1.0.0",
+      "schema_hash": "30ee57b1f6742cfc"
+    },
+    {
+      "schema_id": "melm.causal_frames.v1",
+      "path": "causal_frames.v1.json",
+      "owner": "reasoning",
+      "producers": [
+        "release tooling"
+      ],
+      "consumers": [
+        "causal_frames.load_causal_frame_index",
+        "solvers._causal_explanation",
+        "solvers._causal_prediction"
+      ],
+      "validator": "melm.contracts.validate_causal_frames",
+      "compatible_predecessors": [],
+      "failure_behavior": "solvers fall back to causal_effects.v1.json seed data",
+      "safety_critical": false,
+      "version": "1.0.0",
+      "schema_hash": "1439c8fbe0a9b3cb"
+    },
+    {
+      "schema_id": "melm.identity_token_roles.v1",
+      "path": "identity_token_roles.v1.json",
+      "owner": "kernel/router",
+      "producers": ["release tooling"],
+      "consumers": ["_identity_token_roles"],
+      "validator": "melm.contracts.validate_identity_token_roles",
+      "compatible_predecessors": [],
+      "failure_behavior": "_identity_token_roles falls back to inline role_map dict",
+      "safety_critical": false,
+      "version": "1.0.0",
+      "schema_hash": "d960ad42aab8f8a2"
+    },
+    {
+      "schema_id": "melm.task_domain_terms.v1",
+      "path": "task_domain_terms.v1.json",
+      "owner": "kernel/router",
+      "producers": ["release tooling"],
+      "consumers": ["_matches_capability_identity_frame"],
+      "validator": "melm.contracts.validate_task_domain_terms",
+      "compatible_predecessors": [],
+      "failure_behavior": "_matches_capability_identity_frame falls back to inline set",
+      "safety_critical": false,
+      "version": "1.0.0",
+      "schema_hash": "de22d5e3ccce5219"
+    },
+    {
+      "schema_id": "melm.story_constraint_stopwords.v1",
+      "path": "story_constraint_stopwords.v1.json",
+      "owner": "kernel/router",
+      "producers": ["release tooling"],
+      "consumers": ["_requested_story_constraints"],
+      "validator": "melm.contracts.validate_story_constraint_stopwords",
+      "compatible_predecessors": [],
+      "failure_behavior": "_requested_story_constraints falls back to inline stopword set",
+      "safety_critical": false,
+      "version": "1.0.0",
+      "schema_hash": "7fdc659390ab3a28"
+    },
+    {
+      "schema_id": "melm.identity_scope_tokens.v1",
+      "path": "identity_scope_tokens.v1.json",
+      "owner": "kernel/router",
+      "producers": ["release tooling"],
+      "consumers": ["_identity_relation_scope_tokens"],
+      "validator": "melm.contracts.validate_identity_scope_tokens",
+      "compatible_predecessors": [],
+      "failure_behavior": "_identity_relation_scope_tokens falls back to inline set",
+      "safety_critical": false,
+      "version": "1.0.0",
+      "schema_hash": "35c1578bfd7097dd"
+    },
+    {
+      "schema_id": "melm.music_instruments.v1",
+      "path": "music_instruments.v1.json",
+      "owner": "kernel/router",
+      "producers": ["release tooling"],
+      "consumers": ["_music_generation", "_music_discovery"],
+      "validator": "melm.contracts.validate_music_instruments",
+      "compatible_predecessors": [],
+      "failure_behavior": "_music_generation and _music_discovery fall back to inline set",
+      "safety_critical": false,
+      "version": "1.0.0",
+      "schema_hash": "76ef4684afc6bd8f"
+    },
+    {
+      "schema_id": "melm.verb_atoms.v1",
+      "path": "verb_atoms.v1.json",
+      "owner": "meaning-core",
+      "producers": ["release tooling"],
+      "consumers": ["uol_atomizer.enrich_verb_predicates", "assistant_synthesis._append_entity_nlg"],
+      "validator": "melm.contracts.validate_verb_atoms",
+      "compatible_predecessors": [],
+      "failure_behavior": "verb predicate enrichment degrades silently to pass-through",
+      "safety_critical": false,
+      "version": "1.0.0",
+      "schema_hash": "f49d1db3f8886b48"
+    },
+    {
+      "schema_id": "melm.sentience_map.v1",
+      "path": "sentience_map.v1.json",
+      "owner": "reasoning/implications",
+      "producers": ["release tooling"],
+      "consumers": ["derive_moral_context"],
+      "validator": "melm.contracts.validate_sentience_map",
+      "compatible_predecessors": [],
+      "failure_behavior": "derive_moral_context falls back to inline map",
+      "safety_critical": false,
+      "version": "1.0.0",
+      "schema_hash": "e932c2075239062c"
+    },
+    {
+      "schema_id": "melm.damage_markers.v1",
+      "path": "damage_markers.v1.json",
+      "owner": "reasoning/implications",
+      "producers": ["release tooling"],
+      "consumers": ["_has_physical_damage"],
+      "validator": "melm.contracts.validate_damage_markers",
+      "compatible_predecessors": [],
+      "failure_behavior": "_has_physical_damage falls back to inline set",
+      "safety_critical": false,
+      "version": "1.0.0",
+      "schema_hash": "4f1a57d239bd9001"
+    },
+    {
+      "schema_id": "melm.moral_responses.v1",
+      "path": "moral_responses.v1.json",
+      "owner": "assistant_synthesis",
+      "producers": ["release tooling"],
+      "consumers": ["_urgent_harm_answer"],
+      "validator": "melm.contracts.validate_moral_responses",
+      "compatible_predecessors": [],
+      "failure_behavior": "_urgent_harm_answer falls back to hardcoded text",
+      "safety_critical": false,
+      "version": "1.0.0",
+      "schema_hash": "e741cf972ad9a07f"
+    },
+    {
+      "schema_id": "melm.intent_domains.v1",
+      "path": "intent_domains.v1.json",
+      "owner": "local_assistant_router",
+      "producers": ["release tooling"],
+      "consumers": ["_intent_domain"],
+      "validator": "melm.contracts.validate_intent_domains",
+      "compatible_predecessors": [],
+      "failure_behavior": "_intent_domain falls back to 'unknown_open_domain'",
+      "safety_critical": false,
+      "version": "1.0.0",
+      "schema_hash": "f73a32104585b031"
+    },
+    {
+      "schema_id": "melm.frame_local_sources.v1",
+      "path": "frame_local_sources.v1.json",
+      "owner": "local_assistant_router",
+      "producers": ["release tooling"],
+      "consumers": ["_frame_capabilities"],
+      "validator": "melm.contracts.validate_frame_local_sources",
+      "compatible_predecessors": [],
+      "failure_behavior": "_frame_capabilities falls back to empty source list",
+      "safety_critical": false,
+      "version": "1.0.0",
+      "schema_hash": "eb7e558d3b72d148"
+    },
+    {
+      "schema_id": "melm.pool_intents.v1",
+      "path": "pool_intents.v1.json",
+      "owner": "assistant_synthesis",
+      "producers": ["release tooling"],
+      "consumers": ["_answer"],
+      "validator": "melm.contracts.validate_pool_intents",
+      "compatible_predecessors": [],
+      "failure_behavior": "pool_selection falls back to hardcoded set",
+      "safety_critical": false,
+      "version": "1.0.0",
+      "schema_hash": "6386d56b5a57240f"
+    },
+    {
+      "schema_id": "melm.synthesis_quality_weights.v1",
+      "path": "synthesis_quality_weights.v1.json",
+      "owner": "assistant_synthesis",
+      "producers": ["release tooling"],
+      "consumers": ["_synthesis_quality"],
+      "validator": "melm.contracts.validate_synthesis_quality_weights",
+      "compatible_predecessors": [],
+      "failure_behavior": "_synthesis_quality falls back to hardcoded constants",
+      "safety_critical": false,
+      "version": "1.0.0",
+      "schema_hash": "2c4545c0c9b070ed"
+    },
+    {
+      "schema_id": "melm.persona_emoji_intents.v1",
+      "path": "persona_emoji_intents.v1.json",
+      "owner": "assistant_synthesis",
+      "producers": ["release tooling"],
+      "consumers": ["_maybe_emoji"],
+      "validator": "melm.contracts.validate_persona_emoji_intents",
+      "compatible_predecessors": [],
+      "failure_behavior": "_maybe_emoji falls back to hardcoded set",
+      "safety_critical": false,
+      "version": "1.0.0",
+      "schema_hash": "aa09922157c6b279"
+    },
+    {
+      "schema_id": "melm.midi_music_mapping.v1",
+      "path": "midi_music_mapping.v1.json",
+      "owner": "assistant_synthesis",
+      "producers": ["release tooling"],
+      "consumers": ["_handle_music_generation"],
+      "validator": "melm.contracts.validate_midi_music_mapping",
+      "compatible_predecessors": [],
+      "failure_behavior": "midi generation falls back to hardcoded keyword→description mapping",
+      "safety_critical": false,
+      "version": "1.0.0",
+      "schema_hash": "308ddce2acea5a6e"
+    },
+    {
+      "schema_id": "melm.commitment_responses.v1",
+      "path": "commitment_responses.v1.json",
+      "owner": "assistant_synthesis",
+      "producers": ["release tooling"],
+      "consumers": ["_handle_personal_memory"],
+      "validator": "melm.contracts.validate_commitment_responses",
+      "compatible_predecessors": [],
+      "failure_behavior": "commitment response falls back to hardcoded format string",
+      "safety_critical": false,
+      "version": "1.0.0",
+      "schema_hash": "f0b02433ab710aa9"
+    },
+    {
+      "schema_id": "melm.consent_revocation_response.v1",
+      "path": "consent_revocation_response.v1.json",
+      "owner": "assistant_synthesis",
+      "producers": ["release tooling"],
+      "consumers": ["synthesize"],
+      "validator": "melm.contracts.validate_consent_revocation_response",
+      "compatible_predecessors": [],
+      "failure_behavior": "consent revocation falls back to hardcoded answer text",
+      "safety_critical": false,
+      "version": "1.0.0",
+      "schema_hash": "c99822a89aa5164e"
+    },
+    {
+      "schema_id": "melm.story_follow_up_phrase.v1",
+      "path": "story_follow_up_phrase.v1.json",
+      "owner": "assistant_synthesis",
+      "producers": ["release tooling"],
+      "consumers": ["synthesize._decode_verified"],
+      "validator": "melm.contracts.validate_story_follow_up_phrase",
+      "compatible_predecessors": [],
+      "failure_behavior": "story answer falls back to no follow-up question appended",
+      "safety_critical": false,
+      "version": "1.0.0",
+      "schema_hash": "6870b31ce9bc7b03"
+    },
+    {
+      "schema_id": "melm.social_status_patterns.v1",
+      "path": "social_status_patterns.v1.json",
+      "owner": "local_assistant_router",
+      "producers": ["release tooling"],
+      "consumers": ["_detect_social_status"],
+      "validator": "melm.contracts.validate_social_status_patterns",
+      "compatible_predecessors": [],
+      "failure_behavior": "_detect_social_status falls back to hardcoded pattern tuple",
+      "safety_critical": false,
+      "version": "1.0.0",
+      "schema_hash": "23b5c3782baaa843"
+    },
+    {
+      "schema_id": "melm.autobiographical_horizon_tokens.v1",
+      "path": "autobiographical_horizon_tokens.v1.json",
+      "owner": "local_assistant_router",
+      "producers": ["release tooling"],
+      "consumers": ["_autobiographical_long_horizon_frame"],
+      "validator": "melm.contracts.validate_autobiographical_horizon_tokens",
+      "compatible_predecessors": [],
+      "failure_behavior": "_autobiographical_long_horizon_frame falls back to hardcoded token sets",
+      "safety_critical": false,
+      "version": "1.0.0",
+      "schema_hash": "31e512a54901edcc"
+    },
+    {
+      "schema_id": "melm.mail_verb_sets.v1",
+      "path": "mail_verb_sets.v1.json",
+      "owner": "local_assistant_router",
+      "producers": ["release tooling"],
+      "consumers": ["mail intent detection"],
+      "validator": "melm.contracts.validate_mail_verb_sets",
+      "compatible_predecessors": [],
+      "failure_behavior": "mail intent detection falls back to hardcoded verb sets",
+      "safety_critical": false,
+      "version": "1.0.0",
+      "schema_hash": "113ecfc23720432d"
+    },
+    {
+      "schema_id": "melm.short_circuit_responses.v1",
+      "path": "short_circuit_responses.v1.json",
+      "owner": "local_assistant_router",
+      "producers": ["release tooling"],
+      "consumers": ["_short_circuit answer templates"],
+      "validator": "melm.contracts.validate_short_circuit_responses",
+      "compatible_predecessors": [],
+      "failure_behavior": "short circuit responses fall back to hardcoded templates",
+      "safety_critical": false,
+      "version": "1.0.0",
+      "schema_hash": "b110e2affdebdb56"
+    },
+    {
+      "schema_id": "melm.personal_memory_evidence_map.v1",
+      "path": "personal_memory_evidence_map.v1.json",
+      "owner": "local_assistant_router",
+      "producers": ["release tooling"],
+      "consumers": ["_personal_memory_object_from_text"],
+      "validator": "melm.contracts.validate_personal_memory_evidence_map",
+      "compatible_predecessors": [],
+      "failure_behavior": "_personal_memory_object_from_text falls back to hardcoded condition→result map",
+      "safety_critical": false,
+      "version": "1.0.0",
+      "schema_hash": "d8f7dd9ab99b48f9"
+    },
+    {
+      "schema_id": "melm.music_discovery_verbs.v1",
+      "path": "music_discovery_verbs.v1.json",
+      "owner": "local_assistant_router",
+      "producers": ["release tooling"],
+      "consumers": ["_music_discovery"],
+      "validator": "melm.contracts.validate_music_discovery_verbs",
+      "compatible_predecessors": [],
+      "failure_behavior": "_music_discovery falls back to hardcoded verb set",
+      "safety_critical": false,
+      "version": "1.0.0",
+      "schema_hash": "3af4097027495855"
+    },
+    {
+      "schema_id": "melm.safety_school_terms.v1",
+      "path": "safety_school_terms.v1.json",
+      "owner": "local_assistant_router",
+      "producers": ["release tooling"],
+      "consumers": ["_safety"],
+      "validator": "melm.contracts.validate_safety_school_terms",
+      "compatible_predecessors": [],
+      "failure_behavior": "_safety school clothing detection falls back to hardcoded term sets",
+      "safety_critical": true,
+      "version": "1.0.0",
+      "schema_hash": "052c5a738d8d53b3"
+    },
+    {
+      "schema_id": "melm.media_object_tokens.v1",
+      "path": "media_object_tokens.v1.json",
+      "owner": "local_assistant_router",
+      "producers": ["release tooling"],
+      "consumers": ["_media_object_from_request_tokens"],
+      "validator": "melm.contracts.validate_media_object_tokens",
+      "compatible_predecessors": [],
+      "failure_behavior": "_media_object_from_request_tokens falls back to hardcoded mapping",
+      "safety_critical": false,
+      "version": "1.0.0",
+      "schema_hash": "99850b071360d613"
+    },
+    {
+      "schema_id": "melm.child_memory_markers.v1",
+      "path": "child_memory_markers.v1.json",
+      "owner": "local_assistant_router",
+      "producers": ["release tooling"],
+      "consumers": ["_personal_memory"],
+      "validator": "melm.contracts.validate_child_memory_markers",
+      "compatible_predecessors": [],
+      "failure_behavior": "_personal_memory child markers fall back to hardcoded tuple",
+      "safety_critical": false,
+      "version": "1.0.0",
+      "schema_hash": "fb0b5b2a892a5741"
+    },
+    {
+      "schema_id": "melm.contact_object_tokens.v1",
+      "path": "contact_object_tokens.v1.json",
+      "owner": "local_assistant_router",
+      "producers": ["release tooling"],
+      "consumers": ["_contact_object_from_tokens"],
+      "validator": "melm.contracts.validate_contact_object_tokens",
+      "compatible_predecessors": [],
+      "failure_behavior": "_contact_object_from_tokens falls back to hardcoded relationship tokens",
+      "safety_critical": false,
+      "version": "1.0.0",
+      "schema_hash": "a52cf63987a014d0"
+    },
+    {
+      "schema_id": "melm.contact_enrichment_templates.v1",
+      "path": "contact_enrichment_templates.v1.json",
+      "owner": "local_assistant_router",
+      "producers": ["release tooling"],
+      "consumers": ["_enrich_contact_answer"],
+      "validator": "melm.contracts.validate_contact_enrichment_templates",
+      "compatible_predecessors": [],
+      "failure_behavior": "_enrich_contact_answer falls back to hardcoded template",
+      "safety_critical": false,
+      "version": "1.0.0",
+      "schema_hash": "ff93e98563a452d6"
+    },
+    {
+      "schema_id": "melm.lesson_keywords.v1",
+      "path": "lesson_keywords.v1.json",
+      "owner": "assistant_skill_story_planning",
+      "producers": ["release tooling"],
+      "consumers": ["_extract_lesson", "_extract_themes"],
+      "validator": "melm.contracts.validate_lesson_keywords",
+      "compatible_predecessors": [],
+      "failure_behavior": "falls back to hardcoded frozenset",
+      "safety_critical": false,
+      "version": "1.0.0",
+      "schema_hash": "5fd46fe61b333928"
+    },
+    {
+      "schema_id": "melm.literary_device_map.v1",
+      "path": "literary_device_map.v1.json",
+      "owner": "assistant_skill_story_planning",
+      "producers": ["release tooling"],
+      "consumers": ["_select_literary_devices"],
+      "validator": "melm.contracts.validate_literary_device_map",
+      "compatible_predecessors": [],
+      "failure_behavior": "_select_literary_devices falls back to hardcoded lesson→device mapping",
+      "safety_critical": false,
+      "version": "1.0.0",
+      "schema_hash": "f971a8b112e9c01d"
+    },
+    {
+      "schema_id": "melm.story_pipeline_prompts.v1",
+      "path": "story_pipeline_prompts.v1.json",
+      "owner": "story pipeline",
+      "producers": ["release tooling"],
+      "consumers": ["assistant_skill_story_pipeline"],
+      "validator": "melm.contracts.validate_story_pipeline_prompts",
+      "compatible_predecessors": [],
+      "failure_behavior": "story pipeline uses hardcoded fallback prompts",
+      "safety_critical": false,
+      "version": "1.0.0",
+      "schema_hash": "c7cfc4e01d9e4689"
     }
   ],
   "version": "1.0.0"
