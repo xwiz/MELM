@@ -36,7 +36,7 @@
       "failure_behavior": "quarantine unknown class IDs and disable affected mapping",
       "safety_critical": true,
       "version": "1.0.0",
-      "schema_hash": "3fbaba9619182d14"
+      "schema_hash": "ab369f80a21124f1"
     },
     {
       "schema_id": "melm.wn_supersense_map.v1",
@@ -1843,6 +1843,32 @@
       "safety_critical": false,
       "version": "1.0.0",
       "schema_hash": "c7cfc4e01d9e4689"
+    },
+    {
+      "schema_id": "melm.storytelling_phrases.v1",
+      "path": "storytelling_phrases.v1.json",
+      "owner": "story pipeline",
+      "producers": ["release tooling"],
+      "consumers": ["_build_style_guide"],
+      "validator": "melm.contracts.validate_storytelling_phrases",
+      "compatible_predecessors": [],
+      "failure_behavior": "pipeline skips style guide injection, continues with base prompts",
+      "safety_critical": false,
+      "version": "1.0.0",
+      "schema_hash": "531257d5d2dd7967"
+    },
+    {
+      "schema_id": "melm.folk_tales.v1",
+      "path": "folk_tales.v1.json",
+      "owner": "story pipeline",
+      "producers": ["release tooling"],
+      "consumers": ["assistant_skill_story_folk_tales", "assistant_skill_story_pipeline"],
+      "validator": "melm.contracts.validate_folk_tales",
+      "compatible_predecessors": [],
+      "failure_behavior": "offline template story engine returns None, pipeline uses LLM-only",
+      "safety_critical": false,
+      "version": "1.0.0",
+      "schema_hash": "7157577463b39687"
     }
   ],
   "version": "1.0.0"
