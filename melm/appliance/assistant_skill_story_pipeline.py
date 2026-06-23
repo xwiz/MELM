@@ -248,3 +248,23 @@ def is_pipeline_available(model_path: str = _DEFAULT_MODEL_PATH) -> bool:
         return True
     except ImportError:
         return False
+
+
+_TRAIT_SEPARATOR_RE = re.compile(r',\s*')
+
+
+def _clean_traits(traits_raw: str) -> str:
+    """Deduplicate repeated traits from 0.5B output (e.g. 'curious, curious' → 'curious')."""
+    traits = [t.strip().lower() for t in _TRAIT_SEPARATOR_RE.split(traits_raw) if t.strip()]
+    seen: set[str] = set()
+    unique: list[str] = []
+    for t in traits:
+        if t not in seen:
+            seen.add(t)
+            unique.append(t)
+    return ", ".join(unique)
+
+
+def _validate_protagonist(text: str, expected_name: str) -> bool:
+    """Check that protagonist output actually describes the expected character."""
+    return expected_name.lower() in text.lower()

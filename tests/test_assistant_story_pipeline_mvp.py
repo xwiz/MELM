@@ -91,6 +91,36 @@ def test_pipeline_inject_llm():
     assert engine._llm == "fake"
 
 
+def test_clean_traits_deduplicates():
+    from melm.appliance.assistant_skill_story_pipeline import _clean_traits
+    assert _clean_traits("brave, curious, curious") == "brave, curious"
+
+
+def test_clean_traits_single():
+    from melm.appliance.assistant_skill_story_pipeline import _clean_traits
+    assert _clean_traits("brave") == "brave"
+
+
+def test_clean_traits_empty():
+    from melm.appliance.assistant_skill_story_pipeline import _clean_traits
+    assert _clean_traits("") == ""
+
+
+def test_validate_protagonist_valid():
+    from melm.appliance.assistant_skill_story_pipeline import _validate_protagonist
+    assert _validate_protagonist("Maya is a brave girl.", "Maya")
+
+
+def test_validate_protagonist_invalid():
+    from melm.appliance.assistant_skill_story_pipeline import _validate_protagonist
+    assert not _validate_protagonist("Mrs. Thompson was a kind woman.", "Maya")
+
+
+def test_validate_protagonist_case_insensitive():
+    from melm.appliance.assistant_skill_story_pipeline import _validate_protagonist
+    assert _validate_protagonist("MAYA found the drum.", "maya")
+
+
 def test_pipeline_min_words_constant():
     """_MIN_STORY_WORDS constant is a positive integer."""
     from melm.appliance.assistant_skill_story_pipeline import _MIN_STORY_WORDS
