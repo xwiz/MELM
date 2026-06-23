@@ -3560,3 +3560,82 @@ def load_story_pipeline_prompts() -> dict[str, Any]:
     payload = load_contract_json("story_pipeline_prompts.v1.json")
     validate_story_pipeline_prompts(payload)
     return payload
+
+
+def validate_storytelling_phrases(payload: dict[str, Any]) -> None:
+    if payload.get("schema_id") != "melm.storytelling_phrases.v1":
+        _fail("$.schema_id", "must equal 'melm.storytelling_phrases.v1'")
+    cultures = payload.get("cultures")
+    if not isinstance(cultures, dict) or not cultures:
+        _fail("$.cultures", "must be a non-empty object")
+    required_functions = {"openings", "transitions", "closings", "nature_descriptions",
+                          "character_descriptions", "exaggerations", "emotional_beats", "moral_framings"}
+    for cname, cat in cultures.items():
+        if not isinstance(cat, dict):
+            _fail(f"$.cultures.{cname}", "must be an object")
+        for func in required_functions:
+            if func not in cat:
+                _fail(f"$.cultures.{cname}", f"missing required function '{func}'")
+            phrases = cat[func]
+            if not isinstance(phrases, list) or len(phrases) < 3:
+                _fail(f"$.cultures.{cname}.{func}", "must be a list with 3+ entries")
+            for i, phr in enumerate(phrases):
+                if not isinstance(phr, str) or not phr.strip():
+                    _fail(f"$.cultures.{cname}.{func}[{i}]", "must be a non-empty string")
+
+
+def load_storytelling_phrases() -> dict[str, Any]:
+    payload = load_contract_json("storytelling_phrases.v1.json")
+    validate_storytelling_phrases(payload)
+    return payload
+
+
+def validate_story_scene_templates(payload: dict[str, Any]) -> None:
+    if payload.get("schema_id") != "melm.story_scene_templates.v1":
+        _fail("$.schema_id", "must equal 'melm.story_scene_templates.v1'")
+    archetypes = payload.get("archetypes", [])
+    if not archetypes:
+        _fail("$.archetypes", "must be a non-empty array")
+    for i, a in enumerate(archetypes):
+        if "archetype_id" not in a:
+            _fail(f"$.archetypes[{i}]", "missing archetype_id")
+        if "entity_slots" not in a or not a["entity_slots"]:
+            _fail(f"$.archetypes[{i}]", "missing or empty entity_slots")
+        if "atom_sequence" not in a or not a["atom_sequence"]:
+            _fail(f"$.archetypes[{i}]", "missing or empty atom_sequence")
+        for j, s in enumerate(a.get("entity_slots", [])):
+            if "role" not in s:
+                _fail(f"$.archetypes[{i}].entity_slots[{j}]", "missing role")
+            if "allowed_classes" not in s:
+                _fail(f"$.archetypes[{i}].entity_slots[{j}]", "missing allowed_classes")
+    if "topic_to_entity_classes" not in payload:
+        _fail("$.topic_to_entity_classes", "missing required field")
+    if "story_arcs" not in payload:
+        _fail("$.story_arcs", "missing required field")
+
+
+def load_story_scene_templates() -> dict[str, Any]:
+    payload = load_contract_json("story_scene_templates.v1.json")
+    validate_story_scene_templates(payload)
+    return payload
+
+
+def validate_folk_tales(payload: dict[str, Any]) -> None:
+    if payload.get("schema_id") != "melm.folk_tales.v1":
+        _fail("$.schema_id", "must equal 'melm.folk_tales.v1'")
+    stories = payload.get("stories")
+    if not isinstance(stories, list) or len(stories) < 1:
+        _fail("$.stories", "must be a non-empty array")
+    for i, story in enumerate(stories):
+        if not isinstance(story, dict):
+            _fail(f"$.stories[{i}]", "must be an object")
+        if "title" not in story or not isinstance(story["title"], str):
+            _fail(f"$.stories[{i}].title", "must be a non-empty string")
+        if "text" not in story or not isinstance(story["text"], str) or len(story["text"]) < 50:
+            _fail(f"$.stories[{i}].text", "must be a string with 50+ chars")
+
+
+def load_folk_tales() -> dict[str, Any]:
+    payload = load_contract_json("folk_tales.v1.json")
+    validate_folk_tales(payload)
+    return payload

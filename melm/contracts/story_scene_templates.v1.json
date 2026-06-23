@@ -1,0 +1,82 @@
+{
+  "schema_id": "melm.story_scene_templates.v1",
+  "version": "1.0.0",
+  "archetypes": [
+    {
+      "archetype_id": "discovery",
+      "title_template": "{protagonist} Discovers {object}",
+      "min_words": 80,
+      "entity_slots": [
+        {"role": "protagonist", "allowed_classes": ["person", "story_element.character.protagonist"]},
+        {"role": "place", "allowed_classes": ["story_element.place.wild", "story_element.place.settlement"]},
+        {"role": "object", "allowed_classes": ["story_element.object.magical", "story_element.object.ordinary"]}
+      ],
+      "atom_sequence": [
+        {"verb": "walk", "subject": "protagonist", "object": null, "location": "place"},
+        {"verb": "find", "subject": "protagonist", "object": "object", "location": "place"},
+        {"verb": "examine", "subject": "protagonist", "object": "object", "location": null},
+        {"verb": "wonder", "subject": "protagonist", "object": null, "location": null}
+      ]
+    },
+    {
+      "archetype_id": "chase",
+      "title_template": "The Pursuit",
+      "min_words": 100,
+      "entity_slots": [
+        {"role": "protagonist", "allowed_classes": ["person", "story_element.character.protagonist"]},
+        {"role": "pursuer", "allowed_classes": ["story_element.character.adversary", "story_element.creature.talking_animal"]},
+        {"role": "place", "allowed_classes": ["story_element.place.wild"]},
+        {"role": "obstacle", "allowed_classes": ["story_element.object.ordinary", "story_element.place.wild"]}
+      ],
+      "atom_sequence": [
+        {"verb": "run", "subject": "protagonist", "object": null, "location": "place"},
+        {"verb": "hide", "subject": "protagonist", "object": null, "location": "obstacle"},
+        {"verb": "search", "subject": "pursuer", "object": "protagonist", "location": null},
+        {"verb": "escape", "subject": "protagonist", "object": "pursuer", "location": null}
+      ]
+    },
+    {
+      "archetype_id": "rescue",
+      "title_template": "The Rescue",
+      "min_words": 100,
+      "entity_slots": [
+        {"role": "protagonist", "allowed_classes": ["person", "story_element.character.protagonist"]},
+        {"role": "rescuer", "allowed_classes": ["person", "story_element.character.ally", "story_element.creature.talking_animal"]},
+        {"role": "place", "allowed_classes": ["story_element.place.wild", "story_element.place.settlement"]}
+      ],
+      "atom_sequence": [
+        {"verb": "meet", "subject": "protagonist", "object": "rescuer", "location": "place"},
+        {"verb": "follow", "subject": "protagonist", "object": "rescuer", "location": null},
+        {"verb": "arrive", "subject": "protagonist", "object": null, "location": "place"},
+        {"verb": "thank", "subject": "protagonist", "object": "rescuer", "location": null}
+      ]
+    },
+    {
+      "archetype_id": "return_home",
+      "title_template": "Home Again",
+      "min_words": 60,
+      "entity_slots": [
+        {"role": "protagonist", "allowed_classes": ["person", "story_element.character.protagonist"]},
+        {"role": "home", "allowed_classes": ["story_element.place.settlement"]},
+        {"role": "welcomer", "allowed_classes": ["person", "story_element.character.ally"]}
+      ],
+      "atom_sequence": [
+        {"verb": "walk", "subject": "protagonist", "object": null, "location": "home"},
+        {"verb": "see", "subject": "protagonist", "object": "welcomer", "location": null},
+        {"verb": "hug", "subject": "welcomer", "object": "protagonist", "location": null},
+        {"verb": "learn", "subject": "protagonist", "object": null, "location": null}
+      ]
+    }
+  ],
+  "topic_to_entity_classes": {
+    "rain": ["weather_phenomenon", "story_element.place.wild"],
+    "adventure": ["story_element.place.wild", "story_element.character.adversary"],
+    "bedtime": ["story_element.place.settlement", "story_element.character.ally"],
+    "friendship": ["story_element.character.ally", "person"],
+    "courage": ["story_element.character.adversary", "story_element.place.wild"]
+  },
+  "story_arcs": {
+    "quest": ["discovery", "chase", "rescue", "return_home"],
+    "journey": ["discovery", "chase", "return_home"]
+  }
+}

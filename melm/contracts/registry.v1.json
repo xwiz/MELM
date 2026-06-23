@@ -1869,6 +1869,19 @@
       "safety_critical": false,
       "version": "1.0.0",
       "schema_hash": "7157577463b39687"
+    },
+    {
+      "schema_id": "melm.story_scene_templates.v1",
+      "path": "story_scene_templates.v1.json",
+      "owner": "story",
+      "producers": ["release tooling"],
+      "consumers": ["story scene engine"],
+      "validator": "melm.contracts.validate_story_scene_templates",
+      "compatible_predecessors": [],
+      "failure_behavior": "story scene engine falls back to hardcoded archetype defaults",
+      "safety_critical": false,
+      "version": "1.0.0",
+      "schema_hash": "b0b4738434927ffc"
     }
   ],
   "version": "1.0.0"

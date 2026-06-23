@@ -330,6 +330,38 @@ class ContractMvpFoundationTests(unittest.TestCase):
 
 
 
+class ContractMvpAtomTemplateTests(unittest.TestCase):
+    """Contract integration tests for atom_templates.v1.json."""
+
+    def test_atom_templates_loads(self) -> None:
+        from melm.contracts.validation import load_atom_templates, validate_atom_templates
+        from melm.contracts.validation import load_contract_json
+        payload = load_contract_json("atom_templates.v1.json")
+        validate_atom_templates(payload)
+        templates = load_atom_templates()
+        self.assertIsInstance(templates, dict)
+        self.assertGreater(len(templates), 0)
+
+    def test_atom_templates_has_all_defaults(self) -> None:
+        from melm.contracts.validation import load_atom_templates
+        templates = load_atom_templates()
+        for key in ("weather", "meal_suggestion", "assistant_identity",
+                     "story", "gibberish", "complaint_response", "novelty"):
+            self.assertIn(key, templates, f"missing template key: {key}")
+            self.assertIsInstance(templates[key], str)
+            self.assertTrue(templates[key])
+
+    def test_atom_templates_hash(self) -> None:
+        import hashlib
+        from melm.contracts.validation import CONTRACT_ROOT
+        content = (CONTRACT_ROOT / "atom_templates.v1.json").read_bytes()
+        actual = hashlib.sha256(content).hexdigest()[:16]
+        registry = ContractRegistry.load()
+        entry = registry.require("melm.atom_templates.v1")
+        self.assertEqual(actual, entry.get("schema_hash", ""),
+                         "atom_templates.v1.json schema_hash mismatch")
+
+
 class ContractMvpSelfIdentityTests(unittest.TestCase):
     """Contract integration tests for self_identity.v1.json."""
 
@@ -369,6 +401,41 @@ class ContractMvpSelfIdentityTests(unittest.TestCase):
         self.assertGreater(len(data["identity_labels"]), 0)
         self.assertGreater(len(data["identity_narratives"]), 0)
         self.assertGreater(len(data["name_awareness_templates"]), 0)
+
+
+class ContractMvpStorySceneTests(unittest.TestCase):
+    def test_story_scene_templates_contract_loads(self):
+        from melm.contracts import load_story_scene_templates
+        data = load_story_scene_templates()
+        assert data is not None
+        assert "archetypes" in data
+
+    def test_story_scene_templates_has_minimum_archetypes(self):
+        from melm.contracts import load_story_scene_templates
+        data = load_story_scene_templates()
+        assert len(data.get("archetypes", [])) >= 3
+
+    def test_story_scene_templates_each_archetype_has_required_fields(self):
+        from melm.contracts import load_story_scene_templates
+        data = load_story_scene_templates()
+        for archetype in data.get("archetypes", []):
+            assert "archetype_id" in archetype
+            assert "entity_slots" in archetype
+            assert "atom_sequence" in archetype
+            for atom in archetype["atom_sequence"]:
+                assert "verb" in atom
+                assert "subject" in atom
+
+    def test_story_scene_templates_entity_slots_have_allowed_classes(self):
+        from melm.contracts import load_story_scene_templates, load_semantic_class_ids
+        data = load_story_scene_templates()
+        all_ids = load_semantic_class_ids()
+        for archetype in data.get("archetypes", []):
+            for slot in archetype.get("entity_slots", []):
+                assert "role" in slot
+                assert "allowed_classes" in slot
+                for cls in slot["allowed_classes"]:
+                    assert cls in all_ids, f"Class '{cls}' not in semantic_classes.v1.json"
 
 
 if __name__ == "__main__":
