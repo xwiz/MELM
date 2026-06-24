@@ -437,6 +437,18 @@ class ContractMvpStorySceneTests(unittest.TestCase):
                 for cls in slot["allowed_classes"]:
                     assert cls in all_ids, f"Class '{cls}' not in semantic_classes.v1.json"
 
+    def test_story_scene_templates_verb_lemmas_match_verb_atoms(self):
+        from melm.contracts import load_story_scene_templates, load_verb_atoms
+        data = load_story_scene_templates()
+        verbs = load_verb_atoms()
+        verb_ids = set(verbs)
+        for archetype in data.get("archetypes", []):
+            for atom in archetype.get("atom_sequence", []):
+                expected_id = f"verb__{atom['verb']}"
+                assert expected_id in verb_ids, (
+                    f"Verb '{atom['verb']}' has no atom in verb_atoms.v1.json"
+                )
+
 
 if __name__ == "__main__":
     unittest.main()

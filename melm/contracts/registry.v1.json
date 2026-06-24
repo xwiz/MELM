@@ -1232,7 +1232,7 @@
       "failure_behavior": "RoleAssignment enrichment silently degrades to pass-through; noun entity store seeding fails gracefully",
       "safety_critical": false,
       "version": "1.0.0",
-      "schema_hash": "50f5ab309e91047c"
+      "schema_hash": "232fc09b621cc064"
     },
     {
       "schema_id": "melm.modifier_atoms.v1",
@@ -1504,7 +1504,7 @@
       "failure_behavior": "verb predicate enrichment degrades silently to pass-through",
       "safety_critical": false,
       "version": "1.0.0",
-      "schema_hash": "f49d1db3f8886b48"
+      "schema_hash": "45b0dd7ce3042bdc"
     },
     {
       "schema_id": "melm.sentience_map.v1",

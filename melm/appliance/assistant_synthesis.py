@@ -35,8 +35,10 @@ from .assistant_skill_meal import format_meal_answer
 from .assistant_skill_memory import autobiographical_digest_summary, autobiographical_memory_summary, autobiographical_session_summary, personal_memory_summary
 from .assistant_skill_story import format_story_answer, format_story_frame
 from .assistant_skill_story_planning import plan_story
+from .assistant_skill_story_symbolic import SymbolicStoryEngine, StoryAtomGraph
 from .assistant_story_prompt_pipeline import StoryPromptPipeline
 from .assistant_skill_story_pipeline import StoryPipelineEngine, is_pipeline_available
+from .assistant_skill_story_folk_tales import generate_folk_tale
 from .local_assistant_router import AssistantDecision, LocalAssistantProfile
 from melm.appliance.reasoning.implications import MoralContext, derive_moral_context
 from .local_assistant_router import _extract_patient_type, _extract_verb
@@ -622,6 +624,17 @@ class BoundedSynthesisResult:
         }
 
 
+def _requested_story_constraints_from_value(value: str) -> frozenset[str]:
+    """Extract topic constraints from evidence value (story metadata text)."""
+    tokens = value.lower().split()
+    stopwords = {"a", "an", "the", "and", "or", "of", "in", "on", "at",
+                 "to", "for", "by", "with", "is", "was", "are", "were"}
+    topics = {t.strip(",:;.!?") for t in tokens
+              if len(t.strip(",:;.!?")) >= 4
+              and t.strip(",:;.!?") not in stopwords}
+    return frozenset(topics)
+
+
 class BoundedLocalSynthesizer:
     """Cited verbalizer for local/cache decisions after membrane approval."""
 
@@ -1078,7 +1091,45 @@ class BoundedLocalSynthesizer:
         return apply_behaviors(answer, results, protect=protect)
 
     def _story_answer(self, evidence: SynthesisEvidence) -> str:
-        # Try the LLM pipeline first
+        payload = self._story_payload(evidence)
+        if payload:
+            title = str(payload.get("title") or _title_from_evidence(evidence))
+            summary = str(
+                payload.get("summary")
+                or _story_frame_from_payload(payload)
+                or evidence.value
+            )
+            topics = _string_tuple(payload.get("topics"))
+            cultures = _string_tuple(payload.get("cultures"))
+            return format_story_answer(
+                title, summary, topics, cultures,
+                name=self.profile.user_name,
+                location=self.profile.location,
+                culture=self.profile.culture,
+            )
+
+        # Offline folk tale engine first: deterministic, 0.1s, 2,300 words avg
+        try:
+            topics = _requested_story_constraints_from_value(str(evidence.value or ""))
+            folk_story = generate_folk_tale(profile=self.profile, topics=topics)
+            if folk_story is not None and len(folk_story.split()) >= 80:
+                return folk_story
+        except Exception:
+            pass
+
+        # Tier 2: Symbolic story scaffold (UOL-driven, deterministic)
+        try:
+            engine = SymbolicStoryEngine(self.profile)
+            topics = _requested_story_constraints_from_value(str(evidence.value or ""))
+            graph = engine.generate(topics=topics)
+            if graph is not None and graph.scenes:
+                story = self._render_symbolic_story(graph)
+                if story and len(story.split()) >= 80:
+                    return story
+        except Exception:
+            pass
+
+        # Tier 3: LLM pipeline — deprecated (35-93s, ~950 words, TinyStories-biased).
         if is_pipeline_available():
             try:
                 pipeline = StoryPipelineEngine(self.profile)
@@ -1089,7 +1140,6 @@ class BoundedLocalSynthesizer:
             except Exception:
                 pass
 
-        payload = self._story_payload(evidence)
         if not payload:
             frame = self._story_frame(evidence)
             payload = {
@@ -1112,16 +1162,53 @@ class BoundedLocalSynthesizer:
             culture=self.profile.culture,
         )
 
+    def _render_symbolic_story(self, graph: StoryAtomGraph) -> str | None:
+        """Convert StoryAtomGraph to prose paragraphs using simple NLG."""
+        paragraphs: list[str] = []
+        for scene in graph.scenes:
+            scene_paras: list[str] = []
+            if scene.title:
+                scene_paras.append(f"{scene.title}.")
+            for atom in scene.atoms:
+                subj = scene.entity_bindings.get(atom.subject_role)
+                obj = scene.entity_bindings.get(atom.object_role) if atom.object_role else None
+                loc = scene.entity_bindings.get(atom.location_role) if atom.location_role else None
+                sentence = self._atom_to_sentence(atom.verb_lemma, subj, obj, loc)
+                if sentence:
+                    scene_paras.append(sentence)
+            if scene_paras:
+                paragraphs.append(" ".join(scene_paras))
+        if not paragraphs:
+            for scene in graph.scenes:
+                for atom in scene.atoms:
+                    subj = scene.entity_bindings.get(atom.subject_role)
+                    if subj:
+                        paragraphs.append(f"{subj.label} {atom.verb_lemma}.")
+                        break
+                    break
+        return "\n\n".join(paragraphs) if paragraphs else None
 
-def _requested_story_constraints_from_value(value: str) -> frozenset[str]:
-    """Extract topic constraints from evidence value (story metadata text)."""
-    tokens = value.lower().split()
-    stopwords = {"a", "an", "the", "and", "or", "of", "in", "on", "at",
-                 "to", "for", "by", "with", "is", "was", "are", "were"}
-    topics = {t.strip(",:;.!?") for t in tokens
-              if len(t.strip(",:;.!?")) >= 4
-              and t.strip(",:;.!?") not in stopwords}
-    return frozenset(topics)
+    def _atom_to_sentence(self, verb: str, subj: Any | None,
+                          obj: Any | None, loc: Any | None) -> str:
+        """Render a single UOL atom as an English sentence."""
+        subj_str = subj.label if subj else "Someone"
+        subj_str = subj_str[:1].upper() + subj_str[1:] if subj_str else "Someone"
+        obj_str = obj.label if obj else ""
+        loc_str = loc.label if loc else ""
+        tense_map = {
+            "walk": "walked", "find": "found", "examine": "examined", "wonder": "wondered",
+            "run": "ran", "hide": "hid", "search": "searched", "escape": "escaped",
+            "meet": "met", "follow": "followed", "arrive": "arrived", "thank": "thanked",
+            "see": "saw", "hug": "hugged", "learn": "learned",
+        }
+        past = tense_map.get(verb, verb + "ed")
+        if obj_str and loc_str:
+            return f"{subj_str} {past} {obj_str} in {loc_str}."
+        if obj_str:
+            return f"{subj_str} {past} {obj_str}."
+        if loc_str:
+            return f"{subj_str} {past} through {loc_str}."
+        return f"{subj_str} {past}."
 
     def _story_payload(self, evidence: SynthesisEvidence) -> dict[str, Any]:
         if self.store is None or not evidence.key.startswith("story_models."):

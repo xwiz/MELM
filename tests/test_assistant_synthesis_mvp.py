@@ -8,6 +8,7 @@ import unittest
 from melm.appliance import (
     AssistantOSKernel,
     AssistantOSStore,
+    BoundedLocalSynthesizer,
     LocalAssistantProfile,
     SYNTHESIS_QUALITY_FLOOR,
     initialize_assistant_os_database,
@@ -162,6 +163,47 @@ class AssistantSynthesisMvpTests(unittest.TestCase):
         self.assertIn("contacts.ada", synthesis.citations)
         self.assertEqual(synthesis.quality["warnings"], [])
         self.assertGreaterEqual(synthesis.quality["score"], SYNTHESIS_QUALITY_FLOOR)
+
+    def test_media_playback_synthesis_includes_style_description(self) -> None:
+        with tempfile.TemporaryDirectory() as tmp:
+            store = AssistantOSStore(Path(tmp) / "test.sqlite")
+            try:
+                profile = LocalAssistantProfile(
+                    media_library=("calm piano",),
+                    story_models={},
+                    weekly_weather={},
+                    contacts={},
+                )
+                kernel = AssistantOSKernel(profile=profile, store=store)
+                decision = kernel.handle("Play calm piano.")
+
+                self.assertEqual(decision.intent, "media_playback")
+                self.assertEqual(decision.route, "device_action")
+                self.assertIn("Playing", decision.answer)
+                self.assertIn("calm piano", decision.answer)
+                self.assertIn("classical melody", decision.answer)
+            finally:
+                store.close()
+
+    def test_social_contact_synthesis_includes_phone_number(self) -> None:
+        with tempfile.TemporaryDirectory() as tmp:
+            store = AssistantOSStore(Path(tmp) / "test.sqlite")
+            try:
+                profile = LocalAssistantProfile(
+                    contacts={"mom": "+234-000-MOM"},
+                    story_models={},
+                    weekly_weather={},
+                    media_library=(),
+                )
+                kernel = AssistantOSKernel(profile=profile, store=store)
+                decision = kernel.handle("Call mom.")
+
+                self.assertEqual(decision.intent, "social_contact")
+                self.assertEqual(decision.route, "device_action")
+                self.assertIn("+234-000-MOM", decision.answer)
+                self.assertIn("I can call mom", decision.answer)
+            finally:
+                store.close()
 
     def test_assistant_identity_synthesis_cites_self_model(self) -> None:
         with tempfile.TemporaryDirectory() as tmp:
@@ -370,8 +412,13 @@ class AssistantSynthesisMvpTests(unittest.TestCase):
 
             self.assertEqual(payload["route"], "local_answer")
             self.assertTrue(payload["synthesis"]["applied"])
-            self.assertIn("I picked", payload["answer"])
             self.assertIn("The Rain Map Bedtime Story", payload["answer"])
+            self.assertTrue(
+                payload["answer"].startswith("I picked")
+                or payload["answer"].startswith("Here is a story")
+                or payload["answer"].startswith("Let me tell you"),
+                f"Unexpected story answer start: {payload['answer'][:50]!r}",
+            )
             self.assertNotIn("Using the public-domain catalog entry", payload["answer"])
             first_story = story_payloads["ia_rainmapbedtimestory00test"]
             self.assertIn("topics", first_story)
@@ -404,6 +451,63 @@ class AssistantSynthesisMvpTests(unittest.TestCase):
             self.assertGreaterEqual(payload["synthesis"]["admitted_evidence_count"], 2)
             self.assertGreaterEqual(payload["synthesis"]["quality"]["score"], SYNTHESIS_QUALITY_FLOOR)
             self.assertEqual(payload["counts"]["synthesis_traces"], 1)
+
+
+class SynthesisSymbolicStoryRendererTests(unittest.TestCase):
+    def test_symbolic_story_renderer_produces_prose_for_scenes(self):
+        from melm.appliance.assistant_skill_story_symbolic import SymbolicStoryEngine
+        import random
+        from dataclasses import dataclass
+
+        @dataclass
+        class MiniProfile:
+            user_name: str = "Maya"
+            age: int = 7
+            location: str = "Lagos"
+            culture: str = "Yoruba"
+
+        engine = SymbolicStoryEngine(MiniProfile(), rng=random.Random(7))
+        graph = engine.generate(frozenset({"journey"}))
+        self.assertIsNotNone(graph)
+        self.assertTrue(len(graph.scenes) >= 1)
+
+        story = BoundedLocalSynthesizer(profile=LocalAssistantProfile())._render_symbolic_story(graph)
+        self.assertIsNotNone(story)
+        self.assertTrue(len(story.split()) >= len(graph.scenes),
+                        f"{len(story.split())} words for {len(graph.scenes)} scenes")
+        self.assertIn("Maya", story)
+
+    def test_atom_to_sentence_renders_all_patterns(self):
+        from melm.appliance.assistant_skill_story_symbolic import EntityBinding
+        subj = EntityBinding("Maya", "person", {})
+        obj = EntityBinding("Forest", "story_element.place.wild", {})
+        loc = EntityBinding("River", "story_element.place.wild", {})
+        synth = BoundedLocalSynthesizer(profile=LocalAssistantProfile())
+        s1 = synth._atom_to_sentence("walk", subj, None, loc)
+        self.assertIn("Maya", s1)
+        self.assertIn("walked", s1)
+        self.assertIn("River", s1)
+        s2 = synth._atom_to_sentence("find", subj, obj, None)
+        self.assertIn("Maya", s2)
+        self.assertIn("found", s2)
+        self.assertIn("Forest", s2)
+        s3 = synth._atom_to_sentence("wonder", subj, None, None)
+        self.assertIn("Maya", s3)
+        self.assertIn("wondered", s3)
+        s4 = synth._atom_to_sentence("thank", subj, obj, loc)
+        self.assertIn("Maya", s4)
+        self.assertIn("thanked", s4)
+        self.assertIn("Forest", s4)
+        self.assertIn("River", s4)
+        s5 = synth._atom_to_sentence("unknown", subj, None, None)
+        self.assertIn("unknowned", s5)
+
+    def test_atom_to_sentence_capitalizes_first_letter(self):
+        from melm.appliance.assistant_skill_story_symbolic import EntityBinding
+        subj = EntityBinding("the child", "person", {})
+        synth = BoundedLocalSynthesizer(profile=LocalAssistantProfile())
+        s1 = synth._atom_to_sentence("walk", subj, None, None)
+        self.assertTrue(s1[0].isupper(), f"First letter should be uppercase: {s1}")
 
 
 def _run_cli(*args: str) -> dict:
