@@ -1,0 +1,111 @@
+{
+  "schema_id": "melm.nlg_atomic_renderers.v1",
+  "version": "1.0.0",
+  "renderer_families": {
+    "definition": {
+      "description": "Render a definition-style answer when the user asks what something is",
+      "priority": 10,
+      "required_conditions": {
+        "task_topic": {"present": true},
+        "task_topic_class": {"present": true}
+      },
+      "forbidden_conditions": {
+        "output_type": {"equals": "riddle"}
+      },
+      "predicate_hints": [],
+      "templates": [
+        "{task_topic} is understood as {task_topic_class}.",
+        "{task_topic} refers to a {task_topic_class}."
+      ]
+    },
+    "how_to": {
+      "description": "Render step-oriented instructions for how-to questions",
+      "priority": 20,
+      "required_conditions": {
+        "task_topic": {"present": true},
+        "predicate": {"present": true}
+      },
+      "forbidden_conditions": {
+        "reasoning_protected": {"equals": true}
+      },
+      "predicate_hints": ["write", "make", "create", "build", "center", "carry", "cook", "draw", "fix", "install"],
+      "templates": [
+        "To {predicate} {task_topic}, start with the essential steps and build carefully from there.",
+        "Here is how to {predicate} {task_topic}: break it into small steps and work through each one."
+      ]
+    },
+    "creative_riddle": {
+      "description": "Render a riddle when output_type is riddle or creative_form",
+      "priority": 30,
+      "required_conditions": {
+        "output_type": {"equals": "riddle"}
+      },
+      "forbidden_conditions": {},
+      "predicate_hints": [],
+      "templates": [
+        "Here is a riddle: I am always new yet never young. What am I? A {topic_if_entity}.",
+        "Riddle me this: What is full of meaning but never speaks? A {topic_if_entity}."
+      ]
+    },
+    "entity_property_advice": {
+      "description": "Render advice about handling an entity with known fragile properties",
+      "priority": 25,
+      "required_conditions": {
+        "entity_fragile": {"present": true}
+      },
+      "forbidden_conditions": {
+        "reasoning_protected": {"equals": true}
+      },
+      "predicate_hints": ["carry", "hold", "move", "store", "handle", "transport"],
+      "templates": [
+        "{task_topic} is fragile. Handle it carefully with two hands and avoid impact or sudden movement."
+      ]
+    },
+    "entity_property_explanation": {
+      "description": "Explain why an entity has a certain property (reasoning-protected)",
+      "priority": 35,
+      "required_conditions": {
+        "entity_fragile": {"present": true},
+        "reasoning_protected": {"equals": true}
+      },
+      "forbidden_conditions": {},
+      "predicate_hints": [],
+      "templates": [
+        "{task_topic} is fragile because its materials can crack or break under impact or pressure."
+      ]
+    },
+    "technical_how_to": {
+      "description": "Render technical instruction with normalization alerts",
+      "priority": 40,
+      "required_conditions": {
+        "task_topic": {"present": true},
+        "predicate": {"present": true}
+      },
+      "forbidden_conditions": {},
+      "predicate_hints": ["center", "style", "align", "format", "configure"],
+      "extra_conditions": {
+        "normalization_alerts_present": true
+      },
+      "templates": [
+        "To {predicate} {task_topic}, use the appropriate syntax. Note that some technical terms may be normalized by the parser.",
+        "Here is how to {predicate} {task_topic}: look up the correct property or method. Some domain tokens may appear simplified."
+      ]
+    },
+    "learned_unknown_skill": {
+      "description": "Render a response when skill is not installed but learned facts exist",
+      "priority": 5,
+      "required_conditions": {
+        "task_topic": {"present": true}
+      },
+      "forbidden_conditions": {},
+      "predicate_hints": [],
+      "extra_conditions": {
+        "skill_absent": true
+      },
+      "templates": [
+        "I do not have a dedicated {task_topic} skill installed yet. I can use my general knowledge to help.",
+        "I do not have a specific skill for {task_topic}, but I know some things about it."
+      ]
+    }
+  }
+}

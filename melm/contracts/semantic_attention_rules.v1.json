@@ -1,0 +1,30 @@
+{
+  "schema_id": "melm.semantic_attention_rules.v1",
+  "version": "1.0.0",
+  "response_artifact_terms": [
+    "answer", "advice", "explanation", "guide", "help",
+    "instruction", "instructions", "response"
+  ],
+  "technical_token_terms": [
+    "html", "css", "api", "url", "json", "sql",
+    "svg", "xml", "regex", "cli", "yaml", "toml"
+  ],
+  "output_type_terms": {
+    "brief": "output_style",
+    "concise": "output_style",
+    "professional": "output_style",
+    "comprehensive": "output_style",
+    "puzzle": "creative_form",
+    "riddle": "creative_form"
+  },
+  "reasoning_cues": [
+    "why", "what causes", "how come", "what happens if",
+    "why does", "why is", "why do", "why are"
+  ],
+  "stopwords": [
+    "a", "an", "the", "to", "do", "i", "me", "my",
+    "you", "your", "how", "why", "what", "is", "be",
+    "in", "on", "of", "about", "tell", "can", "with",
+    "give", "make", "write", "get"
+  ]
+}
