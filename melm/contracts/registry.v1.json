@@ -702,14 +702,15 @@
         "release tooling"
       ],
       "consumers": [
-        "assistant_mood_engine"
+        "assistant_mood_engine",
+        "assistant_skill_uol_triggers"
       ],
       "validator": "melm.contracts.validate_affect_lexicon",
       "compatible_predecessors": [],
       "failure_behavior": "mood engine uses hardcoded default lexicon",
       "safety_critical": false,
       "version": "1.0.0",
-      "schema_hash": "93da86250212462c"
+      "schema_hash": "2ec56bf9b7e77a2e"
     },
     {
       "schema_id": "melm.response_pools.v1",
@@ -1180,7 +1181,7 @@
       "failure_behavior": "all reasons proceed through normal answer path (conservative fallback)",
       "safety_critical": true,
       "version": "1.0.0",
-      "schema_hash": "46b4ffd46e04e6e4"
+      "schema_hash": "ca6d88d1e6e4fd97"
     },
     {
       "schema_id": "melm.environment_prep_phrases.v1",
@@ -1803,6 +1804,24 @@
       "safety_critical": false,
       "version": "1.0.0",
       "schema_hash": "b110e2affdebdb56"
+    },
+    {
+      "schema_id": "melm.uol_trigger_responses.v1",
+      "path": "uol_trigger_responses.v1.json",
+      "owner": "assistant_skill_uol_triggers",
+      "producers": [
+        "release tooling"
+      ],
+      "consumers": [
+        "assistant_skill_uol_triggers",
+        "assistant_synthesis"
+      ],
+      "validator": "melm.contracts.validate_uol_trigger_responses",
+      "compatible_predecessors": [],
+      "failure_behavior": "UOL trigger responses are disabled",
+      "safety_critical": false,
+      "version": "1.0.0",
+      "schema_hash": "6cb8960bec936046"
     },
     {
       "schema_id": "melm.personal_memory_evidence_map.v1",

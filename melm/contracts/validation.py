@@ -3355,6 +3355,85 @@ def load_short_circuit_responses() -> dict[str, Any]:
     return data
 
 
+_UOL_TRIGGER_CONDITION_KEYS = {
+    "assistant_targeted",
+    "polarity",
+    "min_affect_valence",
+    "negative_modifier",
+    "match_operator",
+    "required_tokens",
+    "excluded_tokens",
+    "speech_acts",
+}
+
+
+def validate_uol_trigger_responses(payload: dict[str, Any]) -> None:
+    if payload.get("schema_id") != "melm.uol_trigger_responses.v1":
+        _fail("$.schema_id", "must equal 'melm.uol_trigger_responses.v1'")
+    triggers = payload.get("triggers")
+    if not isinstance(triggers, list) or not triggers:
+        _fail("$.triggers", "must be a non-empty array")
+    valid_operators = {"any", "all"}
+    for i, trigger in enumerate(triggers):
+        path = f"$.triggers[{i}]"
+        if not isinstance(trigger, dict):
+            _fail(path, "must be an object")
+        tid = trigger.get("trigger_id")
+        if not isinstance(tid, str) or not tid:
+            _fail(f"{path}.trigger_id", "must be a non-empty string")
+        desc = trigger.get("description")
+        if desc is not None and not isinstance(desc, str):
+            _fail(f"{path}.description", "must be a string")
+        conditions = trigger.get("conditions")
+        if not isinstance(conditions, dict):
+            _fail(f"{path}.conditions", "must be an object")
+        op = conditions.get("match_operator", "any")
+        if op not in valid_operators:
+            _fail(f"{path}.conditions.match_operator", "must be one of 'any' or 'all'")
+        for key in conditions:
+            if key not in _UOL_TRIGGER_CONDITION_KEYS:
+                _fail(f"{path}.conditions.{key}", "unknown condition key")
+        if "assistant_targeted" in conditions and not isinstance(conditions["assistant_targeted"], bool):
+            _fail(f"{path}.conditions.assistant_targeted", "must be a boolean")
+        if "polarity" in conditions and conditions["polarity"] not in {"positive", "negative"}:
+            _fail(f"{path}.conditions.polarity", "must be 'positive' or 'negative'")
+        if "min_affect_valence" in conditions and not isinstance(conditions["min_affect_valence"], (int, float)):
+            _fail(f"{path}.conditions.min_affect_valence", "must be a number")
+        if "negative_modifier" in conditions and not isinstance(conditions["negative_modifier"], bool):
+            _fail(f"{path}.conditions.negative_modifier", "must be a boolean")
+        if "required_tokens" in conditions:
+            rt = conditions["required_tokens"]
+            if not isinstance(rt, list) or not rt or not all(isinstance(t, str) and t for t in rt):
+                _fail(f"{path}.conditions.required_tokens", "must be a non-empty array of strings")
+        if "excluded_tokens" in conditions:
+            et = conditions["excluded_tokens"]
+            if not isinstance(et, list) or not et or not all(isinstance(t, str) and t for t in et):
+                _fail(f"{path}.conditions.excluded_tokens", "must be a non-empty array of strings")
+        if "speech_acts" in conditions:
+            sa = conditions["speech_acts"]
+            if not isinstance(sa, list) or not sa or not all(isinstance(t, str) and t for t in sa):
+                _fail(f"{path}.conditions.speech_acts", "must be a non-empty array of strings")
+        responses = trigger.get("responses")
+        if not isinstance(responses, dict):
+            _fail(f"{path}.responses", "must be an object")
+        pool = responses.get("pool")
+        if not isinstance(pool, list) or not pool:
+            _fail(f"{path}.responses.pool", "must be a non-empty array of strings")
+        for j, entry in enumerate(pool):
+            if not isinstance(entry, str) or not entry:
+                _fail(f"{path}.responses.pool[{j}]", "must be a non-empty string")
+        if "nlg_template" in responses and not isinstance(responses["nlg_template"], str):
+            _fail(f"{path}.responses.nlg_template", "must be a string")
+        if "nlg_enabled" in responses and not isinstance(responses["nlg_enabled"], bool):
+            _fail(f"{path}.responses.nlg_enabled", "must be a boolean")
+
+
+def load_uol_trigger_responses() -> dict[str, Any]:
+    data = load_contract_json("uol_trigger_responses.v1.json")
+    validate_uol_trigger_responses(data)
+    return data
+
+
 def validate_personal_memory_evidence_map(payload: dict[str, Any]) -> None:
     if payload.get("schema_id") != "melm.personal_memory_evidence_map.v1":
         _fail("$.schema_id", "must equal 'melm.personal_memory_evidence_map.v1'")

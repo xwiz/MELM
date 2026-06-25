@@ -22,6 +22,7 @@ from typing import Any, Literal
 from melm.contracts import load_food_tags, load_igbo_greetings, load_igbo_lexicon_seed, load_meal_scopes, load_router_semantic_aliases, load_yoruba_greetings, load_swahili_greetings
 
 from .assistant_skill_meal import MealSuggestion, suggest_meal
+from .assistant_skill_uol_triggers import detect_uol_trigger, render_trigger_response
 
 from .functional_grammar import (
     FunctionalParse,
@@ -984,6 +985,18 @@ class OnDeviceAssistantRouter:
             return result
         # Self-probe questions ("Are you conscious?", "Are you real?") are
         # handled by the reasoning/self-query path after short-circuits.
+        # P0-3c: UOL trigger patterns — randomized responses for UOL atoms
+        # such as negative assertions about the assistant or contradiction.
+        # Evaluated before complaint detection so explicit UOL trigger patterns
+        # take precedence over generic complaint acknowledgement.
+        if uol_act is not None:
+            trigger_match = detect_uol_trigger(uol_act, affect, tokens)
+            if trigger_match is not None:
+                result["is_short_circuit"] = True
+                result["reason"] = "uol_trigger_detected"
+                result["override_intent"] = "assistant_behavior"
+                result["uol_trigger_match"] = trigger_match
+                return result
         # P0-3: Complaint detected — acknowledge as assistant_behavior, NOT a greeting.
         if affect is not None and affect.is_complaint:
             result["is_short_circuit"] = True
@@ -1048,6 +1061,14 @@ class OnDeviceAssistantRouter:
                         reason=sc_reason,
                         answer=_short_circuit_response(sc_reason, decision.answer),
                     )
+                elif sc_reason == "uol_trigger_detected":
+                    trigger_match = sc.get("uol_trigger_match")
+                    if trigger_match is not None:
+                        affect = turn_context.get("utterance_affect")
+                        answer = render_trigger_response(
+                            trigger_match, utterance, affect, self.profile,
+                        )
+                        decision = replace(decision, reason=sc_reason, answer=answer)
                 elif sc_reason in {"emotional_expression", "identity_self_probe"}:
                     decision = replace(decision, reason=sc_reason)
             elif override_intent == "common_sense_safety":

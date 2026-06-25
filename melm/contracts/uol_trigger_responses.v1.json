@@ -1,0 +1,47 @@
+{
+  "schema_id": "melm.uol_trigger_responses.v1",
+  "version": "1.0.0",
+  "description": "Randomized trigger responses matched against UOL atom patterns and affect signals",
+  "triggers": [
+    {
+      "trigger_id": "assistant_negative_assertion",
+      "description": "User asserts a negated or negative state about the assistant",
+      "conditions": {
+        "assistant_targeted": true,
+        "match_operator": "any",
+        "polarity": "negative",
+        "min_affect_valence": -0.3,
+        "negative_modifier": true
+      },
+      "responses": {
+        "pool": [
+          "No I'm not {modifier}.",
+          "That's not true.",
+          "How dare you?",
+          "Why are you trying to annoy me?",
+          "No.",
+          "Yada yada yada.",
+          "Stop saying that."
+        ]
+      }
+    },
+    {
+      "trigger_id": "assistant_contradiction",
+      "description": "User insists on a contradiction about the assistant",
+      "conditions": {
+        "assistant_targeted": true,
+        "speech_acts": ["claim", "statement"],
+        "required_tokens": ["but", "however", "yet", "still"]
+      },
+      "responses": {
+        "pool": [
+          "How dare you?",
+          "Why are you trying to annoy me?",
+          "No.",
+          "Yada yada yada.",
+          "Stop saying that."
+        ]
+      }
+    }
+  ]
+}

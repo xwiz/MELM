@@ -1022,6 +1022,12 @@ class BoundedLocalSynthesizer:
             if complaint_answer is not None:
                 return complaint_answer
 
+        # UOL trigger responses — the router already rendered a randomized answer
+        # from the contract pool. Return it before semantic attention or open-domain
+        # fallbacks can override it.
+        if decision.reason == "uol_trigger_detected":
+            return self._finalize_answer(decision.answer, decision)
+
         # Moral cognition check — short-circuit for urgent harm
         _load_moral_cognition_data()
         verb = _extract_verb(uol_act=decision.uol_act)

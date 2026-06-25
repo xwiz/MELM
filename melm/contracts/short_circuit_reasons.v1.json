@@ -12,6 +12,7 @@
   ],
   "template_only_reasons": [
     "gibberish_detected",
-    "complaint_acknowledged"
+    "complaint_acknowledged",
+    "uol_trigger_detected"
   ]
 }

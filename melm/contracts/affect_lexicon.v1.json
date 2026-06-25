@@ -31,6 +31,11 @@
     "damn":     {"valence": -0.25, "arousal": 0.30, "tags": ["negative", "profanity"]},
     "crap":     {"valence": -0.20, "arousal": 0.20, "tags": ["negative"]},
     "stupid":   {"valence": -0.40, "arousal": 0.35, "tags": ["negative", "complaint"]},
-    "idiot":    {"valence": -0.50, "arousal": 0.45, "tags": ["negative", "complaint"]}
+    "idiot":    {"valence": -0.50, "arousal": 0.45, "tags": ["negative", "complaint"]},
+    "nameless": {"valence": -0.45, "arousal": 0.25, "tags": ["negative", "complaint"]},
+    "fake":     {"valence": -0.50, "arousal": 0.30, "tags": ["negative", "complaint"]},
+    "annoying": {"valence": -0.45, "arousal": 0.40, "tags": ["negative", "complaint"]},
+    "dumb":     {"valence": -0.45, "arousal": 0.35, "tags": ["negative", "complaint"]},
+    "worthless":{"valence": -0.60, "arousal": 0.45, "tags": ["negative", "complaint"]}
   }
 }
