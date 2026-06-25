@@ -1,0 +1,26 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "melm.atom_templates.v1",
+  "schema_id": "melm.atom_templates.v1",
+  "version": "1.0.0",
+  "description": "Intent-specific atom templates for template-based answer generation. Each template may use {role_name} placeholders filled from UOL atoms.",
+  "templates": {
+    "weather": "The weather {theme} is expected to be pleasant.",
+    "meal_suggestion": "How about a meal suggestion for something to eat?",
+    "assistant_identity": "I am a local assistant running on your device.",
+    "assistant_status": "I am running and available.",
+    "health_advice": "Please consult a medical professional for health concerns.",
+    "social_contact": "I can help you contact {theme} when you're ready.",
+    "personal_memory": "I remember that from our earlier conversation.",
+    "autobiographical_memory": "Here is what I recall from our conversations.",
+    "story": "Let me tell you a story about {theme}.",
+    "media_playback": "I can play media for you.",
+    "common_sense_safety": "That may not be safe to do in public.",
+    "social_greeting": "Hello! How can I help you today?",
+    "gibberish": "I did not understand that — could you rephrase?",
+    "complaint_response": "I hear you. Let me try again — what specifically do you need?",
+    "novelty": "That is an interesting word — what does it mean to you?",
+    "causal_explanation": "{effect} happens because {cause}.",
+    "causal_prediction": "If {cause}, then {effect} may happen."
+  }
+}

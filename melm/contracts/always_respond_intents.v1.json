@@ -1,0 +1,15 @@
+{
+  "schema_id": "melm.always_respond_intents.v1",
+  "version": "1.0.0",
+  "description": "Intents that bypass listening-mode silence and always receive a response",
+  "intents": [
+    "common_sense_safety",
+    "health_advice",
+    "social_greeting",
+    "assistant_identity",
+    "identity_switch",
+    "identity_probe_detected",
+    "music_generation",
+    "music_discovery"
+  ]
+}

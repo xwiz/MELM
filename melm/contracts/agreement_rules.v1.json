@@ -1,0 +1,16 @@
+{
+  "schema_id": "melm.agreement_rules.v1",
+  "version": "1.0.0",
+  "non_3sg_subjects": ["i", "you", "we", "they"],
+  "irregular_3sg_map": {
+    "is": "are",
+    "was": "were",
+    "has": "have",
+    "does": "do",
+    "goes": "go"
+  },
+  "intervening_adverbs": [
+    "really", "always", "never", "still", "just", "also", "often",
+    "sometimes", "usually", "now", "then", "already"
+  ]
+}

@@ -1,0 +1,21 @@
+{
+  "schema_id": "melm.autobiographical_scope_terms.v1",
+  "version": "1.0.0",
+  "description": "Keyword groups for autobiographical memory scoping — used in session summary, horizon frame, and event frame detection",
+  "groups": {
+    "session_objects": ["session", "sessions", "conversation", "conversations"],
+    "summary_actions": ["summarize", "recap", "happened", "talk", "talked"],
+    "conversation_verbs": ["talk", "talked", "conversation", "conversations"],
+    "first_person_deixis": ["we", "our"],
+    "recent_scope": ["recent", "previous", "last"],
+    "all_history_quantifiers": ["all", "everything", "whole"],
+    "all_history_targets": ["history", "sessions", "conversations"],
+    "day_span_modifiers": ["last", "few", "past", "over"],
+    "event_object_tokens": ["question", "questions", "thing", "things", "ask", "asked", "answer", "answered"],
+    "user_or_assistant_tokens": ["i", "my", "me", "we", "our", "you"],
+    "broad_scope_markers": ["all", "whole", "everything"],
+    "count_markers": ["two", "2"],
+    "detail_markers": ["detailed", "detail"],
+    "brevity_markers": ["brief", "quick"]
+  }
+}

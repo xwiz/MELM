@@ -1,0 +1,16 @@
+{
+  "schema_id": "melm.atom_intent_predicates.v1",
+  "version": "1.0.0",
+  "intent_predicates": {
+    "meal_suggestion": ["eat", "cook", "prepare", "eri", "nri"],
+    "story": ["tell", "read", "make", "give"],
+    "story_theme_values": ["story", "tale", "fable", "narrative"],
+    "weather": ["rain", "snow", "forecast", "weather"],
+    "media_playback_verbs": ["play", "start"],
+    "media_playback_objects": ["music", "song", "audio", "media", "radio"],
+    "social_contact": ["call", "phone", "ring", "reach", "contact"],
+    "personal_memory": ["remind", "remind_me"],
+    "health_advice_classes": ["health_domain", "health_condition", "advice_action", "medical_procedure"],
+    "personal_memory_classes": ["memory_recall", "personal_attribute", "autobiographical_event"]
+  }
+}

@@ -1,0 +1,19 @@
+{
+  "schema_id": "melm.autobiographical_horizon_tokens.v1",
+  "version": "1.0.0",
+  "description": "Token sets for detecting long-horizon autobiographical memory requests",
+  "day_span": {
+    "time_tokens": ["days"],
+    "qualifier_tokens": ["last", "few", "past", "over"]
+  },
+  "all_history": {
+    "scope_tokens": ["all", "everything", "whole"],
+    "history_tokens": ["history", "sessions", "conversations"]
+  },
+  "long_term_memory": {
+    "paired_sets": [
+      ["long", "term", "memory"],
+      ["long", "horizon"]
+    ]
+  }
+}
