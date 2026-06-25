@@ -10,6 +10,15 @@ import re
 
 import pytest
 
+
+def _importorskip_transformers() -> bool:
+    try:
+        import transformers  # noqa: F401
+        return True
+    except ImportError:
+        return False
+
+
 from melm.appliance import (
     AnswerPlan,
     ConstrainedDecoder,
@@ -167,6 +176,11 @@ class TestBuildLlmPrompt:
 # ---------------------------------------------------------------------------
 
 class TestHFCompatTokenizer:
+    pytestmark = pytest.mark.skipif(
+        not _importorskip_transformers(),
+        reason="transformers not installed",
+    )
+
     def test_wraps_hf_tokenizer(self) -> None:
         from transformers import AutoTokenizer
         hf = AutoTokenizer.from_pretrained("distilbert-base-uncased")
@@ -253,6 +267,7 @@ class TestLlguidanceBackendDecode:
         result = backend.decode(plan, grammar)
         assert result == ""
 
+    @pytest.mark.skipif(not _importorskip_transformers(), reason="transformers not installed")
     def test_decode_with_model_available(self) -> None:
         """Quick smoke test: loads cached distilbert (not a CausalLM, but
         tests the load + decode path gracefully returning empty on generation
@@ -290,6 +305,7 @@ class TestLlguidanceBackendIntegration:
         assert result.answer == "template fallback"
         assert result.decoder == "template"
 
+    @pytest.mark.skipif(not _importorskip_transformers(), reason="transformers not installed")
     def test_llguidance_preferred_when_available(self) -> None:
         """If llguidance backend can load (distilbert in this environment),
         the decoder dispatch should still work (even if generation fails,

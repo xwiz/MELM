@@ -966,11 +966,17 @@ class OnDeviceAssistantRouter:
                 result["override_intent"] = "assistant_behavior"
                 return result
         # P0-4: Rapid repetition
+        # Skip for content requests (story, weather, etc.) where repeating
+        # the same utterance is a legitimate user action, not a glitch.
         if rapid.get("count", 0) >= 2:
-            result["is_short_circuit"] = True
-            result["reason"] = "rapid_repetition"
-            result["override_intent"] = "assistant_status"
-            return result
+            content_verbs = {"tell", "play", "what", "how", "give", "show",
+                             "remind", "call", "send", "cancel", "yes", "no"}
+            has_content_verb = bool(set(tokens_lower) & content_verbs)
+            if not has_content_verb:
+                result["is_short_circuit"] = True
+                result["reason"] = "rapid_repetition"
+                result["override_intent"] = "assistant_status"
+                return result
         # P0-5: Perception urgency
         if affect is not None and affect.source == "perception" and affect.confidence >= 0.9:
             result["is_short_circuit"] = True
@@ -2751,8 +2757,8 @@ def _classify_from_atoms(
     # Meal suggestion predicates (also used for temporal-memory override)
     meal_predicates = set(atom_predicates.get("meal_suggestion", ["eat", "cook", "prepare", "eri", "nri"]))
 
-    # Temporal personal memory: eat/cook/prepare/have + past/future + first-person + temporal/meal token
-    temporal_memory_tokens = {"yesterday", "today", "tomorrow", "last", "ago", "earlier", "recently", "before", "breakfast", "lunch", "dinner"}
+    # Temporal personal memory: eat/cook/prepare/have + past/future + first-person + temporal token
+    temporal_memory_tokens = {"yesterday", "tomorrow", "last", "ago", "earlier", "recently", "before"}
     past_tense_markers = {"did", "was", "were", "had", "ate", "cooked", "prepared", "drank", "drunk", "bought", "made"}
     is_meal_scope = bool(set(tokens) & {"breakfast", "lunch", "dinner"})
     atom_context = main_atom.get("context", {})

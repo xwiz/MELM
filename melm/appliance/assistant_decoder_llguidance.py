@@ -51,11 +51,17 @@ def build_llguidance_grammar(grammar: DecodingGrammar) -> str:
 
     Uses the ``regex`` format, which lets us encode mood-specific sentence
     structure and prohibited-token exclusion in a single pattern.
-    """
-    from llguidance import grammar_from
 
+    Falls back to returning the raw regex pattern when ``llguidance`` is not
+    installed (e.g. CI without the extra).
+    """
     pattern = build_regex_pattern(grammar)
-    return grammar_from("regex", pattern)
+    try:
+        from llguidance import grammar_from
+
+        return grammar_from("regex", pattern)
+    except ImportError:
+        return pattern
 
 
 def build_regex_pattern(grammar: DecodingGrammar) -> str:

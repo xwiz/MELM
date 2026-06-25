@@ -489,6 +489,7 @@ class AssistantOSKernel:
                 self.profile,
                 store=self.store,
             )
+        self._router.profile = self.profile
         decision = self._router.handle(utterance, last_intent=self._last_decision_intent)
         self._last_decision_intent = decision.intent
         # Learned-fact lookup for open_domain / unknown: if we have a stored
