@@ -156,7 +156,8 @@ class ContractRegistry:
             stored_hash = str(entry.get("schema_hash", ""))
             if artifact_path and stored_hash:
                 try:
-                    full_content = (CONTRACT_ROOT / artifact_path).read_bytes()
+                    raw = (CONTRACT_ROOT / artifact_path).read_bytes()
+                    full_content = raw.replace(b"\r\n", b"\n")
                     actual_hash = hashlib.sha256(full_content).hexdigest()[:16]
                     if actual_hash != stored_hash:
                         errors.append(

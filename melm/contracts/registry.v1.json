@@ -17,7 +17,7 @@
       "failure_behavior": "reject candidate before any lexicon or atlas write",
       "safety_critical": true,
       "version": "1.0.0",
-      "schema_hash": "02199edcd5558d36"
+      "schema_hash": "d82cace1e72320a1"
     },
     {
       "schema_id": "melm.semantic_classes.v1",
@@ -36,7 +36,7 @@
       "failure_behavior": "quarantine unknown class IDs and disable affected mapping",
       "safety_critical": true,
       "version": "1.0.0",
-      "schema_hash": "ab369f80a21124f1"
+      "schema_hash": "c4db46f6eb24c1cd"
     },
     {
       "schema_id": "melm.wn_supersense_map.v1",
@@ -53,7 +53,7 @@
       "failure_behavior": "reject seed build",
       "safety_critical": false,
       "version": "1.0.0",
-      "schema_hash": "e68b6063848e6903"
+      "schema_hash": "8d3ed5687e9b0c26"
     },
     {
       "schema_id": "melm.verbnet_map.v1",
@@ -70,7 +70,7 @@
       "failure_behavior": "reject seed build",
       "safety_critical": false,
       "version": "1.0.0",
-      "schema_hash": "5484ae9f2aa10e24"
+      "schema_hash": "a6ed3dcef3c69d8d"
     },
     {
       "schema_id": "melm.reserved_lexemes.v1",
@@ -87,7 +87,7 @@
       "failure_behavior": "reject non-seed acquisition of reserved vocabulary",
       "safety_critical": true,
       "version": "1.0.0",
-      "schema_hash": "3e23b3d670d7abff"
+      "schema_hash": "07175930e785f6a8"
     },
     {
       "schema_id": "melm.router_lexicon_families.v1",
@@ -105,7 +105,7 @@
       "failure_behavior": "family remains rule-owned or disabled",
       "safety_critical": true,
       "version": "1.0.0",
-      "schema_hash": "4bef4f8242ef2589"
+      "schema_hash": "d573a80cd9c1c315"
     },
     {
       "schema_id": "melm.frame_templates.v1",
@@ -225,7 +225,7 @@
       "failure_behavior": "story uses hardcoded fallback image/challenge/lesson",
       "safety_critical": false,
       "version": "1.1.0",
-      "schema_hash": "9bc72eac69ca566e"
+      "schema_hash": "2f297ce037ceef1a"
     },
     {
       "schema_id": "melm.weather_concepts.v1",
@@ -242,7 +242,7 @@
       "failure_behavior": "weather concept detection uses hardcoded fallback terms",
       "safety_critical": false,
       "version": "1.0.0",
-      "schema_hash": "5a4e02db475e77c7"
+      "schema_hash": "2aba572c37bd4210"
     },
     {
       "schema_id": "melm.meal_scopes.v1",
@@ -276,7 +276,7 @@
       "failure_behavior": "identity response uses hardcoded fallback text",
       "safety_critical": false,
       "version": "1.0.0",
-      "schema_hash": "17afbb9a14af89b2"
+      "schema_hash": "43f49ee03171b6ae"
     },
     {
       "schema_id": "melm.open_domain_templates.v1",
@@ -293,7 +293,7 @@
       "failure_behavior": "synthesis falls back to decision.answer",
       "safety_critical": false,
       "version": "1.0.0",
-      "schema_hash": "958731776ea6eeb0"
+      "schema_hash": "c698fd06a1262bd6"
     },
     {
       "schema_id": "melm.answer_templates.v1",
@@ -310,7 +310,7 @@
       "failure_behavior": "synthesis falls back to decision.answer",
       "safety_critical": false,
       "version": "1.0.0",
-      "schema_hash": "c749da5699064330"
+      "schema_hash": "7896bab11e64a81c"
     },
     {
       "schema_id": "melm.router_semantic_aliases.v1",
@@ -363,7 +363,7 @@
       "failure_behavior": "M5 eval harness cannot load; test assertion for top-3 degrades gracefully",
       "safety_critical": false,
       "version": "1.0.0",
-      "schema_hash": "ba95971dba141b76"
+      "schema_hash": "58da13e0b4c1ac91"
     },
     {
       "schema_id": "melm.capability_manifest.v1",
@@ -380,7 +380,7 @@
       "failure_behavior": "assumes builtin capabilities only",
       "safety_critical": false,
       "version": "1.0.0",
-      "schema_hash": "8a7ae53d9fc48040"
+      "schema_hash": "8ec97da7eee7bda0"
     },
     {
       "schema_id": "melm.uol_parse.v1",
@@ -491,7 +491,7 @@
       "failure_behavior": "UOL eval cannot run; parse regression uncovered",
       "safety_critical": false,
       "version": "1.0.0",
-      "schema_hash": "edd0ddd998ca12c4"
+      "schema_hash": "296c5757b7cc3623"
     },
     {
       "schema_id": "melm.pi_benchmark.v1",
@@ -509,7 +509,7 @@
       "failure_behavior": "M4 performance gate cannot be assessed",
       "safety_critical": false,
       "version": "1.0.0",
-      "schema_hash": "0d3c6605c24af42e"
+      "schema_hash": "369c86a36bef4731"
     },
     {
       "schema_id": "melm.model_manifest.v1",
@@ -528,7 +528,7 @@
       "failure_behavior": "decoder defaults to template backend",
       "safety_critical": false,
       "version": "1.0.0",
-      "schema_hash": "e567ef9e11a583b3"
+      "schema_hash": "62a59b03a49dfa3b"
     },
     {
       "schema_id": "melm.function_words.v1",
@@ -566,7 +566,7 @@
       "failure_behavior": "atomizer falls back to semantic_class_unknown",
       "safety_critical": true,
       "version": "1.0.0",
-      "schema_hash": "78fc0f2cbfa27e5b"
+      "schema_hash": "88376c5a568c1d75"
     },
     {
       "schema_id": "melm.igbo_lexicon_seed.v1",
@@ -692,7 +692,7 @@
       "failure_behavior": "mood engine uses hardcoded default regions",
       "safety_critical": false,
       "version": "1.0.0",
-      "schema_hash": "c6a57f86ab7972e2"
+      "schema_hash": "0708565ae09347e2"
     },
     {
       "schema_id": "melm.affect_lexicon.v1",
@@ -726,7 +726,7 @@
       "failure_behavior": "synthesis uses existing handler templates",
       "safety_critical": false,
       "version": "1.0.0",
-      "schema_hash": "d93189f0d3ba6282"
+      "schema_hash": "cc1a7e9e3c5ca3a0"
     },
     {
       "schema_id": "melm.token_typability.v1",
@@ -881,7 +881,7 @@
       "failure_behavior": "causal solver returns no_cause_found / no_effect_found",
       "safety_critical": false,
       "version": "1.0.0",
-      "schema_hash": "8792d26b0f04b845"
+      "schema_hash": "25388777ece6535f"
     },
     {
       "schema_id": "melm.state_valences.v1",
@@ -1094,7 +1094,7 @@
       "failure_behavior": "MIDI generation uses hardcoded style defaults",
       "safety_critical": false,
       "version": "1.1.0",
-      "schema_hash": "9afaaf8bdf8d2bf3"
+      "schema_hash": "c55e879f46a652ad"
     },
     {
       "schema_id": "melm.music_genre_scales.v1",
@@ -1232,7 +1232,7 @@
       "failure_behavior": "RoleAssignment enrichment silently degrades to pass-through; noun entity store seeding fails gracefully",
       "safety_critical": false,
       "version": "1.3.0",
-      "schema_hash": "85deb66290b06593"
+      "schema_hash": "02281067f551826e"
     },
     {
       "schema_id": "melm.modifier_atoms.v1",
@@ -1355,7 +1355,7 @@
       "failure_behavior": "predicate-to-relation mapping falls back to empty dict",
       "safety_critical": false,
       "version": "1.1.0",
-      "schema_hash": "543ccc657466231f"
+      "schema_hash": "dc9b9247e9de5647"
     },
     {
       "schema_id": "melm.self_identity.v1",
@@ -1372,7 +1372,7 @@
       "failure_behavior": "fall back to hardcoded identity templates",
       "safety_critical": false,
       "version": "1.0.0",
-      "schema_hash": "98f2b49d778a9620"
+      "schema_hash": "12319be7e6e71694"
     },
     {
       "schema_id": "melm.causal_cues.v1",
@@ -1426,7 +1426,7 @@
       "failure_behavior": "solvers fall back to causal_effects.v1.json seed data",
       "safety_critical": false,
       "version": "1.0.0",
-      "schema_hash": "1439c8fbe0a9b3cb"
+      "schema_hash": "e85bf2c72b81f417"
     },
     {
       "schema_id": "melm.identity_token_roles.v1",
@@ -1530,7 +1530,7 @@
       "failure_behavior": "verb predicate enrichment degrades silently to pass-through",
       "safety_critical": false,
       "version": "1.0.0",
-      "schema_hash": "45b0dd7ce3042bdc"
+      "schema_hash": "6500256a5a96fb0c"
     },
     {
       "schema_id": "melm.sentience_map.v1",
@@ -1680,7 +1680,7 @@
       ],
       "validator": "melm.contracts.validate_midi_music_mapping",
       "compatible_predecessors": [],
-      "failure_behavior": "midi generation falls back to hardcoded keyword\u00e2\u2020\u2019description mapping",
+      "failure_behavior": "midi generation falls back to hardcoded keywordâ†’description mapping",
       "safety_critical": false,
       "version": "1.0.0",
       "schema_hash": "308ddce2acea5a6e"
@@ -1816,7 +1816,7 @@
       ],
       "validator": "melm.contracts.validate_personal_memory_evidence_map",
       "compatible_predecessors": [],
-      "failure_behavior": "_personal_memory_object_from_text falls back to hardcoded condition\u00e2\u2020\u2019result map",
+      "failure_behavior": "_personal_memory_object_from_text falls back to hardcoded conditionâ†’result map",
       "safety_critical": false,
       "version": "1.0.0",
       "schema_hash": "d8f7dd9ab99b48f9"
@@ -1954,7 +1954,7 @@
       ],
       "validator": "melm.contracts.validate_literary_device_map",
       "compatible_predecessors": [],
-      "failure_behavior": "_select_literary_devices falls back to hardcoded lesson\u00e2\u2020\u2019device mapping",
+      "failure_behavior": "_select_literary_devices falls back to hardcoded lessonâ†’device mapping",
       "safety_critical": false,
       "version": "1.0.0",
       "schema_hash": "f971a8b112e9c01d"
@@ -2009,7 +2009,7 @@
       "failure_behavior": "offline template story engine returns None, pipeline uses LLM-only",
       "safety_critical": false,
       "version": "1.0.0",
-      "schema_hash": "7157577463b39687"
+      "schema_hash": "383d7b46cd9054dd"
     },
     {
       "schema_id": "melm.story_scene_templates.v1",

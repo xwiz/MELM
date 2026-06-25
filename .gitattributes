@@ -1,0 +1,6 @@
+# Force LF line endings for JSON contracts so schema_hash is platform-independent
+*.json text eol=lf
+*.py text eol=lf
+*.md text eol=lf
+*.yml text eol=lf
+*.yaml text eol=lf
