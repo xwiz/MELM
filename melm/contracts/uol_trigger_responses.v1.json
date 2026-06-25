@@ -11,7 +11,8 @@
         "match_operator": "any",
         "polarity": "negative",
         "min_affect_valence": -0.3,
-        "negative_modifier": true
+        "negative_modifier": true,
+        "excluded_tokens": ["useless", "stupid", "idiot", "dumb", "worthless", "annoying", "fake", "terrible", "wrong"]
       },
       "fallback_pool": [
         "I disagree.",

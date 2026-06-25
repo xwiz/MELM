@@ -51,8 +51,12 @@ class UolTriggerDetectionTests(unittest.TestCase):
         assert match is not None
         self.assertEqual(match.trigger_id, "assistant_contradiction")
 
-    def test_negative_affect_matches(self) -> None:
+    def test_excluded_insult_does_not_match(self) -> None:
         match = self._match("You are stupid")
+        self.assertIsNone(match)
+
+    def test_negative_assertion_with_non_excluded_word(self) -> None:
+        match = self._match("You are nameless")
         self.assertIsNotNone(match)
         assert match is not None
         self.assertEqual(match.trigger_id, "assistant_negative_assertion")
