@@ -73,7 +73,12 @@
       },
       "source": "local_seed_public_domain_story_frame",
       "license": "public_domain_story_frame",
-      "tags": ["story", "age:7", "Yoruba", "Lagos"]
+      "tags": [
+        "story",
+        "age:7",
+        "Yoruba",
+        "Lagos"
+      ]
     },
     {
       "kind": "weather",
@@ -84,7 +89,10 @@
       },
       "source": "seed_weather_cache",
       "license": "local_cache",
-      "tags": ["weather", "Lagos"]
+      "tags": [
+        "weather",
+        "Lagos"
+      ]
     },
     {
       "kind": "weather",
@@ -95,7 +103,10 @@
       },
       "source": "seed_weather_cache",
       "license": "local_cache",
-      "tags": ["weather", "Lagos"]
+      "tags": [
+        "weather",
+        "Lagos"
+      ]
     },
     {
       "kind": "contact",
@@ -105,7 +116,10 @@
       },
       "source": "seed_profile",
       "license": "private_local",
-      "tags": ["contact", "local_only"]
+      "tags": [
+        "contact",
+        "local_only"
+      ]
     },
     {
       "kind": "media",
@@ -115,7 +129,9 @@
       },
       "source": "seed_media_index",
       "license": "local_device",
-      "tags": ["media"]
+      "tags": [
+        "media"
+      ]
     },
     {
       "kind": "food",
@@ -125,7 +141,9 @@
       },
       "source": "seed_food_inventory",
       "license": "local_seed",
-      "tags": ["food"]
+      "tags": [
+        "food"
+      ]
     },
     {
       "kind": "food",
@@ -135,7 +153,9 @@
       },
       "source": "seed_food_inventory",
       "license": "local_seed",
-      "tags": ["food"]
+      "tags": [
+        "food"
+      ]
     },
     {
       "kind": "food",
@@ -145,7 +165,35 @@
       },
       "source": "seed_food_inventory",
       "license": "local_seed",
-      "tags": ["food"]
+      "tags": [
+        "food"
+      ]
+    },
+    {
+      "kind": "story_model",
+      "item_id": "rain_map_bedtime_story",
+      "payload": {
+        "title": "The Rain Map Bedtime Story",
+        "narrative_frame": "A bedtime story about {name} in {location} who discovered rain making a secret map on the window that led to a peaceful adventure before sleep. Bedtime stories teach listening and calm."
+      },
+      "source": "local_seed_story_frame",
+      "license": "local_seed_story_frame",
+      "tags": [
+        "story"
+      ]
+    },
+    {
+      "kind": "story_model",
+      "item_id": "supplemental_lagos_moonlight_adventure",
+      "payload": {
+        "title": "Lagos Moonlight Adventure",
+        "narrative_frame": "A bedtime adventure story about {name} in {location} exploring the moonlit streets and learning about courage and curiosity. Bedtime stories of adventure and listening."
+      },
+      "source": "local_seed_story_frame",
+      "license": "local_seed_story_frame",
+      "tags": [
+        "story"
+      ]
     }
   ]
 }

@@ -12,6 +12,7 @@ tokenizers = ["tokenizers>=0.21"]
 training = ["torch>=2.6"]
 llamacpp = ["llama-cpp-python>=0.3", "psutil>=5.9"]
 dev = []
+normalization = ["symspellpy>=6.9.0"]
 
 [project.scripts]
 melm = "melm.__main__:main"

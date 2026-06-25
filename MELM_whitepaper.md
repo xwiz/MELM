@@ -5,7 +5,7 @@
 
 **Status:** supporting research thesis. The product MVP is
 `MELM Local Assistant OS v0.2`; use
-`docs/local_assistant_os_mvp_plan_v2.md` as the authoritative build plan.
+`docs/archive/local_assistant_os_mvp_plan_v2.md` as the authoritative build plan.
 If any model-first, tokenizer-first, or broad chatbot framing in this paper
 conflicts with the OS plan, treat that framing as superseded.
 
@@ -14,7 +14,7 @@ conflicts with the OS plan, treat that framing as superseded.
 ## Current Product MVP Alignment
 
 The active product-shaped MVP direction is now `MELM Local Assistant OS v0.2`,
-documented in `docs/local_assistant_os_mvp_plan_v2.md`. This whitepaper remains the
+documented in `docs/archive/local_assistant_os_mvp_plan_v2.md`. This whitepaper remains the
 research thesis and validation ladder. It should not be read as a competing
 product plan.
 

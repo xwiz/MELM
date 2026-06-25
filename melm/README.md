@@ -1,8 +1,11 @@
 # MELM Python Package
 
 This package holds the Python implementation for the validation-first MELM build.
-The active product-shaped MVP is `MELM Local Assistant OS v0.2` in
-`../docs/local_assistant_os_mvp_plan_v2.md`; package work should feed that kernel
+The active product-shaped MVP is `MELM Local Assistant OS v0.3` (MVP3) in
+`../docs/assistant_os_architecture.md` and executed through
+`../docs/superpowers/plans/2026-06-19-mvp3-implementation.md`. The next milestone
+in design is causal reasoning (`../docs/superpowers/plans/2026-06-20-causal-reasoning.md`).
+Package work should feed that kernel
 rather than create a separate chatbot or model-first track.
 
 Planned modules:
@@ -336,72 +339,20 @@ Implemented now:
 - morpheme/root/meaning validation inference harness for novel-word and utterance-routing tests;
 - unit tests.
 
-Run the current smoke check from the repo root:
+Run from the repo root:
 
 ```powershell
-python -m unittest discover -s tests
-python scripts\run_tokenizer_decision.py
-python scripts\build_babylm_manifest.py C:\data\babylm --track 10M --out reports\babylm_10m_manifest.json
-python scripts\train_tiny_lm_baseline.py MELM_whitepaper.md --steps 2 --sequence-length 32 --embedding-dim 32 --layers 1 --heads 4 --batch-size 2
-python scripts\evaluate_tiny_lm_artifacts.py --manifest reports\babylm_2026_strict_small_manifest.json --root artifacts\tiny_lm --max-validation-bytes 250000
-python scripts\run_tiny_lm_minimal_pairs.py --root artifacts\tiny_lm
-python scripts\run_tiny_lm_blimp_fast.py --root artifacts\tiny_lm --max-cases-per-file 20
-python scripts\run_guard_benchmark.py
-python scripts\run_memory_os_benchmark.py
-python scripts\run_melm_runtime_benchmark.py
-python scripts\validate_support_refund_dataset.py
-python scripts\run_authored_support_refund_benchmark.py
-python scripts\run_public_memory_benchmark.py --download
-python scripts\export_letta_eval_pack.py --download --max-questions 250
-python scripts\run_melm_letta_style_eval.py --dataset artifacts\letta_eval\locomo_letta_dataset.jsonl --memory artifacts\letta_eval\locomo_memory.jsonl
-python scripts\melm_appliance_cli.py build-locomo --out artifacts\melm_appliance\locomo_memory.jsonl
-python scripts\run_grounded_child_chat_mvp.py
-python scripts\local_assistant_os_cli.py run-lifecycle --reset --json
-python scripts\local_assistant_os_cli.py run-lifecycle-suite --json
-python scripts\local_assistant_os_cli.py run-open-traces --reset --json
-python scripts\local_assistant_os_cli.py run-transcript-replay --reset --json
-python scripts\local_assistant_os_cli.py export-transcript-replay --db artifacts\local_assistant_os\assistant_v01.sqlite --out artifacts\local_assistant_os\event_ledger_transcript_replay.jsonl --json
-python scripts\local_assistant_os_cli.py calibrate-event-ledger --db artifacts\local_assistant_os\assistant_v01.sqlite --work-dir artifacts\local_assistant_os\event_ledger_calibration --controls-json config\safe_lifecycle_controls.example.json --min-total-turns 4 --min-local-resolution-rate 0.5 --json
-python scripts\local_assistant_os_cli.py v01-evidence-pack --db artifacts\local_assistant_os\assistant_v01.sqlite --work-dir artifacts\local_assistant_os\v01_evidence_pack --auto-lifecycle --json
-python scripts\local_assistant_os_cli.py import-transcript-replay --input path\raw_chat.jsonl --out artifacts\local_assistant_os\imported_transcript_replay.jsonl --controls-json config\safe_lifecycle_controls.example.json --json
-python scripts\local_assistant_os_cli.py calibrate-transcript-replay --input benchmarks\sample_local_assistant_raw_transcript.jsonl --controls-json config\safe_lifecycle_controls.example.json --replace "Maya=<person_1>" --min-total-turns 4 --min-local-resolution-rate 0.2 --min-route-kinds 3 --min-intent-kinds 3 --require-redaction --require-static-drop --out artifacts\local_assistant_os\sample_transcript_calibration.json --reset --json
-python scripts\local_assistant_os_cli.py synthesis-variant-smoke --reset --json
-python scripts\local_assistant_os_cli.py synthesis-stress-smoke --reset --json
-python scripts\local_assistant_os_cli.py setup-integration-smoke --reset --json
-python scripts\local_assistant_os_cli.py host-action-smoke --reset --json
-python scripts\local_assistant_os_cli.py host-app-probe --reset --json
-python scripts\local_assistant_os_cli.py shortcut-audit --json
-python scripts\local_assistant_os_cli.py v01-audit --json
-python scripts\local_assistant_os_cli.py candidate-session-audit --db artifacts\local_assistant_os\assistant_v01.sqlite --session all --capture-surface cli_chat --json
-python scripts\local_assistant_os_cli.py write-source-attestation --event-ledger-db artifacts\local_assistant_os\assistant_v01.sqlite --event-ledger-session all --source-kind redacted_user_session --capture-surface cli_chat --redaction-applied --static-expectations-absent --answers-routes-reasons-absent --human-reviewed --out artifacts\local_assistant_os\source_attestation.json --json
-python scripts\local_assistant_os_cli.py write-host-app-attestation --host-app-config-json config\host_actions.json --capture-surface target_device_cli --media-app-configured --call-app-configured --not-demo-recorder --real-app-commands-acknowledged --human-reviewed --out artifacts\local_assistant_os\host_app_attestation.json --json
-python scripts\local_assistant_os_cli.py v01-blocker-evidence --event-ledger-db artifacts\local_assistant_os\assistant_v01.sqlite --event-ledger-session all --event-source-kind redacted_user_session --source-attestation-json artifacts\local_assistant_os\source_attestation.json --transcript-calibration-report-json artifacts\local_assistant_os\sample_transcript_calibration.json --host-app-config-json config\host_actions.json --host-app-attestation-json artifacts\local_assistant_os\host_app_attestation.json --run-host-app-probe --json
-python scripts\local_assistant_os_cli.py v01-blocker-rehearsal --reset --json
-python scripts\local_assistant_os_cli.py v01-progress --json
-python scripts\local_assistant_os_cli.py v01-acceptance --reset --json
-python scripts\local_assistant_os_cli.py resource-report --reset --json
-python scripts\local_assistant_os_cli.py pi-smoke --reset --json
-python scripts\local_assistant_os_cli.py inventory-soak-matrix --reset --json
-python scripts\local_assistant_os_cli.py inventory-diversity-smoke --reset --json
-python scripts\local_assistant_os_cli.py inventory-retry-smoke --reset --json
-python scripts\local_assistant_os_cli.py inventory-failure-smoke --reset --json
-python scripts\local_assistant_os_cli.py pi-bundle --reset --zip --json
-python scripts\local_assistant_os_cli.py verify-bundle --bundle-root artifacts\local_assistant_os\melm_local_assistant_os_v01_pi_bundle --json
-python scripts\local_assistant_os_cli.py bootstrap-runtime --reset --json
-python scripts\local_assistant_os_cli.py api-smoke --reset --json
-python scripts\local_assistant_os_cli.py api-session-smoke --reset --json
-python scripts\local_assistant_os_cli.py ui-smoke --reset --json
-python scripts\local_assistant_os_cli.py chat --turn "Tell me a story." --turn "What is the weather today?" --json
-python scripts\local_assistant_os_cli.py target-report --reset --json
-python scripts\local_assistant_os_cli.py dashboard --json
-python scripts\local_assistant_os_cli.py eval --json
-python scripts\local_assistant_os_cli.py schedule-refreshes --offline-samples --json
-python scripts\local_assistant_os_cli.py memory-digest --sessions 20 --events-per-session 3 --json
-python scripts\local_assistant_os_cli.py import-stories --source both --json
-python scripts\local_assistant_os_cli.py import-media --cold-start --manifest benchmarks\local_media_manifest.json --limit 2 --json
-python scripts\local_assistant_os_cli.py ask --utterance "Play calm piano." --json
-python scripts\local_assistant_os_cli.py ask --utterance "Yes, play calm piano." --action-mode dry-run --json
-python scripts\run_phase1_smoke.py
+# Full test suite
+python -m pytest tests/ --tb=short -q
+
+# One-time setup — seeds database, verifies runtime
+python -m melm bootstrap-runtime --reset --json
+
+# Quick smoke gate (~7 min)
+python -m melm pi-smoke --reset --json
+
+# Full release-candidate check — all gates (~15 min)
+python -m melm v01-acceptance --reset --json
 ```
 
 Keep the first implementation in Python for fast ML iteration. Treat `C:\dev\nameless_vector` as a design reference until its test health is confirmed.

@@ -1,10 +1,24 @@
-# MELM Roadmap
+# MELM Roadmap (historical progress record)
+
+> **Status update:** This roadmap is a historical progress record. The current
+> authoritative architecture is in `docs/assistant_os_architecture.md`, the active
+> execution plan is `docs/superpowers/plans/2026-06-19-mvp3-implementation.md`,
+> and the next milestone in design is causal reasoning
+> (`docs/superpowers/plans/2026-06-20-causal-reasoning.md`).
+> `docs/archive/local_assistant_os_mvp_plan_v2.md` and `docs/archive/assistant_os_spec.md` are
+> superseded by those documents.
+>
+> This roadmap retains the detailed implementation history below; new work should
+> reconcile with the MVP3 plan and the causal-reasoning plan.
 
 ## Current Product MVP Direction
 
-The active product direction is the Local Assistant OS kernel and v0.2 path,
-documented in `docs/local_assistant_os_mvp_plan_v2.md`. The v1 plan remains
-historical v0.1 implementation context.
+The active product direction is the Local Assistant OS kernel and v0.3 / MVP3 path,
+documented in `docs/assistant_os_architecture.md` and executed through
+`docs/superpowers/plans/2026-06-19-mvp3-implementation.md`. The causal-reasoning
+milestone is the next design target
+(`docs/superpowers/plans/2026-06-20-causal-reasoning.md`). The v1/v2 plans remain
+historical context.
 
 This does not replace the validation track below. It gives the validation work a
 product-shaped target:
@@ -18,6 +32,8 @@ membrane policy
   + local inventories
   + budgeted evidence runtime
   + local/tool/action/cloud triage
+  + typed knowledge (world_fact) and atom persistence
+  + causal reasoning (design in progress)
 ```
 
 Avoid drift: tokenizer, small-model, memory, and dialogue experiments should be

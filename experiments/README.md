@@ -3,7 +3,7 @@
 This directory will hold experiment configs and run notes.
 
 Active product alignment: experiments should feed `MELM Local Assistant OS
-v0.2` in `../docs/local_assistant_os_mvp_plan_v2.md`. Tokenizer/model work should
+v0.2` in `../docs/archive/local_assistant_os_mvp_plan_v2.md`. Tokenizer/model work should
 advance bounded local synthesis; memory/dialogue work should advance
 autobiographical memory, evidence budgets, membrane policy, homeostasis, and
 local/tool/action/cloud triage.
@@ -43,6 +43,18 @@ python scripts\run_validation_suite.py
 
 This prints tokenizer comparison metrics and the first event-memory-vs-RAG recall gate on a tiny controlled fixture.
 The tiny LM trainer is a pipeline smoke test, not evidence for the final model-size hypothesis.
+
+NLG attention packet probe:
+
+```powershell
+python experiments\nlg_attention_packet_probe.py --json
+```
+
+This compares five NLG strategies, including raw UOL, single-theme rendering,
+learned-fact retrieval, contract-entity rendering, and a role-separated
+`NlgAttentionPacket`. The quality gates check rendered fragments, expected
+topics, constraints, content entities, technical-token alerts, reasoning
+fallback, and forbidden confusions across eighteen simple-to-complex NLG cases.
 
 BabyLM local manifest setup is documented in `docs/babylm_reproduction.md` and
 configured in `experiments/babylm/local_manifest_smoke.json`.
