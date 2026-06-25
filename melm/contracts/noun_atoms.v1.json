@@ -1,0 +1,5976 @@
+{
+  "schema_id": "melm.noun_atoms.v1",
+  "version": "1.0.0",
+  "entities": [
+    {
+      "entity_id": "noun__bed",
+      "label": "bed",
+      "canonical_lemma": "bed",
+      "semantic_class_id": "physical_object",
+      "kind": "object",
+      "definition": "a piece of furniture for sleeping or resting",
+      "genus_lemma": "furniture",
+      "slots": {
+        "entity_type": "non_living",
+        "state_of_matter": "solid",
+        "build_strength": "strong",
+        "materials": [
+          "wood",
+          "metal",
+          "fabric"
+        ],
+        "functional_uses": [
+          "sleeping",
+          "resting"
+        ],
+        "dimensions": {
+          "shape": "box",
+          "size": "large",
+          "aspect": "wide"
+        }
+      }
+    },
+    {
+      "entity_id": "noun__chair",
+      "label": "chair",
+      "canonical_lemma": "chair",
+      "semantic_class_id": "physical_object",
+      "kind": "object",
+      "definition": "a seat with a back, typically for one person",
+      "genus_lemma": "seat",
+      "slots": {
+        "entity_type": "non_living",
+        "state_of_matter": "solid",
+        "build_strength": "strong",
+        "materials": [
+          "wood",
+          "metal",
+          "plastic"
+        ],
+        "functional_uses": [
+          "sitting"
+        ],
+        "dimensions": {
+          "shape": "box",
+          "size": "medium",
+          "aspect": "tall"
+        }
+      }
+    },
+    {
+      "entity_id": "noun__table",
+      "label": "table",
+      "canonical_lemma": "table",
+      "semantic_class_id": "physical_object",
+      "kind": "object",
+      "definition": "a piece of furniture with a flat top and legs",
+      "genus_lemma": "furniture",
+      "slots": {
+        "entity_type": "non_living",
+        "state_of_matter": "solid",
+        "build_strength": "strong",
+        "materials": [
+          "wood",
+          "metal",
+          "glass"
+        ],
+        "functional_uses": [
+          "eating",
+          "working",
+          "placing items"
+        ],
+        "dimensions": {
+          "shape": "box",
+          "size": "large",
+          "aspect": "wide"
+        }
+      }
+    },
+    {
+      "entity_id": "noun__desk",
+      "label": "desk",
+      "canonical_lemma": "desk",
+      "semantic_class_id": "physical_object",
+      "kind": "object",
+      "definition": "a piece of furniture with a flat surface for writing or using a computer",
+      "genus_lemma": "table",
+      "slots": {
+        "entity_type": "non_living",
+        "state_of_matter": "solid",
+        "build_strength": "strong",
+        "materials": [
+          "wood",
+          "metal"
+        ],
+        "functional_uses": [
+          "writing",
+          "computer work",
+          "studying"
+        ],
+        "dimensions": {
+          "shape": "box",
+          "size": "large",
+          "aspect": "wide"
+        }
+      }
+    },
+    {
+      "entity_id": "noun__sofa",
+      "label": "sofa",
+      "canonical_lemma": "sofa",
+      "semantic_class_id": "physical_object",
+      "kind": "object",
+      "definition": "a long upholstered seat for two or more people",
+      "genus_lemma": "seat",
+      "slots": {
+        "entity_type": "non_living",
+        "state_of_matter": "solid",
+        "build_strength": "strong",
+        "materials": [
+          "wood",
+          "fabric",
+          "foam"
+        ],
+        "functional_uses": [
+          "sitting",
+          "lounging"
+        ],
+        "dimensions": {
+          "shape": "box",
+          "size": "large",
+          "aspect": "wide"
+        }
+      }
+    },
+    {
+      "entity_id": "noun__shelf",
+      "label": "shelf",
+      "canonical_lemma": "shelf",
+      "semantic_class_id": "physical_object",
+      "kind": "object",
+      "definition": "a flat length of wood or rigid material fixed to a wall for storing items",
+      "genus_lemma": "board",
+      "slots": {
+        "entity_type": "non_living",
+        "state_of_matter": "solid",
+        "build_strength": "sturdy",
+        "materials": [
+          "wood",
+          "metal",
+          "glass"
+        ],
+        "functional_uses": [
+          "storage",
+          "display"
+        ],
+        "dimensions": {
+          "shape": "sheet",
+          "size": "medium",
+          "aspect": "wide"
+        }
+      }
+    },
+    {
+      "entity_id": "noun__cupboard",
+      "label": "cupboard",
+      "canonical_lemma": "cupboard",
+      "semantic_class_id": "physical_object",
+      "kind": "object",
+      "definition": "a cabinet with shelves for storing dishes or food",
+      "genus_lemma": "cabinet",
+      "slots": {
+        "entity_type": "non_living",
+        "state_of_matter": "solid",
+        "build_strength": "strong",
+        "materials": [
+          "wood",
+          "metal"
+        ],
+        "functional_uses": [
+          "storage"
+        ],
+        "dimensions": {
+          "shape": "box",
+          "size": "medium",
+          "aspect": "tall"
+        }
+      }
+    },
+    {
+      "entity_id": "noun__wardrobe",
+      "label": "wardrobe",
+      "canonical_lemma": "wardrobe",
+      "semantic_class_id": "physical_object",
+      "kind": "object",
+      "definition": "a tall piece of furniture for storing clothes",
+      "genus_lemma": "cabinet",
+      "slots": {
+        "entity_type": "non_living",
+        "state_of_matter": "solid",
+        "build_strength": "strong",
+        "materials": [
+          "wood",
+          "metal"
+        ],
+        "functional_uses": [
+          "clothing storage"
+        ],
+        "dimensions": {
+          "shape": "box",
+          "size": "large",
+          "aspect": "tall"
+        }
+      }
+    },
+    {
+      "entity_id": "noun__drawer",
+      "label": "drawer",
+      "canonical_lemma": "drawer",
+      "semantic_class_id": "physical_object",
+      "kind": "object",
+      "definition": "a sliding storage compartment in furniture",
+      "genus_lemma": "compartment",
+      "slots": {
+        "entity_type": "non_living",
+        "state_of_matter": "solid",
+        "build_strength": "sturdy",
+        "materials": [
+          "wood",
+          "metal",
+          "plastic"
+        ],
+        "functional_uses": [
+          "storage"
+        ],
+        "dimensions": {
+          "shape": "box",
+          "size": "small",
+          "aspect": "wide"
+        }
+      }
+    },
+    {
+      "entity_id": "noun__lamp",
+      "label": "lamp",
+      "canonical_lemma": "lamp",
+      "semantic_class_id": "physical_object.device",
+      "kind": "object",
+      "definition": "a device that produces light",
+      "genus_lemma": "light",
+      "slots": {
+        "entity_type": "non_living",
+        "state_of_matter": "solid",
+        "build_strength": "fragile",
+        "materials": [
+          "glass",
+          "metal",
+          "plastic"
+        ],
+        "functional_uses": [
+          "lighting",
+          "illumination"
+        ],
+        "dimensions": {
+          "shape": "cylinder",
+          "size": "small",
+          "aspect": "tall"
+        }
+      }
+    },
+    {
+      "entity_id": "noun__fridge",
+      "label": "fridge",
+      "canonical_lemma": "fridge",
+      "semantic_class_id": "physical_object.device",
+      "kind": "object",
+      "definition": "an appliance for keeping food cold",
+      "genus_lemma": "appliance",
+      "slots": {
+        "entity_type": "non_living",
+        "state_of_matter": "solid",
+        "build_strength": "strong",
+        "materials": [
+          "metal",
+          "plastic"
+        ],
+        "functional_uses": [
+          "food preservation",
+          "cooling"
+        ],
+        "dimensions": {
+          "shape": "box",
+          "size": "large",
+          "aspect": "tall"
+        }
+      }
+    },
+    {
+      "entity_id": "noun__freezer",
+      "label": "freezer",
+      "canonical_lemma": "freezer",
+      "semantic_class_id": "physical_object.device",
+      "kind": "object",
+      "definition": "an appliance for freezing food",
+      "genus_lemma": "appliance",
+      "slots": {
+        "entity_type": "non_living",
+        "state_of_matter": "solid",
+        "build_strength": "strong",
+        "materials": [
+          "metal",
+          "plastic"
+        ],
+        "functional_uses": [
+          "food freezing",
+          "preservation"
+        ],
+        "dimensions": {
+          "shape": "box",
+          "size": "large",
+          "aspect": "tall"
+        }
+      }
+    },
+    {
+      "entity_id": "noun__oven",
+      "label": "oven",
+      "canonical_lemma": "oven",
+      "semantic_class_id": "physical_object.device",
+      "kind": "object",
+      "definition": "an enclosed appliance for baking and roasting food",
+      "genus_lemma": "appliance",
+      "slots": {
+        "entity_type": "non_living",
+        "state_of_matter": "solid",
+        "build_strength": "strong",
+        "materials": [
+          "metal"
+        ],
+        "functional_uses": [
+          "baking",
+          "roasting",
+          "cooking"
+        ],
+        "dimensions": {
+          "shape": "box",
+          "size": "large",
+          "aspect": "wide"
+        }
+      }
+    },
+    {
+      "entity_id": "noun__stove",
+      "label": "stove",
+      "canonical_lemma": "stove",
+      "semantic_class_id": "physical_object.device",
+      "kind": "object",
+      "definition": "a cooking appliance with burners for heating pots and pans",
+      "genus_lemma": "appliance",
+      "slots": {
+        "entity_type": "non_living",
+        "state_of_matter": "solid",
+        "build_strength": "strong",
+        "materials": [
+          "metal",
+          "glass"
+        ],
+        "functional_uses": [
+          "cooking",
+          "heating food"
+        ],
+        "dimensions": {
+          "shape": "box",
+          "size": "medium",
+          "aspect": "wide"
+        }
+      }
+    },
+    {
+      "entity_id": "noun__microwave",
+      "label": "microwave",
+      "canonical_lemma": "microwave",
+      "semantic_class_id": "physical_object.device",
+      "kind": "object",
+      "definition": "an appliance that uses microwaves to heat food quickly",
+      "genus_lemma": "appliance",
+      "slots": {
+        "entity_type": "non_living",
+        "state_of_matter": "solid",
+        "build_strength": "sturdy",
+        "materials": [
+          "metal",
+          "plastic"
+        ],
+        "functional_uses": [
+          "heating food",
+          "defrosting"
+        ],
+        "dimensions": {
+          "shape": "box",
+          "size": "medium",
+          "aspect": "wide"
+        }
+      }
+    },
+    {
+      "entity_id": "noun__dishwasher",
+      "label": "dishwasher",
+      "canonical_lemma": "dishwasher",
+      "semantic_class_id": "physical_object.device",
+      "kind": "object",
+      "definition": "a machine that washes dishes automatically",
+      "genus_lemma": "appliance",
+      "slots": {
+        "entity_type": "non_living",
+        "state_of_matter": "solid",
+        "build_strength": "strong",
+        "materials": [
+          "metal",
+          "plastic"
+        ],
+        "functional_uses": [
+          "washing dishes"
+        ],
+        "dimensions": {
+          "shape": "box",
+          "size": "large",
+          "aspect": "tall"
+        }
+      }
+    },
+    {
+      "entity_id": "noun__washing_machine",
+      "label": "washing machine",
+      "canonical_lemma": "washing_machine",
+      "semantic_class_id": "physical_object.device",
+      "kind": "object",
+      "definition": "a machine that washes clothes automatically",
+      "genus_lemma": "appliance",
+      "slots": {
+        "entity_type": "non_living",
+        "state_of_matter": "solid",
+        "build_strength": "strong",
+        "materials": [
+          "metal",
+          "plastic"
+        ],
+        "functional_uses": [
+          "washing clothes"
+        ],
+        "dimensions": {
+          "shape": "box",
+          "size": "large",
+          "aspect": "tall"
+        }
+      }
+    },
+    {
+      "entity_id": "noun__dryer",
+      "label": "dryer",
+      "canonical_lemma": "dryer",
+      "semantic_class_id": "physical_object.device",
+      "kind": "object",
+      "definition": "a machine that dries clothes by spinning and heating",
+      "genus_lemma": "appliance",
+      "slots": {
+        "entity_type": "non_living",
+        "state_of_matter": "solid",
+        "build_strength": "strong",
+        "materials": [
+          "metal",
+          "plastic"
+        ],
+        "functional_uses": [
+          "drying clothes"
+        ],
+        "dimensions": {
+          "shape": "box",
+          "size": "large",
+          "aspect": "tall"
+        }
+      }
+    },
+    {
+      "entity_id": "noun__vacuum",
+      "label": "vacuum",
+      "canonical_lemma": "vacuum",
+      "semantic_class_id": "physical_object.device",
+      "kind": "object",
+      "definition": "a device that cleans floors by suction",
+      "genus_lemma": "cleaner",
+      "slots": {
+        "entity_type": "non_living",
+        "state_of_matter": "solid",
+        "build_strength": "sturdy",
+        "materials": [
+          "plastic",
+          "metal"
+        ],
+        "functional_uses": [
+          "floor cleaning",
+          "carpet cleaning"
+        ],
+        "dimensions": {
+          "shape": "cylinder",
+          "size": "medium",
+          "aspect": "tall"
+        }
+      }
+    },
+    {
+      "entity_id": "noun__fan",
+      "label": "fan",
+      "canonical_lemma": "fan",
+      "semantic_class_id": "physical_object.device",
+      "kind": "object",
+      "definition": "a device that circulates air to cool a room",
+      "genus_lemma": "device",
+      "slots": {
+        "entity_type": "non_living",
+        "state_of_matter": "solid",
+        "build_strength": "sturdy",
+        "materials": [
+          "plastic",
+          "metal"
+        ],
+        "functional_uses": [
+          "air circulation",
+          "cooling"
+        ],
+        "dimensions": {
+          "shape": "cylinder",
+          "size": "small",
+          "aspect": "wide"
+        }
+      }
+    },
+    {
+      "entity_id": "noun__heater",
+      "label": "heater",
+      "canonical_lemma": "heater",
+      "semantic_class_id": "physical_object.device",
+      "kind": "object",
+      "definition": "a device that generates heat for a room",
+      "genus_lemma": "device",
+      "slots": {
+        "entity_type": "non_living",
+        "state_of_matter": "solid",
+        "build_strength": "sturdy",
+        "materials": [
+          "metal",
+          "plastic"
+        ],
+        "functional_uses": [
+          "heating",
+          "warming"
+        ],
+        "dimensions": {
+          "shape": "box",
+          "size": "small",
+          "aspect": "wide"
+        }
+      }
+    },
+    {
+      "entity_id": "noun__curtain",
+      "label": "curtain",
+      "canonical_lemma": "curtain",
+      "semantic_class_id": "physical_object",
+      "kind": "object",
+      "definition": "a piece of fabric hung to cover a window or doorway",
+      "genus_lemma": "fabric",
+      "slots": {
+        "entity_type": "non_living",
+        "state_of_matter": "solid",
+        "build_strength": "fragile",
+        "materials": [
+          "fabric",
+          "cloth"
+        ],
+        "functional_uses": [
+          "privacy",
+          "light blocking",
+          "decoration"
+        ],
+        "dimensions": {
+          "shape": "sheet",
+          "size": "large",
+          "aspect": "wide"
+        }
+      }
+    },
+    {
+      "entity_id": "noun__rug",
+      "label": "rug",
+      "canonical_lemma": "rug",
+      "semantic_class_id": "physical_object",
+      "kind": "object",
+      "definition": "a floor covering made of thick fabric",
+      "genus_lemma": "covering",
+      "slots": {
+        "entity_type": "non_living",
+        "state_of_matter": "solid",
+        "build_strength": "sturdy",
+        "materials": [
+          "fabric",
+          "wool",
+          "cotton"
+        ],
+        "functional_uses": [
+          "floor covering",
+          "decoration"
+        ],
+        "dimensions": {
+          "shape": "sheet",
+          "size": "medium",
+          "aspect": "wide"
+        }
+      }
+    },
+    {
+      "entity_id": "noun__pillow",
+      "label": "pillow",
+      "canonical_lemma": "pillow",
+      "semantic_class_id": "physical_object",
+      "kind": "object",
+      "definition": "a soft cushion used to support the head while sleeping",
+      "genus_lemma": "cushion",
+      "slots": {
+        "entity_type": "non_living",
+        "state_of_matter": "solid",
+        "build_strength": "fragile",
+        "materials": [
+          "fabric",
+          "foam",
+          "feathers"
+        ],
+        "functional_uses": [
+          "head support",
+          "sleeping"
+        ],
+        "dimensions": {
+          "shape": "box",
+          "size": "small",
+          "aspect": "wide"
+        }
+      }
+    },
+    {
+      "entity_id": "noun__blanket",
+      "label": "blanket",
+      "canonical_lemma": "blanket",
+      "semantic_class_id": "physical_object",
+      "kind": "object",
+      "definition": "a large piece of fabric used for warmth while sleeping",
+      "genus_lemma": "covering",
+      "slots": {
+        "entity_type": "non_living",
+        "state_of_matter": "solid",
+        "build_strength": "fragile",
+        "materials": [
+          "fabric",
+          "wool",
+          "cotton"
+        ],
+        "functional_uses": [
+          "warmth",
+          "covering"
+        ],
+        "dimensions": {
+          "shape": "sheet",
+          "size": "large",
+          "aspect": "wide"
+        }
+      }
+    },
+    {
+      "entity_id": "noun__plate",
+      "label": "plate",
+      "canonical_lemma": "plate",
+      "semantic_class_id": "physical_object",
+      "kind": "object",
+      "definition": "a flat dish for serving food",
+      "genus_lemma": "dish",
+      "slots": {
+        "entity_type": "non_living",
+        "state_of_matter": "solid",
+        "build_strength": "fragile",
+        "materials": [
+          "ceramic",
+          "glass",
+          "plastic"
+        ],
+        "functional_uses": [
+          "serving food",
+          "eating"
+        ],
+        "dimensions": {
+          "shape": "cylinder",
+          "size": "small",
+          "aspect": "wide"
+        }
+      }
+    },
+    {
+      "entity_id": "noun__bowl",
+      "label": "bowl",
+      "canonical_lemma": "bowl",
+      "semantic_class_id": "physical_object",
+      "kind": "object",
+      "definition": "a round shallow container for food",
+      "genus_lemma": "container",
+      "slots": {
+        "entity_type": "non_living",
+        "state_of_matter": "solid",
+        "build_strength": "fragile",
+        "materials": [
+          "ceramic",
+          "glass",
+          "plastic"
+        ],
+        "functional_uses": [
+          "serving food",
+          "mixing",
+          "eating"
+        ],
+        "dimensions": {
+          "shape": "cylinder",
+          "size": "small",
+          "aspect": "wide"
+        }
+      }
+    },
+    {
+      "entity_id": "noun__cup",
+      "label": "cup",
+      "canonical_lemma": "cup",
+      "semantic_class_id": "physical_object",
+      "kind": "object",
+      "definition": "a small open container for drinking",
+      "genus_lemma": "container",
+      "slots": {
+        "entity_type": "non_living",
+        "state_of_matter": "solid",
+        "build_strength": "fragile",
+        "materials": [
+          "ceramic",
+          "glass",
+          "plastic"
+        ],
+        "functional_uses": [
+          "drinking"
+        ],
+        "dimensions": {
+          "shape": "cylinder",
+          "size": "small",
+          "aspect": "tall"
+        }
+      }
+    },
+    {
+      "entity_id": "noun__mug",
+      "label": "mug",
+      "canonical_lemma": "mug",
+      "semantic_class_id": "physical_object",
+      "kind": "object",
+      "definition": "a large cup with a handle for hot drinks",
+      "genus_lemma": "cup",
+      "slots": {
+        "entity_type": "non_living",
+        "state_of_matter": "solid",
+        "build_strength": "fragile",
+        "materials": [
+          "ceramic",
+          "glass"
+        ],
+        "functional_uses": [
+          "drinking hot beverages"
+        ],
+        "dimensions": {
+          "shape": "cylinder",
+          "size": "small",
+          "aspect": "tall"
+        }
+      }
+    },
+    {
+      "entity_id": "noun__glass",
+      "label": "glass",
+      "canonical_lemma": "glass",
+      "semantic_class_id": "physical_object",
+      "kind": "object",
+      "definition": "a transparent container for drinking",
+      "genus_lemma": "container",
+      "slots": {
+        "entity_type": "non_living",
+        "state_of_matter": "solid",
+        "build_strength": "fragile",
+        "materials": [
+          "glass"
+        ],
+        "functional_uses": [
+          "drinking"
+        ],
+        "dimensions": {
+          "shape": "cylinder",
+          "size": "small",
+          "aspect": "tall"
+        }
+      }
+    },
+    {
+      "entity_id": "noun__bottle",
+      "label": "bottle",
+      "canonical_lemma": "bottle",
+      "semantic_class_id": "physical_object",
+      "kind": "object",
+      "definition": "a container with a narrow neck for holding liquids",
+      "genus_lemma": "container",
+      "slots": {
+        "entity_type": "non_living",
+        "state_of_matter": "solid",
+        "build_strength": "fragile",
+        "materials": [
+          "glass",
+          "plastic"
+        ],
+        "functional_uses": [
+          "storing liquids"
+        ],
+        "dimensions": {
+          "shape": "cylinder",
+          "size": "small",
+          "aspect": "tall"
+        }
+      }
+    },
+    {
+      "entity_id": "noun__jar",
+      "label": "jar",
+      "canonical_lemma": "jar",
+      "semantic_class_id": "physical_object",
+      "kind": "object",
+      "definition": "a wide-mouthed container for storing food",
+      "genus_lemma": "container",
+      "slots": {
+        "entity_type": "non_living",
+        "state_of_matter": "solid",
+        "build_strength": "fragile",
+        "materials": [
+          "glass",
+          "ceramic"
+        ],
+        "functional_uses": [
+          "food storage",
+          "preserving"
+        ],
+        "dimensions": {
+          "shape": "cylinder",
+          "size": "small",
+          "aspect": "tall"
+        }
+      }
+    },
+    {
+      "entity_id": "noun__pot",
+      "label": "pot",
+      "canonical_lemma": "pot",
+      "semantic_class_id": "physical_object",
+      "kind": "object",
+      "definition": "a round container for cooking food on a stove",
+      "genus_lemma": "container",
+      "slots": {
+        "entity_type": "non_living",
+        "state_of_matter": "solid",
+        "build_strength": "strong",
+        "materials": [
+          "metal",
+          "ceramic"
+        ],
+        "functional_uses": [
+          "cooking",
+          "boiling"
+        ],
+        "dimensions": {
+          "shape": "cylinder",
+          "size": "medium",
+          "aspect": "tall"
+        }
+      }
+    },
+    {
+      "entity_id": "noun__pan",
+      "label": "pan",
+      "canonical_lemma": "pan",
+      "semantic_class_id": "physical_object",
+      "kind": "object",
+      "definition": "a flat-bottomed cooking container with a handle",
+      "genus_lemma": "container",
+      "slots": {
+        "entity_type": "non_living",
+        "state_of_matter": "solid",
+        "build_strength": "strong",
+        "materials": [
+          "metal"
+        ],
+        "functional_uses": [
+          "frying",
+          "cooking"
+        ],
+        "dimensions": {
+          "shape": "cylinder",
+          "size": "medium",
+          "aspect": "wide"
+        }
+      }
+    },
+    {
+      "entity_id": "noun__knife",
+      "label": "knife",
+      "canonical_lemma": "knife",
+      "semantic_class_id": "physical_object.instrument",
+      "kind": "object",
+      "definition": "a cutting tool with a sharp blade",
+      "genus_lemma": "tool",
+      "slots": {
+        "entity_type": "non_living",
+        "state_of_matter": "solid",
+        "build_strength": "strong",
+        "materials": [
+          "metal",
+          "plastic",
+          "wood"
+        ],
+        "functional_uses": [
+          "cutting",
+          "slicing"
+        ],
+        "dimensions": {
+          "shape": "stick",
+          "size": "small",
+          "aspect": "tall"
+        }
+      }
+    },
+    {
+      "entity_id": "noun__fork",
+      "label": "fork",
+      "canonical_lemma": "fork",
+      "semantic_class_id": "physical_object.instrument",
+      "kind": "object",
+      "definition": "a utensil with prongs for eating food",
+      "genus_lemma": "utensil",
+      "slots": {
+        "entity_type": "non_living",
+        "state_of_matter": "solid",
+        "build_strength": "strong",
+        "materials": [
+          "metal",
+          "plastic"
+        ],
+        "functional_uses": [
+          "eating",
+          "piercing food"
+        ],
+        "dimensions": {
+          "shape": "stick",
+          "size": "small",
+          "aspect": "tall"
+        }
+      }
+    },
+    {
+      "entity_id": "noun__spoon",
+      "label": "spoon",
+      "canonical_lemma": "spoon",
+      "semantic_class_id": "physical_object.instrument",
+      "kind": "object",
+      "definition": "a utensil with a shallow bowl for eating or serving food",
+      "genus_lemma": "utensil",
+      "slots": {
+        "entity_type": "non_living",
+        "state_of_matter": "solid",
+        "build_strength": "strong",
+        "materials": [
+          "metal",
+          "plastic"
+        ],
+        "functional_uses": [
+          "eating",
+          "stirring",
+          "serving"
+        ],
+        "dimensions": {
+          "shape": "stick",
+          "size": "small",
+          "aspect": "tall"
+        }
+      }
+    },
+    {
+      "entity_id": "noun__cutting_board",
+      "label": "cutting board",
+      "canonical_lemma": "cutting_board",
+      "semantic_class_id": "physical_object.instrument",
+      "kind": "object",
+      "definition": "a flat board used for cutting food",
+      "genus_lemma": "board",
+      "slots": {
+        "entity_type": "non_living",
+        "state_of_matter": "solid",
+        "build_strength": "sturdy",
+        "materials": [
+          "wood",
+          "plastic"
+        ],
+        "functional_uses": [
+          "cutting",
+          "food preparation"
+        ],
+        "dimensions": {
+          "shape": "sheet",
+          "size": "small",
+          "aspect": "wide"
+        }
+      }
+    },
+    {
+      "entity_id": "noun__colander",
+      "label": "colander",
+      "canonical_lemma": "colander",
+      "semantic_class_id": "physical_object",
+      "kind": "object",
+      "definition": "a bowl with holes for draining food",
+      "genus_lemma": "strainer",
+      "slots": {
+        "entity_type": "non_living",
+        "state_of_matter": "solid",
+        "build_strength": "sturdy",
+        "materials": [
+          "metal",
+          "plastic"
+        ],
+        "functional_uses": [
+          "draining",
+          "straining"
+        ],
+        "dimensions": {
+          "shape": "cylinder",
+          "size": "medium",
+          "aspect": "wide"
+        }
+      }
+    },
+    {
+      "entity_id": "noun__kettle",
+      "label": "kettle",
+      "canonical_lemma": "kettle",
+      "semantic_class_id": "physical_object",
+      "kind": "object",
+      "definition": "a container with a spout for boiling water",
+      "genus_lemma": "container",
+      "slots": {
+        "entity_type": "non_living",
+        "state_of_matter": "solid",
+        "build_strength": "strong",
+        "materials": [
+          "metal",
+          "plastic"
+        ],
+        "functional_uses": [
+          "boiling water"
+        ],
+        "dimensions": {
+          "shape": "cylinder",
+          "size": "small",
+          "aspect": "tall"
+        }
+      }
+    },
+    {
+      "entity_id": "noun__toaster",
+      "label": "toaster",
+      "canonical_lemma": "toaster",
+      "semantic_class_id": "physical_object.device",
+      "kind": "object",
+      "definition": "a small appliance for browning bread",
+      "genus_lemma": "appliance",
+      "slots": {
+        "entity_type": "non_living",
+        "state_of_matter": "solid",
+        "build_strength": "sturdy",
+        "materials": [
+          "metal",
+          "plastic"
+        ],
+        "functional_uses": [
+          "toasting bread"
+        ],
+        "dimensions": {
+          "shape": "box",
+          "size": "small",
+          "aspect": "tall"
+        }
+      }
+    },
+    {
+      "entity_id": "noun__blender",
+      "label": "blender",
+      "canonical_lemma": "blender",
+      "semantic_class_id": "physical_object.device",
+      "kind": "object",
+      "definition": "an appliance for mixing and pureeing food",
+      "genus_lemma": "appliance",
+      "slots": {
+        "entity_type": "non_living",
+        "state_of_matter": "solid",
+        "build_strength": "sturdy",
+        "materials": [
+          "plastic",
+          "metal",
+          "glass"
+        ],
+        "functional_uses": [
+          "blending",
+          "mixing",
+          "pureeing"
+        ],
+        "dimensions": {
+          "shape": "cylinder",
+          "size": "small",
+          "aspect": "tall"
+        }
+      }
+    },
+    {
+      "entity_id": "noun__mixer",
+      "label": "mixer",
+      "canonical_lemma": "mixer",
+      "semantic_class_id": "physical_object.device",
+      "kind": "object",
+      "definition": "an appliance for mixing ingredients",
+      "genus_lemma": "appliance",
+      "slots": {
+        "entity_type": "non_living",
+        "state_of_matter": "solid",
+        "build_strength": "sturdy",
+        "materials": [
+          "metal",
+          "plastic"
+        ],
+        "functional_uses": [
+          "mixing",
+          "beating",
+          "whisking"
+        ],
+        "dimensions": {
+          "shape": "box",
+          "size": "small",
+          "aspect": "wide"
+        }
+      }
+    },
+    {
+      "entity_id": "noun__grater",
+      "label": "grater",
+      "canonical_lemma": "grater",
+      "semantic_class_id": "physical_object.instrument",
+      "kind": "object",
+      "definition": "a tool with sharp holes for shredding food",
+      "genus_lemma": "tool",
+      "slots": {
+        "entity_type": "non_living",
+        "state_of_matter": "solid",
+        "build_strength": "strong",
+        "materials": [
+          "metal"
+        ],
+        "functional_uses": [
+          "shredding",
+          "grating"
+        ],
+        "dimensions": {
+          "shape": "sheet",
+          "size": "small",
+          "aspect": "tall"
+        }
+      }
+    },
+    {
+      "entity_id": "noun__peeler",
+      "label": "peeler",
+      "canonical_lemma": "peeler",
+      "semantic_class_id": "physical_object.instrument",
+      "kind": "object",
+      "definition": "a tool for removing the skin from fruit and vegetables",
+      "genus_lemma": "tool",
+      "slots": {
+        "entity_type": "non_living",
+        "state_of_matter": "solid",
+        "build_strength": "sturdy",
+        "materials": [
+          "metal",
+          "plastic"
+        ],
+        "functional_uses": [
+          "peeling"
+        ],
+        "dimensions": {
+          "shape": "stick",
+          "size": "small",
+          "aspect": "tall"
+        }
+      }
+    },
+    {
+      "entity_id": "noun__rolling_pin",
+      "label": "rolling pin",
+      "canonical_lemma": "rolling_pin",
+      "semantic_class_id": "physical_object.instrument",
+      "kind": "object",
+      "definition": "a cylindrical tool for flattening dough",
+      "genus_lemma": "tool",
+      "slots": {
+        "entity_type": "non_living",
+        "state_of_matter": "solid",
+        "build_strength": "strong",
+        "materials": [
+          "wood",
+          "metal"
+        ],
+        "functional_uses": [
+          "flattening dough",
+          "baking"
+        ],
+        "dimensions": {
+          "shape": "cylinder",
+          "size": "medium",
+          "aspect": "tall"
+        }
+      }
+    },
+    {
+      "entity_id": "noun__baking_tray",
+      "label": "baking tray",
+      "canonical_lemma": "baking_tray",
+      "semantic_class_id": "physical_object",
+      "kind": "object",
+      "definition": "a flat sheet used for baking in the oven",
+      "genus_lemma": "tray",
+      "slots": {
+        "entity_type": "non_living",
+        "state_of_matter": "solid",
+        "build_strength": "strong",
+        "materials": [
+          "metal"
+        ],
+        "functional_uses": [
+          "baking"
+        ],
+        "dimensions": {
+          "shape": "sheet",
+          "size": "medium",
+          "aspect": "wide"
+        }
+      }
+    },
+    {
+      "entity_id": "noun__sieve",
+      "label": "sieve",
+      "canonical_lemma": "sieve",
+      "semantic_class_id": "physical_object.instrument",
+      "kind": "object",
+      "definition": "a mesh tool for separating solids from liquids or finer particles",
+      "genus_lemma": "strainer",
+      "slots": {
+        "entity_type": "non_living",
+        "state_of_matter": "solid",
+        "build_strength": "sturdy",
+        "materials": [
+          "metal",
+          "plastic"
+        ],
+        "functional_uses": [
+          "straining",
+          "sifting"
+        ],
+        "dimensions": {
+          "shape": "cylinder",
+          "size": "small",
+          "aspect": "wide"
+        }
+      }
+    },
+    {
+      "entity_id": "noun__apron",
+      "label": "apron",
+      "canonical_lemma": "apron",
+      "semantic_class_id": "clothing_item",
+      "kind": "object",
+      "definition": "a protective garment worn over clothes while cooking",
+      "genus_lemma": "garment",
+      "slots": {
+        "entity_type": "non_living",
+        "state_of_matter": "solid",
+        "build_strength": "fragile",
+        "materials": [
+          "fabric",
+          "cloth"
+        ],
+        "functional_uses": [
+          "protection while cooking"
+        ],
+        "dimensions": {
+          "shape": "sheet",
+          "size": "medium",
+          "aspect": "wide"
+        }
+      }
+    },
+    {
+      "entity_id": "noun__phone",
+      "label": "phone",
+      "canonical_lemma": "phone",
+      "semantic_class_id": "physical_object.device",
+      "kind": "object",
+      "definition": "a device for voice communication over distances",
+      "genus_lemma": "device",
+      "slots": {
+        "entity_type": "non_living",
+        "state_of_matter": "solid",
+        "build_strength": "fragile",
+        "materials": [
+          "glass",
+          "metal",
+          "plastic"
+        ],
+        "functional_uses": [
+          "communication",
+          "calling",
+          "messaging"
+        ],
+        "dimensions": {
+          "shape": "sheet",
+          "size": "tiny",
+          "aspect": "tall"
+        }
+      }
+    },
+    {
+      "entity_id": "noun__computer",
+      "label": "computer",
+      "canonical_lemma": "computer",
+      "semantic_class_id": "physical_object.device",
+      "kind": "object",
+      "definition": "an electronic device that processes data and runs programs",
+      "genus_lemma": "device",
+      "slots": {
+        "entity_type": "non_living",
+        "state_of_matter": "solid",
+        "build_strength": "fragile",
+        "materials": [
+          "metal",
+          "plastic",
+          "silicon"
+        ],
+        "functional_uses": [
+          "computing",
+          "programming",
+          "browsing"
+        ],
+        "dimensions": {
+          "shape": "box",
+          "size": "small",
+          "aspect": "wide"
+        }
+      }
+    },
+    {
+      "entity_id": "noun__tablet",
+      "label": "tablet",
+      "canonical_lemma": "tablet",
+      "semantic_class_id": "physical_object.device",
+      "kind": "object",
+      "definition": "a portable touchscreen computer",
+      "genus_lemma": "computer",
+      "slots": {
+        "entity_type": "non_living",
+        "state_of_matter": "solid",
+        "build_strength": "fragile",
+        "materials": [
+          "glass",
+          "metal"
+        ],
+        "functional_uses": [
+          "computing",
+          "media consumption",
+          "reading"
+        ],
+        "dimensions": {
+          "shape": "sheet",
+          "size": "small",
+          "aspect": "wide"
+        }
+      }
+    },
+    {
+      "entity_id": "noun__monitor",
+      "label": "monitor",
+      "canonical_lemma": "monitor",
+      "semantic_class_id": "physical_object.device",
+      "kind": "object",
+      "definition": "a display screen for a computer",
+      "genus_lemma": "display",
+      "slots": {
+        "entity_type": "non_living",
+        "state_of_matter": "solid",
+        "build_strength": "fragile",
+        "materials": [
+          "plastic",
+          "glass",
+          "metal"
+        ],
+        "functional_uses": [
+          "displaying visual output"
+        ],
+        "dimensions": {
+          "shape": "sheet",
+          "size": "medium",
+          "aspect": "wide"
+        }
+      }
+    },
+    {
+      "entity_id": "noun__keyboard",
+      "label": "keyboard",
+      "canonical_lemma": "keyboard",
+      "semantic_class_id": "physical_object.device",
+      "kind": "object",
+      "definition": "a panel of keys for typing text",
+      "genus_lemma": "input_device",
+      "slots": {
+        "entity_type": "non_living",
+        "state_of_matter": "solid",
+        "build_strength": "sturdy",
+        "materials": [
+          "plastic",
+          "metal"
+        ],
+        "functional_uses": [
+          "typing",
+          "input"
+        ],
+        "dimensions": {
+          "shape": "sheet",
+          "size": "small",
+          "aspect": "wide"
+        }
+      }
+    },
+    {
+      "entity_id": "noun__mouse",
+      "label": "mouse",
+      "canonical_lemma": "mouse",
+      "semantic_class_id": "physical_object.device",
+      "kind": "object",
+      "definition": "a handheld pointing device for a computer",
+      "genus_lemma": "input_device",
+      "slots": {
+        "entity_type": "non_living",
+        "state_of_matter": "solid",
+        "build_strength": "sturdy",
+        "materials": [
+          "plastic"
+        ],
+        "functional_uses": [
+          "pointing",
+          "clicking",
+          "navigation"
+        ],
+        "dimensions": {
+          "shape": "box",
+          "size": "tiny",
+          "aspect": "wide"
+        }
+      }
+    },
+    {
+      "entity_id": "noun__printer",
+      "label": "printer",
+      "canonical_lemma": "printer",
+      "semantic_class_id": "physical_object.device",
+      "kind": "object",
+      "definition": "a device that produces text and images on paper",
+      "genus_lemma": "device",
+      "slots": {
+        "entity_type": "non_living",
+        "state_of_matter": "solid",
+        "build_strength": "sturdy",
+        "materials": [
+          "plastic",
+          "metal"
+        ],
+        "functional_uses": [
+          "printing"
+        ],
+        "dimensions": {
+          "shape": "box",
+          "size": "medium",
+          "aspect": "wide"
+        }
+      }
+    },
+    {
+      "entity_id": "noun__speaker",
+      "label": "speaker",
+      "canonical_lemma": "speaker",
+      "semantic_class_id": "physical_object.device",
+      "kind": "object",
+      "definition": "a device that produces sound",
+      "genus_lemma": "device",
+      "slots": {
+        "entity_type": "non_living",
+        "state_of_matter": "solid",
+        "build_strength": "sturdy",
+        "materials": [
+          "plastic",
+          "metal"
+        ],
+        "functional_uses": [
+          "audio output",
+          "music playback"
+        ],
+        "dimensions": {
+          "shape": "box",
+          "size": "small",
+          "aspect": "cubic"
+        }
+      }
+    },
+    {
+      "entity_id": "noun__headphones",
+      "label": "headphones",
+      "canonical_lemma": "headphones",
+      "semantic_class_id": "physical_object.device",
+      "kind": "object",
+      "definition": "a pair of speakers worn over ears for private listening",
+      "genus_lemma": "device",
+      "slots": {
+        "entity_type": "non_living",
+        "state_of_matter": "solid",
+        "build_strength": "fragile",
+        "materials": [
+          "plastic",
+          "metal",
+          "fabric"
+        ],
+        "functional_uses": [
+          "private audio listening"
+        ],
+        "dimensions": {
+          "shape": "box",
+          "size": "small",
+          "aspect": "wide"
+        }
+      }
+    },
+    {
+      "entity_id": "noun__camera",
+      "label": "camera",
+      "canonical_lemma": "camera",
+      "semantic_class_id": "physical_object.device",
+      "kind": "object",
+      "definition": "a device for capturing photographs or video",
+      "genus_lemma": "device",
+      "slots": {
+        "entity_type": "non_living",
+        "state_of_matter": "solid",
+        "build_strength": "fragile",
+        "materials": [
+          "plastic",
+          "metal",
+          "glass"
+        ],
+        "functional_uses": [
+          "photography",
+          "video recording"
+        ],
+        "dimensions": {
+          "shape": "box",
+          "size": "small",
+          "aspect": "wide"
+        }
+      }
+    },
+    {
+      "entity_id": "noun__router",
+      "label": "router",
+      "canonical_lemma": "router",
+      "semantic_class_id": "physical_object.device",
+      "kind": "object",
+      "definition": "a device that forwards data packets between networks",
+      "genus_lemma": "device",
+      "slots": {
+        "entity_type": "non_living",
+        "state_of_matter": "solid",
+        "build_strength": "sturdy",
+        "materials": [
+          "plastic",
+          "metal"
+        ],
+        "functional_uses": [
+          "network connectivity",
+          "internet access"
+        ],
+        "dimensions": {
+          "shape": "box",
+          "size": "small",
+          "aspect": "wide"
+        }
+      }
+    },
+    {
+      "entity_id": "noun__charger",
+      "label": "charger",
+      "canonical_lemma": "charger",
+      "semantic_class_id": "physical_object.device",
+      "kind": "object",
+      "definition": "a device for replenishing battery power",
+      "genus_lemma": "device",
+      "slots": {
+        "entity_type": "non_living",
+        "state_of_matter": "solid",
+        "build_strength": "sturdy",
+        "materials": [
+          "plastic",
+          "metal"
+        ],
+        "functional_uses": [
+          "battery charging"
+        ],
+        "dimensions": {
+          "shape": "box",
+          "size": "tiny",
+          "aspect": "cubic"
+        }
+      }
+    },
+    {
+      "entity_id": "noun__cable",
+      "label": "cable",
+      "canonical_lemma": "cable",
+      "semantic_class_id": "physical_object",
+      "kind": "object",
+      "definition": "a wire used for transmitting electricity or data",
+      "genus_lemma": "wire",
+      "slots": {
+        "entity_type": "non_living",
+        "state_of_matter": "solid",
+        "build_strength": "sturdy",
+        "materials": [
+          "metal",
+          "plastic",
+          "rubber"
+        ],
+        "functional_uses": [
+          "connecting devices",
+          "power transmission"
+        ],
+        "dimensions": {
+          "shape": "stick",
+          "size": "small",
+          "aspect": "tall"
+        }
+      }
+    },
+    {
+      "entity_id": "noun__remote",
+      "label": "remote",
+      "canonical_lemma": "remote",
+      "semantic_class_id": "physical_object.device",
+      "kind": "object",
+      "definition": "a handheld device for controlling electronic appliances",
+      "genus_lemma": "controller",
+      "slots": {
+        "entity_type": "non_living",
+        "state_of_matter": "solid",
+        "build_strength": "sturdy",
+        "materials": [
+          "plastic"
+        ],
+        "functional_uses": [
+          "remote control"
+        ],
+        "dimensions": {
+          "shape": "stick",
+          "size": "tiny",
+          "aspect": "tall"
+        }
+      }
+    },
+    {
+      "entity_id": "noun__clock",
+      "label": "clock",
+      "canonical_lemma": "clock",
+      "semantic_class_id": "physical_object.device",
+      "kind": "object",
+      "definition": "a device that displays the time",
+      "genus_lemma": "timepiece",
+      "slots": {
+        "entity_type": "non_living",
+        "state_of_matter": "solid",
+        "build_strength": "fragile",
+        "materials": [
+          "plastic",
+          "glass",
+          "metal"
+        ],
+        "functional_uses": [
+          "timekeeping"
+        ],
+        "dimensions": {
+          "shape": "cylinder",
+          "size": "small",
+          "aspect": "wide"
+        }
+      }
+    },
+    {
+      "entity_id": "noun__hammer",
+      "label": "hammer",
+      "canonical_lemma": "hammer",
+      "semantic_class_id": "physical_object.instrument",
+      "kind": "object",
+      "definition": "a tool with a heavy head for driving nails",
+      "genus_lemma": "tool",
+      "slots": {
+        "entity_type": "non_living",
+        "state_of_matter": "solid",
+        "build_strength": "strong",
+        "materials": [
+          "metal",
+          "wood"
+        ],
+        "functional_uses": [
+          "driving nails",
+          "demolition"
+        ],
+        "dimensions": {
+          "shape": "stick",
+          "size": "small",
+          "aspect": "tall"
+        }
+      }
+    },
+    {
+      "entity_id": "noun__screwdriver",
+      "label": "screwdriver",
+      "canonical_lemma": "screwdriver",
+      "semantic_class_id": "physical_object.instrument",
+      "kind": "object",
+      "definition": "a tool for turning screws",
+      "genus_lemma": "tool",
+      "slots": {
+        "entity_type": "non_living",
+        "state_of_matter": "solid",
+        "build_strength": "strong",
+        "materials": [
+          "metal",
+          "plastic"
+        ],
+        "functional_uses": [
+          "turning screws"
+        ],
+        "dimensions": {
+          "shape": "stick",
+          "size": "small",
+          "aspect": "tall"
+        }
+      }
+    },
+    {
+      "entity_id": "noun__wrench",
+      "label": "wrench",
+      "canonical_lemma": "wrench",
+      "semantic_class_id": "physical_object.instrument",
+      "kind": "object",
+      "definition": "a tool for gripping and turning nuts and bolts",
+      "genus_lemma": "tool",
+      "slots": {
+        "entity_type": "non_living",
+        "state_of_matter": "solid",
+        "build_strength": "strong",
+        "materials": [
+          "metal"
+        ],
+        "functional_uses": [
+          "tightening",
+          "loosening fasteners"
+        ],
+        "dimensions": {
+          "shape": "stick",
+          "size": "small",
+          "aspect": "tall"
+        }
+      }
+    },
+    {
+      "entity_id": "noun__pliers",
+      "label": "pliers",
+      "canonical_lemma": "pliers",
+      "semantic_class_id": "physical_object.instrument",
+      "kind": "object",
+      "definition": "hand tools for gripping and bending objects",
+      "genus_lemma": "tool",
+      "slots": {
+        "entity_type": "non_living",
+        "state_of_matter": "solid",
+        "build_strength": "strong",
+        "materials": [
+          "metal",
+          "plastic"
+        ],
+        "functional_uses": [
+          "gripping",
+          "bending",
+          "cutting wire"
+        ],
+        "dimensions": {
+          "shape": "stick",
+          "size": "small",
+          "aspect": "tall"
+        }
+      }
+    },
+    {
+      "entity_id": "noun__saw",
+      "label": "saw",
+      "canonical_lemma": "saw",
+      "semantic_class_id": "physical_object.instrument",
+      "kind": "object",
+      "definition": "a tool with a serrated blade for cutting materials",
+      "genus_lemma": "tool",
+      "slots": {
+        "entity_type": "non_living",
+        "state_of_matter": "solid",
+        "build_strength": "strong",
+        "materials": [
+          "metal",
+          "wood"
+        ],
+        "functional_uses": [
+          "cutting",
+          "woodworking"
+        ],
+        "dimensions": {
+          "shape": "stick",
+          "size": "medium",
+          "aspect": "tall"
+        }
+      }
+    },
+    {
+      "entity_id": "noun__drill",
+      "label": "drill",
+      "canonical_lemma": "drill",
+      "semantic_class_id": "physical_object.instrument",
+      "kind": "object",
+      "definition": "a tool for making holes in hard materials",
+      "genus_lemma": "tool",
+      "slots": {
+        "entity_type": "non_living",
+        "state_of_matter": "solid",
+        "build_strength": "strong",
+        "materials": [
+          "metal",
+          "plastic"
+        ],
+        "functional_uses": [
+          "drilling holes"
+        ],
+        "dimensions": {
+          "shape": "stick",
+          "size": "small",
+          "aspect": "tall"
+        }
+      }
+    },
+    {
+      "entity_id": "noun__tape_measure",
+      "label": "tape measure",
+      "canonical_lemma": "tape_measure",
+      "semantic_class_id": "physical_object.instrument",
+      "kind": "object",
+      "definition": "a flexible ruler for measuring length",
+      "genus_lemma": "measuring_tool",
+      "slots": {
+        "entity_type": "non_living",
+        "state_of_matter": "solid",
+        "build_strength": "sturdy",
+        "materials": [
+          "metal",
+          "plastic"
+        ],
+        "functional_uses": [
+          "measuring"
+        ],
+        "dimensions": {
+          "shape": "box",
+          "size": "tiny",
+          "aspect": "tall"
+        }
+      }
+    },
+    {
+      "entity_id": "noun__level",
+      "label": "level",
+      "canonical_lemma": "level",
+      "semantic_class_id": "physical_object.instrument",
+      "kind": "object",
+      "definition": "a tool for checking horizontal or vertical alignment",
+      "genus_lemma": "measuring_tool",
+      "slots": {
+        "entity_type": "non_living",
+        "state_of_matter": "solid",
+        "build_strength": "sturdy",
+        "materials": [
+          "metal",
+          "plastic",
+          "glass"
+        ],
+        "functional_uses": [
+          "alignment checking"
+        ],
+        "dimensions": {
+          "shape": "stick",
+          "size": "small",
+          "aspect": "tall"
+        }
+      }
+    },
+    {
+      "entity_id": "noun__chisel",
+      "label": "chisel",
+      "canonical_lemma": "chisel",
+      "semantic_class_id": "physical_object.instrument",
+      "kind": "object",
+      "definition": "a hand tool with a sharp edge for carving or cutting hard materials",
+      "genus_lemma": "tool",
+      "slots": {
+        "entity_type": "non_living",
+        "state_of_matter": "solid",
+        "build_strength": "strong",
+        "materials": [
+          "metal",
+          "wood"
+        ],
+        "functional_uses": [
+          "carving",
+          "sculpting",
+          "woodworking"
+        ],
+        "dimensions": {
+          "shape": "stick",
+          "size": "small",
+          "aspect": "tall"
+        }
+      }
+    },
+    {
+      "entity_id": "noun__file",
+      "label": "file",
+      "canonical_lemma": "file",
+      "semantic_class_id": "physical_object.instrument",
+      "kind": "object",
+      "definition": "a rough tool for shaping and smoothing surfaces",
+      "genus_lemma": "tool",
+      "slots": {
+        "entity_type": "non_living",
+        "state_of_matter": "solid",
+        "build_strength": "strong",
+        "materials": [
+          "metal"
+        ],
+        "functional_uses": [
+          "shaping",
+          "smoothing",
+          "sharpening"
+        ],
+        "dimensions": {
+          "shape": "stick",
+          "size": "small",
+          "aspect": "tall"
+        }
+      }
+    },
+    {
+      "entity_id": "noun__scissors",
+      "label": "scissors",
+      "canonical_lemma": "scissors",
+      "semantic_class_id": "physical_object.instrument",
+      "kind": "object",
+      "definition": "a cutting tool with two pivoting blades",
+      "genus_lemma": "tool",
+      "slots": {
+        "entity_type": "non_living",
+        "state_of_matter": "solid",
+        "build_strength": "strong",
+        "materials": [
+          "metal",
+          "plastic"
+        ],
+        "functional_uses": [
+          "cutting",
+          "trimming"
+        ],
+        "dimensions": {
+          "shape": "stick",
+          "size": "small",
+          "aspect": "tall"
+        }
+      }
+    },
+    {
+      "entity_id": "noun__glue",
+      "label": "glue",
+      "canonical_lemma": "glue",
+      "semantic_class_id": "substance",
+      "kind": "object",
+      "definition": "a sticky substance used for joining materials",
+      "genus_lemma": "adhesive",
+      "slots": {
+        "entity_type": "non_living",
+        "state_of_matter": "solid",
+        "build_strength": "sturdy",
+        "materials": [
+          "polymer"
+        ],
+        "functional_uses": [
+          "bonding",
+          "repairing"
+        ],
+        "dimensions": {
+          "shape": "tube",
+          "size": "tiny",
+          "aspect": "tall"
+        }
+      }
+    },
+    {
+      "entity_id": "noun__nails",
+      "label": "nails",
+      "canonical_lemma": "nail",
+      "semantic_class_id": "physical_object",
+      "kind": "object",
+      "definition": "small metal pins used in construction",
+      "genus_lemma": "fastener",
+      "slots": {
+        "entity_type": "non_living",
+        "state_of_matter": "solid",
+        "build_strength": "strong",
+        "materials": [
+          "metal"
+        ],
+        "functional_uses": [
+          "fastening",
+          "construction"
+        ],
+        "dimensions": {
+          "shape": "stick",
+          "size": "tiny",
+          "aspect": "tall"
+        }
+      }
+    },
+    {
+      "entity_id": "noun__screws",
+      "label": "screws",
+      "canonical_lemma": "screw",
+      "semantic_class_id": "physical_object",
+      "kind": "object",
+      "definition": "threaded fasteners turned with a screwdriver",
+      "genus_lemma": "fastener",
+      "slots": {
+        "entity_type": "non_living",
+        "state_of_matter": "solid",
+        "build_strength": "strong",
+        "materials": [
+          "metal"
+        ],
+        "functional_uses": [
+          "fastening",
+          "joining"
+        ],
+        "dimensions": {
+          "shape": "stick",
+          "size": "tiny",
+          "aspect": "tall"
+        }
+      }
+    },
+    {
+      "entity_id": "noun__ladder",
+      "label": "ladder",
+      "canonical_lemma": "ladder",
+      "semantic_class_id": "physical_object",
+      "kind": "object",
+      "definition": "a structure of rungs for climbing up or down",
+      "genus_lemma": "climbing_tool",
+      "slots": {
+        "entity_type": "non_living",
+        "state_of_matter": "solid",
+        "build_strength": "strong",
+        "materials": [
+          "metal",
+          "wood"
+        ],
+        "functional_uses": [
+          "climbing",
+          "reaching heights"
+        ],
+        "dimensions": {
+          "shape": "stick",
+          "size": "large",
+          "aspect": "tall"
+        }
+      }
+    },
+    {
+      "entity_id": "noun__toothbrush",
+      "label": "toothbrush",
+      "canonical_lemma": "toothbrush",
+      "semantic_class_id": "physical_object.instrument",
+      "kind": "object",
+      "definition": "a brush for cleaning teeth",
+      "genus_lemma": "brush",
+      "slots": {
+        "entity_type": "non_living",
+        "state_of_matter": "solid",
+        "build_strength": "sturdy",
+        "materials": [
+          "plastic"
+        ],
+        "functional_uses": [
+          "teeth cleaning",
+          "oral hygiene"
+        ],
+        "dimensions": {
+          "shape": "stick",
+          "size": "tiny",
+          "aspect": "tall"
+        }
+      }
+    },
+    {
+      "entity_id": "noun__comb",
+      "label": "comb",
+      "canonical_lemma": "comb",
+      "semantic_class_id": "physical_object.instrument",
+      "kind": "object",
+      "definition": "a tool with teeth for untangling and styling hair",
+      "genus_lemma": "tool",
+      "slots": {
+        "entity_type": "non_living",
+        "state_of_matter": "solid",
+        "build_strength": "sturdy",
+        "materials": [
+          "plastic",
+          "wood",
+          "metal"
+        ],
+        "functional_uses": [
+          "hair grooming"
+        ],
+        "dimensions": {
+          "shape": "sheet",
+          "size": "tiny",
+          "aspect": "tall"
+        }
+      }
+    },
+    {
+      "entity_id": "noun__razor",
+      "label": "razor",
+      "canonical_lemma": "razor",
+      "semantic_class_id": "physical_object.instrument",
+      "kind": "object",
+      "definition": "a sharp tool for removing hair",
+      "genus_lemma": "tool",
+      "slots": {
+        "entity_type": "non_living",
+        "state_of_matter": "solid",
+        "build_strength": "sturdy",
+        "materials": [
+          "metal",
+          "plastic"
+        ],
+        "functional_uses": [
+          "shaving",
+          "hair removal"
+        ],
+        "dimensions": {
+          "shape": "stick",
+          "size": "tiny",
+          "aspect": "tall"
+        }
+      }
+    },
+    {
+      "entity_id": "noun__soap",
+      "label": "soap",
+      "canonical_lemma": "soap",
+      "semantic_class_id": "substance",
+      "kind": "object",
+      "definition": "a cleaning substance used with water",
+      "genus_lemma": "cleaner",
+      "slots": {
+        "entity_type": "non_living",
+        "state_of_matter": "solid",
+        "build_strength": "fragile",
+        "materials": [
+          "oil",
+          "fat",
+          "alkali"
+        ],
+        "functional_uses": [
+          "cleaning",
+          "washing"
+        ],
+        "dimensions": {
+          "shape": "box",
+          "size": "tiny",
+          "aspect": "cubic"
+        }
+      }
+    },
+    {
+      "entity_id": "noun__shampoo",
+      "label": "shampoo",
+      "canonical_lemma": "shampoo",
+      "semantic_class_id": "substance",
+      "kind": "object",
+      "definition": "a liquid soap for washing hair",
+      "genus_lemma": "cleaner",
+      "slots": {
+        "entity_type": "non_living",
+        "state_of_matter": "liquid",
+        "build_strength": "fragile",
+        "materials": [
+          "water",
+          "detergent"
+        ],
+        "functional_uses": [
+          "hair washing"
+        ],
+        "dimensions": {
+          "shape": "cylinder",
+          "size": "tiny",
+          "aspect": "tall"
+        }
+      }
+    },
+    {
+      "entity_id": "noun__towel",
+      "label": "towel",
+      "canonical_lemma": "towel",
+      "semantic_class_id": "physical_object",
+      "kind": "object",
+      "definition": "a piece of absorbent fabric for drying",
+      "genus_lemma": "cloth",
+      "slots": {
+        "entity_type": "non_living",
+        "state_of_matter": "solid",
+        "build_strength": "fragile",
+        "materials": [
+          "fabric",
+          "cotton"
+        ],
+        "functional_uses": [
+          "drying",
+          "wiping"
+        ],
+        "dimensions": {
+          "shape": "sheet",
+          "size": "medium",
+          "aspect": "tall"
+        }
+      }
+    },
+    {
+      "entity_id": "noun__deodorant",
+      "label": "deodorant",
+      "canonical_lemma": "deodorant",
+      "semantic_class_id": "substance",
+      "kind": "object",
+      "definition": "a substance applied to the body to prevent body odor",
+      "genus_lemma": "hygiene_product",
+      "slots": {
+        "entity_type": "non_living",
+        "state_of_matter": "solid",
+        "materials": [
+          "wax",
+          "oil"
+        ],
+        "functional_uses": [
+          "odor prevention",
+          "personal hygiene"
+        ],
+        "dimensions": {
+          "shape": "cylinder",
+          "size": "tiny",
+          "aspect": "tall"
+        }
+      }
+    },
+    {
+      "entity_id": "noun__lotion",
+      "label": "lotion",
+      "canonical_lemma": "lotion",
+      "semantic_class_id": "substance",
+      "kind": "object",
+      "definition": "a creamy liquid for moisturizing the skin",
+      "genus_lemma": "cream",
+      "slots": {
+        "entity_type": "non_living",
+        "state_of_matter": "liquid",
+        "materials": [
+          "water",
+          "oil"
+        ],
+        "functional_uses": [
+          "moisturizing",
+          "skin care"
+        ],
+        "dimensions": {
+          "shape": "cylinder",
+          "size": "tiny",
+          "aspect": "tall"
+        }
+      }
+    },
+    {
+      "entity_id": "noun__hairbrush",
+      "label": "hairbrush",
+      "canonical_lemma": "hairbrush",
+      "semantic_class_id": "physical_object.instrument",
+      "kind": "object",
+      "definition": "a brush for styling and smoothing hair",
+      "genus_lemma": "brush",
+      "slots": {
+        "entity_type": "non_living",
+        "state_of_matter": "solid",
+        "build_strength": "sturdy",
+        "materials": [
+          "plastic",
+          "wood"
+        ],
+        "functional_uses": [
+          "hair grooming",
+          "styling"
+        ],
+        "dimensions": {
+          "shape": "stick",
+          "size": "tiny",
+          "aspect": "tall"
+        }
+      }
+    },
+    {
+      "entity_id": "noun__shirt",
+      "label": "shirt",
+      "canonical_lemma": "shirt",
+      "semantic_class_id": "clothing_item",
+      "kind": "object",
+      "definition": "a garment for the upper body",
+      "genus_lemma": "garment",
+      "slots": {
+        "entity_type": "non_living",
+        "state_of_matter": "solid",
+        "build_strength": "fragile",
+        "materials": [
+          "fabric",
+          "cotton",
+          "polyester"
+        ],
+        "functional_uses": [
+          "clothing",
+          "covering upper body"
+        ],
+        "dimensions": {
+          "shape": "sheet",
+          "size": "medium",
+          "aspect": "wide"
+        }
+      }
+    },
+    {
+      "entity_id": "noun__pants",
+      "label": "pants",
+      "canonical_lemma": "pants",
+      "semantic_class_id": "clothing_item",
+      "kind": "object",
+      "definition": "a garment for the lower body covering each leg separately",
+      "genus_lemma": "garment",
+      "slots": {
+        "entity_type": "non_living",
+        "state_of_matter": "solid",
+        "build_strength": "fragile",
+        "materials": [
+          "fabric",
+          "cotton",
+          "denim"
+        ],
+        "functional_uses": [
+          "clothing",
+          "covering legs"
+        ],
+        "dimensions": {
+          "shape": "stick",
+          "size": "medium",
+          "aspect": "tall"
+        }
+      }
+    },
+    {
+      "entity_id": "noun__shoes",
+      "label": "shoes",
+      "canonical_lemma": "shoe",
+      "semantic_class_id": "clothing_item",
+      "kind": "object",
+      "definition": "footwear worn to protect and comfort the feet",
+      "genus_lemma": "footwear",
+      "slots": {
+        "entity_type": "non_living",
+        "state_of_matter": "solid",
+        "build_strength": "sturdy",
+        "materials": [
+          "leather",
+          "fabric",
+          "rubber"
+        ],
+        "functional_uses": [
+          "foot protection",
+          "walking"
+        ],
+        "dimensions": {
+          "shape": "box",
+          "size": "small",
+          "aspect": "wide"
+        }
+      }
+    },
+    {
+      "entity_id": "noun__socks",
+      "label": "socks",
+      "canonical_lemma": "sock",
+      "semantic_class_id": "clothing_item",
+      "kind": "object",
+      "definition": "foot coverings worn inside shoes",
+      "genus_lemma": "footwear",
+      "slots": {
+        "entity_type": "non_living",
+        "state_of_matter": "solid",
+        "build_strength": "fragile",
+        "materials": [
+          "fabric",
+          "cotton",
+          "wool"
+        ],
+        "functional_uses": [
+          "foot protection",
+          "warmth"
+        ],
+        "dimensions": {
+          "shape": "cylinder",
+          "size": "tiny",
+          "aspect": "tall"
+        }
+      }
+    },
+    {
+      "entity_id": "noun__jacket",
+      "label": "jacket",
+      "canonical_lemma": "jacket",
+      "semantic_class_id": "clothing_item",
+      "kind": "object",
+      "definition": "a short coat for the upper body",
+      "genus_lemma": "coat",
+      "slots": {
+        "entity_type": "non_living",
+        "state_of_matter": "solid",
+        "build_strength": "sturdy",
+        "materials": [
+          "fabric",
+          "leather",
+          "polyester"
+        ],
+        "functional_uses": [
+          "warmth",
+          "protection from weather"
+        ],
+        "dimensions": {
+          "shape": "sheet",
+          "size": "medium",
+          "aspect": "wide"
+        }
+      }
+    },
+    {
+      "entity_id": "noun__hat",
+      "label": "hat",
+      "canonical_lemma": "hat",
+      "semantic_class_id": "clothing_item",
+      "kind": "object",
+      "definition": "a head covering worn for warmth or fashion",
+      "genus_lemma": "headwear",
+      "slots": {
+        "entity_type": "non_living",
+        "state_of_matter": "solid",
+        "build_strength": "fragile",
+        "materials": [
+          "fabric",
+          "straw",
+          "wool"
+        ],
+        "functional_uses": [
+          "head covering",
+          "sun protection"
+        ],
+        "dimensions": {
+          "shape": "cylinder",
+          "size": "small",
+          "aspect": "wide"
+        }
+      }
+    },
+    {
+      "entity_id": "noun__belt",
+      "label": "belt",
+      "canonical_lemma": "belt",
+      "semantic_class_id": "clothing_item",
+      "kind": "object",
+      "definition": "a strip of material worn around the waist",
+      "genus_lemma": "accessory",
+      "slots": {
+        "entity_type": "non_living",
+        "state_of_matter": "solid",
+        "build_strength": "sturdy",
+        "materials": [
+          "leather",
+          "fabric"
+        ],
+        "functional_uses": [
+          "holding up pants",
+          "fashion"
+        ],
+        "dimensions": {
+          "shape": "stick",
+          "size": "small",
+          "aspect": "tall"
+        }
+      }
+    },
+    {
+      "entity_id": "noun__gloves",
+      "label": "gloves",
+      "canonical_lemma": "glove",
+      "semantic_class_id": "clothing_item",
+      "kind": "object",
+      "definition": "hand coverings for warmth or protection",
+      "genus_lemma": "handwear",
+      "slots": {
+        "entity_type": "non_living",
+        "state_of_matter": "solid",
+        "build_strength": "fragile",
+        "materials": [
+          "fabric",
+          "leather",
+          "wool"
+        ],
+        "functional_uses": [
+          "hand protection",
+          "warmth"
+        ],
+        "dimensions": {
+          "shape": "box",
+          "size": "tiny",
+          "aspect": "wide"
+        }
+      }
+    },
+    {
+      "entity_id": "noun__scarf",
+      "label": "scarf",
+      "canonical_lemma": "scarf",
+      "semantic_class_id": "clothing_item",
+      "kind": "object",
+      "definition": "a piece of fabric worn around the neck for warmth",
+      "genus_lemma": "accessory",
+      "slots": {
+        "entity_type": "non_living",
+        "state_of_matter": "solid",
+        "build_strength": "fragile",
+        "materials": [
+          "fabric",
+          "wool",
+          "silk"
+        ],
+        "functional_uses": [
+          "neck warmth",
+          "fashion"
+        ],
+        "dimensions": {
+          "shape": "stick",
+          "size": "small",
+          "aspect": "tall"
+        }
+      }
+    },
+    {
+      "entity_id": "noun__glasses",
+      "label": "glasses",
+      "canonical_lemma": "glasses",
+      "semantic_class_id": "clothing_item",
+      "kind": "object",
+      "definition": "frames with lenses worn to correct vision",
+      "genus_lemma": "eyewear",
+      "slots": {
+        "entity_type": "non_living",
+        "state_of_matter": "solid",
+        "build_strength": "fragile",
+        "materials": [
+          "plastic",
+          "metal",
+          "glass"
+        ],
+        "functional_uses": [
+          "vision correction"
+        ],
+        "dimensions": {
+          "shape": "box",
+          "size": "tiny",
+          "aspect": "wide"
+        }
+      }
+    },
+    {
+      "entity_id": "noun__box",
+      "label": "box",
+      "canonical_lemma": "box",
+      "semantic_class_id": "physical_object",
+      "kind": "object",
+      "definition": "a rigid container with flat sides and a lid",
+      "genus_lemma": "container",
+      "slots": {
+        "entity_type": "non_living",
+        "state_of_matter": "solid",
+        "build_strength": "sturdy",
+        "materials": [
+          "cardboard",
+          "wood",
+          "plastic",
+          "metal"
+        ],
+        "functional_uses": [
+          "storage",
+          "packaging",
+          "shipping"
+        ],
+        "dimensions": {
+          "shape": "box",
+          "size": "medium",
+          "aspect": "cubic"
+        }
+      }
+    },
+    {
+      "entity_id": "noun__bag",
+      "label": "bag",
+      "canonical_lemma": "bag",
+      "semantic_class_id": "physical_object",
+      "kind": "object",
+      "definition": "a flexible container with an opening at the top",
+      "genus_lemma": "container",
+      "slots": {
+        "entity_type": "non_living",
+        "state_of_matter": "solid",
+        "build_strength": "fragile",
+        "materials": [
+          "plastic",
+          "fabric",
+          "paper"
+        ],
+        "functional_uses": [
+          "carrying items",
+          "storage"
+        ],
+        "dimensions": {
+          "shape": "box",
+          "size": "small",
+          "aspect": "tall"
+        }
+      }
+    },
+    {
+      "entity_id": "noun__basket",
+      "label": "basket",
+      "canonical_lemma": "basket",
+      "semantic_class_id": "physical_object",
+      "kind": "object",
+      "definition": "a woven container for carrying or storing items",
+      "genus_lemma": "container",
+      "slots": {
+        "entity_type": "non_living",
+        "state_of_matter": "solid",
+        "build_strength": "sturdy",
+        "materials": [
+          "wicker",
+          "plastic",
+          "straw"
+        ],
+        "functional_uses": [
+          "carrying",
+          "storage",
+          "display"
+        ],
+        "dimensions": {
+          "shape": "cylinder",
+          "size": "medium",
+          "aspect": "wide"
+        }
+      }
+    },
+    {
+      "entity_id": "noun__crate",
+      "label": "crate",
+      "canonical_lemma": "crate",
+      "semantic_class_id": "physical_object",
+      "kind": "object",
+      "definition": "a large wooden or plastic container for transport",
+      "genus_lemma": "container",
+      "slots": {
+        "entity_type": "non_living",
+        "state_of_matter": "solid",
+        "build_strength": "strong",
+        "materials": [
+          "wood",
+          "plastic",
+          "metal"
+        ],
+        "functional_uses": [
+          "transport",
+          "storage"
+        ],
+        "dimensions": {
+          "shape": "box",
+          "size": "large",
+          "aspect": "cubic"
+        }
+      }
+    },
+    {
+      "entity_id": "noun__bucket",
+      "label": "bucket",
+      "canonical_lemma": "bucket",
+      "semantic_class_id": "physical_object",
+      "kind": "object",
+      "definition": "a cylindrical open-topped container with a handle",
+      "genus_lemma": "container",
+      "slots": {
+        "entity_type": "non_living",
+        "state_of_matter": "solid",
+        "build_strength": "sturdy",
+        "materials": [
+          "metal",
+          "plastic"
+        ],
+        "functional_uses": [
+          "carrying liquids",
+          "cleaning"
+        ],
+        "dimensions": {
+          "shape": "cylinder",
+          "size": "medium",
+          "aspect": "tall"
+        }
+      }
+    },
+    {
+      "entity_id": "noun__tub",
+      "label": "tub",
+      "canonical_lemma": "tub",
+      "semantic_class_id": "physical_object",
+      "kind": "object",
+      "definition": "a wide open container for liquids or bathing",
+      "genus_lemma": "container",
+      "slots": {
+        "entity_type": "non_living",
+        "state_of_matter": "solid",
+        "build_strength": "sturdy",
+        "materials": [
+          "plastic",
+          "metal"
+        ],
+        "functional_uses": [
+          "bathing",
+          "storage"
+        ],
+        "dimensions": {
+          "shape": "cylinder",
+          "size": "medium",
+          "aspect": "wide"
+        }
+      }
+    },
+    {
+      "entity_id": "noun__can",
+      "label": "can",
+      "canonical_lemma": "can",
+      "semantic_class_id": "physical_object",
+      "kind": "object",
+      "definition": "a metal cylinder for storing food or beverages",
+      "genus_lemma": "container",
+      "slots": {
+        "entity_type": "non_living",
+        "state_of_matter": "solid",
+        "build_strength": "strong",
+        "materials": [
+          "metal"
+        ],
+        "functional_uses": [
+          "food preservation",
+          "beverage storage"
+        ],
+        "dimensions": {
+          "shape": "cylinder",
+          "size": "tiny",
+          "aspect": "tall"
+        }
+      }
+    },
+    {
+      "entity_id": "noun__tin",
+      "label": "tin",
+      "canonical_lemma": "tin",
+      "semantic_class_id": "physical_object",
+      "kind": "object",
+      "definition": "a small metal container for food or products",
+      "genus_lemma": "container",
+      "slots": {
+        "entity_type": "non_living",
+        "state_of_matter": "solid",
+        "build_strength": "strong",
+        "materials": [
+          "metal"
+        ],
+        "functional_uses": [
+          "food storage",
+          "preservation"
+        ],
+        "dimensions": {
+          "shape": "cylinder",
+          "size": "tiny",
+          "aspect": "tall"
+        }
+      }
+    },
+    {
+      "entity_id": "noun__tube",
+      "label": "tube",
+      "canonical_lemma": "tube",
+      "semantic_class_id": "physical_object",
+      "kind": "object",
+      "definition": "a hollow cylindrical container for semiliquid contents",
+      "genus_lemma": "container",
+      "slots": {
+        "entity_type": "non_living",
+        "state_of_matter": "solid",
+        "build_strength": "fragile",
+        "materials": [
+          "plastic",
+          "metal"
+        ],
+        "functional_uses": [
+          "dispensing paste",
+          "storage"
+        ],
+        "dimensions": {
+          "shape": "cylinder",
+          "size": "tiny",
+          "aspect": "tall"
+        }
+      }
+    },
+    {
+      "entity_id": "noun__wrap",
+      "label": "wrap",
+      "canonical_lemma": "wrap",
+      "semantic_class_id": "physical_object",
+      "kind": "object",
+      "definition": "a thin flexible material for covering food",
+      "genus_lemma": "covering",
+      "slots": {
+        "entity_type": "non_living",
+        "state_of_matter": "solid",
+        "build_strength": "fragile",
+        "materials": [
+          "plastic",
+          "aluminum",
+          "paper"
+        ],
+        "functional_uses": [
+          "food covering",
+          "preservation"
+        ],
+        "dimensions": {
+          "shape": "sheet",
+          "size": "small",
+          "aspect": "wide"
+        }
+      }
+    },
+    {
+      "entity_id": "noun__kitchen",
+      "label": "kitchen",
+      "canonical_lemma": "kitchen",
+      "semantic_class_id": "location",
+      "kind": "place",
+      "definition": "a room used for cooking and food preparation",
+      "genus_lemma": "room",
+      "slots": {
+        "entity_type": "non_living",
+        "place_context": {
+          "environment": "indoor",
+          "indoor_category": "room",
+          "room_type": "kitchen",
+          "size": "medium"
+        }
+      }
+    },
+    {
+      "entity_id": "noun__bedroom",
+      "label": "bedroom",
+      "canonical_lemma": "bedroom",
+      "semantic_class_id": "location",
+      "kind": "place",
+      "definition": "a room for sleeping in",
+      "genus_lemma": "room",
+      "slots": {
+        "entity_type": "non_living",
+        "place_context": {
+          "environment": "indoor",
+          "indoor_category": "room",
+          "room_type": "bedroom",
+          "size": "medium"
+        }
+      }
+    },
+    {
+      "entity_id": "noun__bathroom",
+      "label": "bathroom",
+      "canonical_lemma": "bathroom",
+      "semantic_class_id": "location",
+      "kind": "place",
+      "definition": "a room containing a toilet and washing facilities",
+      "genus_lemma": "room",
+      "slots": {
+        "entity_type": "non_living",
+        "place_context": {
+          "environment": "indoor",
+          "indoor_category": "room",
+          "room_type": "bathroom",
+          "size": "small"
+        }
+      }
+    },
+    {
+      "entity_id": "noun__living_room",
+      "label": "living room",
+      "canonical_lemma": "living_room",
+      "semantic_class_id": "location",
+      "kind": "place",
+      "definition": "a room for relaxation and entertaining guests",
+      "genus_lemma": "room",
+      "slots": {
+        "entity_type": "non_living",
+        "place_context": {
+          "environment": "indoor",
+          "indoor_category": "room",
+          "room_type": "living_room",
+          "size": "large"
+        }
+      }
+    },
+    {
+      "entity_id": "noun__dining_room",
+      "label": "dining room",
+      "canonical_lemma": "dining_room",
+      "semantic_class_id": "location",
+      "kind": "place",
+      "definition": "a room for eating meals",
+      "genus_lemma": "room",
+      "slots": {
+        "entity_type": "non_living",
+        "place_context": {
+          "environment": "indoor",
+          "indoor_category": "room",
+          "room_type": "dining_room",
+          "size": "medium"
+        }
+      }
+    },
+    {
+      "entity_id": "noun__hallway",
+      "label": "hallway",
+      "canonical_lemma": "hallway",
+      "semantic_class_id": "location",
+      "kind": "place",
+      "definition": "a passage connecting rooms in a building",
+      "genus_lemma": "passage",
+      "slots": {
+        "entity_type": "non_living",
+        "place_context": {
+          "environment": "indoor",
+          "indoor_category": "room",
+          "room_type": "hallway",
+          "size": "small"
+        }
+      }
+    },
+    {
+      "entity_id": "noun__garage",
+      "label": "garage",
+      "canonical_lemma": "garage",
+      "semantic_class_id": "location",
+      "kind": "place",
+      "definition": "a building or part of a house for storing vehicles",
+      "genus_lemma": "building",
+      "slots": {
+        "entity_type": "non_living",
+        "place_context": {
+          "environment": "indoor",
+          "indoor_category": "room",
+          "room_type": "garage",
+          "size": "large"
+        }
+      }
+    },
+    {
+      "entity_id": "noun__garden",
+      "label": "garden",
+      "canonical_lemma": "garden",
+      "semantic_class_id": "location",
+      "kind": "place",
+      "definition": "a piece of ground used for growing plants",
+      "genus_lemma": "land",
+      "slots": {
+        "entity_type": "non_living",
+        "place_context": {
+          "environment": "outdoor",
+          "size": "medium"
+        }
+      }
+    },
+    {
+      "entity_id": "noun__attic",
+      "label": "attic",
+      "canonical_lemma": "attic",
+      "semantic_class_id": "location",
+      "kind": "place",
+      "definition": "a space directly under the roof of a house",
+      "genus_lemma": "space",
+      "slots": {
+        "entity_type": "non_living",
+        "place_context": {
+          "environment": "indoor",
+          "indoor_category": "room",
+          "room_type": "attic",
+          "size": "small"
+        }
+      }
+    },
+    {
+      "entity_id": "noun__basement",
+      "label": "basement",
+      "canonical_lemma": "basement",
+      "semantic_class_id": "location",
+      "kind": "place",
+      "definition": "the floor of a building below ground level",
+      "genus_lemma": "floor",
+      "slots": {
+        "entity_type": "non_living",
+        "place_context": {
+          "environment": "indoor",
+          "indoor_category": "room",
+          "room_type": "basement",
+          "size": "large"
+        }
+      }
+    },
+    {
+      "entity_id": "noun__balcony",
+      "label": "balcony",
+      "canonical_lemma": "balcony",
+      "semantic_class_id": "location",
+      "kind": "place",
+      "definition": "a platform projecting from the wall of a building",
+      "genus_lemma": "platform",
+      "slots": {
+        "entity_type": "non_living",
+        "place_context": {
+          "environment": "outdoor",
+          "size": "small"
+        }
+      }
+    },
+    {
+      "entity_id": "noun__office",
+      "label": "office",
+      "canonical_lemma": "office",
+      "semantic_class_id": "location",
+      "kind": "place",
+      "definition": "a room for administrative or professional work",
+      "genus_lemma": "room",
+      "slots": {
+        "entity_type": "non_living",
+        "place_context": {
+          "environment": "indoor",
+          "indoor_category": "room",
+          "room_type": "office",
+          "size": "medium"
+        }
+      }
+    },
+    {
+      "entity_id": "noun__closet",
+      "label": "closet",
+      "canonical_lemma": "closet",
+      "semantic_class_id": "location",
+      "kind": "place",
+      "definition": "a small room for storing clothes or supplies",
+      "genus_lemma": "room",
+      "slots": {
+        "entity_type": "non_living",
+        "place_context": {
+          "environment": "indoor",
+          "indoor_category": "room",
+          "room_type": "closet",
+          "size": "tiny"
+        }
+      }
+    },
+    {
+      "entity_id": "noun__laundry_room",
+      "label": "laundry room",
+      "canonical_lemma": "laundry_room",
+      "semantic_class_id": "location",
+      "kind": "place",
+      "definition": "a room for washing and drying clothes",
+      "genus_lemma": "room",
+      "slots": {
+        "entity_type": "non_living",
+        "place_context": {
+          "environment": "indoor",
+          "indoor_category": "room",
+          "room_type": "laundry_room",
+          "size": "small"
+        }
+      }
+    },
+    {
+      "entity_id": "noun__pantry",
+      "label": "pantry",
+      "canonical_lemma": "pantry",
+      "semantic_class_id": "location",
+      "kind": "place",
+      "definition": "a small room for storing food",
+      "genus_lemma": "room",
+      "slots": {
+        "entity_type": "non_living",
+        "place_context": {
+          "environment": "indoor",
+          "indoor_category": "room",
+          "room_type": "pantry",
+          "size": "tiny"
+        }
+      }
+    },
+    {
+      "entity_id": "noun__dog",
+      "label": "dog",
+      "canonical_lemma": "dog",
+      "semantic_class_id": "living_thing.animal",
+      "kind": "animal",
+      "definition": "a domesticated carnivorous mammal commonly kept as a pet",
+      "genus_lemma": "canine",
+      "slots": {
+        "entity_type": "living",
+        "state_of_matter": "solid"
+      }
+    },
+    {
+      "entity_id": "noun__cat",
+      "label": "cat",
+      "canonical_lemma": "cat",
+      "semantic_class_id": "living_thing.animal",
+      "kind": "animal",
+      "definition": "a small domesticated carnivorous mammal kept as a pet",
+      "genus_lemma": "feline",
+      "slots": {
+        "entity_type": "living",
+        "state_of_matter": "solid"
+      }
+    },
+    {
+      "entity_id": "noun__bird",
+      "label": "bird",
+      "canonical_lemma": "bird",
+      "semantic_class_id": "living_thing.animal",
+      "kind": "animal",
+      "definition": "a warm-blooded egg-laying animal with feathers and wings",
+      "genus_lemma": "animal",
+      "slots": {
+        "entity_type": "living",
+        "state_of_matter": "solid"
+      }
+    },
+    {
+      "entity_id": "noun__fish",
+      "label": "fish",
+      "canonical_lemma": "fish",
+      "semantic_class_id": "living_thing.animal",
+      "kind": "animal",
+      "definition": "a cold-blooded aquatic animal with gills and fins",
+      "genus_lemma": "animal",
+      "slots": {
+        "entity_type": "living",
+        "state_of_matter": "solid"
+      }
+    },
+    {
+      "entity_id": "noun__rabbit",
+      "label": "rabbit",
+      "canonical_lemma": "rabbit",
+      "semantic_class_id": "living_thing.animal",
+      "kind": "animal",
+      "definition": "a small mammal with long ears and a short fluffy tail",
+      "genus_lemma": "mammal",
+      "slots": {
+        "entity_type": "living",
+        "state_of_matter": "solid"
+      }
+    },
+    {
+      "entity_id": "noun__horse",
+      "label": "horse",
+      "canonical_lemma": "horse",
+      "semantic_class_id": "living_thing.animal",
+      "kind": "animal",
+      "definition": "a large domesticated mammal used for riding and work",
+      "genus_lemma": "equine",
+      "slots": {
+        "entity_type": "living",
+        "state_of_matter": "solid"
+      }
+    },
+    {
+      "entity_id": "noun__cow",
+      "label": "cow",
+      "canonical_lemma": "cow",
+      "semantic_class_id": "living_thing.animal",
+      "kind": "animal",
+      "definition": "a domesticated bovine mammal kept for milk or meat",
+      "genus_lemma": "bovine",
+      "slots": {
+        "entity_type": "living",
+        "state_of_matter": "solid"
+      }
+    },
+    {
+      "entity_id": "noun__chicken",
+      "label": "chicken",
+      "canonical_lemma": "chicken",
+      "semantic_class_id": "living_thing.animal",
+      "kind": "animal",
+      "definition": "a domesticated fowl kept for eggs or meat",
+      "genus_lemma": "fowl",
+      "slots": {
+        "entity_type": "living",
+        "state_of_matter": "solid"
+      }
+    },
+    {
+      "entity_id": "noun__sheep",
+      "label": "sheep",
+      "canonical_lemma": "sheep",
+      "semantic_class_id": "living_thing.animal",
+      "kind": "animal",
+      "definition": "a woolly domesticated mammal raised for wool and meat",
+      "genus_lemma": "bovine",
+      "slots": {
+        "entity_type": "living",
+        "state_of_matter": "solid"
+      }
+    },
+    {
+      "entity_id": "noun__pig",
+      "label": "pig",
+      "canonical_lemma": "pig",
+      "semantic_class_id": "living_thing.animal",
+      "kind": "animal",
+      "definition": "a domesticated mammal raised for meat",
+      "genus_lemma": "mammal",
+      "slots": {
+        "entity_type": "living",
+        "state_of_matter": "solid"
+      }
+    },
+    {
+      "entity_id": "noun__tree",
+      "label": "tree",
+      "canonical_lemma": "tree",
+      "semantic_class_id": "living_thing.plant",
+      "kind": "plant",
+      "definition": "a perennial plant with a trunk and branches",
+      "genus_lemma": "plant",
+      "slots": {
+        "entity_type": "living",
+        "state_of_matter": "solid"
+      }
+    },
+    {
+      "entity_id": "noun__flower",
+      "label": "flower",
+      "canonical_lemma": "flower",
+      "semantic_class_id": "living_thing.plant",
+      "kind": "plant",
+      "definition": "the seed-bearing part of a plant, often colorful",
+      "genus_lemma": "plant",
+      "slots": {
+        "entity_type": "living",
+        "state_of_matter": "solid"
+      }
+    },
+    {
+      "entity_id": "noun__rose",
+      "label": "rose",
+      "canonical_lemma": "rose",
+      "semantic_class_id": "living_thing.plant",
+      "kind": "plant",
+      "definition": "a prickly shrub with fragrant flowers",
+      "genus_lemma": "shrub",
+      "slots": {
+        "entity_type": "living",
+        "state_of_matter": "solid",
+        "color": "red, pink, white, yellow, or orange"
+      }
+    },
+    {
+      "entity_id": "noun__grass",
+      "label": "grass",
+      "canonical_lemma": "grass",
+      "semantic_class_id": "living_thing.plant",
+      "kind": "plant",
+      "definition": "low-growing green plants covering ground in lawns and meadows",
+      "genus_lemma": "plant",
+      "slots": {
+        "entity_type": "living",
+        "state_of_matter": "solid"
+      }
+    },
+    {
+      "entity_id": "noun__bush",
+      "label": "bush",
+      "canonical_lemma": "bush",
+      "semantic_class_id": "living_thing.plant",
+      "kind": "plant",
+      "definition": "a woody plant smaller than a tree with many branches",
+      "genus_lemma": "shrub",
+      "slots": {
+        "entity_type": "living",
+        "state_of_matter": "solid"
+      }
+    },
+    {
+      "entity_id": "noun__fern",
+      "label": "fern",
+      "canonical_lemma": "fern",
+      "semantic_class_id": "living_thing.plant",
+      "kind": "plant",
+      "definition": "a flowerless plant with feathery fronds",
+      "genus_lemma": "plant",
+      "slots": {
+        "entity_type": "living",
+        "state_of_matter": "solid"
+      }
+    },
+    {
+      "entity_id": "noun__cactus",
+      "label": "cactus",
+      "canonical_lemma": "cactus",
+      "semantic_class_id": "living_thing.plant",
+      "kind": "plant",
+      "definition": "a desert plant with thick stems and spines",
+      "genus_lemma": "succulent",
+      "slots": {
+        "entity_type": "living",
+        "state_of_matter": "solid"
+      }
+    },
+    {
+      "entity_id": "noun__vine",
+      "label": "vine",
+      "canonical_lemma": "vine",
+      "semantic_class_id": "living_thing.plant",
+      "kind": "plant",
+      "definition": "a climbing plant that grows along surfaces",
+      "genus_lemma": "plant",
+      "slots": {
+        "entity_type": "living",
+        "state_of_matter": "solid"
+      }
+    },
+    {
+      "entity_id": "noun__herb",
+      "label": "herb",
+      "canonical_lemma": "herb",
+      "semantic_class_id": "living_thing.plant",
+      "kind": "plant",
+      "definition": "a plant used for flavoring food or medicine",
+      "genus_lemma": "plant",
+      "slots": {
+        "entity_type": "living",
+        "state_of_matter": "solid"
+      }
+    },
+    {
+      "entity_id": "noun__moss",
+      "label": "moss",
+      "canonical_lemma": "moss",
+      "semantic_class_id": "living_thing.plant",
+      "kind": "plant",
+      "definition": "a small flowerless plant that grows in dense green clumps",
+      "genus_lemma": "plant",
+      "slots": {
+        "entity_type": "living",
+        "state_of_matter": "solid"
+      }
+    },
+    {
+      "entity_id": "noun__water",
+      "label": "water",
+      "canonical_lemma": "water",
+      "semantic_class_id": "substance",
+      "kind": "object",
+      "definition": "a transparent liquid essential for life",
+      "genus_lemma": "liquid",
+      "slots": {
+        "entity_type": "non_living",
+        "state_of_matter": "liquid",
+        "color": "colorless"
+      }
+    },
+    {
+      "entity_id": "noun__fire",
+      "label": "fire",
+      "canonical_lemma": "fire",
+      "semantic_class_id": "phenomenon",
+      "kind": "concept",
+      "definition": "the rapid oxidation of material producing heat and light",
+      "genus_lemma": "phenomenon",
+      "slots": {
+        "entity_type": "abstract",
+        "state_of_matter": "gas"
+      }
+    },
+    {
+      "entity_id": "noun__air",
+      "label": "air",
+      "canonical_lemma": "air",
+      "semantic_class_id": "substance",
+      "kind": "object",
+      "definition": "the invisible gaseous substance surrounding the earth",
+      "genus_lemma": "gas",
+      "slots": {
+        "entity_type": "non_living",
+        "state_of_matter": "gas",
+        "color": "colorless"
+      }
+    },
+    {
+      "entity_id": "noun__earth",
+      "label": "earth",
+      "canonical_lemma": "earth",
+      "semantic_class_id": "phenomenon",
+      "kind": "object",
+      "definition": "the planet or the ground we live on",
+      "genus_lemma": "planet",
+      "slots": {
+        "entity_type": "non_living",
+        "state_of_matter": "solid"
+      }
+    },
+    {
+      "entity_id": "noun__stone",
+      "label": "stone",
+      "canonical_lemma": "stone",
+      "semantic_class_id": "phenomenon",
+      "kind": "object",
+      "definition": "a hard solid non-metallic mineral material",
+      "genus_lemma": "rock",
+      "slots": {
+        "entity_type": "non_living",
+        "state_of_matter": "solid",
+        "build_strength": "strong",
+        "dimensions": {
+          "shape": "irregular",
+          "size": "small",
+          "aspect": "cubic"
+        }
+      }
+    },
+    {
+      "entity_id": "noun__rock",
+      "label": "rock",
+      "canonical_lemma": "rock",
+      "semantic_class_id": "phenomenon",
+      "kind": "object",
+      "definition": "a large mass of stone",
+      "genus_lemma": "stone",
+      "slots": {
+        "entity_type": "non_living",
+        "state_of_matter": "solid",
+        "build_strength": "strong",
+        "dimensions": {
+          "shape": "irregular",
+          "size": "large",
+          "aspect": "cubic"
+        }
+      }
+    },
+    {
+      "entity_id": "noun__sand",
+      "label": "sand",
+      "canonical_lemma": "sand",
+      "semantic_class_id": "phenomenon",
+      "kind": "object",
+      "definition": "small loose grains of worn-down rock",
+      "genus_lemma": "sediment",
+      "slots": {
+        "entity_type": "non_living",
+        "state_of_matter": "solid",
+        "color": "beige, white, or golden"
+      }
+    },
+    {
+      "entity_id": "noun__mud",
+      "label": "mud",
+      "canonical_lemma": "mud",
+      "semantic_class_id": "phenomenon",
+      "kind": "object",
+      "definition": "wet soft earthy matter",
+      "genus_lemma": "soil",
+      "slots": {
+        "entity_type": "non_living",
+        "state_of_matter": "solid",
+        "color": "brown"
+      }
+    },
+    {
+      "entity_id": "noun__wood",
+      "label": "wood",
+      "canonical_lemma": "wood",
+      "semantic_class_id": "phenomenon",
+      "kind": "object",
+      "definition": "the hard fibrous material from trees",
+      "genus_lemma": "material",
+      "slots": {
+        "entity_type": "non_living",
+        "state_of_matter": "solid",
+        "build_strength": "sturdy",
+        "color": "brown"
+      }
+    },
+    {
+      "entity_id": "noun__metal",
+      "label": "metal",
+      "canonical_lemma": "metal",
+      "semantic_class_id": "phenomenon",
+      "kind": "object",
+      "definition": "a solid material that is typically hard, shiny, and conducts electricity",
+      "genus_lemma": "material",
+      "slots": {
+        "entity_type": "non_living",
+        "state_of_matter": "solid",
+        "build_strength": "strong",
+        "color": "silver, gold, gray, or copper"
+      }
+    },
+    {
+      "entity_id": "noun__love",
+      "label": "love",
+      "canonical_lemma": "love",
+      "semantic_class_id": "abstract_concept",
+      "kind": "concept",
+      "definition": "an intense feeling of deep affection",
+      "genus_lemma": "emotion",
+      "slots": {
+        "entity_type": "abstract"
+      }
+    },
+    {
+      "entity_id": "noun__joy",
+      "label": "joy",
+      "canonical_lemma": "joy",
+      "semantic_class_id": "abstract_concept",
+      "kind": "concept",
+      "definition": "a feeling of great pleasure and happiness",
+      "genus_lemma": "emotion",
+      "slots": {
+        "entity_type": "abstract"
+      }
+    },
+    {
+      "entity_id": "noun__anger",
+      "label": "anger",
+      "canonical_lemma": "anger",
+      "semantic_class_id": "abstract_concept",
+      "kind": "concept",
+      "definition": "a strong feeling of annoyance or hostility",
+      "genus_lemma": "emotion",
+      "slots": {
+        "entity_type": "abstract"
+      }
+    },
+    {
+      "entity_id": "noun__fear",
+      "label": "fear",
+      "canonical_lemma": "fear",
+      "semantic_class_id": "abstract_concept",
+      "kind": "concept",
+      "definition": "an unpleasant emotion caused by danger or threat",
+      "genus_lemma": "emotion",
+      "slots": {
+        "entity_type": "abstract"
+      }
+    },
+    {
+      "entity_id": "noun__sadness",
+      "label": "sadness",
+      "canonical_lemma": "sadness",
+      "semantic_class_id": "abstract_concept",
+      "kind": "concept",
+      "definition": "a feeling of sorrow or unhappiness",
+      "genus_lemma": "emotion",
+      "slots": {
+        "entity_type": "abstract"
+      }
+    },
+    {
+      "entity_id": "noun__courage",
+      "label": "courage",
+      "canonical_lemma": "courage",
+      "semantic_class_id": "abstract_concept",
+      "kind": "concept",
+      "definition": "the ability to do something despite fear",
+      "genus_lemma": "virtue",
+      "slots": {
+        "entity_type": "abstract"
+      }
+    },
+    {
+      "entity_id": "noun__wisdom",
+      "label": "wisdom",
+      "canonical_lemma": "wisdom",
+      "semantic_class_id": "abstract_concept",
+      "kind": "concept",
+      "definition": "the quality of having experience, knowledge, and good judgment",
+      "genus_lemma": "virtue",
+      "slots": {
+        "entity_type": "abstract"
+      }
+    },
+    {
+      "entity_id": "noun__hope",
+      "label": "hope",
+      "canonical_lemma": "hope",
+      "semantic_class_id": "abstract_concept",
+      "kind": "concept",
+      "definition": "a feeling of expectation and desire for a certain thing to happen",
+      "genus_lemma": "emotion",
+      "slots": {
+        "entity_type": "abstract"
+      }
+    },
+    {
+      "entity_id": "noun__trust",
+      "label": "trust",
+      "canonical_lemma": "trust",
+      "semantic_class_id": "abstract_concept",
+      "kind": "concept",
+      "definition": "firm belief in the reliability or truth of someone or something",
+      "genus_lemma": "belief",
+      "slots": {
+        "entity_type": "abstract"
+      }
+    },
+    {
+      "entity_id": "noun__freedom",
+      "label": "freedom",
+      "canonical_lemma": "freedom",
+      "semantic_class_id": "abstract_concept",
+      "kind": "concept",
+      "definition": "the power to act without constraint",
+      "genus_lemma": "right",
+      "slots": {
+        "entity_type": "abstract"
+      }
+    },
+    {
+      "entity_id": "noun__idea",
+      "label": "idea",
+      "canonical_lemma": "idea",
+      "semantic_class_id": "abstract_concept",
+      "kind": "concept",
+      "definition": "a thought or suggestion about a possible course of action",
+      "genus_lemma": "thought",
+      "slots": {
+        "entity_type": "abstract"
+      }
+    },
+    {
+      "entity_id": "noun__plan",
+      "label": "plan",
+      "canonical_lemma": "plan",
+      "semantic_class_id": "abstract_concept",
+      "kind": "concept",
+      "definition": "a detailed proposal for doing or achieving something",
+      "genus_lemma": "proposal",
+      "slots": {
+        "entity_type": "abstract"
+      }
+    },
+    {
+      "entity_id": "noun__rule",
+      "label": "rule",
+      "canonical_lemma": "rule",
+      "semantic_class_id": "abstract_concept",
+      "kind": "concept",
+      "definition": "a regulation governing conduct within an activity",
+      "genus_lemma": "principle",
+      "slots": {
+        "entity_type": "abstract"
+      }
+    },
+    {
+      "entity_id": "noun__law",
+      "label": "law",
+      "canonical_lemma": "law",
+      "semantic_class_id": "abstract_concept",
+      "kind": "concept",
+      "definition": "a system of rules a society must follow",
+      "genus_lemma": "regulation",
+      "slots": {
+        "entity_type": "abstract"
+      }
+    },
+    {
+      "entity_id": "noun__story",
+      "label": "story",
+      "canonical_lemma": "story",
+      "semantic_class_id": "abstract_concept",
+      "kind": "concept",
+      "definition": "a narrative of real or imaginary events",
+      "genus_lemma": "narrative",
+      "slots": {
+        "entity_type": "abstract"
+      }
+    },
+    {
+      "entity_id": "noun__song",
+      "label": "song",
+      "canonical_lemma": "song",
+      "semantic_class_id": "abstract_concept",
+      "kind": "concept",
+      "definition": "a musical composition with words",
+      "genus_lemma": "composition",
+      "slots": {
+        "entity_type": "abstract"
+      }
+    },
+    {
+      "entity_id": "noun__name",
+      "label": "name",
+      "canonical_lemma": "name",
+      "semantic_class_id": "abstract_concept",
+      "kind": "concept",
+      "definition": "a word by which someone or something is known",
+      "genus_lemma": "identifier",
+      "slots": {
+        "entity_type": "abstract"
+      }
+    },
+    {
+      "entity_id": "noun__question",
+      "label": "question",
+      "canonical_lemma": "question",
+      "semantic_class_id": "abstract_concept",
+      "kind": "concept",
+      "definition": "a sentence seeking information or an answer",
+      "genus_lemma": "inquiry",
+      "slots": {
+        "entity_type": "abstract"
+      }
+    },
+    {
+      "entity_id": "noun__answer",
+      "label": "answer",
+      "canonical_lemma": "answer",
+      "semantic_class_id": "abstract_concept",
+      "kind": "concept",
+      "definition": "a response to a question",
+      "genus_lemma": "response",
+      "slots": {
+        "entity_type": "abstract"
+      }
+    },
+    {
+      "entity_id": "noun__promise",
+      "label": "promise",
+      "canonical_lemma": "promise",
+      "semantic_class_id": "abstract_concept",
+      "kind": "concept",
+      "definition": "a declaration that one will do something",
+      "genus_lemma": "commitment",
+      "slots": {
+        "entity_type": "abstract"
+      }
+    },
+    {
+      "entity_id": "noun__doctor",
+      "label": "doctor",
+      "canonical_lemma": "doctor",
+      "semantic_class_id": "person",
+      "kind": "person",
+      "definition": "a person qualified to practice medicine",
+      "genus_lemma": "professional",
+      "slots": {
+        "entity_type": "living"
+      }
+    },
+    {
+      "entity_id": "noun__teacher",
+      "label": "teacher",
+      "canonical_lemma": "teacher",
+      "semantic_class_id": "person",
+      "kind": "person",
+      "definition": "a person who educates students",
+      "genus_lemma": "educator",
+      "slots": {
+        "entity_type": "living"
+      }
+    },
+    {
+      "entity_id": "noun__student",
+      "label": "student",
+      "canonical_lemma": "student",
+      "semantic_class_id": "person",
+      "kind": "person",
+      "definition": "a person who is studying at a school or college",
+      "genus_lemma": "learner",
+      "slots": {
+        "entity_type": "living"
+      }
+    },
+    {
+      "entity_id": "noun__chef",
+      "label": "chef",
+      "canonical_lemma": "chef",
+      "semantic_class_id": "person",
+      "kind": "person",
+      "definition": "a professional cook in a restaurant",
+      "genus_lemma": "cook",
+      "slots": {
+        "entity_type": "living"
+      }
+    },
+    {
+      "entity_id": "noun__driver",
+      "label": "driver",
+      "canonical_lemma": "driver",
+      "semantic_class_id": "person",
+      "kind": "person",
+      "definition": "a person who operates a vehicle",
+      "genus_lemma": "operator",
+      "slots": {
+        "entity_type": "living"
+      }
+    },
+    {
+      "entity_id": "noun__farmer",
+      "label": "farmer",
+      "canonical_lemma": "farmer",
+      "semantic_class_id": "person",
+      "kind": "person",
+      "definition": "a person who grows crops or raises animals",
+      "genus_lemma": "agriculturist",
+      "slots": {
+        "entity_type": "living"
+      }
+    },
+    {
+      "entity_id": "noun__artist",
+      "label": "artist",
+      "canonical_lemma": "artist",
+      "semantic_class_id": "person",
+      "kind": "person",
+      "definition": "a person who creates visual or performing art",
+      "genus_lemma": "creator",
+      "slots": {
+        "entity_type": "living"
+      }
+    },
+    {
+      "entity_id": "noun__musician",
+      "label": "musician",
+      "canonical_lemma": "musician",
+      "semantic_class_id": "person",
+      "kind": "person",
+      "definition": "a person who plays or composes music",
+      "genus_lemma": "artist",
+      "slots": {
+        "entity_type": "living"
+      }
+    },
+    {
+      "entity_id": "noun__engineer",
+      "label": "engineer",
+      "canonical_lemma": "engineer",
+      "semantic_class_id": "person",
+      "kind": "person",
+      "definition": "a person who designs or builds machinery or structures",
+      "genus_lemma": "professional",
+      "slots": {
+        "entity_type": "living"
+      }
+    },
+    {
+      "entity_id": "noun__scientist",
+      "label": "scientist",
+      "canonical_lemma": "scientist",
+      "semantic_class_id": "person",
+      "kind": "person",
+      "definition": "a person who studies the natural world through observation and experiment",
+      "genus_lemma": "researcher",
+      "slots": {
+        "entity_type": "living"
+      }
+    },
+    {
+      "entity_id": "noun__nurse",
+      "label": "nurse",
+      "canonical_lemma": "nurse",
+      "semantic_class_id": "person",
+      "kind": "person",
+      "definition": "a person trained to care for the sick",
+      "genus_lemma": "healthcare_professional",
+      "slots": {
+        "entity_type": "living"
+      }
+    },
+    {
+      "entity_id": "noun__police",
+      "label": "police",
+      "canonical_lemma": "police",
+      "semantic_class_id": "person",
+      "kind": "person",
+      "definition": "a person enforcing the law and maintaining public order",
+      "genus_lemma": "officer",
+      "slots": {
+        "entity_type": "living"
+      }
+    },
+    {
+      "entity_id": "noun__firefighter",
+      "label": "firefighter",
+      "canonical_lemma": "firefighter",
+      "semantic_class_id": "person",
+      "kind": "person",
+      "definition": "a person who extinguishes fires and rescues people",
+      "genus_lemma": "first_responder",
+      "slots": {
+        "entity_type": "living"
+      }
+    },
+    {
+      "entity_id": "noun__pilot",
+      "label": "pilot",
+      "canonical_lemma": "pilot",
+      "semantic_class_id": "person",
+      "kind": "person",
+      "definition": "a person who operates an aircraft",
+      "genus_lemma": "operator",
+      "slots": {
+        "entity_type": "living"
+      }
+    },
+    {
+      "entity_id": "noun__gardener",
+      "label": "gardener",
+      "canonical_lemma": "gardener",
+      "semantic_class_id": "person",
+      "kind": "person",
+      "definition": "a person who tends a garden",
+      "genus_lemma": "worker",
+      "slots": {
+        "entity_type": "living"
+      }
+    },
+    {
+      "entity_id": "noun__bread",
+      "label": "bread",
+      "canonical_lemma": "bread",
+      "semantic_class_id": "food_item",
+      "kind": "object",
+      "definition": "a baked food made from flour and water",
+      "genus_lemma": "food",
+      "slots": {
+        "entity_type": "non_living",
+        "state_of_matter": "solid",
+        "materials": [
+          "flour",
+          "water",
+          "yeast"
+        ],
+        "color": "brown, white, or golden"
+      }
+    },
+    {
+      "entity_id": "noun__rice",
+      "label": "rice",
+      "canonical_lemma": "rice",
+      "semantic_class_id": "food_item",
+      "kind": "object",
+      "definition": "the seeds of a cereal plant used as a staple food",
+      "genus_lemma": "grain",
+      "slots": {
+        "entity_type": "non_living",
+        "state_of_matter": "solid",
+        "color": "white or brown"
+      }
+    },
+    {
+      "entity_id": "noun__pasta",
+      "label": "pasta",
+      "canonical_lemma": "pasta",
+      "semantic_class_id": "food_item",
+      "kind": "object",
+      "definition": "an Italian dish made from dough of flour and water",
+      "genus_lemma": "food",
+      "slots": {
+        "entity_type": "non_living",
+        "state_of_matter": "solid",
+        "materials": [
+          "flour",
+          "water",
+          "eggs"
+        ],
+        "color": "yellow or white"
+      }
+    },
+    {
+      "entity_id": "noun__cheese",
+      "label": "cheese",
+      "canonical_lemma": "cheese",
+      "semantic_class_id": "food_item",
+      "kind": "object",
+      "definition": "a solid food made from the curds of milk",
+      "genus_lemma": "dairy",
+      "slots": {
+        "entity_type": "non_living",
+        "state_of_matter": "solid",
+        "materials": [
+          "milk"
+        ],
+        "color": "white, yellow, or orange"
+      }
+    },
+    {
+      "entity_id": "noun__milk",
+      "label": "milk",
+      "canonical_lemma": "milk",
+      "semantic_class_id": "food_item",
+      "kind": "object",
+      "definition": "a white liquid produced by mammals for feeding young",
+      "genus_lemma": "dairy",
+      "slots": {
+        "entity_type": "non_living",
+        "state_of_matter": "liquid",
+        "color": "white"
+      }
+    },
+    {
+      "entity_id": "noun__egg",
+      "label": "egg",
+      "canonical_lemma": "egg",
+      "semantic_class_id": "food_item",
+      "kind": "object",
+      "definition": "an oval object laid by a bird, used as food",
+      "genus_lemma": "food",
+      "slots": {
+        "entity_type": "non_living",
+        "state_of_matter": "solid",
+        "color": "white or brown"
+      }
+    },
+    {
+      "entity_id": "noun__butter",
+      "label": "butter",
+      "canonical_lemma": "butter",
+      "semantic_class_id": "food_item",
+      "kind": "object",
+      "definition": "a yellow fat made from milk by churning",
+      "genus_lemma": "dairy",
+      "slots": {
+        "entity_type": "non_living",
+        "state_of_matter": "solid",
+        "materials": [
+          "milk"
+        ],
+        "color": "yellow"
+      }
+    },
+    {
+      "entity_id": "noun__sugar",
+      "label": "sugar",
+      "canonical_lemma": "sugar",
+      "semantic_class_id": "food_item",
+      "kind": "object",
+      "definition": "a sweet crystalline substance used as a sweetener",
+      "genus_lemma": "sweetener",
+      "slots": {
+        "entity_type": "non_living",
+        "state_of_matter": "solid",
+        "color": "white or brown"
+      }
+    },
+    {
+      "entity_id": "noun__salt",
+      "label": "salt",
+      "canonical_lemma": "salt",
+      "semantic_class_id": "food_item",
+      "kind": "object",
+      "definition": "a white crystalline mineral used to season food",
+      "genus_lemma": "seasoning",
+      "slots": {
+        "entity_type": "non_living",
+        "state_of_matter": "solid",
+        "color": "white"
+      }
+    },
+    {
+      "entity_id": "noun__pepper",
+      "label": "pepper",
+      "canonical_lemma": "pepper",
+      "semantic_class_id": "food_item",
+      "kind": "object",
+      "definition": "a hot or pungent spice used to season food",
+      "genus_lemma": "seasoning",
+      "slots": {
+        "entity_type": "non_living",
+        "state_of_matter": "solid",
+        "color": "black or white"
+      }
+    },
+    {
+      "entity_id": "noun__paper",
+      "label": "paper",
+      "canonical_lemma": "paper",
+      "semantic_class_id": "physical_object",
+      "kind": "object",
+      "definition": "thin sheets made from wood pulp used for writing or printing",
+      "genus_lemma": "material",
+      "slots": {
+        "entity_type": "non_living",
+        "state_of_matter": "solid",
+        "build_strength": "fragile",
+        "functional_uses": [
+          "writing",
+          "printing",
+          "packaging"
+        ],
+        "dimensions": {
+          "shape": "sheet",
+          "size": "medium",
+          "aspect": "wide"
+        }
+      }
+    },
+    {
+      "entity_id": "noun__pen",
+      "label": "pen",
+      "canonical_lemma": "pen",
+      "semantic_class_id": "physical_object.instrument",
+      "kind": "object",
+      "definition": "an instrument for writing with ink",
+      "genus_lemma": "writing_tool",
+      "slots": {
+        "entity_type": "non_living",
+        "state_of_matter": "solid",
+        "build_strength": "sturdy",
+        "materials": [
+          "plastic",
+          "metal"
+        ],
+        "functional_uses": [
+          "writing",
+          "drawing"
+        ],
+        "dimensions": {
+          "shape": "stick",
+          "size": "tiny",
+          "aspect": "tall"
+        }
+      }
+    },
+    {
+      "entity_id": "noun__pencil",
+      "label": "pencil",
+      "canonical_lemma": "pencil",
+      "semantic_class_id": "physical_object.instrument",
+      "kind": "object",
+      "definition": "an instrument for writing with graphite",
+      "genus_lemma": "writing_tool",
+      "slots": {
+        "entity_type": "non_living",
+        "state_of_matter": "solid",
+        "build_strength": "sturdy",
+        "materials": [
+          "wood",
+          "graphite"
+        ],
+        "functional_uses": [
+          "writing",
+          "drawing",
+          "sketching"
+        ],
+        "dimensions": {
+          "shape": "stick",
+          "size": "tiny",
+          "aspect": "tall"
+        }
+      }
+    },
+    {
+      "entity_id": "noun__book",
+      "label": "book",
+      "canonical_lemma": "book",
+      "semantic_class_id": "physical_object",
+      "kind": "object",
+      "definition": "a set of written or printed pages bound together",
+      "genus_lemma": "publication",
+      "slots": {
+        "entity_type": "non_living",
+        "state_of_matter": "solid",
+        "build_strength": "sturdy",
+        "materials": [
+          "paper",
+          "cardboard"
+        ],
+        "functional_uses": [
+          "reading",
+          "education",
+          "entertainment"
+        ],
+        "dimensions": {
+          "shape": "box",
+          "size": "small",
+          "aspect": "wide"
+        }
+      }
+    },
+    {
+      "entity_id": "noun__key",
+      "label": "key",
+      "canonical_lemma": "key",
+      "semantic_class_id": "physical_object.instrument",
+      "kind": "object",
+      "definition": "a small metal device for opening locks",
+      "genus_lemma": "device",
+      "slots": {
+        "entity_type": "non_living",
+        "state_of_matter": "solid",
+        "build_strength": "strong",
+        "materials": [
+          "metal"
+        ],
+        "functional_uses": [
+          "locking",
+          "unlocking"
+        ],
+        "dimensions": {
+          "shape": "stick",
+          "size": "tiny",
+          "aspect": "tall"
+        }
+      }
+    },
+    {
+      "entity_id": "noun__lock",
+      "label": "lock",
+      "canonical_lemma": "lock",
+      "semantic_class_id": "physical_object",
+      "kind": "object",
+      "definition": "a mechanical fastening device operated by a key",
+      "genus_lemma": "fastener",
+      "slots": {
+        "entity_type": "non_living",
+        "state_of_matter": "solid",
+        "build_strength": "strong",
+        "materials": [
+          "metal"
+        ],
+        "functional_uses": [
+          "security",
+          "fastening"
+        ],
+        "dimensions": {
+          "shape": "box",
+          "size": "tiny",
+          "aspect": "cubic"
+        }
+      }
+    },
+    {
+      "entity_id": "noun__door",
+      "label": "door",
+      "canonical_lemma": "door",
+      "semantic_class_id": "physical_object",
+      "kind": "object",
+      "definition": "a hinged or sliding panel for entering a building or room",
+      "genus_lemma": "panel",
+      "slots": {
+        "entity_type": "non_living",
+        "state_of_matter": "solid",
+        "build_strength": "strong",
+        "materials": [
+          "wood",
+          "metal",
+          "glass"
+        ],
+        "functional_uses": [
+          "access",
+          "privacy",
+          "security"
+        ],
+        "dimensions": {
+          "shape": "sheet",
+          "size": "large",
+          "aspect": "tall"
+        }
+      }
+    },
+    {
+      "entity_id": "noun__window",
+      "label": "window",
+      "canonical_lemma": "window",
+      "semantic_class_id": "physical_object",
+      "kind": "object",
+      "definition": "a glass panel in a wall for admitting light and air",
+      "genus_lemma": "opening",
+      "slots": {
+        "entity_type": "non_living",
+        "state_of_matter": "solid",
+        "build_strength": "fragile",
+        "materials": [
+          "glass",
+          "wood",
+          "metal"
+        ],
+        "functional_uses": [
+          "light",
+          "ventilation",
+          "view"
+        ],
+        "dimensions": {
+          "shape": "sheet",
+          "size": "medium",
+          "aspect": "tall"
+        }
+      }
+    },
+    {
+      "entity_id": "noun__wall",
+      "label": "wall",
+      "canonical_lemma": "wall",
+      "semantic_class_id": "physical_object",
+      "kind": "object",
+      "definition": "a solid structure dividing a space",
+      "genus_lemma": "structure",
+      "slots": {
+        "entity_type": "non_living",
+        "state_of_matter": "solid",
+        "build_strength": "strong",
+        "materials": [
+          "brick",
+          "concrete",
+          "wood"
+        ],
+        "functional_uses": [
+          "division",
+          "support",
+          "enclosure"
+        ],
+        "dimensions": {
+          "shape": "sheet",
+          "size": "large",
+          "aspect": "tall"
+        }
+      }
+    },
+    {
+      "entity_id": "noun__floor",
+      "label": "floor",
+      "canonical_lemma": "floor",
+      "semantic_class_id": "physical_object",
+      "kind": "object",
+      "definition": "the lower surface of a room or building",
+      "genus_lemma": "surface",
+      "slots": {
+        "entity_type": "non_living",
+        "state_of_matter": "solid",
+        "build_strength": "strong",
+        "materials": [
+          "wood",
+          "tile",
+          "concrete",
+          "carpet"
+        ],
+        "functional_uses": [
+          "walking surface",
+          "support"
+        ],
+        "dimensions": {
+          "shape": "sheet",
+          "size": "large",
+          "aspect": "wide"
+        }
+      }
+    },
+    {
+      "entity_id": "noun__story_mirror",
+      "label": "mirror",
+      "canonical_lemma": "mirror",
+      "semantic_class_id": "physical_object",
+      "kind": "object",
+      "definition": "a reflective glass surface for seeing one's reflection",
+      "genus_lemma": "reflector",
+      "slots": {
+        "entity_type": "non_living",
+        "state_of_matter": "solid",
+        "build_strength": "fragile",
+        "materials": [
+          "glass",
+          "metal"
+        ],
+        "functional_uses": [
+          "reflection",
+          "grooming"
+        ],
+        "dimensions": {
+          "shape": "sheet",
+          "size": "medium",
+          "aspect": "tall"
+        }
+      }
+    },
+    {
+      "entity_id": "noun__mirror_personal",
+      "label": "mirror",
+      "canonical_lemma": "mirror",
+      "semantic_class_id": "physical_object",
+      "kind": "object",
+      "definition": "a small reflective surface for personal grooming",
+      "genus_lemma": "reflector",
+      "slots": {
+        "entity_type": "non_living",
+        "state_of_matter": "solid",
+        "build_strength": "fragile",
+        "materials": [
+          "glass",
+          "plastic"
+        ],
+        "functional_uses": [
+          "grooming",
+          "reflection"
+        ],
+        "dimensions": {
+          "shape": "sheet",
+          "size": "tiny",
+          "aspect": "tall"
+        }
+      }
+    },
+    {
+      "entity_id": "noun__vase",
+      "label": "vase",
+      "canonical_lemma": "vase",
+      "semantic_class_id": "physical_object",
+      "kind": "object",
+      "definition": "a container used for displaying flowers",
+      "genus_lemma": "container",
+      "slots": {
+        "entity_type": "non_living",
+        "state_of_matter": "solid",
+        "build_strength": "fragile",
+        "materials": [
+          "glass",
+          "ceramic",
+          "porcelain"
+        ],
+        "functional_uses": [
+          "displaying flowers",
+          "decoration"
+        ],
+        "dimensions": {
+          "shape": "cylinder",
+          "size": "small",
+          "aspect": "tall"
+        },
+        "color": "variable"
+      },
+      "relations": [
+        {
+          "target": "verb__fill",
+          "relation": "verb_object_of",
+          "strength": 0.8
+        },
+        {
+          "target": "verb__break",
+          "relation": "verb_object_of",
+          "strength": 0.6
+        }
+      ]
+    },
+    {
+      "entity_id": "noun__whisk",
+      "label": "whisk",
+      "canonical_lemma": "whisk",
+      "semantic_class_id": "physical_object.instrument",
+      "kind": "object",
+      "definition": "a kitchen tool used for mixing ingredients",
+      "genus_lemma": "utensil",
+      "slots": {
+        "entity_type": "non_living",
+        "state_of_matter": "solid",
+        "build_strength": "sturdy",
+        "materials": [
+          "metal"
+        ],
+        "functional_uses": [
+          "mixing",
+          "whipping"
+        ],
+        "dimensions": {
+          "shape": "irregular",
+          "size": "small",
+          "aspect": "tall"
+        },
+        "color": "silver"
+      }
+    },
+    {
+      "entity_id": "noun__thermostat",
+      "label": "thermostat",
+      "canonical_lemma": "thermostat",
+      "semantic_class_id": "physical_object.device",
+      "kind": "object",
+      "definition": "a device that regulates temperature",
+      "genus_lemma": "controller",
+      "slots": {
+        "entity_type": "non_living",
+        "state_of_matter": "solid",
+        "build_strength": "sturdy",
+        "materials": [
+          "plastic",
+          "metal"
+        ],
+        "functional_uses": [
+          "temperature control"
+        ],
+        "dimensions": {
+          "shape": "box",
+          "size": "tiny",
+          "aspect": "flat"
+        },
+        "color": "white"
+      }
+    },
+    {
+      "entity_id": "noun__alarm",
+      "label": "alarm",
+      "canonical_lemma": "alarm",
+      "semantic_class_id": "physical_object.device",
+      "kind": "object",
+      "definition": "a device that makes a loud sound to alert",
+      "genus_lemma": "device",
+      "slots": {
+        "entity_type": "non_living",
+        "state_of_matter": "solid",
+        "build_strength": "sturdy",
+        "materials": [
+          "plastic",
+          "metal"
+        ],
+        "functional_uses": [
+          "alerting",
+          "waking"
+        ],
+        "dimensions": {
+          "shape": "box",
+          "size": "tiny",
+          "aspect": "cubic"
+        },
+        "color": "black"
+      }
+    },
+    {
+      "entity_id": "noun__battery",
+      "label": "battery",
+      "canonical_lemma": "battery",
+      "semantic_class_id": "physical_object",
+      "kind": "object",
+      "definition": "a portable source of electrical energy",
+      "genus_lemma": "cell",
+      "slots": {
+        "entity_type": "non_living",
+        "state_of_matter": "solid",
+        "build_strength": "sturdy",
+        "materials": [
+          "metal",
+          "chemical"
+        ],
+        "functional_uses": [
+          "powering devices"
+        ],
+        "dimensions": {
+          "shape": "cylinder",
+          "size": "tiny",
+          "aspect": "cubic"
+        },
+        "color": "variable"
+      }
+    },
+    {
+      "entity_id": "noun__bulb",
+      "label": "bulb",
+      "canonical_lemma": "bulb",
+      "semantic_class_id": "physical_object",
+      "kind": "object",
+      "definition": "a glass device that produces light",
+      "genus_lemma": "light",
+      "slots": {
+        "entity_type": "non_living",
+        "state_of_matter": "solid",
+        "build_strength": "fragile",
+        "materials": [
+          "glass",
+          "metal"
+        ],
+        "functional_uses": [
+          "lighting"
+        ],
+        "dimensions": {
+          "shape": "sphere",
+          "size": "tiny",
+          "aspect": "spherical"
+        },
+        "color": "white"
+      }
+    },
+    {
+      "entity_id": "noun__wire",
+      "label": "wire",
+      "canonical_lemma": "wire",
+      "semantic_class_id": "physical_object",
+      "kind": "object",
+      "definition": "a thin flexible thread of metal used for conducting electricity",
+      "genus_lemma": "thread",
+      "slots": {
+        "entity_type": "non_living",
+        "state_of_matter": "solid",
+        "build_strength": "strong",
+        "materials": [
+          "metal",
+          "copper"
+        ],
+        "functional_uses": [
+          "conducting electricity",
+          "fastening"
+        ],
+        "dimensions": {
+          "shape": "stick",
+          "size": "tiny",
+          "aspect": "tall"
+        },
+        "color": "copper"
+      }
+    },
+    {
+      "entity_id": "noun__usb_cable",
+      "label": "USB cable",
+      "canonical_lemma": "usb cable",
+      "semantic_class_id": "physical_object",
+      "kind": "object",
+      "definition": "a cable used to transfer data and charge devices",
+      "genus_lemma": "cable",
+      "slots": {
+        "entity_type": "non_living",
+        "state_of_matter": "solid",
+        "build_strength": "sturdy",
+        "materials": [
+          "plastic",
+          "metal"
+        ],
+        "functional_uses": [
+          "data transfer",
+          "charging"
+        ],
+        "dimensions": {
+          "shape": "stick",
+          "size": "tiny",
+          "aspect": "tall"
+        },
+        "color": "black"
+      }
+    },
+    {
+      "entity_id": "noun__extension_cord",
+      "label": "extension cord",
+      "canonical_lemma": "cord",
+      "semantic_class_id": "physical_object",
+      "kind": "object",
+      "definition": "a flexible cable with plugs for connecting appliances",
+      "genus_lemma": "cable",
+      "slots": {
+        "entity_type": "non_living",
+        "state_of_matter": "solid",
+        "build_strength": "sturdy",
+        "materials": [
+          "plastic",
+          "copper"
+        ],
+        "functional_uses": [
+          "extending reach of power"
+        ],
+        "dimensions": {
+          "shape": "stick",
+          "size": "tiny",
+          "aspect": "tall"
+        },
+        "color": "white"
+      }
+    },
+    {
+      "entity_id": "noun__mallet",
+      "label": "mallet",
+      "canonical_lemma": "mallet",
+      "semantic_class_id": "physical_object.instrument",
+      "kind": "object",
+      "definition": "a hammer with a large often wooden head",
+      "genus_lemma": "hammer",
+      "slots": {
+        "entity_type": "non_living",
+        "state_of_matter": "solid",
+        "build_strength": "strong",
+        "materials": [
+          "wood",
+          "metal"
+        ],
+        "functional_uses": [
+          "striking",
+          "shaping"
+        ],
+        "dimensions": {
+          "shape": "stick",
+          "size": "small",
+          "aspect": "tall"
+        },
+        "color": "brown"
+      }
+    },
+    {
+      "entity_id": "noun__hand_saw",
+      "label": "hand saw",
+      "canonical_lemma": "hand saw",
+      "semantic_class_id": "physical_object.instrument",
+      "kind": "object",
+      "definition": "a tool with a toothed blade for cutting",
+      "genus_lemma": "tool",
+      "slots": {
+        "entity_type": "non_living",
+        "state_of_matter": "solid",
+        "build_strength": "strong",
+        "materials": [
+          "metal",
+          "plastic"
+        ],
+        "functional_uses": [
+          "cutting"
+        ],
+        "dimensions": {
+          "shape": "stick",
+          "size": "medium",
+          "aspect": "tall"
+        },
+        "color": "silver"
+      }
+    },
+    {
+      "entity_id": "noun__jazz",
+      "label": "jazz",
+      "canonical_lemma": "jazz",
+      "semantic_class_id": "media_descriptor.music_genre",
+      "kind": "concept",
+      "definition": "a music genre characterized by swing and blue notes",
+      "genus_lemma": "music_genre",
+      "slots": {"entity_type": "abstract"}
+    },
+    {
+      "entity_id": "noun__blues",
+      "label": "blues",
+      "canonical_lemma": "blues",
+      "semantic_class_id": "media_descriptor.music_genre",
+      "kind": "concept",
+      "definition": "a music genre with soulful melodies and blue notes",
+      "genus_lemma": "music_genre",
+      "slots": {"entity_type": "abstract"}
+    },
+    {
+      "entity_id": "noun__soul",
+      "label": "soul",
+      "canonical_lemma": "soul",
+      "semantic_class_id": "media_descriptor.music_genre",
+      "kind": "concept",
+      "definition": "a music genre with emotional vocals and gospel roots",
+      "genus_lemma": "music_genre",
+      "slots": {"entity_type": "abstract"}
+    },
+    {
+      "entity_id": "noun__funk",
+      "label": "funk",
+      "canonical_lemma": "funk",
+      "semantic_class_id": "media_descriptor.music_genre",
+      "kind": "concept",
+      "definition": "a music genre with syncopated rhythms and bass lines",
+      "genus_lemma": "music_genre",
+      "slots": {"entity_type": "abstract"}
+    },
+    {
+      "entity_id": "noun__lofi",
+      "label": "lofi",
+      "canonical_lemma": "lofi",
+      "semantic_class_id": "media_descriptor.music_genre",
+      "kind": "concept",
+      "definition": "a music genre characterized by low-fidelity production",
+      "genus_lemma": "music_genre",
+      "slots": {"entity_type": "abstract"}
+    },
+    {
+      "entity_id": "noun__piano",
+      "label": "piano",
+      "canonical_lemma": "piano",
+      "semantic_class_id": "media_descriptor.music_instrument",
+      "kind": "object",
+      "definition": "a musical instrument played by pressing keys",
+      "genus_lemma": "instrument",
+      "slots": {"entity_type": "non_living"}
+    },
+    {
+      "entity_id": "noun__guitar",
+      "label": "guitar",
+      "canonical_lemma": "guitar",
+      "semantic_class_id": "media_descriptor.music_instrument",
+      "kind": "object",
+      "definition": "a stringed musical instrument played by plucking",
+      "genus_lemma": "instrument",
+      "slots": {"entity_type": "non_living"}
+    },
+    {
+      "entity_id": "noun__violin",
+      "label": "violin",
+      "canonical_lemma": "violin",
+      "semantic_class_id": "media_descriptor.music_instrument",
+      "kind": "object",
+      "definition": "a stringed musical instrument played with a bow",
+      "genus_lemma": "instrument",
+      "slots": {"entity_type": "non_living"}
+    },
+    {
+      "entity_id": "noun__rain",
+      "label": "rain",
+      "canonical_lemma": "rain",
+      "semantic_class_id": "media_content.nature_audio",
+      "kind": "concept",
+      "definition": "water droplets falling from clouds",
+      "genus_lemma": "weather",
+      "slots": {"entity_type": "non_living"}
+    },
+    {
+      "entity_id": "noun__nature",
+      "label": "nature",
+      "canonical_lemma": "nature",
+      "semantic_class_id": "media_content.nature_audio",
+      "kind": "concept",
+      "definition": "the natural world including landscapes and wildlife",
+      "genus_lemma": "environment",
+      "slots": {"entity_type": "abstract"}
+    },
+    {
+      "entity_id": "noun__music",
+      "label": "music",
+      "canonical_lemma": "music",
+      "semantic_class_id": "media_content.music_work",
+      "kind": "concept",
+      "definition": "vocal or instrumental sounds combined to create beauty",
+      "genus_lemma": "art",
+      "slots": {"entity_type": "abstract"}
+    },
+    {
+      "entity_id": "noun__music_instrumental",
+      "label": "instrumental",
+      "canonical_lemma": "instrumental",
+      "semantic_class_id": "media_content.music_work",
+      "kind": "concept",
+      "definition": "music without vocal parts",
+      "genus_lemma": "music",
+      "slots": {"entity_type": "abstract"}
+    },
+    {
+      "entity_id": "noun__story_forest",
+      "semantic_class_id": "story_element.place.wild",
+      "label": "Forest",
+      "canonical_lemma": "forest",
+      "kind": "place",
+      "definition": "A large area covered with trees and undergrowth",
+      "genus_lemma": "wilderness"
+    },
+    {
+      "entity_id": "noun__river",
+      "semantic_class_id": "story_element.place.wild",
+      "label": "River",
+      "canonical_lemma": "river",
+      "kind": "place",
+      "definition": "A large natural stream of water",
+      "genus_lemma": "waterway"
+    },
+    {
+      "entity_id": "noun__mountain",
+      "semantic_class_id": "story_element.place.wild",
+      "label": "Mountain",
+      "canonical_lemma": "mountain",
+      "kind": "place",
+      "definition": "A large natural elevation of the earth\u2019s surface",
+      "genus_lemma": "landform"
+    },
+    {
+      "entity_id": "noun__cave",
+      "semantic_class_id": "story_element.place.wild",
+      "label": "Cave",
+      "canonical_lemma": "cave",
+      "kind": "place",
+      "definition": "A large underground chamber",
+      "genus_lemma": "cavern"
+    },
+    {
+      "entity_id": "noun__village",
+      "semantic_class_id": "story_element.place.settlement",
+      "label": "Village",
+      "canonical_lemma": "village",
+      "kind": "place",
+      "definition": "A small community in a rural area",
+      "genus_lemma": "settlement"
+    },
+    {
+      "entity_id": "noun__castle",
+      "semantic_class_id": "story_element.place.settlement",
+      "label": "Castle",
+      "canonical_lemma": "castle",
+      "kind": "place",
+      "definition": "A large building fortified against attack",
+      "genus_lemma": "fortress"
+    },
+    {
+      "entity_id": "noun__drum",
+      "semantic_class_id": "story_element.object.magical",
+      "label": "Drum",
+      "canonical_lemma": "drum",
+      "kind": "object",
+      "definition": "A percussion instrument",
+      "genus_lemma": "instrument"
+    },
+    {
+      "entity_id": "noun__tortoise",
+      "semantic_class_id": "story_element.creature.talking_animal",
+      "label": "Tortoise",
+      "canonical_lemma": "tortoise",
+      "kind": "animal",
+      "definition": "A slow-moving land reptile",
+      "genus_lemma": "reptile"
+    },
+    {
+      "entity_id": "noun__leopard",
+      "semantic_class_id": "story_element.creature.talking_animal",
+      "label": "Leopard",
+      "canonical_lemma": "leopard",
+      "kind": "animal",
+      "definition": "A large wild cat with a spotted coat",
+      "genus_lemma": "big_cat"
+    },
+    {
+      "entity_id": "noun__lion",
+      "semantic_class_id": "story_element.creature.talking_animal",
+      "label": "Lion",
+      "canonical_lemma": "lion",
+      "kind": "animal",
+      "definition": "A large wild cat, king of the jungle",
+      "genus_lemma": "big_cat"
+    },
+    {
+      "entity_id": "noun__hare",
+      "semantic_class_id": "story_element.creature.talking_animal",
+      "label": "Hare",
+      "canonical_lemma": "hare",
+      "kind": "animal",
+      "definition": "A fast-running long-eared mammal",
+      "genus_lemma": "mammal"
+    },
+    {
+      "entity_id": "noun__crow",
+      "semantic_class_id": "story_element.creature.talking_animal",
+      "label": "Crow",
+      "canonical_lemma": "crow",
+      "kind": "animal",
+      "definition": "A large black bird with a harsh call",
+      "genus_lemma": "bird"
+    },
+    {
+      "entity_id": "noun__dove",
+      "semantic_class_id": "story_element.creature.talking_animal",
+      "label": "Dove",
+      "canonical_lemma": "dove",
+      "kind": "animal",
+      "definition": "A bird symbolizing peace",
+      "genus_lemma": "bird"
+    },
+    {
+      "entity_id": "noun__fox",
+      "semantic_class_id": "story_element.creature.talking_animal",
+      "label": "Fox",
+      "canonical_lemma": "fox",
+      "kind": "animal",
+      "definition": "A clever wild mammal with a bushy tail",
+      "genus_lemma": "mammal"
+    },
+    {
+      "entity_id": "noun__bear",
+      "semantic_class_id": "story_element.creature.talking_animal",
+      "label": "Bear",
+      "canonical_lemma": "bear",
+      "kind": "animal",
+      "definition": "A large powerful mammal",
+      "genus_lemma": "mammal"
+    },
+    {
+      "entity_id": "noun__mirror",
+      "semantic_class_id": "story_element.object.magical",
+      "label": "Mirror",
+      "canonical_lemma": "mirror",
+      "kind": "object",
+      "definition": "A reflective surface",
+      "genus_lemma": "surface"
+    },
+    {
+      "entity_id": "noun__lantern",
+      "semantic_class_id": "story_element.object.ordinary",
+      "label": "Lantern",
+      "canonical_lemma": "lantern",
+      "kind": "object",
+      "definition": "A portable light source",
+      "genus_lemma": "light"
+    },
+    {
+      "entity_id": "noun__story_key",
+      "semantic_class_id": "story_element.object.ordinary",
+      "label": "Key",
+      "canonical_lemma": "key",
+      "kind": "object",
+      "definition": "A small metal device for unlocking",
+      "genus_lemma": "tool"
+    },
+    {
+      "entity_id": "noun__rope",
+      "semantic_class_id": "story_element.object.ordinary",
+      "label": "Rope",
+      "canonical_lemma": "rope",
+      "kind": "object",
+      "definition": "A thick string or cord",
+      "genus_lemma": "cordage"
+    },
+    {
+      "entity_id": "noun__story_basket",
+      "semantic_class_id": "story_element.object.ordinary",
+      "label": "Basket",
+      "canonical_lemma": "basket",
+      "kind": "object",
+      "definition": "A container woven from materials",
+      "genus_lemma": "container"
+    },
+    {
+      "entity_id": "noun__lake",
+      "semantic_class_id": "story_element.place.wild",
+      "label": "Lake",
+      "canonical_lemma": "lake",
+      "kind": "place",
+      "definition": "A large body of water surrounded by land",
+      "genus_lemma": "water_body"
+    },
+    {
+      "entity_id": "noun__tunnel",
+      "semantic_class_id": "story_element.place.wild",
+      "label": "Tunnel",
+      "canonical_lemma": "tunnel",
+      "kind": "place",
+      "definition": "An underground passage",
+      "genus_lemma": "passage"
+    },
+    {
+      "entity_id": "noun__market",
+      "semantic_class_id": "story_element.place.settlement",
+      "label": "Market",
+      "canonical_lemma": "market",
+      "kind": "place",
+      "definition": "A place where goods are bought and sold",
+      "genus_lemma": "marketplace"
+    },
+    {
+      "entity_id": "noun__hut",
+      "semantic_class_id": "story_element.place.settlement",
+      "label": "Hut",
+      "canonical_lemma": "hut",
+      "kind": "place",
+      "definition": "A small simple shelter or dwelling",
+      "genus_lemma": "dwelling"
+    },
+    {
+      "entity_id": "noun__old_woman",
+      "semantic_class_id": "story_element.character.ally",
+      "label": "Old Woman",
+      "canonical_lemma": "old woman",
+      "kind": "person",
+      "definition": "An elderly female figure with wisdom and kindness",
+      "genus_lemma": "elder"
+    },
+    {
+      "entity_id": "noun__wise_man",
+      "semantic_class_id": "story_element.character.ally",
+      "label": "Wise Man",
+      "canonical_lemma": "wise man",
+      "kind": "person",
+      "definition": "An elderly male figure with deep knowledge and insight",
+      "genus_lemma": "sage"
+    },
+    {
+      "entity_id": "noun__queen",
+      "semantic_class_id": "story_element.character.ally",
+      "label": "Queen",
+      "canonical_lemma": "queen",
+      "kind": "person",
+      "definition": "A female ruler of a kingdom",
+      "genus_lemma": "ruler"
+    },
+    {
+      "entity_id": "noun__king",
+      "semantic_class_id": "story_element.character.ally",
+      "label": "King",
+      "canonical_lemma": "king",
+      "kind": "person",
+      "definition": "A male ruler of a kingdom",
+      "genus_lemma": "ruler"
+    },
+    {
+      "entity_id": "noun__witch",
+      "semantic_class_id": "story_element.character.adversary",
+      "label": "Witch",
+      "canonical_lemma": "witch",
+      "kind": "person",
+      "definition": "A person with magical powers, often antagonistic",
+      "genus_lemma": "magician"
+    },
+    {
+      "entity_id": "noun__trickster",
+      "semantic_class_id": "story_element.character.adversary",
+      "label": "Trickster",
+      "canonical_lemma": "trickster",
+      "kind": "person",
+      "definition": "A mischievous character who deceives others",
+      "genus_lemma": "deceiver"
+    },
+    {
+      "entity_id": "noun__ocean",
+      "semantic_class_id": "story_element.place.wild",
+      "label": "Ocean",
+      "canonical_lemma": "ocean",
+      "kind": "place",
+      "definition": "A vast expanse of salt water",
+      "genus_lemma": "sea"
+    },
+    {
+      "entity_id": "noun__desert",
+      "semantic_class_id": "story_element.place.wild",
+      "label": "Desert",
+      "canonical_lemma": "desert",
+      "kind": "place",
+      "definition": "A barren arid region with little rain",
+      "genus_lemma": "wasteland"
+    },
+    {
+      "entity_id": "noun__island",
+      "semantic_class_id": "story_element.place.wild",
+      "label": "Island",
+      "canonical_lemma": "island",
+      "kind": "place",
+      "definition": "A piece of land surrounded by water",
+      "genus_lemma": "landmass"
+    },
+    {
+      "entity_id": "noun__valley",
+      "semantic_class_id": "story_element.place.wild",
+      "label": "Valley",
+      "canonical_lemma": "valley",
+      "kind": "place",
+      "definition": "A low area between hills or mountains",
+      "genus_lemma": "depression"
+    },
+    {
+      "entity_id": "noun__cliff",
+      "semantic_class_id": "story_element.place.wild",
+      "label": "Cliff",
+      "canonical_lemma": "cliff",
+      "kind": "place",
+      "definition": "A steep rock face",
+      "genus_lemma": "precipice"
+    },
+    {
+      "entity_id": "noun__waterfall",
+      "semantic_class_id": "story_element.place.wild",
+      "label": "Waterfall",
+      "canonical_lemma": "waterfall",
+      "kind": "place",
+      "definition": "Water falling vertically over a rock face",
+      "genus_lemma": "cascade"
+    },
+    {
+      "entity_id": "noun__meadow",
+      "semantic_class_id": "story_element.place.wild",
+      "label": "Meadow",
+      "canonical_lemma": "meadow",
+      "kind": "place",
+      "definition": "An open grassy field",
+      "genus_lemma": "field"
+    },
+    {
+      "entity_id": "noun__swamp",
+      "semantic_class_id": "story_element.place.wild",
+      "label": "Swamp",
+      "canonical_lemma": "swamp",
+      "kind": "place",
+      "definition": "A wetland with trees and murky water",
+      "genus_lemma": "marsh"
+    },
+    {
+      "entity_id": "noun__bridge",
+      "semantic_class_id": "story_element.place.wild",
+      "label": "Bridge",
+      "canonical_lemma": "bridge",
+      "kind": "place",
+      "definition": "A structure built to span a physical obstacle",
+      "genus_lemma": "crossing"
+    },
+    {
+      "entity_id": "noun__path",
+      "semantic_class_id": "story_element.place.wild",
+      "label": "Path",
+      "canonical_lemma": "path",
+      "kind": "place",
+      "definition": "A narrow route or trail",
+      "genus_lemma": "trail"
+    },
+    {
+      "entity_id": "noun__tower",
+      "semantic_class_id": "story_element.place.settlement",
+      "label": "Tower",
+      "canonical_lemma": "tower",
+      "kind": "place",
+      "definition": "A tall narrow building or structure",
+      "genus_lemma": "turret"
+    },
+    {
+      "entity_id": "noun__temple",
+      "semantic_class_id": "story_element.place.settlement",
+      "label": "Temple",
+      "canonical_lemma": "temple",
+      "kind": "place",
+      "definition": "A building for worship or sacred rituals",
+      "genus_lemma": "shrine"
+    },
+    {
+      "entity_id": "noun__palace",
+      "semantic_class_id": "story_element.place.settlement",
+      "label": "Palace",
+      "canonical_lemma": "palace",
+      "kind": "place",
+      "definition": "A grand residence of a ruler",
+      "genus_lemma": "residence"
+    },
+    {
+      "entity_id": "noun__gate",
+      "semantic_class_id": "story_element.place.settlement",
+      "label": "Gate",
+      "canonical_lemma": "gate",
+      "kind": "place",
+      "definition": "An entrance to a walled area",
+      "genus_lemma": "entrance"
+    },
+    {
+      "entity_id": "noun__well",
+      "semantic_class_id": "story_element.place.settlement",
+      "label": "Well",
+      "canonical_lemma": "well",
+      "kind": "place",
+      "definition": "A hole dug to access water",
+      "genus_lemma": "water_source"
+    },
+    {
+      "entity_id": "noun__prince",
+      "semantic_class_id": "story_element.character.ally",
+      "label": "Prince",
+      "canonical_lemma": "prince",
+      "kind": "person",
+      "definition": "A male member of a royal family",
+      "genus_lemma": "royalty"
+    },
+    {
+      "entity_id": "noun__princess",
+      "semantic_class_id": "story_element.character.ally",
+      "label": "Princess",
+      "canonical_lemma": "princess",
+      "kind": "person",
+      "definition": "A female member of a royal family",
+      "genus_lemma": "royalty"
+    },
+    {
+      "entity_id": "noun__fairy",
+      "semantic_class_id": "story_element.character.ally",
+      "label": "Fairy",
+      "canonical_lemma": "fairy",
+      "kind": "person",
+      "definition": "A small magical being with wings",
+      "genus_lemma": "spirit"
+    },
+    {
+      "entity_id": "noun__hermit",
+      "semantic_class_id": "story_element.character.ally",
+      "label": "Hermit",
+      "canonical_lemma": "hermit",
+      "kind": "person",
+      "definition": "A person living in seclusion",
+      "genus_lemma": "recluse"
+    },
+    {
+      "entity_id": "noun__guardian",
+      "semantic_class_id": "story_element.character.ally",
+      "label": "Guardian",
+      "canonical_lemma": "guardian",
+      "kind": "person",
+      "definition": "A protector or defender",
+      "genus_lemma": "protector"
+    },
+    {
+      "entity_id": "noun__elder",
+      "semantic_class_id": "story_element.character.ally",
+      "label": "Elder",
+      "canonical_lemma": "elder",
+      "kind": "person",
+      "definition": "A respected older member of a community",
+      "genus_lemma": "senior"
+    },
+    {
+      "entity_id": "noun__dragon",
+      "semantic_class_id": "story_element.character.adversary",
+      "label": "Dragon",
+      "canonical_lemma": "dragon",
+      "kind": "person",
+      "definition": "A large fire-breathing mythical creature",
+      "genus_lemma": "beast"
+    },
+    {
+      "entity_id": "noun__giant",
+      "semantic_class_id": "story_element.character.adversary",
+      "label": "Giant",
+      "canonical_lemma": "giant",
+      "kind": "person",
+      "definition": "A huge human-like creature",
+      "genus_lemma": "being"
+    },
+    {
+      "entity_id": "noun__monster",
+      "semantic_class_id": "story_element.character.adversary",
+      "label": "Monster",
+      "canonical_lemma": "monster",
+      "kind": "person",
+      "definition": "A large frightening creature",
+      "genus_lemma": "beast"
+    },
+    {
+      "entity_id": "noun__thief",
+      "semantic_class_id": "story_element.character.adversary",
+      "label": "Thief",
+      "canonical_lemma": "thief",
+      "kind": "person",
+      "definition": "A person who steals",
+      "genus_lemma": "criminal"
+    },
+    {
+      "entity_id": "noun__sorcerer",
+      "semantic_class_id": "story_element.character.adversary",
+      "label": "Sorcerer",
+      "canonical_lemma": "sorcerer",
+      "kind": "person",
+      "definition": "A user of dark magic",
+      "genus_lemma": "magician"
+    },
+    {
+      "entity_id": "noun__ogre",
+      "semantic_class_id": "story_element.character.adversary",
+      "label": "Ogre",
+      "canonical_lemma": "ogre",
+      "kind": "person",
+      "definition": "A large ugly man-eating monster",
+      "genus_lemma": "giant"
+    },
+    {
+      "entity_id": "noun__wolf",
+      "semantic_class_id": "story_element.creature.talking_animal",
+      "label": "Wolf",
+      "canonical_lemma": "wolf",
+      "kind": "animal",
+      "definition": "A wild carnivorous canine",
+      "genus_lemma": "canine"
+    },
+    {
+      "entity_id": "noun__eagle",
+      "semantic_class_id": "story_element.creature.talking_animal",
+      "label": "Eagle",
+      "canonical_lemma": "eagle",
+      "kind": "animal",
+      "definition": "A large bird of prey",
+      "genus_lemma": "raptor"
+    },
+    {
+      "entity_id": "noun__owl",
+      "semantic_class_id": "story_element.creature.talking_animal",
+      "label": "Owl",
+      "canonical_lemma": "owl",
+      "kind": "animal",
+      "definition": "A nocturnal bird of prey",
+      "genus_lemma": "bird"
+    },
+    {
+      "entity_id": "noun__serpent",
+      "semantic_class_id": "story_element.creature.talking_animal",
+      "label": "Serpent",
+      "canonical_lemma": "serpent",
+      "kind": "animal",
+      "definition": "A large snake",
+      "genus_lemma": "reptile"
+    },
+    {
+      "entity_id": "noun__deer",
+      "semantic_class_id": "story_element.creature.talking_animal",
+      "label": "Deer",
+      "canonical_lemma": "deer",
+      "kind": "animal",
+      "definition": "A graceful forest mammal with antlers",
+      "genus_lemma": "ungulate"
+    },
+    {
+      "entity_id": "noun__hawk",
+      "semantic_class_id": "story_element.creature.talking_animal",
+      "label": "Hawk",
+      "canonical_lemma": "hawk",
+      "kind": "animal",
+      "definition": "A keen-eyed bird of prey",
+      "genus_lemma": "raptor"
+    },
+    {
+      "entity_id": "noun__elephant",
+      "semantic_class_id": "story_element.creature.talking_animal",
+      "label": "Elephant",
+      "canonical_lemma": "elephant",
+      "kind": "animal",
+      "definition": "A large mammal with a trunk and tusks",
+      "genus_lemma": "pachyderm"
+    },
+    {
+      "entity_id": "noun__monkey",
+      "semantic_class_id": "story_element.creature.talking_animal",
+      "label": "Monkey",
+      "canonical_lemma": "monkey",
+      "kind": "animal",
+      "definition": "A small agile primate",
+      "genus_lemma": "primate"
+    },
+    {
+      "entity_id": "noun__parrot",
+      "semantic_class_id": "story_element.creature.talking_animal",
+      "label": "Parrot",
+      "canonical_lemma": "parrot",
+      "kind": "animal",
+      "definition": "A colorful bird that can mimic speech",
+      "genus_lemma": "bird"
+    },
+    {
+      "entity_id": "noun__staff",
+      "semantic_class_id": "story_element.object.magical",
+      "label": "Staff",
+      "canonical_lemma": "staff",
+      "kind": "object",
+      "definition": "A long stick imbued with magical power",
+      "genus_lemma": "wand"
+    },
+    {
+      "entity_id": "noun__crystal",
+      "semantic_class_id": "story_element.object.magical",
+      "label": "Crystal",
+      "canonical_lemma": "crystal",
+      "kind": "object",
+      "definition": "A clear mineral with magical properties",
+      "genus_lemma": "gemstone"
+    },
+    {
+      "entity_id": "noun__amulet",
+      "semantic_class_id": "story_element.object.magical",
+      "label": "Amulet",
+      "canonical_lemma": "amulet",
+      "kind": "object",
+      "definition": "A charm worn for magical protection",
+      "genus_lemma": "talisman"
+    },
+    {
+      "entity_id": "noun__crown",
+      "semantic_class_id": "story_element.object.magical",
+      "label": "Crown",
+      "canonical_lemma": "crown",
+      "kind": "object",
+      "definition": "A royal headpiece, often enchanted",
+      "genus_lemma": "headdress"
+    },
+    {
+      "entity_id": "noun__spellbook",
+      "semantic_class_id": "story_element.object.magical",
+      "label": "Spellbook",
+      "canonical_lemma": "spellbook",
+      "kind": "object",
+      "definition": "A book containing magical spells",
+      "genus_lemma": "grimoire"
+    },
+    {
+      "entity_id": "noun__potion",
+      "semantic_class_id": "story_element.object.magical",
+      "label": "Potion",
+      "canonical_lemma": "potion",
+      "kind": "object",
+      "definition": "A liquid with magical effects",
+      "genus_lemma": "elixir"
+    },
+    {
+      "entity_id": "noun__ring",
+      "semantic_class_id": "story_element.object.magical",
+      "label": "Ring",
+      "canonical_lemma": "ring",
+      "kind": "object",
+      "definition": "A circular band worn on a finger, sometimes enchanted",
+      "genus_lemma": "jewelry"
+    },
+    {
+      "entity_id": "noun__wand",
+      "semantic_class_id": "story_element.object.magical",
+      "label": "Wand",
+      "canonical_lemma": "wand",
+      "kind": "object",
+      "definition": "A thin stick used to cast spells",
+      "genus_lemma": "rod"
+    },
+    {
+      "entity_id": "noun__torch",
+      "semantic_class_id": "story_element.object.ordinary",
+      "label": "Torch",
+      "canonical_lemma": "torch",
+      "kind": "object",
+      "definition": "A portable light source made of burning material",
+      "genus_lemma": "light"
+    },
+    {
+      "entity_id": "noun__map",
+      "semantic_class_id": "story_element.object.ordinary",
+      "label": "Map",
+      "canonical_lemma": "map",
+      "kind": "object",
+      "definition": "A drawing showing geographical features",
+      "genus_lemma": "chart"
+    },
+    {
+      "entity_id": "noun__compass",
+      "semantic_class_id": "story_element.object.ordinary",
+      "label": "Compass",
+      "canonical_lemma": "compass",
+      "kind": "object",
+      "definition": "An instrument for finding direction",
+      "genus_lemma": "instrument"
+    },
+    {
+      "entity_id": "noun__shield",
+      "semantic_class_id": "story_element.object.ordinary",
+      "label": "Shield",
+      "canonical_lemma": "shield",
+      "kind": "object",
+      "definition": "A protective device carried on the arm",
+      "genus_lemma": "armor"
+    },
+    {
+      "entity_id": "noun__armor",
+      "semantic_class_id": "story_element.object.ordinary",
+      "label": "Armor",
+      "canonical_lemma": "armor",
+      "kind": "object",
+      "definition": "Protective clothing worn in battle",
+      "genus_lemma": "protection"
+    },
+    {
+      "entity_id": "noun__bow",
+      "semantic_class_id": "story_element.object.ordinary",
+      "label": "Bow",
+      "canonical_lemma": "bow",
+      "kind": "object",
+      "definition": "A weapon for shooting arrows",
+      "genus_lemma": "weapon"
+    },
+    {
+      "entity_id": "noun__arrow",
+      "semantic_class_id": "story_element.object.ordinary",
+      "label": "Arrow",
+      "canonical_lemma": "arrow",
+      "kind": "object",
+      "definition": "A projectile shot from a bow",
+      "genus_lemma": "projectile"
+    },
+    {
+      "entity_id": "noun__sack",
+      "semantic_class_id": "story_element.object.ordinary",
+      "label": "Sack",
+      "canonical_lemma": "sack",
+      "kind": "object",
+      "definition": "A large bag for carrying goods",
+      "genus_lemma": "bag"
+    },
+    {
+      "entity_id": "noun__net",
+      "semantic_class_id": "story_element.object.ordinary",
+      "label": "Net",
+      "canonical_lemma": "net",
+      "kind": "object",
+      "definition": "A mesh of fibers used for catching or trapping",
+      "genus_lemma": "mesh"
+    },
+    {
+      "entity_id": "noun__story_jackal",
+      "semantic_class_id": "story_element.creature.talking_animal",
+      "label": "Jackal",
+      "canonical_lemma": "jackal",
+      "kind": "animal",
+      "definition": "A wild canine known for cunning and scavenging",
+      "genus_lemma": "canine"
+    },
+    {
+      "entity_id": "noun__story_crocodile",
+      "semantic_class_id": "story_element.creature.talking_animal",
+      "label": "Crocodile",
+      "canonical_lemma": "crocodile",
+      "kind": "animal",
+      "definition": "A large aquatic reptile with powerful jaws",
+      "genus_lemma": "reptile"
+    },
+    {
+      "entity_id": "noun__story_spider",
+      "semantic_class_id": "story_element.creature.talking_animal",
+      "label": "Spider",
+      "canonical_lemma": "spider",
+      "kind": "animal",
+      "definition": "A small arachnid that weaves webs",
+      "genus_lemma": "arachnid"
+    },
+    {
+      "entity_id": "noun__story_frog",
+      "semantic_class_id": "story_element.creature.talking_animal",
+      "label": "Frog",
+      "canonical_lemma": "frog",
+      "kind": "animal",
+      "definition": "A small jumping amphibian",
+      "genus_lemma": "amphibian"
+    },
+    {
+      "entity_id": "noun__story_toad",
+      "semantic_class_id": "story_element.creature.talking_animal",
+      "label": "Toad",
+      "canonical_lemma": "toad",
+      "kind": "animal",
+      "definition": "A warty-skinned amphibian",
+      "genus_lemma": "amphibian"
+    },
+    {
+      "entity_id": "noun__story_crab",
+      "semantic_class_id": "story_element.creature.talking_animal",
+      "label": "Crab",
+      "canonical_lemma": "crab",
+      "kind": "animal",
+      "definition": "A crustacean with a hard shell and pincers",
+      "genus_lemma": "crustacean"
+    },
+    {
+      "entity_id": "noun__story_lizard",
+      "semantic_class_id": "story_element.creature.talking_animal",
+      "label": "Lizard",
+      "canonical_lemma": "lizard",
+      "kind": "animal",
+      "definition": "A small scaly reptile",
+      "genus_lemma": "reptile"
+    },
+    {
+      "entity_id": "noun__story_vulture",
+      "semantic_class_id": "story_element.creature.talking_animal",
+      "label": "Vulture",
+      "canonical_lemma": "vulture",
+      "kind": "animal",
+      "definition": "A large bird that feeds on carrion",
+      "genus_lemma": "bird"
+    },
+    {
+      "entity_id": "noun__story_bat",
+      "semantic_class_id": "story_element.creature.talking_animal",
+      "label": "Bat",
+      "canonical_lemma": "bat",
+      "kind": "animal",
+      "definition": "A flying nocturnal mammal",
+      "genus_lemma": "mammal"
+    },
+    {
+      "entity_id": "noun__story_goat",
+      "semantic_class_id": "story_element.creature.talking_animal",
+      "label": "Goat",
+      "canonical_lemma": "goat",
+      "kind": "animal",
+      "definition": "A sure-footed domesticated ruminant",
+      "genus_lemma": "ungulate"
+    },
+    {
+      "entity_id": "noun__story_hen",
+      "semantic_class_id": "story_element.creature.talking_animal",
+      "label": "Hen",
+      "canonical_lemma": "hen",
+      "kind": "animal",
+      "definition": "A female domestic fowl",
+      "genus_lemma": "bird"
+    },
+    {
+      "entity_id": "noun__story_rooster",
+      "semantic_class_id": "story_element.creature.talking_animal",
+      "label": "Rooster",
+      "canonical_lemma": "rooster",
+      "kind": "animal",
+      "definition": "A male domestic fowl that crows at dawn",
+      "genus_lemma": "bird"
+    },
+    {
+      "entity_id": "noun__story_hyena",
+      "semantic_class_id": "story_element.creature.talking_animal",
+      "label": "Hyena",
+      "canonical_lemma": "hyena",
+      "kind": "animal",
+      "definition": "A wild dog-like scavenger with a distinctive call",
+      "genus_lemma": "canine"
+    },
+    {
+      "entity_id": "noun__story_ram",
+      "semantic_class_id": "story_element.creature.talking_animal",
+      "label": "Ram",
+      "canonical_lemma": "ram",
+      "kind": "animal",
+      "definition": "A male sheep with curved horns",
+      "genus_lemma": "ungulate"
+    },
+    {
+      "entity_id": "noun__story_tiger",
+      "semantic_class_id": "story_element.creature.talking_animal",
+      "label": "Tiger",
+      "canonical_lemma": "tiger",
+      "kind": "animal",
+      "definition": "A large striped wild cat",
+      "genus_lemma": "big_cat"
+    },
+    {
+      "entity_id": "noun__story_turtle",
+      "semantic_class_id": "story_element.creature.talking_animal",
+      "label": "Turtle",
+      "canonical_lemma": "turtle",
+      "kind": "animal",
+      "definition": "A slow-moving reptile with a hard shell",
+      "genus_lemma": "reptile"
+    },
+    {
+      "entity_id": "noun__story_duck",
+      "semantic_class_id": "story_element.creature.talking_animal",
+      "label": "Duck",
+      "canonical_lemma": "duck",
+      "kind": "animal",
+      "definition": "A waterbird with a broad flat bill",
+      "genus_lemma": "bird"
+    },
+    {
+      "entity_id": "noun__story_goose",
+      "semantic_class_id": "story_element.creature.talking_animal",
+      "label": "Goose",
+      "canonical_lemma": "goose",
+      "kind": "animal",
+      "definition": "A large waterbird with a long neck",
+      "genus_lemma": "bird"
+    },
+    {
+      "entity_id": "noun__story_swan",
+      "semantic_class_id": "story_element.creature.talking_animal",
+      "label": "Swan",
+      "canonical_lemma": "swan",
+      "kind": "animal",
+      "definition": "A graceful white waterbird",
+      "genus_lemma": "bird"
+    },
+    {
+      "entity_id": "noun__story_stork",
+      "semantic_class_id": "story_element.creature.talking_animal",
+      "label": "Stork",
+      "canonical_lemma": "stork",
+      "kind": "animal",
+      "definition": "A long-legged wading bird",
+      "genus_lemma": "bird"
+    },
+    {
+      "entity_id": "noun__story_raven",
+      "semantic_class_id": "story_element.creature.talking_animal",
+      "label": "Raven",
+      "canonical_lemma": "raven",
+      "kind": "animal",
+      "definition": "A large black bird known for intelligence",
+      "genus_lemma": "bird"
+    },
+    {
+      "entity_id": "noun__story_nightingale",
+      "semantic_class_id": "story_element.creature.talking_animal",
+      "label": "Nightingale",
+      "canonical_lemma": "nightingale",
+      "kind": "animal",
+      "definition": "A small bird known for its beautiful song",
+      "genus_lemma": "bird"
+    },
+    {
+      "entity_id": "noun__story_peacock",
+      "semantic_class_id": "story_element.creature.talking_animal",
+      "label": "Peacock",
+      "canonical_lemma": "peacock",
+      "kind": "animal",
+      "definition": "A colorful bird with a large iridescent tail",
+      "genus_lemma": "bird"
+    },
+    {
+      "entity_id": "noun__story_whale",
+      "semantic_class_id": "story_element.creature.talking_animal",
+      "label": "Whale",
+      "canonical_lemma": "whale",
+      "kind": "animal",
+      "definition": "A very large marine mammal",
+      "genus_lemma": "mammal"
+    },
+    {
+      "entity_id": "noun__story_mouse",
+      "semantic_class_id": "story_element.creature.talking_animal",
+      "label": "Mouse",
+      "canonical_lemma": "mouse",
+      "kind": "animal",
+      "definition": "A small rodent",
+      "genus_lemma": "rodent"
+    },
+    {
+      "entity_id": "noun__story_rat",
+      "semantic_class_id": "story_element.creature.talking_animal",
+      "label": "Rat",
+      "canonical_lemma": "rat",
+      "kind": "animal",
+      "definition": "A medium-sized rodent",
+      "genus_lemma": "rodent"
+    },
+    {
+      "entity_id": "noun__story_ant",
+      "semantic_class_id": "story_element.creature.talking_animal",
+      "label": "Ant",
+      "canonical_lemma": "ant",
+      "kind": "animal",
+      "definition": "A small social insect",
+      "genus_lemma": "insect"
+    },
+    {
+      "entity_id": "noun__story_bee",
+      "semantic_class_id": "story_element.creature.talking_animal",
+      "label": "Bee",
+      "canonical_lemma": "bee",
+      "kind": "animal",
+      "definition": "A flying insect that produces honey",
+      "genus_lemma": "insect"
+    },
+    {
+      "entity_id": "noun__story_donkey",
+      "semantic_class_id": "story_element.creature.talking_animal",
+      "label": "Donkey",
+      "canonical_lemma": "donkey",
+      "kind": "animal",
+      "definition": "A domesticated hoofed animal used for carrying loads",
+      "genus_lemma": "equine"
+    },
+    {
+      "entity_id": "noun__story_mule",
+      "semantic_class_id": "story_element.creature.talking_animal",
+      "label": "Mule",
+      "canonical_lemma": "mule",
+      "kind": "animal",
+      "definition": "A hybrid offspring of a donkey and a horse",
+      "genus_lemma": "equine"
+    },
+    {
+      "entity_id": "noun__story_lamb",
+      "semantic_class_id": "story_element.creature.talking_animal",
+      "label": "Lamb",
+      "canonical_lemma": "lamb",
+      "kind": "animal",
+      "definition": "A young sheep",
+      "genus_lemma": "ungulate"
+    }
+  ]
+}

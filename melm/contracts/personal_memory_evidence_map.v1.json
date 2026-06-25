@@ -1,0 +1,19 @@
+{
+  "schema_id": "melm.personal_memory_evidence_map.v1",
+  "version": "1.0.0",
+  "description": "Token-based mapping from utterance to personal memory evidence keys",
+  "rules": [
+    {"condition": "child_memory + school", "result": "facts.child_school"},
+    {"condition": "child_memory + age/old", "result": "facts.child_age"},
+    {"condition": "child_memory + name/called", "result": "facts.child_name"},
+    {"condition": "child_memory", "result": "child_memory"},
+    {"condition": "favorite + color", "result": "facts.favorite_color"},
+    {"condition": "where + i + live/lived", "result": "profile.location"},
+    {"condition": "my + age", "result": "profile.age"},
+    {"condition": "health + goal/goals", "result": "health_goals"},
+    {"condition": "routine_memory", "result": "routine_memory"},
+    {"condition": "household_memory", "result": "household_memory"},
+    {"condition": "mom/contact", "result": "contacts.local"},
+    {"condition": "default", "result": "user_profile"}
+  ]
+}

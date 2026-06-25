@@ -1,0 +1,10 @@
+{
+  "schema_id": "melm.lesson_keywords.v1",
+  "version": "1.0.0",
+  "description": "Keywords that map to moral lesson concepts for story planning",
+  "keywords": [
+    "patience", "kindness", "honesty", "bravery", "courage",
+    "friendship", "sharing", "gratitude", "respect", "curiosity",
+    "perseverance", "forgiveness", "generosity", "humility", "wisdom"
+  ]
+}

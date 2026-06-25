@@ -1,0 +1,218 @@
+{
+  "schema_id": "melm.storytelling_phrases.v1",
+  "version": "1.0.0",
+  "description": "Culturally-specific storytelling narrative phrases for vocabulary diversification across pipeline sub-passes.",
+  "cultures": {
+    "yoruba": {
+      "openings": [
+        "A story, a story — let it come, let it go, let it find the children who are ready to listen",
+        "In the days when animals could speak and the sky was close enough to touch",
+        "Once in the land of the Yoruba people, where the iroko tree touches the sky",
+        "It is said that long ago, before the drums fell silent, there lived"
+      ],
+      "transitions": [
+        "Now, what of our brave one?",
+        "And so it happened that",
+        "Not far from that place, where the path bends towards the river",
+        "As the sun made its journey across the sky",
+        "Meanwhile, in a place where the baobab casts its long shadow"
+      ],
+      "closings": [
+        "This is my story which I have told. If it is sweet, take it; if it is not sweet, take it anyway",
+        "And that is why the world remembers this tale to this very day",
+        "The drum has fallen silent, and the story is done",
+        "And so the child returned home, carrying the story like a precious kola nut"
+      ],
+      "nature_descriptions": [
+        "the harmattan wind carried the scent of distant fires and dry earth",
+        "the iroko tree stood ancient and wise, its roots gripping the red earth like the fingers of time itself",
+        "the river sparkled like a thousand cowrie shells under the afternoon sun",
+        "the mango trees bent low with fruit, heavy and golden in the evening light",
+        "the sky painted itself in shades of orange and purple as the sun bid the day farewell"
+      ],
+      "character_descriptions": [
+        "with eyes that held the wisdom of the elders and feet that danced like the wind",
+        "brave as the leopard and clever as the tortoise",
+        "whose laughter sounded like the first rain after the dry season",
+        "small of body but great of heart, like the cricket that silences the night"
+      ],
+      "exaggerations": [
+        "so tall that the birds built their nests in her hair before they reached the top",
+        "so fast that the wind itself grew tired trying to keep up",
+        "so loud that the ancestors stirred in their sleep and smiled",
+        "so heavy that the earth groaned and the rivers changed their course",
+        "so bright that the sun hid behind a cloud, ashamed of its own light"
+      ],
+      "emotional_beats": [
+        "her heart beat like a talking drum announcing news of great importance",
+        "fear wrapped around him like the cold mist of the harmattan morning",
+        "wonder bloomed in her chest like the first flower after the rains",
+        "relief washed over them like the cool waters of the Ogun river",
+        "courage rose in his spirit like the sun climbing over the hills"
+      ],
+      "moral_framings": [
+        "and the elders say that this is why the greedy always end with empty hands",
+        "the tortoise taught us that day that cleverness without kindness is like a drum with no song",
+        "and from that day forward, the people remembered that the smallest among them could hold the greatest wisdom",
+        "this is the story they tell when a child asks why we must share with others"
+      ]
+    },
+    "western": {
+      "openings": [
+        "Once upon a time, in a land of rolling hills and whispering trees",
+        "Long, long ago, when the world was still young and magic walked the earth",
+        "In a faraway kingdom, nestled between the mountains and the sea",
+        "There once lived a child whose heart was bigger than the whole wide world"
+      ],
+      "transitions": [
+        "Meanwhile, not far away",
+        "As the days turned into weeks and the weeks into months",
+        "Little did they know that",
+        "And so, with courage in their heart, they",
+        "The road ahead was long, but our hero did not falter"
+      ],
+      "closings": [
+        "And they lived happily ever after, for that is what brave hearts deserve",
+        "The sun set on that adventure, but the memory of it never faded",
+        "And that is the end of the tale — or is it the beginning of another?",
+        "They returned home wiser and stronger, and the world was a little brighter for it"
+      ],
+      "nature_descriptions": [
+        "the ancient forest stood dark and mysterious, its branches weaving stories in the twilight",
+        "a gentle stream chuckled over smooth pebbles, carrying secrets to the sea",
+        "the meadow stretched like a golden carpet beneath the endless blue sky",
+        "the mountains rose like sleeping giants, their peaks kissing the clouds",
+        "moonlight painted silver paths across the still水面 of the lake"
+      ],
+      "character_descriptions": [
+        "with a heart full of courage and pockets full of dreams",
+        "curious as a kitten and stubborn as an old mule",
+        "whose smile could brighten the darkest dungeon",
+        "brave enough to face a dragon and kind enough to offer it tea"
+      ],
+      "exaggerations": [
+        "so tall that clouds got tangled in their hair",
+        "so fast that shadows couldn't keep up",
+        "so loud that the mountains echoed for a thousand years",
+        "so heavy that the ground itself decided to move out of the way",
+        "so sharp that it could cut a sunbeam in two"
+      ],
+      "emotional_beats": [
+        "her heart raced like a wild stallion across an open plain",
+        "fear crept into his bones like the chill of a winter morning",
+        "wonder spread through her like warm honey on a cold day",
+        "a wave of relief washed over him, gentle as a summer breeze",
+        "hope flickered in her chest like a candle in the dark"
+      ],
+      "moral_framings": [
+        "and that is the lesson the old storyteller passed down through the ages",
+        "for the greatest treasure is not gold, but a kind and loyal heart",
+        "and so it was proven that even the smallest person can change the world",
+        "they learned that day that true strength lies not in might, but in mercy"
+      ]
+    },
+    "swahili": {
+      "openings": [
+        "Hadithi, hadithi! Hadithi njoo! Let the story come dancing on the wind",
+        "In the days when the Indian Ocean whispered secrets to the shores of Kilwa",
+        "Once upon a time, beneath the shade of the mighty baobab tree",
+        "Paukwa! Pakawa! Long ago, when the world was still being woven"
+      ],
+      "transitions": [
+        "And so the tale continues, across the savannah and beyond",
+        "Now hear what befell our hero under the African sun",
+        "The path stretched onward, through lands where lions roam and elephants remember",
+        "And it came to pass that"
+      ],
+      "closings": [
+        "The story ends here, but the wisdom it carries walks with you forever",
+        "And that is how the matter was settled, under the watchful eyes of Kilimanjaro",
+        "The tale is finished, go in peace, and may your own story be a good one",
+        "Hadithi imekwisha, the tale has reached its home"
+      ],
+      "nature_descriptions": [
+        "the savannah stretched golden and endless, where acacia trees stood like solitary sentinels",
+        "the great river flowed slow and mighty, home to hippo and crocodile and ancient spirits",
+        "the baobab tree stood twisted and wise, older than the oldest grandmother's grandmother",
+        "the sky burned orange and crimson as the sun slipped behind the Serengeti",
+        "mango trees shaded the red earth path, their fruit sweet as kindness itself"
+      ],
+      "character_descriptions": [
+        "with feet that knew the rhythm of the earth and hands that could weave a basket from grass",
+        "clever as the hare who outruns the lion with nothing but wit",
+        "whose voice carried like the song of the morning bird across the valley",
+        "patient as the fisher who waits all day for the great Nile perch"
+      ],
+      "exaggerations": [
+        "so tall they had to bend down to let the clouds pass by",
+        "so fast they could race the wind and win by a mile",
+        "so strong they once lifted a baobab tree to shade a village",
+        "so loud that the mountains of Kilimanjaro trembled and replied"
+      ],
+      "emotional_beats": [
+        "fear gripped her heart like the jaws of a crocodile",
+        "joy spread through the village like news of the first rain",
+        "courage stirred in his chest like the drum that calls warriors to dance",
+        "wonder filled her eyes as wide as the Serengeti sky",
+        "hope bloomed in their hearts like the desert after rain"
+      ],
+      "moral_framings": [
+        "and the elders nodded, for they had seen this truth a thousand times",
+        "the hare taught us that wisdom is sharper than the lion's claw",
+        "and from that day, the people knew that greed is a fire that burns its own house",
+        "this is the story the grandmothers tell, and grandmothers never lie"
+      ]
+    },
+    "igbo": {
+      "openings": [
+        "Nne, nne, let me tell you a story, a tale from the days when the yam harvest was plentiful",
+        "In the time when the tortoise still had a smooth shell and the sky was low enough to touch",
+        "Once in the land of the Igbo people, where the oil bean tree grows tall and the elders speak in proverbs",
+        "It happened long ago, when the world was young and every animal knew its name"
+      ],
+      "transitions": [
+        "And so the matter unfolded, like a tale woven on the loom of fate",
+        "Now, if you are listening, let me tell you what happened next",
+        "The sun rose and set, and our hero walked the path that lay before them",
+        "As the elders would say, the chicken that walks early finds the best grains"
+      ],
+      "closings": [
+        "And that is the end of the tale, may it stay with you like a good harvest memory",
+        "The story has returned to the earth from which it came, but its lesson remains",
+        "This is what I heard, and what I have told you. If it is good, keep it in your heart",
+        "I have finished my story, as the weaver finishes his cloth"
+      ],
+      "nature_descriptions": [
+        "the oil bean tree spread its branches wide, sheltering the village market below",
+        "the red earth road wound through the village like a python through the grass",
+        "the rain came suddenly, drumming on the thatched roofs like a thousand tiny palms",
+        "the moon hung low and full, turning the village paths to silver",
+        "the yam field stretched green and hopeful under the caring hands of the farmers"
+      ],
+      "character_descriptions": [
+        "with a spirit as strong as the iroko tree and a smile warm as the morning sun",
+        "tortoise, slow of foot but quick of mind, carrying wisdom in his cracked shell",
+        "whose footsteps announced them like the talking drum before the festival",
+        "patient as the farmer who waits for the rains, wise as the elder who speaks in proverbs"
+      ],
+      "exaggerations": [
+        "so tall they had to sit down to let the birds fly past",
+        "so clever that the tortoise himself asked for advice",
+        "so heavy with yams that the earth itself groaned in gratitude",
+        "so swift that the deer stopped racing, knowing it was beaten"
+      ],
+      "emotional_beats": [
+        "fear entered her heart like a cold hand gripping the throat of a drinking gourd",
+        "joy erupted in the village like the sound of a thousand udu drums",
+        "hope kindled in his chest like the first spark of the cooking fire",
+        "sorrow wrapped around her like the mist over the valley at dawn"
+      ],
+      "moral_framings": [
+        "as the elders say, a child who does not listen to the father's advice will hear the mother's lament",
+        "the tortoise taught us that day that pride is the heaviest load a man can carry",
+        "and the village learned that wisdom does not live in the biggest house, but in the humblest heart",
+        "this is why the Igbo say that the hand that gives is the hand that receives"
+      ]
+    }
+  }
+}

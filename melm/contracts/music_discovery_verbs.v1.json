@@ -1,0 +1,7 @@
+{
+  "schema_id": "melm.music_discovery_verbs.v1",
+  "version": "1.0.0",
+  "description": "Verb set for detecting music discovery requests",
+  "discovery_verbs": ["find", "search", "download", "look", "get", "discover"],
+  "music_tokens": ["music", "song", "tune", "audio", "songs"]
+}

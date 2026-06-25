@@ -1,0 +1,13 @@
+{
+  "schema_id": "melm.sentience_map.v1",
+  "sentience_map": {
+    "biological_body": true,
+    "person": true,
+    "autonomous_agent": true,
+    "organization": false,
+    "object": false,
+    "concept": false,
+    "place": false,
+    "event": false
+  }
+}

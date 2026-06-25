@@ -1,0 +1,48 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "melm.causal_cues.v1",
+  "schema_id": "melm.causal_cues.v1",
+  "version": "1.0.0",
+  "description": "Causal reasoning cue lemmas with type, direction, language, and confidence.",
+  "cues": [
+    {
+      "lemma": "why",
+      "cue_type": "causal_explanation",
+      "direction": "effect_to_cause",
+      "language": "en",
+      "confidence": 0.9,
+      "description": "Asks for explanation ('Why is X?')",
+      "extract": "effect_state"
+    },
+    {
+      "lemma": "if",
+      "cue_type": "causal_prediction",
+      "direction": "cause_to_effect",
+      "language": "en",
+      "confidence": 0.85,
+      "description": "Asks for prediction ('What if X?')",
+      "extract": "cause_verb",
+      "co_cue_lemmas": ["happens", "happen"]
+    },
+    {
+      "lemma": "what",
+      "cue_type": "causal_explanation",
+      "direction": "effect_to_cause",
+      "language": "en",
+      "confidence": 0.5,
+      "description": "Baudy causal what-question ('What makes X Y?')",
+      "extract": "effect_state",
+      "co_cue_lemmas": ["cause", "make", "lead", "result"]
+    },
+    {
+      "lemma": "how",
+      "cue_type": "causal_explanation",
+      "direction": "cause_to_effect",
+      "language": "en",
+      "confidence": 0.4,
+      "description": "Broad how-question with causal intent ('How does X cause Y?')",
+      "extract": "effect_state",
+      "co_cue_lemmas": ["cause", "lead", "result", "affect"]
+    }
+  ]
+}

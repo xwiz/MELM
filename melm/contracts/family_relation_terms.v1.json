@@ -1,0 +1,14 @@
+{
+  "schema_id": "melm.family_relation_terms.v1",
+  "version": "1.0.0",
+  "description": "Family relation tokens used for profile attribute detection and child memory routing",
+  "terms": [
+    "child", "children", "son", "daughter", "kid", "kids", "baby",
+    "family", "household", "wife", "husband",
+    "mom", "dad", "mother", "father",
+    "mothers", "fathers", "parents", "parent",
+    "caregiver", "grandma", "grandpa", "aunt", "uncle",
+    "sister", "brother",
+    "childs", "kids", "sons", "daughters"
+  ]
+}

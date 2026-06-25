@@ -1,0 +1,8 @@
+{
+  "schema_id": "melm.consent_revocation_response.v1",
+  "version": "1.0.0",
+  "description": "Synthesis answer template for consent revocation",
+  "answer": "Done. I removed that remembered fact from active local memory. I will not use it in future answers unless you tell me again.",
+  "evidence_key": "local_privacy_policy.consent_revocation",
+  "evidence_text": "revoked facts are removed from active memory"
+}

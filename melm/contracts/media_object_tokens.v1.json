@@ -1,0 +1,16 @@
+{
+  "schema_id": "melm.media_object_tokens.v1",
+  "version": "1.0.0",
+  "description": "Token→object mapping for media playback requests",
+  "direct_tokens": {
+    "song": "song",
+    "music": "music",
+    "radio": "radio",
+    "lofi": "lofi",
+    "audio": "audio",
+    "track": "track"
+  },
+  "fallback_tokens": ["piano", "sound", "sounds"],
+  "fallback_object": "music",
+  "default_object": "media"
+}

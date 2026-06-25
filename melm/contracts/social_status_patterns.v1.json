@@ -1,0 +1,18 @@
+{
+  "schema_id": "melm.social_status_patterns.v1",
+  "version": "1.0.0",
+  "description": "Text patterns for detecting social status questions",
+  "patterns": [
+    "how are you",
+    "how's it going",
+    "how do you feel",
+    "how are you doing",
+    "how you doing"
+  ],
+  "negative_rules": {
+    "you doing": {
+      "condition": "not startswith 'how'",
+      "reason": "avoid false positive with 'what are you doing'"
+    }
+  }
+}

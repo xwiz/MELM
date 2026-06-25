@@ -1,0 +1,23 @@
+{
+  "schema_id": "melm.frame_local_sources.v1",
+  "version": "1.0.0",
+  "description": "Maps each assistant intent to its available local evidence sources for frame capabilities",
+  "sources": {
+    "assistant_identity": ["self_model"],
+    "assistant_status": ["event_ledger", "self_state"],
+    "story": ["story_inventory"],
+    "weather": ["weekly_weather_cache"],
+    "common_sense_safety": ["local_safety_policy"],
+    "media_playback": ["media_library", "local_action_executor"],
+    "health_advice": ["local_health_policy", "profile_health_goals"],
+    "personal_memory": ["user_facts", "preferences"],
+    "autobiographical_memory": ["events", "memory_digest"],
+    "meal_suggestion": ["food_inventory", "weekly_weather_cache"],
+    "social_contact": ["trusted_contacts", "local_action_executor"],
+    "social_greeting": ["self_model"],
+    "assistant_behavior": ["self_model"],
+    "personal_goal_advice": [],
+    "open_domain": [],
+    "unknown": []
+  }
+}

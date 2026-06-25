@@ -1,0 +1,29 @@
+{
+  "schema_id": "melm.private_cloud_evidence_map.v1",
+  "version": "1.0.0",
+  "default_key": "profile.local_private_context",
+  "evidence_groups": [
+    {"key": "facts.favorite_color", "match": "all", "tokens": ["favorite", "color"]},
+    {"key": "contacts.local", "match": "any", "tokens": ["mom", "dad", "caregiver", "contact"], "skip_if_trusted_contact": true},
+    {"key": "facts.job", "match": "any", "tokens": ["job"]},
+    {"key": "facts.trip", "match": "any", "tokens": ["trip"]},
+    {"key": "facts.morning_routine", "match": "any", "tokens": ["routine"]},
+    {"key": "facts.accessibility", "match": "any", "tokens": ["accessibility"]},
+    {"key": "preferences.local", "match": "any", "tokens": ["preference"]},
+    {"key": "health_goals", "match": "any_group", "groups": [["health", "goal"], ["health", "goals"]]},
+    {"key": "profile.age", "match": "all", "tokens": ["my", "age"], "exclude_child": true},
+    {"key": "facts.school", "match": "any", "tokens": ["school"], "exclude_child": true},
+    {"key": "facts.household_context", "match": "any_or_all", "any": ["household", "family"], "all": ["shared", "device"]},
+    {"key": "facts.public_profile", "match": "all", "tokens": ["public", "profile"]},
+    {"key": "profile.location", "match": "any_or_all", "any": ["location"], "all": ["where", "i", "live"], "exclude_child": true},
+    {"key": "facts.local_profile", "match": "all_with_any", "anchor": "about", "any": ["me", "myself"]},
+    {"key": "events.local_conversation", "match": "any_or_all", "any": ["conversation"], "all": ["talked", "about"]}
+  ],
+  "child_triggers": ["son", "daughter", "kid"],
+  "child_groups": [
+    {"key": "facts.child_age", "match": "any", "tokens": ["age", "old", "child", "kid"]},
+    {"key": "facts.child_school", "match": "any", "tokens": ["school", "son", "daughter"]},
+    {"key": "facts.child_location", "match": "any", "tokens": ["location", "where", "lives", "live"]},
+    {"key": "facts.child_name", "match": "any", "tokens": ["name", "called"]}
+  ]
+}

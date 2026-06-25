@@ -1,0 +1,32 @@
+{
+  "schema_id": "melm.midi_music_mapping.v1",
+  "version": "1.0.0",
+  "description": "Keyword→MusicDescription parameter mapping for music generation",
+  "mappings": [
+    {
+      "keywords": ["calm", "relaxing"],
+      "genre": "classical",
+      "mood": "calm",
+      "tempo_bpm": 80
+    },
+    {
+      "keywords": ["happy", "upbeat"],
+      "genre": "waltz",
+      "mood": "happy",
+      "tempo_bpm": 130
+    },
+    {
+      "keywords": ["jazz", "blues"],
+      "genre": "jazz",
+      "mood": "calm",
+      "tempo_bpm": 120
+    },
+    {
+      "keywords": ["sad", "melancholy"],
+      "genre": "classical",
+      "mood": "sad",
+      "tempo_bpm": 60,
+      "mode": "minor"
+    }
+  ]
+}

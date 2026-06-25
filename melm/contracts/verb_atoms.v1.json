@@ -1,0 +1,2346 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "melm.verb_atoms.v1",
+  "schema_id": "melm.verb_atoms.v1",
+  "version": "1.0.0",
+  "entities": [
+    {
+      "entity_id": "verb__abandon",
+      "label": "Abandon",
+      "canonical_lemma": "abandon",
+      "semantic_class_id": "verb.contact",
+      "kind": "action",
+      "definition": "A abandon action.",
+      "slots": {
+        "patient_states": {
+          "physical": [
+            "deprived"
+          ],
+          "emotional": [
+            "abandoned",
+            "sad",
+            "lonely",
+            "betrayed",
+            "worthless"
+          ],
+          "mental": [
+            "confused",
+            "traumatized"
+          ]
+        },
+        "subject_mental": [
+          "negligent_intent",
+          "self_interest"
+        ],
+        "subject_emotional": [
+          "indifference"
+        ],
+        "patient_types": [
+          "person",
+          "living_thing.animal",
+          "group"
+        ],
+        "harm_severity": 0.4
+      }
+    },
+    {
+      "entity_id": "verb__abuse",
+      "label": "Abuse",
+      "canonical_lemma": "abuse",
+      "semantic_class_id": "verb.contact",
+      "kind": "action",
+      "definition": "A abuse action.",
+      "slots": {
+        "patient_states": {
+          "physical": [
+            "hurt",
+            "injured",
+            "battered",
+            "harmed"
+          ],
+          "emotional": [
+            "humiliated",
+            "terrified",
+            "betrayed",
+            "trapped",
+            "worthless"
+          ],
+          "mental": [
+            "traumatized",
+            "brainwashed",
+            "confused"
+          ]
+        },
+        "subject_mental": [
+          "intent_to_harm",
+          "power_over_target"
+        ],
+        "subject_emotional": [
+          "anger",
+          "malice",
+          "cruelty"
+        ],
+        "patient_types": [
+          "person",
+          "living_thing.animal"
+        ],
+        "harm_severity": 0.6
+      }
+    },
+    {
+      "entity_id": "verb__accuse",
+      "label": "Accuse",
+      "canonical_lemma": "accuse",
+      "semantic_class_id": "verb.contact",
+      "kind": "action",
+      "definition": "A accuse action.",
+      "slots": {
+        "patient_states": {
+          "physical": [],
+          "emotional": [
+            "angry",
+            "hurt",
+            "humiliated",
+            "defensive"
+          ],
+          "mental": [
+            "confused"
+          ]
+        },
+        "subject_mental": [
+          "target_identified"
+        ],
+        "subject_emotional": [
+          "anger",
+          "suspicion"
+        ],
+        "patient_types": [
+          "person",
+          "group"
+        ]
+      }
+    },
+    {
+      "entity_id": "verb__assault",
+      "label": "Assault",
+      "canonical_lemma": "assault",
+      "semantic_class_id": "verb.contact",
+      "kind": "action",
+      "definition": "A assault action.",
+      "slots": {
+        "patient_states": {
+          "physical": [
+            "hurt",
+            "injured",
+            "battered",
+            "in_pain",
+            "traumatized"
+          ],
+          "emotional": [
+            "terrified",
+            "humiliated",
+            "angry"
+          ],
+          "mental": [
+            "traumatized",
+            "hypervigilant"
+          ]
+        },
+        "subject_mental": [
+          "intent_to_harm",
+          "target_identified"
+        ],
+        "subject_emotional": [
+          "anger",
+          "malice",
+          "cruelty"
+        ],
+        "patient_types": [
+          "person",
+          "living_thing.animal"
+        ],
+        "harm_severity": 0.64
+      }
+    },
+    {
+      "entity_id": "verb__assist",
+      "label": "Assist",
+      "canonical_lemma": "assist",
+      "semantic_class_id": "verb.contact",
+      "kind": "action",
+      "definition": "A assist action.",
+      "slots": {
+        "patient_states": {
+          "physical": [
+            "aided",
+            "relieved"
+          ],
+          "emotional": [
+            "grateful",
+            "supported",
+            "encouraged"
+          ],
+          "mental": [
+            "relieved"
+          ]
+        },
+        "subject_mental": [
+          "benevolent_intent"
+        ],
+        "subject_emotional": [
+          "care"
+        ],
+        "patient_types": [
+          "person",
+          "group"
+        ]
+      }
+    },
+    {
+      "entity_id": "verb__batter",
+      "label": "Batter",
+      "canonical_lemma": "batter",
+      "semantic_class_id": "verb.contact",
+      "kind": "action",
+      "definition": "A batter action.",
+      "slots": {
+        "patient_states": {
+          "physical": [
+            "hurt",
+            "injured",
+            "bruised",
+            "battered",
+            "in_pain",
+            "wounded"
+          ],
+          "emotional": [
+            "terrified",
+            "humiliated",
+            "angry"
+          ],
+          "mental": [
+            "traumatized"
+          ]
+        },
+        "subject_mental": [
+          "intent_to_harm",
+          "target_identified"
+        ],
+        "subject_emotional": [
+          "anger",
+          "cruelty"
+        ],
+        "patient_types": [
+          "person",
+          "living_thing.animal"
+        ],
+        "harm_severity": 0.5499999999999999
+      }
+    },
+    {
+      "entity_id": "verb__betray",
+      "label": "Betray",
+      "canonical_lemma": "betray",
+      "semantic_class_id": "verb.contact",
+      "kind": "action",
+      "definition": "A betray action.",
+      "slots": {
+        "patient_states": {
+          "physical": [],
+          "emotional": [
+            "betrayed",
+            "hurt",
+            "angry",
+            "humiliated",
+            "sad"
+          ],
+          "mental": [
+            "confused",
+            "traumatized",
+            "distrustful"
+          ]
+        },
+        "subject_mental": [
+          "deceptive_intent",
+          "self_interest"
+        ],
+        "subject_emotional": [
+          "indifference",
+          "malice"
+        ],
+        "patient_types": [
+          "person",
+          "group"
+        ]
+      }
+    },
+    {
+      "entity_id": "verb__blame",
+      "label": "Blame",
+      "canonical_lemma": "blame",
+      "semantic_class_id": "verb.contact",
+      "kind": "action",
+      "definition": "A blame action.",
+      "slots": {
+        "patient_states": {
+          "physical": [],
+          "emotional": [
+            "hurt",
+            "angry",
+            "humiliated",
+            "ashamed",
+            "defensive"
+          ],
+          "mental": [
+            "confused"
+          ]
+        },
+        "subject_mental": [
+          "target_identified"
+        ],
+        "subject_emotional": [
+          "anger",
+          "frustration"
+        ],
+        "patient_types": [
+          "person",
+          "group"
+        ]
+      }
+    },
+    {
+      "entity_id": "verb__bully",
+      "label": "Bully",
+      "canonical_lemma": "bully",
+      "semantic_class_id": "verb.contact",
+      "kind": "action",
+      "definition": "A bully action.",
+      "slots": {
+        "patient_states": {
+          "physical": [
+            "hurt",
+            "injured"
+          ],
+          "emotional": [
+            "humiliated",
+            "intimidated",
+            "afraid",
+            "angry",
+            "worthless"
+          ],
+          "mental": [
+            "traumatized",
+            "hypervigilant",
+            "confused"
+          ]
+        },
+        "subject_mental": [
+          "intent_to_harm",
+          "power_over_target"
+        ],
+        "subject_emotional": [
+          "malice",
+          "cruelty"
+        ],
+        "patient_types": [
+          "person"
+        ],
+        "harm_severity": 0.6
+      }
+    },
+    {
+      "entity_id": "verb__care",
+      "label": "Care",
+      "canonical_lemma": "care",
+      "semantic_class_id": "verb.social",
+      "kind": "action",
+      "definition": "A care action.",
+      "slots": {
+        "patient_states": {
+          "physical": [
+            "cared_for",
+            "nourished",
+            "healthy"
+          ],
+          "emotional": [
+            "loved",
+            "valued",
+            "safe",
+            "supported"
+          ],
+          "mental": [
+            "calm"
+          ]
+        },
+        "subject_mental": [
+          "benevolent_intent",
+          "nurturing_intent"
+        ],
+        "subject_emotional": [
+          "compassion",
+          "care",
+          "warmth"
+        ],
+        "patient_types": [
+          "person",
+          "living_thing.animal",
+          "living_thing"
+        ]
+      }
+    },
+    {
+      "entity_id": "verb__cheat",
+      "label": "Cheat",
+      "canonical_lemma": "cheat",
+      "semantic_class_id": "verb.contact",
+      "kind": "action",
+      "definition": "A cheat action.",
+      "slots": {
+        "patient_states": {
+          "physical": [],
+          "emotional": [
+            "betrayed",
+            "hurt",
+            "angry",
+            "humiliated"
+          ],
+          "mental": [
+            "confused",
+            "distrustful"
+          ]
+        },
+        "subject_mental": [
+          "deceptive_intent",
+          "self_interest"
+        ],
+        "subject_emotional": [
+          "indifference"
+        ],
+        "patient_types": [
+          "person",
+          "group"
+        ]
+      }
+    },
+    {
+      "entity_id": "verb__cheer",
+      "label": "Cheer",
+      "canonical_lemma": "cheer",
+      "semantic_class_id": "verb.contact",
+      "kind": "action",
+      "definition": "A cheer action.",
+      "slots": {
+        "patient_states": {
+          "physical": [
+            "energetic"
+          ],
+          "emotional": [
+            "happy",
+            "cheerful",
+            "encouraged",
+            "hopeful",
+            "uplifted"
+          ],
+          "mental": [
+            "optimistic"
+          ]
+        },
+        "subject_mental": [
+          "benevolent_intent"
+        ],
+        "subject_emotional": [
+          "warmth",
+          "joy"
+        ],
+        "patient_types": [
+          "person",
+          "group"
+        ]
+      }
+    },
+    {
+      "entity_id": "verb__clothe",
+      "label": "Clothe",
+      "canonical_lemma": "clothe",
+      "semantic_class_id": "verb.contact",
+      "kind": "action",
+      "definition": "A clothe action.",
+      "slots": {
+        "patient_states": {
+          "physical": [
+            "clothed",
+            "covered",
+            "protected",
+            "warm"
+          ],
+          "emotional": [
+            "safe",
+            "cared_for"
+          ],
+          "mental": []
+        },
+        "subject_mental": [
+          "benevolent_intent",
+          "nurturing_intent"
+        ],
+        "subject_emotional": [
+          "care",
+          "compassion"
+        ],
+        "patient_types": [
+          "person",
+          "living_thing.animal"
+        ]
+      }
+    },
+    {
+      "entity_id": "verb__coerce",
+      "label": "Coerce",
+      "canonical_lemma": "coerce",
+      "semantic_class_id": "verb.contact",
+      "kind": "action",
+      "definition": "A coerce action.",
+      "slots": {
+        "patient_states": {
+          "physical": [
+            "confined",
+            "restrained"
+          ],
+          "emotional": [
+            "intimidated",
+            "terrified",
+            "anxious",
+            "trapped"
+          ],
+          "mental": [
+            "traumatized"
+          ]
+        },
+        "subject_mental": [
+          "coercive_intent",
+          "power_over_target"
+        ],
+        "subject_emotional": [
+          "anger",
+          "malice"
+        ],
+        "patient_types": [
+          "person",
+          "group"
+        ],
+        "harm_severity": 0.5
+      }
+    },
+    {
+      "entity_id": "verb__comfort",
+      "label": "Comfort",
+      "canonical_lemma": "comfort",
+      "semantic_class_id": "verb.contact",
+      "kind": "action",
+      "definition": "A comfort action.",
+      "slots": {
+        "patient_states": {
+          "physical": [
+            "calm",
+            "relaxed"
+          ],
+          "emotional": [
+            "comforted",
+            "safe",
+            "supported",
+            "loved"
+          ],
+          "mental": [
+            "calm",
+            "relieved"
+          ]
+        },
+        "subject_mental": [
+          "benevolent_intent"
+        ],
+        "subject_emotional": [
+          "compassion",
+          "care",
+          "warmth"
+        ],
+        "patient_types": [
+          "person",
+          "living_thing.animal"
+        ]
+      }
+    },
+    {
+      "entity_id": "verb__deceive",
+      "label": "Deceive",
+      "canonical_lemma": "deceive",
+      "semantic_class_id": "verb.contact",
+      "kind": "action",
+      "definition": "A deceive action.",
+      "slots": {
+        "patient_states": {
+          "physical": [],
+          "emotional": [
+            "betrayed",
+            "hurt",
+            "humiliated",
+            "angry"
+          ],
+          "mental": [
+            "confused",
+            "distrustful",
+            "manipulated"
+          ]
+        },
+        "subject_mental": [
+          "deceptive_intent",
+          "self_interest"
+        ],
+        "subject_emotional": [
+          "indifference"
+        ],
+        "patient_types": [
+          "person",
+          "group"
+        ]
+      }
+    },
+    {
+      "entity_id": "verb__defend",
+      "label": "Defend",
+      "canonical_lemma": "defend",
+      "semantic_class_id": "verb.contact",
+      "kind": "action",
+      "definition": "A defend action.",
+      "slots": {
+        "patient_states": {
+          "physical": [
+            "safe",
+            "protected"
+          ],
+          "emotional": [
+            "safe",
+            "supported",
+            "grateful"
+          ],
+          "mental": [
+            "relieved"
+          ]
+        },
+        "subject_mental": [
+          "protective_intent"
+        ],
+        "subject_emotional": [
+          "care",
+          "compassion"
+        ],
+        "patient_types": [
+          "person",
+          "group",
+          "living_thing.animal"
+        ]
+      }
+    },
+    {
+      "entity_id": "verb__dress",
+      "label": "Dress",
+      "canonical_lemma": "dress",
+      "semantic_class_id": "verb.body",
+      "kind": "action",
+      "definition": "A dress action.",
+      "slots": {
+        "patient_states": {
+          "physical": [
+            "clothed",
+            "covered",
+            "protected"
+          ],
+          "emotional": [],
+          "mental": []
+        },
+        "subject_mental": [
+          "self_care_intent",
+          "benevolent_intent"
+        ],
+        "patient_types": [
+          "person",
+          "living_thing.animal"
+        ]
+      }
+    },
+    {
+      "entity_id": "verb__encourage",
+      "label": "Encourage",
+      "canonical_lemma": "encourage",
+      "semantic_class_id": "verb.contact",
+      "kind": "action",
+      "definition": "A encourage action.",
+      "slots": {
+        "patient_states": {
+          "physical": [
+            "energetic"
+          ],
+          "emotional": [
+            "encouraged",
+            "hopeful",
+            "confident",
+            "supported",
+            "motivated"
+          ],
+          "mental": [
+            "motivated",
+            "optimistic",
+            "confident"
+          ]
+        },
+        "subject_mental": [
+          "benevolent_intent"
+        ],
+        "subject_emotional": [
+          "care",
+          "warmth"
+        ],
+        "patient_types": [
+          "person",
+          "group"
+        ]
+      }
+    },
+    {
+      "entity_id": "verb__exploit",
+      "label": "Exploit",
+      "canonical_lemma": "exploit",
+      "semantic_class_id": "verb.contact",
+      "kind": "action",
+      "definition": "A exploit action.",
+      "slots": {
+        "patient_states": {
+          "physical": [
+            "deprived",
+            "harmed"
+          ],
+          "emotional": [
+            "betrayed",
+            "humiliated",
+            "worthless",
+            "trapped"
+          ],
+          "mental": [
+            "confused",
+            "manipulated"
+          ]
+        },
+        "subject_mental": [
+          "deceptive_intent",
+          "self_interest"
+        ],
+        "subject_emotional": [
+          "indifference"
+        ],
+        "patient_types": [
+          "person",
+          "group",
+          "living_thing.animal",
+          "living_thing"
+        ],
+        "harm_severity": 0.5
+      }
+    },
+    {
+      "entity_id": "verb__harass",
+      "label": "Harass",
+      "canonical_lemma": "harass",
+      "semantic_class_id": "verb.contact",
+      "kind": "action",
+      "definition": "A harass action.",
+      "slots": {
+        "patient_states": {
+          "physical": [
+            "uncomfortable"
+          ],
+          "emotional": [
+            "intimidated",
+            "afraid",
+            "humiliated",
+            "angry",
+            "anxious"
+          ],
+          "mental": [
+            "distracted",
+            "traumatized",
+            "hypervigilant"
+          ]
+        },
+        "subject_mental": [
+          "intent_to_harm",
+          "power_over_target"
+        ],
+        "subject_emotional": [
+          "malice",
+          "cruelty"
+        ],
+        "patient_types": [
+          "person",
+          "group"
+        ],
+        "harm_severity": 0.1
+      }
+    },
+    {
+      "entity_id": "verb__harm",
+      "label": "Harm",
+      "canonical_lemma": "harm",
+      "semantic_class_id": "verb.contact",
+      "kind": "action",
+      "definition": "A harm action.",
+      "slots": {
+        "patient_states": {
+          "physical": [
+            "hurt",
+            "injured",
+            "damaged",
+            "in_pain"
+          ],
+          "emotional": [
+            "afraid",
+            "distressed",
+            "betrayed"
+          ],
+          "mental": [
+            "confused",
+            "traumatized"
+          ]
+        },
+        "subject_mental": [
+          "intent_to_harm",
+          "reckless_disregard"
+        ],
+        "subject_emotional": [
+          "anger",
+          "malice"
+        ],
+        "patient_types": [
+          "person",
+          "living_thing.animal",
+          "living_thing"
+        ],
+        "harm_severity": 0.575
+      }
+    },
+    {
+      "entity_id": "verb__heal",
+      "label": "Heal",
+      "canonical_lemma": "heal",
+      "semantic_class_id": "verb.contact",
+      "kind": "action",
+      "definition": "A heal action.",
+      "slots": {
+        "patient_states": {
+          "physical": [
+            "healed",
+            "healthy",
+            "recovered"
+          ],
+          "emotional": [
+            "hopeful",
+            "grateful",
+            "relieved"
+          ],
+          "mental": [
+            "optimistic"
+          ]
+        },
+        "subject_mental": [
+          "benevolent_intent",
+          "healing_intent"
+        ],
+        "subject_emotional": [
+          "compassion",
+          "care"
+        ],
+        "patient_types": [
+          "person",
+          "living_thing.animal",
+          "living_thing"
+        ]
+      }
+    },
+    {
+      "entity_id": "verb__help",
+      "label": "Help",
+      "canonical_lemma": "help",
+      "semantic_class_id": "verb.social",
+      "kind": "action",
+      "definition": "A help action.",
+      "slots": {
+        "patient_states": {
+          "physical": [
+            "aided",
+            "relieved"
+          ],
+          "emotional": [
+            "grateful",
+            "supported",
+            "encouraged"
+          ],
+          "mental": [
+            "relieved"
+          ]
+        },
+        "subject_mental": [
+          "benevolent_intent"
+        ],
+        "subject_emotional": [
+          "compassion",
+          "care"
+        ],
+        "patient_types": [
+          "person",
+          "living_thing.animal",
+          "group"
+        ]
+      }
+    },
+    {
+      "entity_id": "verb__hijack",
+      "label": "Hijack",
+      "canonical_lemma": "hijack",
+      "semantic_class_id": "verb.contact",
+      "kind": "action",
+      "definition": "A hijack action.",
+      "slots": {
+        "patient_states": {
+          "physical": [
+            "confined",
+            "restrained"
+          ],
+          "emotional": [
+            "terrified",
+            "intimidated",
+            "angry"
+          ],
+          "mental": [
+            "traumatized",
+            "hypervigilant"
+          ]
+        },
+        "subject_mental": [
+          "coercive_intent",
+          "target_identified"
+        ],
+        "subject_emotional": [
+          "malice",
+          "cruelty"
+        ],
+        "patient_types": [
+          "person",
+          "group"
+        ],
+        "harm_severity": 0.5
+      }
+    },
+    {
+      "entity_id": "verb__hit",
+      "label": "Hit",
+      "canonical_lemma": "hit",
+      "semantic_class_id": "verb.contact",
+      "kind": "action",
+      "definition": "A hit action.",
+      "slots": {
+        "patient_states": {
+          "physical": [
+            "hurt",
+            "injured",
+            "bruised",
+            "in_pain"
+          ],
+          "emotional": [
+            "afraid",
+            "angry",
+            "humiliated"
+          ],
+          "mental": [
+            "alert",
+            "vigilant"
+          ]
+        },
+        "subject_mental": [
+          "target_identified",
+          "intent_to_harm"
+        ],
+        "subject_emotional": [
+          "anger",
+          "frustration"
+        ],
+        "patient_types": [
+          "person",
+          "living_thing.animal"
+        ],
+        "harm_severity": 0.525
+      }
+    },
+    {
+      "entity_id": "verb__hug",
+      "label": "Hug",
+      "canonical_lemma": "hug",
+      "semantic_class_id": "verb.contact",
+      "kind": "action",
+      "definition": "A hug action.",
+      "slots": {
+        "patient_states": {
+          "physical": [
+            "comforted",
+            "warm"
+          ],
+          "emotional": [
+            "loved",
+            "comforted",
+            "safe",
+            "happy"
+          ],
+          "mental": [
+            "calm"
+          ]
+        },
+        "subject_mental": [
+          "consent_or_intent"
+        ],
+        "subject_emotional": [
+          "compassion",
+          "care",
+          "warmth"
+        ],
+        "patient_types": [
+          "person",
+          "living_thing.animal"
+        ]
+      }
+    },
+    {
+      "entity_id": "verb__humiliate",
+      "label": "Humiliate",
+      "canonical_lemma": "humiliate",
+      "semantic_class_id": "verb.contact",
+      "kind": "action",
+      "definition": "A humiliate action.",
+      "slots": {
+        "patient_states": {
+          "physical": [],
+          "emotional": [
+            "humiliated",
+            "ashamed",
+            "worthless",
+            "angry",
+            "hurt"
+          ],
+          "mental": [
+            "traumatized"
+          ]
+        },
+        "subject_mental": [
+          "intent_to_harm",
+          "power_over_target"
+        ],
+        "subject_emotional": [
+          "contempt",
+          "malice"
+        ],
+        "patient_types": [
+          "person"
+        ]
+      }
+    },
+    {
+      "entity_id": "verb__hurt",
+      "label": "Hurt",
+      "canonical_lemma": "hurt",
+      "semantic_class_id": "verb.contact",
+      "kind": "action",
+      "definition": "A hurt action.",
+      "slots": {
+        "patient_states": {
+          "physical": [
+            "in_pain",
+            "hurt",
+            "injured"
+          ],
+          "emotional": [
+            "sad",
+            "distressed",
+            "betrayed",
+            "humiliated"
+          ],
+          "mental": [
+            "traumatized"
+          ]
+        },
+        "subject_mental": [
+          "intent_to_harm",
+          "target_identified"
+        ],
+        "subject_emotional": [
+          "anger",
+          "malice"
+        ],
+        "patient_types": [
+          "person",
+          "living_thing.animal"
+        ],
+        "harm_severity": 0.5666666666666667
+      }
+    },
+    {
+      "entity_id": "verb__ignore",
+      "label": "Ignore",
+      "canonical_lemma": "ignore",
+      "semantic_class_id": "verb.contact",
+      "kind": "action",
+      "definition": "A ignore action.",
+      "slots": {
+        "patient_states": {
+          "physical": [],
+          "emotional": [
+            "ignored",
+            "lonely",
+            "unimportant",
+            "sad"
+          ],
+          "mental": [
+            "confused"
+          ]
+        },
+        "subject_mental": [
+          "negligent_intent",
+          "indifference"
+        ],
+        "subject_emotional": [
+          "indifference"
+        ],
+        "patient_types": [
+          "person",
+          "group"
+        ]
+      }
+    },
+    {
+      "entity_id": "verb__injure",
+      "label": "Injure",
+      "canonical_lemma": "injure",
+      "semantic_class_id": "verb.contact",
+      "kind": "action",
+      "definition": "A injure action.",
+      "slots": {
+        "patient_states": {
+          "physical": [
+            "injured",
+            "hurt",
+            "in_pain",
+            "harmed"
+          ],
+          "emotional": [
+            "afraid",
+            "angry"
+          ],
+          "mental": [
+            "traumatized"
+          ]
+        },
+        "subject_mental": [
+          "intent_to_harm",
+          "reckless_disregard"
+        ],
+        "subject_emotional": [
+          "anger"
+        ],
+        "patient_types": [
+          "person",
+          "living_thing.animal",
+          "living_thing"
+        ],
+        "harm_severity": 0.575
+      }
+    },
+    {
+      "entity_id": "verb__insult",
+      "label": "Insult",
+      "canonical_lemma": "insult",
+      "semantic_class_id": "verb.contact",
+      "kind": "action",
+      "definition": "A insult action.",
+      "slots": {
+        "patient_states": {
+          "physical": [],
+          "emotional": [
+            "humiliated",
+            "angry",
+            "hurt",
+            "ashamed"
+          ],
+          "mental": [
+            "distracted"
+          ]
+        },
+        "subject_mental": [
+          "intent_to_harm",
+          "target_identified"
+        ],
+        "subject_emotional": [
+          "anger",
+          "contempt",
+          "malice"
+        ],
+        "patient_types": [
+          "person",
+          "group"
+        ]
+      }
+    },
+    {
+      "entity_id": "verb__intimidate",
+      "label": "Intimidate",
+      "canonical_lemma": "intimidate",
+      "semantic_class_id": "verb.contact",
+      "kind": "action",
+      "definition": "A intimidate action.",
+      "slots": {
+        "patient_states": {
+          "physical": [],
+          "emotional": [
+            "afraid",
+            "intimidated",
+            "anxious",
+            "terrified"
+          ],
+          "mental": [
+            "hypervigilant",
+            "traumatized"
+          ]
+        },
+        "subject_mental": [
+          "coercive_intent",
+          "power_over_target"
+        ],
+        "subject_emotional": [
+          "anger",
+          "malice"
+        ],
+        "patient_types": [
+          "person",
+          "group"
+        ]
+      }
+    },
+    {
+      "entity_id": "verb__kidnap",
+      "label": "Kidnap",
+      "canonical_lemma": "kidnap",
+      "semantic_class_id": "verb.contact",
+      "kind": "action",
+      "definition": "A kidnap action.",
+      "slots": {
+        "patient_states": {
+          "physical": [
+            "confined",
+            "restrained",
+            "trapped"
+          ],
+          "emotional": [
+            "terrified",
+            "intimidated",
+            "traumatized"
+          ],
+          "mental": [
+            "traumatized",
+            "hypervigilant"
+          ]
+        },
+        "subject_mental": [
+          "coercive_intent",
+          "target_identified"
+        ],
+        "subject_emotional": [
+          "malice"
+        ],
+        "patient_types": [
+          "person"
+        ],
+        "harm_severity": 0.5
+      }
+    },
+    {
+      "entity_id": "verb__kill",
+      "label": "Kill",
+      "canonical_lemma": "kill",
+      "semantic_class_id": "verb.contact",
+      "kind": "action",
+      "definition": "A kill action.",
+      "slots": {
+        "patient_states": {
+          "physical": [
+            "dead"
+          ],
+          "emotional": [],
+          "mental": []
+        },
+        "subject_mental": [
+          "intent_to_harm",
+          "target_identified"
+        ],
+        "subject_emotional": [
+          "anger",
+          "malice"
+        ],
+        "patient_types": [
+          "person",
+          "living_thing.animal",
+          "living_thing"
+        ],
+        "harm_severity": 0.9
+      }
+    },
+    {
+      "entity_id": "verb__manipulate",
+      "label": "Manipulate",
+      "canonical_lemma": "manipulate",
+      "semantic_class_id": "verb.contact",
+      "kind": "action",
+      "definition": "A manipulate action.",
+      "slots": {
+        "patient_states": {
+          "physical": [],
+          "emotional": [
+            "betrayed",
+            "humiliated",
+            "hurt"
+          ],
+          "mental": [
+            "confused",
+            "manipulated",
+            "distrustful"
+          ]
+        },
+        "subject_mental": [
+          "deceptive_intent",
+          "self_interest"
+        ],
+        "subject_emotional": [
+          "indifference"
+        ],
+        "patient_types": [
+          "person",
+          "group"
+        ]
+      }
+    },
+    {
+      "entity_id": "verb__mock",
+      "label": "Mock",
+      "canonical_lemma": "mock",
+      "semantic_class_id": "verb.contact",
+      "kind": "action",
+      "definition": "A mock action.",
+      "slots": {
+        "patient_states": {
+          "physical": [],
+          "emotional": [
+            "humiliated",
+            "hurt",
+            "ashamed",
+            "angry"
+          ],
+          "mental": [
+            "confused"
+          ]
+        },
+        "subject_mental": [
+          "intent_to_harm",
+          "target_identified"
+        ],
+        "subject_emotional": [
+          "contempt",
+          "malice"
+        ],
+        "patient_types": [
+          "person",
+          "group"
+        ]
+      }
+    },
+    {
+      "entity_id": "verb__murder",
+      "label": "Murder",
+      "canonical_lemma": "murder",
+      "semantic_class_id": "verb.contact",
+      "kind": "action",
+      "definition": "A murder action.",
+      "slots": {
+        "patient_states": {
+          "physical": [
+            "dead"
+          ],
+          "emotional": [],
+          "mental": []
+        },
+        "subject_mental": [
+          "intent_to_kill",
+          "premeditation"
+        ],
+        "subject_emotional": [
+          "malice",
+          "cruelty"
+        ],
+        "patient_types": [
+          "person"
+        ],
+        "harm_severity": 0.9
+      }
+    },
+    {
+      "entity_id": "verb__neglect",
+      "label": "Neglect",
+      "canonical_lemma": "neglect",
+      "semantic_class_id": "verb.contact",
+      "kind": "action",
+      "definition": "A neglect action.",
+      "slots": {
+        "patient_states": {
+          "physical": [
+            "deprived",
+            "harmed",
+            "unhealthy"
+          ],
+          "emotional": [
+            "abandoned",
+            "lonely",
+            "unimportant",
+            "sad"
+          ],
+          "mental": [
+            "confused"
+          ]
+        },
+        "subject_mental": [
+          "negligent_intent",
+          "indifference"
+        ],
+        "subject_emotional": [
+          "indifference"
+        ],
+        "patient_types": [
+          "person",
+          "living_thing.animal",
+          "living_thing"
+        ],
+        "harm_severity": 0.4666666666666666
+      }
+    },
+    {
+      "entity_id": "verb__nourish",
+      "label": "Nourish",
+      "canonical_lemma": "nourish",
+      "semantic_class_id": "verb.contact",
+      "kind": "action",
+      "definition": "A nourish action.",
+      "slots": {
+        "patient_states": {
+          "physical": [
+            "nourished",
+            "strengthened",
+            "healthy",
+            "cared_for"
+          ],
+          "emotional": [
+            "satisfied",
+            "safe"
+          ],
+          "mental": []
+        },
+        "subject_mental": [
+          "benevolent_intent",
+          "nurturing_intent"
+        ],
+        "subject_emotional": [
+          "care",
+          "compassion"
+        ],
+        "patient_types": [
+          "person",
+          "living_thing.animal",
+          "living_thing"
+        ]
+      }
+    },
+    {
+      "entity_id": "verb__nurture",
+      "label": "Nurture",
+      "canonical_lemma": "nurture",
+      "semantic_class_id": "verb.contact",
+      "kind": "action",
+      "definition": "A nurture action.",
+      "slots": {
+        "patient_states": {
+          "physical": [
+            "cared_for",
+            "nourished",
+            "strengthened",
+            "healthy"
+          ],
+          "emotional": [
+            "loved",
+            "valued",
+            "safe",
+            "supported"
+          ],
+          "mental": [
+            "developed",
+            "confident"
+          ]
+        },
+        "subject_mental": [
+          "nurturing_intent",
+          "benevolent_intent"
+        ],
+        "subject_emotional": [
+          "compassion",
+          "care",
+          "warmth"
+        ],
+        "patient_types": [
+          "person",
+          "living_thing.animal",
+          "living_thing"
+        ]
+      }
+    },
+    {
+      "entity_id": "verb__oppress",
+      "label": "Oppress",
+      "canonical_lemma": "oppress",
+      "semantic_class_id": "verb.contact",
+      "kind": "action",
+      "definition": "A oppress action.",
+      "slots": {
+        "patient_states": {
+          "physical": [
+            "deprived",
+            "confined"
+          ],
+          "emotional": [
+            "humiliated",
+            "terrified",
+            "angry",
+            "worthless",
+            "trapped"
+          ],
+          "mental": [
+            "traumatized"
+          ]
+        },
+        "subject_mental": [
+          "power_over_target",
+          "systemic_intent"
+        ],
+        "subject_emotional": [
+          "malice",
+          "indifference"
+        ],
+        "patient_types": [
+          "person",
+          "group"
+        ],
+        "harm_severity": 0.45
+      }
+    },
+    {
+      "entity_id": "verb__poison",
+      "label": "Poison",
+      "canonical_lemma": "poison",
+      "semantic_class_id": "verb.contact",
+      "kind": "action",
+      "definition": "A poison action.",
+      "slots": {
+        "patient_states": {
+          "physical": [
+            "sick",
+            "hurt",
+            "injured",
+            "dead",
+            "poisoned"
+          ],
+          "emotional": [
+            "afraid"
+          ],
+          "mental": [
+            "confused",
+            "traumatized"
+          ]
+        },
+        "subject_mental": [
+          "intent_to_harm",
+          "deceptive_intent"
+        ],
+        "subject_emotional": [
+          "malice"
+        ],
+        "patient_types": [
+          "person",
+          "living_thing.animal",
+          "living_thing"
+        ],
+        "harm_severity": 0.64
+      }
+    },
+    {
+      "entity_id": "verb__praise",
+      "label": "Praise",
+      "canonical_lemma": "praise",
+      "semantic_class_id": "verb.contact",
+      "kind": "action",
+      "definition": "A praise action.",
+      "slots": {
+        "patient_states": {
+          "physical": [],
+          "emotional": [
+            "appreciated",
+            "valued",
+            "proud",
+            "happy",
+            "encouraged"
+          ],
+          "mental": [
+            "motivated"
+          ]
+        },
+        "subject_mental": [
+          "benevolent_intent"
+        ],
+        "subject_emotional": [
+          "admiration",
+          "warmth"
+        ],
+        "patient_types": [
+          "person",
+          "group"
+        ]
+      }
+    },
+    {
+      "entity_id": "verb__protect",
+      "label": "Protect",
+      "canonical_lemma": "protect",
+      "semantic_class_id": "verb.social",
+      "kind": "action",
+      "definition": "A protect action.",
+      "slots": {
+        "patient_states": {
+          "physical": [
+            "safe",
+            "protected"
+          ],
+          "emotional": [
+            "safe",
+            "secure",
+            "supported",
+            "grateful"
+          ],
+          "mental": [
+            "calm",
+            "relieved"
+          ]
+        },
+        "subject_mental": [
+          "protective_intent"
+        ],
+        "subject_emotional": [
+          "care",
+          "compassion"
+        ],
+        "patient_types": [
+          "person",
+          "living_thing.animal",
+          "group",
+          "living_thing"
+        ]
+      }
+    },
+    {
+      "entity_id": "verb__rescue",
+      "label": "Rescue",
+      "canonical_lemma": "rescue",
+      "semantic_class_id": "verb.contact",
+      "kind": "action",
+      "definition": "A rescue action.",
+      "slots": {
+        "patient_states": {
+          "physical": [
+            "rescued",
+            "safe",
+            "protected"
+          ],
+          "emotional": [
+            "grateful",
+            "relieved",
+            "hopeful",
+            "loved"
+          ],
+          "mental": [
+            "relieved"
+          ]
+        },
+        "subject_mental": [
+          "protective_intent"
+        ],
+        "subject_emotional": [
+          "care",
+          "compassion",
+          "urgency"
+        ],
+        "patient_types": [
+          "person",
+          "living_thing.animal",
+          "group"
+        ]
+      }
+    },
+    {
+      "entity_id": "verb__respect",
+      "label": "Respect",
+      "canonical_lemma": "respect",
+      "semantic_class_id": "verb.contact",
+      "kind": "action",
+      "definition": "A respect action.",
+      "slots": {
+        "patient_states": {
+          "physical": [],
+          "emotional": [
+            "valued",
+            "acknowledged",
+            "respected",
+            "dignified"
+          ],
+          "mental": []
+        },
+        "subject_mental": [
+          "benevolent_intent"
+        ],
+        "subject_emotional": [
+          "admiration",
+          "care"
+        ],
+        "patient_types": [
+          "person",
+          "group"
+        ]
+      }
+    },
+    {
+      "entity_id": "verb__save",
+      "label": "Save",
+      "canonical_lemma": "save",
+      "semantic_class_id": "verb.contact",
+      "kind": "action",
+      "definition": "A save action.",
+      "slots": {
+        "patient_states": {
+          "physical": [
+            "rescued",
+            "safe",
+            "protected"
+          ],
+          "emotional": [
+            "grateful",
+            "relieved",
+            "hopeful",
+            "loved"
+          ],
+          "mental": [
+            "relieved"
+          ]
+        },
+        "subject_mental": [
+          "protective_intent"
+        ],
+        "subject_emotional": [
+          "care",
+          "compassion",
+          "urgency"
+        ],
+        "patient_types": [
+          "person",
+          "living_thing.animal",
+          "group"
+        ]
+      }
+    },
+    {
+      "entity_id": "verb__slander",
+      "label": "Slander",
+      "canonical_lemma": "slander",
+      "semantic_class_id": "verb.contact",
+      "kind": "action",
+      "definition": "A slander action.",
+      "slots": {
+        "patient_states": {
+          "physical": [],
+          "emotional": [
+            "humiliated",
+            "angry",
+            "hurt",
+            "betrayed"
+          ],
+          "mental": [
+            "distressed"
+          ]
+        },
+        "subject_mental": [
+          "deceptive_intent",
+          "intent_to_harm"
+        ],
+        "subject_emotional": [
+          "malice",
+          "contempt"
+        ],
+        "patient_types": [
+          "person",
+          "group"
+        ]
+      }
+    },
+    {
+      "entity_id": "verb__soothe",
+      "label": "Soothe",
+      "canonical_lemma": "soothe",
+      "semantic_class_id": "verb.contact",
+      "kind": "action",
+      "definition": "A soothe action.",
+      "slots": {
+        "patient_states": {
+          "physical": [
+            "calm",
+            "relaxed"
+          ],
+          "emotional": [
+            "soothed",
+            "calm",
+            "safe",
+            "comforted"
+          ],
+          "mental": [
+            "calm",
+            "relieved"
+          ]
+        },
+        "subject_mental": [
+          "benevolent_intent"
+        ],
+        "subject_emotional": [
+          "compassion",
+          "care",
+          "gentleness"
+        ],
+        "patient_types": [
+          "person",
+          "living_thing.animal"
+        ]
+      }
+    },
+    {
+      "entity_id": "verb__strengthen",
+      "label": "Strengthen",
+      "canonical_lemma": "strengthen",
+      "semantic_class_id": "verb.contact",
+      "kind": "action",
+      "definition": "A strengthen action.",
+      "slots": {
+        "patient_states": {
+          "physical": [
+            "strengthened",
+            "healthier"
+          ],
+          "emotional": [
+            "confident",
+            "encouraged"
+          ],
+          "mental": [
+            "motivated",
+            "confident"
+          ]
+        },
+        "subject_mental": [
+          "benevolent_intent"
+        ],
+        "subject_emotional": [
+          "care"
+        ],
+        "patient_types": [
+          "person",
+          "living_thing.animal",
+          "group"
+        ]
+      }
+    },
+    {
+      "entity_id": "verb__support",
+      "label": "Support",
+      "canonical_lemma": "support",
+      "semantic_class_id": "verb.contact",
+      "kind": "action",
+      "definition": "A support action.",
+      "slots": {
+        "patient_states": {
+          "physical": [
+            "aided",
+            "strengthened"
+          ],
+          "emotional": [
+            "supported",
+            "encouraged",
+            "hopeful",
+            "safe"
+          ],
+          "mental": [
+            "motivated",
+            "confident"
+          ]
+        },
+        "subject_mental": [
+          "benevolent_intent"
+        ],
+        "subject_emotional": [
+          "care",
+          "compassion"
+        ],
+        "patient_types": [
+          "person",
+          "group"
+        ]
+      }
+    },
+    {
+      "entity_id": "verb__thank",
+      "label": "Thank",
+      "canonical_lemma": "thank",
+      "semantic_class_id": "verb.social",
+      "kind": "action",
+      "definition": "A thank action.",
+      "slots": {
+        "patient_states": {
+          "physical": [],
+          "emotional": [
+            "appreciated",
+            "valued",
+            "acknowledged",
+            "happy"
+          ],
+          "mental": []
+        },
+        "subject_mental": [
+          "grateful_intent"
+        ],
+        "subject_emotional": [
+          "gratitude"
+        ],
+        "patient_types": [
+          "person",
+          "group"
+        ]
+      }
+    },
+    {
+      "entity_id": "verb__threaten",
+      "label": "Threaten",
+      "canonical_lemma": "threaten",
+      "semantic_class_id": "verb.contact",
+      "kind": "action",
+      "definition": "A threaten action.",
+      "slots": {
+        "patient_states": {
+          "physical": [],
+          "emotional": [
+            "afraid",
+            "terrified",
+            "intimidated",
+            "anxious"
+          ],
+          "mental": [
+            "hypervigilant",
+            "traumatized"
+          ]
+        },
+        "subject_mental": [
+          "intent_to_harm",
+          "coercive_intent"
+        ],
+        "subject_emotional": [
+          "anger",
+          "malice"
+        ],
+        "patient_types": [
+          "person",
+          "group"
+        ]
+      }
+    },
+    {
+      "entity_id": "verb__torture",
+      "label": "Torture",
+      "canonical_lemma": "torture",
+      "semantic_class_id": "verb.contact",
+      "kind": "action",
+      "definition": "A torture action.",
+      "slots": {
+        "patient_states": {
+          "physical": [
+            "hurt",
+            "injured",
+            "in_pain",
+            "wounded",
+            "battered",
+            "harmed"
+          ],
+          "emotional": [
+            "terrified",
+            "humiliated",
+            "trapped",
+            "worthless"
+          ],
+          "mental": [
+            "traumatized",
+            "brainwashed"
+          ]
+        },
+        "subject_mental": [
+          "intent_to_harm",
+          "cruel_intent",
+          "power_over_target"
+        ],
+        "subject_emotional": [
+          "cruelty",
+          "malice"
+        ],
+        "patient_types": [
+          "person"
+        ],
+        "harm_severity": 0.5833333333333334
+      }
+    },
+    {
+      "entity_id": "verb__trap",
+      "label": "Trap",
+      "canonical_lemma": "trap",
+      "semantic_class_id": "verb.contact",
+      "kind": "action",
+      "definition": "A trap action.",
+      "slots": {
+        "patient_states": {
+          "physical": [
+            "confined",
+            "restrained",
+            "trapped"
+          ],
+          "emotional": [
+            "afraid",
+            "terrified",
+            "intimidated"
+          ],
+          "mental": [
+            "hypervigilant",
+            "traumatized"
+          ]
+        },
+        "subject_mental": [
+          "deceptive_intent",
+          "target_identified"
+        ],
+        "subject_emotional": [
+          "malice"
+        ],
+        "patient_types": [
+          "person",
+          "living_thing.animal"
+        ],
+        "harm_severity": 0.5
+      }
+    },
+    {
+      "entity_id": "verb__wear",
+      "label": "Wear",
+      "canonical_lemma": "wear",
+      "semantic_class_id": "verb.contact",
+      "kind": "action",
+      "definition": "A wear action.",
+      "slots": {
+        "patient_states": {
+          "physical": [
+            "clothed",
+            "covered",
+            "protected"
+          ],
+          "emotional": [],
+          "mental": []
+        },
+        "subject_mental": [
+          "self_care_intent"
+        ],
+        "patient_types": [
+          "clothing_item",
+          "physical_object"
+        ]
+      }
+    },
+    {
+      "entity_id": "verb__welcome",
+      "label": "Welcome",
+      "canonical_lemma": "welcome",
+      "semantic_class_id": "verb.contact",
+      "kind": "action",
+      "definition": "A welcome action.",
+      "slots": {
+        "patient_states": {
+          "physical": [],
+          "emotional": [
+            "welcomed",
+            "included",
+            "valued",
+            "happy",
+            "accepted"
+          ],
+          "mental": [
+            "calm"
+          ]
+        },
+        "subject_mental": [
+          "benevolent_intent"
+        ],
+        "subject_emotional": [
+          "warmth",
+          "joy"
+        ],
+        "patient_types": [
+          "person",
+          "group"
+        ]
+      }
+    },
+    {
+      "entity_id": "verb__wound",
+      "label": "Wound",
+      "canonical_lemma": "wound",
+      "semantic_class_id": "verb.contact",
+      "kind": "action",
+      "definition": "A wound action.",
+      "slots": {
+        "patient_states": {
+          "physical": [
+            "wounded",
+            "hurt",
+            "injured",
+            "in_pain",
+            "bleeding"
+          ],
+          "emotional": [
+            "afraid",
+            "angry"
+          ],
+          "mental": [
+            "traumatized"
+          ]
+        },
+        "subject_mental": [
+          "intent_to_harm",
+          "target_identified"
+        ],
+        "subject_emotional": [
+          "anger",
+          "malice"
+        ],
+        "patient_types": [
+          "person",
+          "living_thing.animal"
+        ],
+        "harm_severity": 0.5599999999999999
+      }
+    },
+    {
+      "entity_id": "verb__arrive",
+      "label": "Arrive",
+      "canonical_lemma": "arrive",
+      "semantic_class_id": "verb.move",
+      "kind": "action",
+      "definition": "An arrive action.",
+      "slots": {
+        "patient_states": {"physical": [], "emotional": [], "mental": []},
+        "subject_mental": ["goal_directed"],
+        "subject_emotional": [],
+        "patient_types": ["place"]
+      }
+    },
+    {
+      "entity_id": "verb__escape",
+      "label": "Escape",
+      "canonical_lemma": "escape",
+      "semantic_class_id": "verb.move",
+      "kind": "action",
+      "definition": "An escape action.",
+      "slots": {
+        "patient_states": {"physical": [], "emotional": ["relieved"], "mental": []},
+        "subject_mental": ["self_preservation"],
+        "subject_emotional": ["relief"],
+        "patient_types": ["person", "place", "physical_object"]
+      }
+    },
+    {
+      "entity_id": "verb__examine",
+      "label": "Examine",
+      "canonical_lemma": "examine",
+      "semantic_class_id": "verb.perceive",
+      "kind": "action",
+      "definition": "An examine action.",
+      "slots": {
+        "patient_states": {"physical": [], "emotional": [], "mental": ["noticed"]},
+        "subject_mental": ["curious_intent"],
+        "subject_emotional": ["curiosity"],
+        "patient_types": ["physical_object", "place"]
+      }
+    },
+    {
+      "entity_id": "verb__find",
+      "label": "Find",
+      "canonical_lemma": "find",
+      "semantic_class_id": "verb.perceive",
+      "kind": "action",
+      "definition": "A find action.",
+      "slots": {
+        "patient_states": {"physical": [], "emotional": [], "mental": ["discovered"]},
+        "subject_mental": ["discovery"],
+        "subject_emotional": ["surprise"],
+        "patient_types": ["physical_object", "place", "person"]
+      }
+    },
+    {
+      "entity_id": "verb__follow",
+      "label": "Follow",
+      "canonical_lemma": "follow",
+      "semantic_class_id": "verb.move",
+      "kind": "action",
+      "definition": "A follow action.",
+      "slots": {
+        "patient_states": {"physical": [], "emotional": [], "mental": []},
+        "subject_mental": ["goal_directed"],
+        "subject_emotional": [],
+        "patient_types": ["person", "place"]
+      }
+    },
+    {
+      "entity_id": "verb__hide",
+      "label": "Hide",
+      "canonical_lemma": "hide",
+      "semantic_class_id": "verb.move",
+      "kind": "action",
+      "definition": "A hide action.",
+      "slots": {
+        "patient_states": {"physical": [], "emotional": [], "mental": []},
+        "subject_mental": ["self_preservation"],
+        "subject_emotional": ["caution"],
+        "patient_types": ["place", "physical_object"]
+      }
+    },
+    {
+      "entity_id": "verb__learn",
+      "label": "Learn",
+      "canonical_lemma": "learn",
+      "semantic_class_id": "verb.cognition",
+      "kind": "action",
+      "definition": "A learn action.",
+      "slots": {
+        "patient_states": {"physical": [], "emotional": [], "mental": ["understood"]},
+        "subject_mental": ["understanding"],
+        "subject_emotional": [],
+        "patient_types": ["abstract"]
+      }
+    },
+    {
+      "entity_id": "verb__meet",
+      "label": "Meet",
+      "canonical_lemma": "meet",
+      "semantic_class_id": "verb.social",
+      "kind": "action",
+      "definition": "A meet action.",
+      "slots": {
+        "patient_states": {"physical": [], "emotional": ["acknowledged"], "mental": []},
+        "subject_mental": ["social_intent"],
+        "subject_emotional": [],
+        "patient_types": ["person", "group"]
+      }
+    },
+    {
+      "entity_id": "verb__run",
+      "label": "Run",
+      "canonical_lemma": "run",
+      "semantic_class_id": "verb.move",
+      "kind": "action",
+      "definition": "A run action.",
+      "slots": {
+        "patient_states": {"physical": [], "emotional": [], "mental": []},
+        "subject_mental": ["goal_directed"],
+        "subject_emotional": [],
+        "patient_types": ["place"]
+      }
+    },
+    {
+      "entity_id": "verb__search",
+      "label": "Search",
+      "canonical_lemma": "search",
+      "semantic_class_id": "verb.perceive",
+      "kind": "action",
+      "definition": "A search action.",
+      "slots": {
+        "patient_states": {"physical": [], "emotional": [], "mental": ["sought"]},
+        "subject_mental": ["search_intent"],
+        "subject_emotional": [],
+        "patient_types": ["person", "place", "physical_object"]
+      }
+    },
+    {
+      "entity_id": "verb__see",
+      "label": "See",
+      "canonical_lemma": "see",
+      "semantic_class_id": "verb.perceive",
+      "kind": "action",
+      "definition": "A see action.",
+      "slots": {
+        "patient_states": {"physical": [], "emotional": [], "mental": ["seen"]},
+        "subject_mental": ["perception"],
+        "subject_emotional": [],
+        "patient_types": ["person", "place", "physical_object"]
+      }
+    },
+    {
+      "entity_id": "verb__walk",
+      "label": "Walk",
+      "canonical_lemma": "walk",
+      "semantic_class_id": "verb.move",
+      "kind": "action",
+      "definition": "A walk action.",
+      "slots": {
+        "patient_states": {"physical": [], "emotional": [], "mental": []},
+        "subject_mental": ["goal_directed"],
+        "subject_emotional": [],
+        "patient_types": ["place"]
+      }
+    },
+    {
+      "entity_id": "verb__wonder",
+      "label": "Wonder",
+      "canonical_lemma": "wonder",
+      "semantic_class_id": "verb.cognition",
+      "kind": "action",
+      "definition": "A wonder action.",
+      "slots": {
+        "patient_states": {"physical": [], "emotional": [], "mental": []},
+        "subject_mental": ["curiosity"],
+        "subject_emotional": ["wonder"],
+        "patient_types": ["abstract"]
+      }
+    }
+  ]
+}

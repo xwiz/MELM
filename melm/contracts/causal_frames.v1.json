@@ -1,0 +1,8306 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "melm.causal_frames.v1",
+  "schema_id": "melm.causal_frames.v1",
+  "version": "1.0.0",
+  "description": "Curated causal predicate frames with state definitions, active entity affordances, and surface aliases. The authoritative runtime shape for atomic causality.",
+  "predicate_frames": {
+    "rain": {
+      "predicate_id": "rain",
+      "semantic_class": "verb.weather",
+      "atom_kind": "event",
+      "default_cause_kind": "natural_process",
+      "roles": [
+        "source",
+        "patient"
+      ],
+      "effects": [
+        {
+          "target_role": "patient",
+          "state": "wet",
+          "domain": "physical",
+          "relation": "causes",
+          "confidence": 0.95
+        },
+        {
+          "target_role": "environment",
+          "state": "cooler",
+          "domain": "environmental",
+          "relation": "causes",
+          "confidence": 0.75
+        }
+      ],
+      "surface_aliases": [
+        "rain",
+        "rains",
+        "rained",
+        "raining"
+      ]
+    },
+    "water": {
+      "predicate_id": "water",
+      "semantic_class": "verb.change",
+      "atom_kind": "event",
+      "default_cause_kind": "intentional_action",
+      "roles": [
+        "agent",
+        "patient",
+        "substance"
+      ],
+      "effects": [
+        {
+          "target_role": "patient",
+          "state": "wet",
+          "domain": "physical",
+          "relation": "causes",
+          "confidence": 0.92
+        }
+      ],
+      "surface_aliases": [
+        "water",
+        "waters",
+        "watered",
+        "watering"
+      ]
+    },
+    "pour": {
+      "predicate_id": "pour",
+      "semantic_class": "verb.move",
+      "atom_kind": "event",
+      "default_cause_kind": "intentional_action",
+      "roles": [
+        "agent",
+        "patient",
+        "substance",
+        "destination"
+      ],
+      "effects": [
+        {
+          "target_role": "patient",
+          "state": "wet",
+          "domain": "physical",
+          "relation": "causes",
+          "confidence": 0.9
+        },
+        {
+          "target_role": "source",
+          "state": "reduced_volume",
+          "domain": "physical",
+          "relation": "causes",
+          "confidence": 0.75
+        }
+      ],
+      "surface_aliases": [
+        "pour",
+        "pours",
+        "poured",
+        "pouring"
+      ]
+    },
+    "leak": {
+      "predicate_id": "leak",
+      "semantic_class": "verb.change",
+      "atom_kind": "event",
+      "default_cause_kind": "accidental_process",
+      "roles": [
+        "source",
+        "patient",
+        "substance"
+      ],
+      "effects": [
+        {
+          "target_role": "patient",
+          "state": "wet",
+          "domain": "physical",
+          "relation": "causes",
+          "confidence": 0.82
+        },
+        {
+          "target_role": "source",
+          "state": "reduced_volume",
+          "domain": "physical",
+          "relation": "causes",
+          "confidence": 0.7
+        }
+      ],
+      "surface_aliases": [
+        "leak",
+        "leaks",
+        "leaked",
+        "leaking"
+      ]
+    },
+    "shine": {
+      "predicate_id": "shine",
+      "semantic_class": "verb.weather",
+      "atom_kind": "event",
+      "default_cause_kind": "natural_process",
+      "roles": [
+        "source",
+        "patient"
+      ],
+      "effects": [
+        {
+          "target_role": "patient",
+          "state": "bright",
+          "domain": "perceptual",
+          "relation": "causes",
+          "confidence": 0.88
+        },
+        {
+          "target_role": "patient",
+          "state": "warmer",
+          "domain": "physical",
+          "relation": "causes",
+          "confidence": 0.8
+        },
+        {
+          "target_role": "patient",
+          "state": "dry",
+          "domain": "physical",
+          "relation": "causes",
+          "confidence": 0.7,
+          "precondition_state": "wet"
+        }
+      ],
+      "surface_aliases": [
+        "shine",
+        "shines",
+        "shone",
+        "shining"
+      ]
+    },
+    "break": {
+      "predicate_id": "break",
+      "semantic_class": "verb.contact",
+      "atom_kind": "event",
+      "default_cause_kind": "accidental_process",
+      "roles": [
+        "agent",
+        "patient",
+        "instrument"
+      ],
+      "effects": [
+        {
+          "target_role": "patient",
+          "state": "broken",
+          "domain": "physical",
+          "relation": "causes",
+          "confidence": 0.95
+        },
+        {
+          "target_role": "patient",
+          "state": "damaged",
+          "domain": "physical",
+          "relation": "causes",
+          "confidence": 0.85
+        },
+        {
+          "target_role": "patient",
+          "state": "fragmented",
+          "domain": "physical",
+          "relation": "causes",
+          "confidence": 0.7
+        }
+      ],
+      "surface_aliases": [
+        "break",
+        "breaks",
+        "broke",
+        "broken",
+        "breaking"
+      ]
+    },
+    "shoot": {
+      "predicate_id": "shoot",
+      "semantic_class": "verb.contact",
+      "atom_kind": "event",
+      "default_cause_kind": "instrumental_action",
+      "roles": [
+        "agent",
+        "patient",
+        "instrument"
+      ],
+      "effects": [
+        {
+          "target_role": "patient",
+          "state": "damaged",
+          "domain": "physical",
+          "relation": "causes",
+          "confidence": 0.85
+        },
+        {
+          "target_role": "patient",
+          "state": "injured",
+          "domain": "physical",
+          "relation": "causes",
+          "confidence": 0.8
+        }
+      ],
+      "surface_aliases": [
+        "shoot",
+        "shoots",
+        "shot",
+        "shooting"
+      ]
+    },
+    "fire": {
+      "predicate_id": "fire",
+      "semantic_class": "verb.contact",
+      "atom_kind": "event",
+      "default_cause_kind": "instrumental_action",
+      "roles": [
+        "agent",
+        "patient",
+        "instrument"
+      ],
+      "effects": [
+        {
+          "target_role": "patient",
+          "state": "shot",
+          "domain": "physical",
+          "relation": "causes",
+          "confidence": 0.85
+        }
+      ],
+      "surface_aliases": [
+        "fire",
+        "fires",
+        "fired",
+        "firing"
+      ]
+    },
+    "produce": {
+      "predicate_id": "produce",
+      "semantic_class": "verb.create",
+      "atom_kind": "event",
+      "default_cause_kind": "intentional_action",
+      "roles": [
+        "agent",
+        "theme"
+      ],
+      "effects": [
+        {
+          "target_role": "theme",
+          "state": "created",
+          "domain": "abstract",
+          "relation": "causes",
+          "confidence": 0.95
+        }
+      ],
+      "surface_aliases": [
+        "produce",
+        "produces",
+        "produced",
+        "producing"
+      ]
+    },
+    "have_substance": {
+      "predicate_id": "have_substance",
+      "semantic_class": "verb.stative",
+      "atom_kind": "state",
+      "default_cause_kind": "unknown",
+      "roles": [
+        "theme",
+        "substance"
+      ],
+      "effects": [],
+      "surface_aliases": [
+        "have",
+        "has",
+        "contain",
+        "contains"
+      ]
+    },
+    "eat": {
+      "predicate_id": "eat",
+      "semantic_class": "verb.consume",
+      "atom_kind": "event",
+      "default_cause_kind": "intentional_action",
+      "roles": [
+        "agent",
+        "patient"
+      ],
+      "effects": [
+        {
+          "target_role": "patient",
+          "state": "satisfied",
+          "domain": "emotional",
+          "relation": "causes",
+          "confidence": 0.88
+        },
+        {
+          "target_role": "patient",
+          "state": "nourished",
+          "domain": "physical",
+          "relation": "causes",
+          "confidence": 0.85
+        },
+        {
+          "target_role": "patient",
+          "state": "full",
+          "domain": "physical",
+          "relation": "causes",
+          "confidence": 0.8
+        }
+      ],
+      "surface_aliases": [
+        "eat",
+        "eats",
+        "ate",
+        "eaten",
+        "eating"
+      ]
+    },
+    "sleep": {
+      "predicate_id": "sleep",
+      "semantic_class": "verb.body",
+      "atom_kind": "event",
+      "default_cause_kind": "natural_process",
+      "roles": [
+        "agent"
+      ],
+      "effects": [
+        {
+          "target_role": "agent",
+          "state": "rested",
+          "domain": "physical",
+          "relation": "causes",
+          "confidence": 0.92
+        },
+        {
+          "target_role": "agent",
+          "state": "energetic",
+          "domain": "physical",
+          "relation": "causes",
+          "confidence": 0.85
+        },
+        {
+          "target_role": "agent",
+          "state": "alert",
+          "domain": "mental",
+          "relation": "causes",
+          "confidence": 0.8
+        }
+      ],
+      "surface_aliases": [
+        "sleep",
+        "sleeps",
+        "slept",
+        "sleeping"
+      ]
+    },
+    "cook": {
+      "predicate_id": "cook",
+      "semantic_class": "verb.change",
+      "atom_kind": "event",
+      "default_cause_kind": "intentional_action",
+      "roles": [
+        "agent",
+        "patient"
+      ],
+      "effects": [
+        {
+          "target_role": "patient",
+          "state": "cooked",
+          "domain": "physical",
+          "relation": "causes",
+          "confidence": 0.95
+        },
+        {
+          "target_role": "patient",
+          "state": "prepared",
+          "domain": "physical",
+          "relation": "causes",
+          "confidence": 0.85
+        }
+      ],
+      "surface_aliases": [
+        "cook",
+        "cooks",
+        "cooked",
+        "cooking"
+      ]
+    },
+    "clean": {
+      "predicate_id": "clean",
+      "semantic_class": "verb.change",
+      "atom_kind": "event",
+      "default_cause_kind": "intentional_action",
+      "roles": [
+        "agent",
+        "patient"
+      ],
+      "effects": [
+        {
+          "target_role": "patient",
+          "state": "clean",
+          "domain": "physical",
+          "relation": "causes",
+          "confidence": 0.93
+        },
+        {
+          "target_role": "patient",
+          "state": "restored",
+          "domain": "physical",
+          "relation": "causes",
+          "confidence": 0.7
+        }
+      ],
+      "surface_aliases": [
+        "clean",
+        "cleans",
+        "cleaned",
+        "cleaning"
+      ]
+    },
+    "help": {
+      "predicate_id": "help",
+      "semantic_class": "verb.social",
+      "atom_kind": "event",
+      "default_cause_kind": "intentional_action",
+      "roles": [
+        "agent",
+        "patient"
+      ],
+      "effects": [
+        {
+          "target_role": "patient",
+          "state": "aided",
+          "domain": "social",
+          "relation": "causes",
+          "confidence": 0.9
+        },
+        {
+          "target_role": "patient",
+          "state": "relieved",
+          "domain": "emotional",
+          "relation": "causes",
+          "confidence": 0.75
+        },
+        {
+          "target_role": "patient",
+          "state": "safe",
+          "domain": "physical",
+          "relation": "causes",
+          "confidence": 0.7
+        }
+      ],
+      "surface_aliases": [
+        "help",
+        "helps",
+        "helped",
+        "helping"
+      ]
+    },
+    "fall": {
+      "predicate_id": "fall",
+      "semantic_class": "verb.move",
+      "atom_kind": "event",
+      "default_cause_kind": "accidental_process",
+      "roles": [
+        "agent"
+      ],
+      "effects": [
+        {
+          "target_role": "agent",
+          "state": "hurt",
+          "domain": "physical",
+          "relation": "causes",
+          "confidence": 0.8
+        },
+        {
+          "target_role": "agent",
+          "state": "injured",
+          "domain": "physical",
+          "relation": "causes",
+          "confidence": 0.65
+        }
+      ],
+      "surface_aliases": [
+        "fall",
+        "falls",
+        "fell",
+        "fallen",
+        "falling"
+      ]
+    },
+    "drop": {
+      "predicate_id": "drop",
+      "semantic_class": "verb.contact",
+      "atom_kind": "event",
+      "default_cause_kind": "accidental_process",
+      "roles": [
+        "agent",
+        "patient"
+      ],
+      "effects": [
+        {
+          "target_role": "patient",
+          "state": "damaged",
+          "domain": "physical",
+          "relation": "causes",
+          "confidence": 0.75
+        },
+        {
+          "target_role": "patient",
+          "state": "broken",
+          "domain": "physical",
+          "relation": "causes",
+          "confidence": 0.7
+        }
+      ],
+      "surface_aliases": [
+        "drop",
+        "drops",
+        "dropped",
+        "dropping"
+      ]
+    },
+    "burn": {
+      "predicate_id": "burn",
+      "semantic_class": "verb.change",
+      "atom_kind": "event",
+      "default_cause_kind": "accidental_process",
+      "roles": [
+        "agent",
+        "patient"
+      ],
+      "effects": [
+        {
+          "target_role": "patient",
+          "state": "burned",
+          "domain": "physical",
+          "relation": "causes",
+          "confidence": 0.95
+        },
+        {
+          "target_role": "patient",
+          "state": "damaged",
+          "domain": "physical",
+          "relation": "causes",
+          "confidence": 0.8
+        },
+        {
+          "target_role": "patient",
+          "state": "destroyed",
+          "domain": "physical",
+          "relation": "causes",
+          "confidence": 0.7
+        }
+      ],
+      "surface_aliases": [
+        "burn",
+        "burns",
+        "burned",
+        "burnt",
+        "burning"
+      ]
+    },
+    "build": {
+      "predicate_id": "build",
+      "semantic_class": "verb.create",
+      "atom_kind": "event",
+      "default_cause_kind": "intentional_action",
+      "roles": [
+        "agent",
+        "theme"
+      ],
+      "effects": [
+        {
+          "target_role": "theme",
+          "state": "constructed",
+          "domain": "physical",
+          "relation": "causes",
+          "confidence": 0.92
+        },
+        {
+          "target_role": "theme",
+          "state": "created",
+          "domain": "abstract",
+          "relation": "causes",
+          "confidence": 0.85
+        }
+      ],
+      "surface_aliases": [
+        "build",
+        "builds",
+        "built",
+        "building"
+      ]
+    },
+    "fix": {
+      "predicate_id": "fix",
+      "semantic_class": "verb.change",
+      "atom_kind": "event",
+      "default_cause_kind": "intentional_action",
+      "roles": [
+        "agent",
+        "patient"
+      ],
+      "effects": [
+        {
+          "target_role": "patient",
+          "state": "repaired",
+          "domain": "physical",
+          "relation": "causes",
+          "confidence": 0.9
+        },
+        {
+          "target_role": "patient",
+          "state": "functional",
+          "domain": "physical",
+          "relation": "causes",
+          "confidence": 0.85
+        }
+      ],
+      "surface_aliases": [
+        "fix",
+        "fixes",
+        "fixed",
+        "fixing",
+        "repair",
+        "repaired"
+      ]
+    },
+    "study": {
+      "predicate_id": "study",
+      "semantic_class": "verb.cognition",
+      "atom_kind": "event",
+      "default_cause_kind": "intentional_action",
+      "roles": [
+        "agent",
+        "theme"
+      ],
+      "effects": [
+        {
+          "target_role": "agent",
+          "state": "knowledgeable",
+          "domain": "mental",
+          "relation": "causes",
+          "confidence": 0.85
+        },
+        {
+          "target_role": "agent",
+          "state": "informed",
+          "domain": "mental",
+          "relation": "causes",
+          "confidence": 0.8
+        }
+      ],
+      "surface_aliases": [
+        "study",
+        "studies",
+        "studied",
+        "studying",
+        "learn",
+        "learning"
+      ]
+    },
+    "exercise": {
+      "predicate_id": "exercise",
+      "semantic_class": "verb.body",
+      "atom_kind": "event",
+      "default_cause_kind": "intentional_action",
+      "roles": [
+        "agent"
+      ],
+      "effects": [
+        {
+          "target_role": "agent",
+          "state": "fit",
+          "domain": "physical",
+          "relation": "causes",
+          "confidence": 0.85
+        },
+        {
+          "target_role": "agent",
+          "state": "strong",
+          "domain": "physical",
+          "relation": "causes",
+          "confidence": 0.8
+        },
+        {
+          "target_role": "agent",
+          "state": "energetic",
+          "domain": "physical",
+          "relation": "causes",
+          "confidence": 0.75
+        }
+      ],
+      "surface_aliases": [
+        "exercise",
+        "exercises",
+        "exercised",
+        "exercising",
+        "work out",
+        "workout"
+      ]
+    },
+    "drink": {
+      "predicate_id": "drink",
+      "semantic_class": "verb.consume",
+      "atom_kind": "event",
+      "default_cause_kind": "intentional_action",
+      "roles": [
+        "agent",
+        "patient"
+      ],
+      "effects": [
+        {
+          "target_role": "agent",
+          "state": "hydrated",
+          "domain": "physical",
+          "relation": "causes",
+          "confidence": 0.9
+        },
+        {
+          "target_role": "agent",
+          "state": "quenched",
+          "domain": "physical",
+          "relation": "causes",
+          "confidence": 0.85
+        },
+        {
+          "target_role": "patient",
+          "state": "reduced_volume",
+          "domain": "physical",
+          "relation": "causes",
+          "confidence": 0.8
+        }
+      ],
+      "surface_aliases": [
+        "drink",
+        "drinks",
+        "drank",
+        "drunk",
+        "drinking"
+      ]
+    },
+    "read": {
+      "predicate_id": "read",
+      "semantic_class": "verb.cognition",
+      "atom_kind": "event",
+      "default_cause_kind": "intentional_action",
+      "roles": [
+        "agent",
+        "theme"
+      ],
+      "effects": [
+        {
+          "target_role": "agent",
+          "state": "informed",
+          "domain": "mental",
+          "relation": "causes",
+          "confidence": 0.88
+        },
+        {
+          "target_role": "agent",
+          "state": "knowledgeable",
+          "domain": "mental",
+          "relation": "causes",
+          "confidence": 0.8
+        },
+        {
+          "target_role": "agent",
+          "state": "entertained",
+          "domain": "emotional",
+          "relation": "causes",
+          "confidence": 0.7
+        }
+      ],
+      "surface_aliases": [
+        "read",
+        "reads",
+        "reading"
+      ]
+    },
+    "drive": {
+      "predicate_id": "drive",
+      "semantic_class": "verb.move",
+      "atom_kind": "event",
+      "default_cause_kind": "intentional_action",
+      "roles": [
+        "agent",
+        "patient"
+      ],
+      "effects": [
+        {
+          "target_role": "patient",
+          "state": "moved",
+          "domain": "physical",
+          "relation": "causes",
+          "confidence": 0.95
+        },
+        {
+          "target_role": "patient",
+          "state": "transported",
+          "domain": "physical",
+          "relation": "causes",
+          "confidence": 0.9
+        }
+      ],
+      "surface_aliases": [
+        "drive",
+        "drives",
+        "drove",
+        "driven",
+        "driving"
+      ]
+    },
+    "walk": {
+      "predicate_id": "walk",
+      "semantic_class": "verb.move",
+      "atom_kind": "event",
+      "default_cause_kind": "intentional_action",
+      "roles": [
+        "agent"
+      ],
+      "effects": [
+        {
+          "target_role": "agent",
+          "state": "moved",
+          "domain": "physical",
+          "relation": "causes",
+          "confidence": 0.9
+        },
+        {
+          "target_role": "agent",
+          "state": "tired",
+          "domain": "physical",
+          "relation": "causes",
+          "confidence": 0.65
+        },
+        {
+          "target_role": "agent",
+          "state": "fit",
+          "domain": "physical",
+          "relation": "causes",
+          "confidence": 0.6
+        }
+      ],
+      "surface_aliases": [
+        "walk",
+        "walks",
+        "walked",
+        "walking"
+      ]
+    },
+    "write": {
+      "predicate_id": "write",
+      "semantic_class": "verb.create",
+      "atom_kind": "event",
+      "default_cause_kind": "intentional_action",
+      "roles": [
+        "agent",
+        "theme"
+      ],
+      "effects": [
+        {
+          "target_role": "theme",
+          "state": "written",
+          "domain": "abstract",
+          "relation": "causes",
+          "confidence": 0.95
+        },
+        {
+          "target_role": "theme",
+          "state": "created",
+          "domain": "abstract",
+          "relation": "causes",
+          "confidence": 0.9
+        },
+        {
+          "target_role": "theme",
+          "state": "recorded",
+          "domain": "abstract",
+          "relation": "causes",
+          "confidence": 0.85
+        }
+      ],
+      "surface_aliases": [
+        "write",
+        "writes",
+        "wrote",
+        "written",
+        "writing"
+      ]
+    },
+    "throw": {
+      "predicate_id": "throw",
+      "semantic_class": "verb.contact",
+      "atom_kind": "event",
+      "default_cause_kind": "intentional_action",
+      "roles": [
+        "agent",
+        "patient",
+        "destination"
+      ],
+      "effects": [
+        {
+          "target_role": "patient",
+          "state": "thrown",
+          "domain": "physical",
+          "relation": "causes",
+          "confidence": 0.95
+        },
+        {
+          "target_role": "patient",
+          "state": "moving",
+          "domain": "physical",
+          "relation": "causes",
+          "confidence": 0.9
+        },
+        {
+          "target_role": "patient",
+          "state": "damaged",
+          "domain": "physical",
+          "relation": "causes",
+          "confidence": 0.55
+        }
+      ],
+      "surface_aliases": [
+        "throw",
+        "throws",
+        "threw",
+        "thrown",
+        "throwing"
+      ]
+    },
+    "cut": {
+      "predicate_id": "cut",
+      "semantic_class": "verb.contact",
+      "atom_kind": "event",
+      "default_cause_kind": "intentional_action",
+      "roles": [
+        "agent",
+        "patient",
+        "instrument"
+      ],
+      "effects": [
+        {
+          "target_role": "patient",
+          "state": "cut",
+          "domain": "physical",
+          "relation": "causes",
+          "confidence": 0.93
+        },
+        {
+          "target_role": "patient",
+          "state": "separated",
+          "domain": "physical",
+          "relation": "causes",
+          "confidence": 0.8
+        },
+        {
+          "target_role": "patient",
+          "state": "damaged",
+          "domain": "physical",
+          "relation": "causes",
+          "confidence": 0.6
+        }
+      ],
+      "surface_aliases": [
+        "cut",
+        "cuts",
+        "cutting"
+      ]
+    },
+    "grow": {
+      "predicate_id": "grow",
+      "semantic_class": "verb.change",
+      "atom_kind": "event",
+      "default_cause_kind": "natural_process",
+      "roles": [
+        "patient"
+      ],
+      "effects": [
+        {
+          "target_role": "patient",
+          "state": "grown",
+          "domain": "physical",
+          "relation": "causes",
+          "confidence": 0.9
+        },
+        {
+          "target_role": "patient",
+          "state": "larger",
+          "domain": "physical",
+          "relation": "causes",
+          "confidence": 0.85
+        },
+        {
+          "target_role": "patient",
+          "state": "mature",
+          "domain": "physical",
+          "relation": "causes",
+          "confidence": 0.75
+        }
+      ],
+      "surface_aliases": [
+        "grow",
+        "grows",
+        "grew",
+        "grown",
+        "growing"
+      ]
+    },
+    "open": {
+      "predicate_id": "open",
+      "semantic_class": "verb.change",
+      "atom_kind": "event",
+      "default_cause_kind": "intentional_action",
+      "roles": [
+        "agent",
+        "patient"
+      ],
+      "effects": [
+        {
+          "target_role": "patient",
+          "state": "opened",
+          "domain": "physical",
+          "relation": "causes",
+          "confidence": 0.95
+        },
+        {
+          "target_role": "patient",
+          "state": "accessible",
+          "domain": "physical",
+          "relation": "causes",
+          "confidence": 0.85
+        }
+      ],
+      "surface_aliases": [
+        "open",
+        "opens",
+        "opened",
+        "opening"
+      ]
+    },
+    "close": {
+      "predicate_id": "close",
+      "semantic_class": "verb.change",
+      "atom_kind": "event",
+      "default_cause_kind": "intentional_action",
+      "roles": [
+        "agent",
+        "patient"
+      ],
+      "effects": [
+        {
+          "target_role": "patient",
+          "state": "closed",
+          "domain": "physical",
+          "relation": "causes",
+          "confidence": 0.95
+        },
+        {
+          "target_role": "patient",
+          "state": "sealed",
+          "domain": "physical",
+          "relation": "causes",
+          "confidence": 0.8
+        },
+        {
+          "target_role": "patient",
+          "state": "secure",
+          "domain": "physical",
+          "relation": "causes",
+          "confidence": 0.75
+        }
+      ],
+      "surface_aliases": [
+        "close",
+        "closes",
+        "closed",
+        "closing",
+        "shut"
+      ]
+    },
+    "teach": {
+      "predicate_id": "teach",
+      "semantic_class": "verb.communicate",
+      "atom_kind": "event",
+      "default_cause_kind": "intentional_action",
+      "roles": [
+        "agent",
+        "patient",
+        "theme"
+      ],
+      "effects": [
+        {
+          "target_role": "patient",
+          "state": "knowledgeable",
+          "domain": "mental",
+          "relation": "causes",
+          "confidence": 0.88
+        },
+        {
+          "target_role": "patient",
+          "state": "skilled",
+          "domain": "mental",
+          "relation": "causes",
+          "confidence": 0.8
+        },
+        {
+          "target_role": "patient",
+          "state": "educated",
+          "domain": "mental",
+          "relation": "causes",
+          "confidence": 0.75
+        }
+      ],
+      "surface_aliases": [
+        "teach",
+        "teaches",
+        "taught",
+        "teaching"
+      ]
+    },
+    "push": {
+      "predicate_id": "push",
+      "semantic_class": "verb.contact",
+      "atom_kind": "event",
+      "default_cause_kind": "intentional_action",
+      "roles": [
+        "agent",
+        "patient"
+      ],
+      "effects": [
+        {
+          "target_role": "patient",
+          "state": "moved",
+          "domain": "physical",
+          "relation": "causes",
+          "confidence": 0.9
+        },
+        {
+          "target_role": "patient",
+          "state": "displaced",
+          "domain": "physical",
+          "relation": "causes",
+          "confidence": 0.85
+        }
+      ],
+      "surface_aliases": [
+        "push",
+        "pushes",
+        "pushed",
+        "pushing"
+      ]
+    },
+    "sit": {
+      "predicate_id": "sit",
+      "semantic_class": "verb.body",
+      "atom_kind": "event",
+      "default_cause_kind": "intentional_action",
+      "roles": [
+        "agent"
+      ],
+      "effects": [
+        {
+          "target_role": "agent",
+          "state": "seated",
+          "domain": "physical",
+          "relation": "causes",
+          "confidence": 0.95
+        },
+        {
+          "target_role": "agent",
+          "state": "rested",
+          "domain": "physical",
+          "relation": "causes",
+          "confidence": 0.6
+        }
+      ],
+      "surface_aliases": [
+        "sit",
+        "sits",
+        "sat",
+        "sitting"
+      ]
+    },
+    "smile": {
+      "predicate_id": "smile",
+      "semantic_class": "verb.emotion",
+      "atom_kind": "event",
+      "default_cause_kind": "intentional_action",
+      "roles": [
+        "agent"
+      ],
+      "effects": [
+        {
+          "target_role": "agent",
+          "state": "happy",
+          "domain": "emotional",
+          "relation": "causes",
+          "confidence": 0.85
+        },
+        {
+          "target_role": "others",
+          "state": "happy",
+          "domain": "emotional",
+          "relation": "causes",
+          "confidence": 0.65
+        },
+        {
+          "target_role": "agent",
+          "state": "friendly",
+          "domain": "social",
+          "relation": "causes",
+          "confidence": 0.75
+        }
+      ],
+      "surface_aliases": [
+        "smile",
+        "smiles",
+        "smiled",
+        "smiling"
+      ]
+    },
+    "cry": {
+      "predicate_id": "cry",
+      "semantic_class": "verb.emotion",
+      "atom_kind": "event",
+      "default_cause_kind": "natural_process",
+      "roles": [
+        "agent"
+      ],
+      "effects": [
+        {
+          "target_role": "agent",
+          "state": "sad",
+          "domain": "emotional",
+          "relation": "causes",
+          "confidence": 0.8
+        },
+        {
+          "target_role": "agent",
+          "state": "upset",
+          "domain": "emotional",
+          "relation": "causes",
+          "confidence": 0.75
+        },
+        {
+          "target_role": "agent",
+          "state": "tearful",
+          "domain": "physical",
+          "relation": "causes",
+          "confidence": 0.9
+        }
+      ],
+      "surface_aliases": [
+        "cry",
+        "cries",
+        "cried",
+        "crying"
+      ]
+    },
+    "move": {
+      "predicate_id": "move",
+      "semantic_class": "verb.move",
+      "atom_kind": "event",
+      "default_cause_kind": "intentional_action",
+      "roles": [
+        "agent",
+        "patient"
+      ],
+      "effects": [
+        {
+          "target_role": "patient",
+          "state": "in_motion",
+          "domain": "physical",
+          "relation": "causes",
+          "confidence": 0.95
+        },
+        {
+          "target_role": "patient",
+          "state": "relocated",
+          "domain": "physical",
+          "relation": "causes",
+          "confidence": 0.9
+        },
+        {
+          "target_role": "agent",
+          "state": "exerted",
+          "domain": "physical",
+          "relation": "causes",
+          "confidence": 0.75
+        }
+      ],
+      "surface_aliases": [
+        "move",
+        "moves",
+        "moved",
+        "moving"
+      ]
+    },
+    "carry": {
+      "predicate_id": "carry",
+      "semantic_class": "verb.contact",
+      "atom_kind": "event",
+      "default_cause_kind": "intentional_action",
+      "roles": [
+        "agent",
+        "patient"
+      ],
+      "effects": [
+        {
+          "target_role": "patient",
+          "state": "transported",
+          "domain": "physical",
+          "relation": "causes",
+          "confidence": 0.95
+        },
+        {
+          "target_role": "agent",
+          "state": "loaded",
+          "domain": "physical",
+          "relation": "causes",
+          "confidence": 0.8
+        }
+      ],
+      "surface_aliases": [
+        "carry",
+        "carries",
+        "carried",
+        "carrying"
+      ]
+    },
+    "lift": {
+      "predicate_id": "lift",
+      "semantic_class": "verb.contact",
+      "atom_kind": "event",
+      "default_cause_kind": "intentional_action",
+      "roles": [
+        "agent",
+        "patient"
+      ],
+      "effects": [
+        {
+          "target_role": "patient",
+          "state": "elevated",
+          "domain": "physical",
+          "relation": "causes",
+          "confidence": 0.95
+        },
+        {
+          "target_role": "agent",
+          "state": "exerted",
+          "domain": "physical",
+          "relation": "causes",
+          "confidence": 0.8
+        }
+      ],
+      "surface_aliases": [
+        "lift",
+        "lifts",
+        "lifted",
+        "lifting"
+      ]
+    },
+    "pull": {
+      "predicate_id": "pull",
+      "semantic_class": "verb.contact",
+      "atom_kind": "event",
+      "default_cause_kind": "intentional_action",
+      "roles": [
+        "agent",
+        "patient"
+      ],
+      "effects": [
+        {
+          "target_role": "patient",
+          "state": "relocated",
+          "domain": "physical",
+          "relation": "causes",
+          "confidence": 0.9
+        },
+        {
+          "target_role": "patient",
+          "state": "stretched",
+          "domain": "physical",
+          "relation": "causes",
+          "confidence": 0.8
+        },
+        {
+          "target_role": "agent",
+          "state": "exerted",
+          "domain": "physical",
+          "relation": "causes",
+          "confidence": 0.8
+        }
+      ],
+      "surface_aliases": [
+        "pull",
+        "pulls",
+        "pulled",
+        "pulling"
+      ]
+    },
+    "lower": {
+      "predicate_id": "lower",
+      "semantic_class": "verb.contact",
+      "atom_kind": "event",
+      "default_cause_kind": "intentional_action",
+      "roles": [
+        "agent",
+        "patient"
+      ],
+      "effects": [
+        {
+          "target_role": "patient",
+          "state": "lowered",
+          "domain": "physical",
+          "relation": "causes",
+          "confidence": 0.95
+        },
+        {
+          "target_role": "patient",
+          "state": "grounded",
+          "domain": "physical",
+          "relation": "causes",
+          "confidence": 0.8
+        }
+      ],
+      "surface_aliases": [
+        "lower",
+        "lowers",
+        "lowered",
+        "lowering"
+      ]
+    },
+    "cover": {
+      "predicate_id": "cover",
+      "semantic_class": "verb.contact",
+      "atom_kind": "event",
+      "default_cause_kind": "intentional_action",
+      "roles": [
+        "agent",
+        "patient"
+      ],
+      "effects": [
+        {
+          "target_role": "patient",
+          "state": "covered",
+          "domain": "physical",
+          "relation": "causes",
+          "confidence": 0.95
+        },
+        {
+          "target_role": "patient",
+          "state": "concealed",
+          "domain": "physical",
+          "relation": "causes",
+          "confidence": 0.85
+        },
+        {
+          "target_role": "patient",
+          "state": "protected",
+          "domain": "physical",
+          "relation": "causes",
+          "confidence": 0.8
+        }
+      ],
+      "surface_aliases": [
+        "cover",
+        "covers",
+        "covered",
+        "covering"
+      ]
+    },
+    "fill": {
+      "predicate_id": "fill",
+      "semantic_class": "verb.change",
+      "atom_kind": "event",
+      "default_cause_kind": "intentional_action",
+      "roles": [
+        "agent",
+        "patient"
+      ],
+      "effects": [
+        {
+          "target_role": "patient",
+          "state": "full",
+          "domain": "physical",
+          "relation": "causes",
+          "confidence": 0.95
+        },
+        {
+          "target_role": "patient",
+          "state": "containing",
+          "domain": "physical",
+          "relation": "causes",
+          "confidence": 0.9
+        }
+      ],
+      "surface_aliases": [
+        "fill",
+        "fills",
+        "filled",
+        "filling"
+      ]
+    },
+    "empty": {
+      "predicate_id": "empty",
+      "semantic_class": "verb.change",
+      "atom_kind": "event",
+      "default_cause_kind": "intentional_action",
+      "roles": [
+        "agent",
+        "patient"
+      ],
+      "effects": [
+        {
+          "target_role": "patient",
+          "state": "empty",
+          "domain": "physical",
+          "relation": "causes",
+          "confidence": 0.95
+        },
+        {
+          "target_role": "patient",
+          "state": "cleared",
+          "domain": "physical",
+          "relation": "causes",
+          "confidence": 0.85
+        }
+      ],
+      "surface_aliases": [
+        "empty",
+        "empties",
+        "emptied",
+        "emptying"
+      ]
+    },
+    "lock": {
+      "predicate_id": "lock",
+      "semantic_class": "verb.contact",
+      "atom_kind": "event",
+      "default_cause_kind": "intentional_action",
+      "roles": [
+        "agent",
+        "patient"
+      ],
+      "effects": [
+        {
+          "target_role": "patient",
+          "state": "locked",
+          "domain": "physical",
+          "relation": "causes",
+          "confidence": 0.95
+        },
+        {
+          "target_role": "patient",
+          "state": "secured",
+          "domain": "physical",
+          "relation": "causes",
+          "confidence": 0.9
+        }
+      ],
+      "surface_aliases": [
+        "lock",
+        "locks",
+        "locked",
+        "locking"
+      ]
+    },
+    "unlock": {
+      "predicate_id": "unlock",
+      "semantic_class": "verb.contact",
+      "atom_kind": "event",
+      "default_cause_kind": "intentional_action",
+      "roles": [
+        "agent",
+        "patient"
+      ],
+      "effects": [
+        {
+          "target_role": "patient",
+          "state": "unlocked",
+          "domain": "physical",
+          "relation": "causes",
+          "confidence": 0.95
+        },
+        {
+          "target_role": "patient",
+          "state": "accessible",
+          "domain": "physical",
+          "relation": "causes",
+          "confidence": 0.9
+        }
+      ],
+      "surface_aliases": [
+        "unlock",
+        "unlocks",
+        "unlocked",
+        "unlocking"
+      ]
+    },
+    "block": {
+      "predicate_id": "block",
+      "semantic_class": "verb.contact",
+      "atom_kind": "event",
+      "default_cause_kind": "intentional_action",
+      "roles": [
+        "agent",
+        "patient"
+      ],
+      "effects": [
+        {
+          "target_role": "patient",
+          "state": "blocked",
+          "domain": "physical",
+          "relation": "causes",
+          "confidence": 0.95
+        },
+        {
+          "target_role": "patient",
+          "state": "obstructed",
+          "domain": "physical",
+          "relation": "causes",
+          "confidence": 0.85
+        },
+        {
+          "target_role": "patient",
+          "state": "inaccessible",
+          "domain": "physical",
+          "relation": "causes",
+          "confidence": 0.8
+        }
+      ],
+      "surface_aliases": [
+        "block",
+        "blocks",
+        "blocked",
+        "blocking"
+      ]
+    },
+    "support": {
+      "predicate_id": "support",
+      "semantic_class": "verb.contact",
+      "atom_kind": "event",
+      "default_cause_kind": "intentional_action",
+      "roles": [
+        "agent",
+        "patient"
+      ],
+      "effects": [
+        {
+          "target_role": "patient",
+          "state": "supported",
+          "domain": "physical",
+          "relation": "causes",
+          "confidence": 0.95
+        },
+        {
+          "target_role": "patient",
+          "state": "stable",
+          "domain": "physical",
+          "relation": "causes",
+          "confidence": 0.85
+        },
+        {
+          "target_role": "patient",
+          "state": "encouraged",
+          "domain": "emotional",
+          "relation": "causes",
+          "confidence": 0.8
+        }
+      ],
+      "surface_aliases": [
+        "support",
+        "supports",
+        "supported",
+        "supporting"
+      ]
+    },
+    "plan": {
+      "predicate_id": "plan",
+      "semantic_class": "verb.cognition",
+      "atom_kind": "event",
+      "default_cause_kind": "intentional_action",
+      "roles": [
+        "agent"
+      ],
+      "effects": [
+        {
+          "target_role": "agent",
+          "state": "prepared",
+          "domain": "mental",
+          "relation": "causes",
+          "confidence": 0.85
+        },
+        {
+          "target_role": "agent",
+          "state": "scheduled",
+          "domain": "mental",
+          "relation": "causes",
+          "confidence": 0.9
+        }
+      ],
+      "surface_aliases": [
+        "plan",
+        "plans",
+        "planned",
+        "planning"
+      ]
+    },
+    "decide": {
+      "predicate_id": "decide",
+      "semantic_class": "verb.cognition",
+      "atom_kind": "event",
+      "default_cause_kind": "intentional_action",
+      "roles": [
+        "agent"
+      ],
+      "effects": [
+        {
+          "target_role": "agent",
+          "state": "committed",
+          "domain": "mental",
+          "relation": "causes",
+          "confidence": 0.9
+        },
+        {
+          "target_role": "agent",
+          "state": "resolved",
+          "domain": "mental",
+          "relation": "causes",
+          "confidence": 0.95
+        }
+      ],
+      "surface_aliases": [
+        "decide",
+        "decides",
+        "decided",
+        "deciding"
+      ]
+    },
+    "choose": {
+      "predicate_id": "choose",
+      "semantic_class": "verb.cognition",
+      "atom_kind": "event",
+      "default_cause_kind": "intentional_action",
+      "roles": [
+        "agent"
+      ],
+      "effects": [
+        {
+          "target_role": "agent",
+          "state": "committed",
+          "domain": "mental",
+          "relation": "causes",
+          "confidence": 0.85
+        },
+        {
+          "target_role": "patient",
+          "state": "selected",
+          "domain": "mental",
+          "relation": "causes",
+          "confidence": 0.95
+        }
+      ],
+      "surface_aliases": [
+        "choose",
+        "chooses",
+        "chose",
+        "chosen",
+        "choosing"
+      ]
+    },
+    "care": {
+      "predicate_id": "care",
+      "semantic_class": "verb.social",
+      "atom_kind": "event",
+      "default_cause_kind": "intentional_action",
+      "roles": [
+        "agent",
+        "patient"
+      ],
+      "effects": [
+        {
+          "target_role": "patient",
+          "state": "cared_for",
+          "domain": "physical",
+          "relation": "causes",
+          "confidence": 0.9
+        },
+        {
+          "target_role": "patient",
+          "state": "nourished",
+          "domain": "physical",
+          "relation": "causes",
+          "confidence": 0.85
+        },
+        {
+          "target_role": "patient",
+          "state": "valued",
+          "domain": "emotional",
+          "relation": "causes",
+          "confidence": 0.85
+        }
+      ],
+      "surface_aliases": [
+        "care",
+        "cares",
+        "cared",
+        "caring"
+      ]
+    },
+    "protect": {
+      "predicate_id": "protect",
+      "semantic_class": "verb.social",
+      "atom_kind": "event",
+      "default_cause_kind": "intentional_action",
+      "roles": [
+        "agent",
+        "patient"
+      ],
+      "effects": [
+        {
+          "target_role": "patient",
+          "state": "safe",
+          "domain": "physical",
+          "relation": "causes",
+          "confidence": 0.9
+        },
+        {
+          "target_role": "patient",
+          "state": "defended",
+          "domain": "physical",
+          "relation": "causes",
+          "confidence": 0.85
+        },
+        {
+          "target_role": "patient",
+          "state": "secure",
+          "domain": "emotional",
+          "relation": "causes",
+          "confidence": 0.8
+        }
+      ],
+      "surface_aliases": [
+        "protect",
+        "protects",
+        "protected",
+        "protecting"
+      ]
+    },
+    "warm": {
+      "predicate_id": "warm",
+      "semantic_class": "verb.change",
+      "atom_kind": "event",
+      "default_cause_kind": "intentional_action",
+      "roles": [
+        "agent",
+        "patient"
+      ],
+      "effects": [
+        {
+          "target_role": "patient",
+          "state": "warm",
+          "domain": "physical",
+          "relation": "causes",
+          "confidence": 0.95
+        },
+        {
+          "target_role": "patient",
+          "state": "heated",
+          "domain": "physical",
+          "relation": "causes",
+          "confidence": 0.9
+        }
+      ],
+      "surface_aliases": [
+        "warm",
+        "warms",
+        "warmed",
+        "warming"
+      ]
+    },
+    "cool": {
+      "predicate_id": "cool",
+      "semantic_class": "verb.change",
+      "atom_kind": "event",
+      "default_cause_kind": "intentional_action",
+      "roles": [
+        "agent",
+        "patient"
+      ],
+      "effects": [
+        {
+          "target_role": "patient",
+          "state": "cool",
+          "domain": "physical",
+          "relation": "causes",
+          "confidence": 0.95
+        },
+        {
+          "target_role": "patient",
+          "state": "cooled",
+          "domain": "physical",
+          "relation": "causes",
+          "confidence": 0.9
+        }
+      ],
+      "surface_aliases": [
+        "cool",
+        "cools",
+        "cooled",
+        "cooling"
+      ]
+    },
+    "melt": {
+      "predicate_id": "melt",
+      "semantic_class": "verb.change",
+      "atom_kind": "event",
+      "default_cause_kind": "natural_process",
+      "roles": [
+        "patient"
+      ],
+      "effects": [
+        {
+          "target_role": "patient",
+          "state": "melted",
+          "domain": "physical",
+          "relation": "causes",
+          "confidence": 0.95
+        },
+        {
+          "target_role": "patient",
+          "state": "liquid",
+          "domain": "physical",
+          "relation": "causes",
+          "confidence": 0.9
+        },
+        {
+          "target_role": "patient",
+          "state": "formless",
+          "domain": "physical",
+          "relation": "causes",
+          "confidence": 0.75
+        }
+      ],
+      "surface_aliases": [
+        "melt",
+        "melts",
+        "melted",
+        "melting",
+        "molten"
+      ]
+    },
+    "freeze": {
+      "predicate_id": "freeze",
+      "semantic_class": "verb.change",
+      "atom_kind": "event",
+      "default_cause_kind": "natural_process",
+      "roles": [
+        "patient"
+      ],
+      "effects": [
+        {
+          "target_role": "patient",
+          "state": "frozen",
+          "domain": "physical",
+          "relation": "causes",
+          "confidence": 0.95
+        },
+        {
+          "target_role": "patient",
+          "state": "solid",
+          "domain": "physical",
+          "relation": "causes",
+          "confidence": 0.9
+        },
+        {
+          "target_role": "patient",
+          "state": "immobilized",
+          "domain": "physical",
+          "relation": "causes",
+          "confidence": 0.8
+        }
+      ],
+      "surface_aliases": [
+        "freeze",
+        "freezes",
+        "froze",
+        "frozen",
+        "freezing"
+      ]
+    },
+    "hit": {
+      "predicate_id": "hit",
+      "semantic_class": "verb.contact",
+      "atom_kind": "event",
+      "default_cause_kind": "intentional_action",
+      "roles": [
+        "agent",
+        "patient"
+      ],
+      "effects": [
+        {
+          "target_role": "patient",
+          "state": "impacted",
+          "domain": "physical",
+          "relation": "causes",
+          "confidence": 0.95
+        },
+        {
+          "target_role": "patient",
+          "state": "damaged",
+          "domain": "physical",
+          "relation": "causes",
+          "confidence": 0.85
+        },
+        {
+          "target_role": "patient",
+          "state": "hurt",
+          "domain": "physical",
+          "relation": "causes",
+          "confidence": 0.8
+        },
+        {
+          "target_role": "patient",
+          "state": "struck",
+          "domain": "physical",
+          "relation": "causes",
+          "confidence": 0.9
+        }
+      ],
+      "surface_aliases": [
+        "hit",
+        "hits",
+        "hit",
+        "hitting"
+      ]
+    },
+    "hurt": {
+      "predicate_id": "hurt",
+      "semantic_class": "verb.contact",
+      "atom_kind": "event",
+      "default_cause_kind": "intentional_action",
+      "roles": [
+        "agent",
+        "patient"
+      ],
+      "effects": [
+        {
+          "target_role": "patient",
+          "state": "in_pain",
+          "domain": "physical",
+          "relation": "causes",
+          "confidence": 0.95
+        },
+        {
+          "target_role": "patient",
+          "state": "injured",
+          "domain": "physical",
+          "relation": "causes",
+          "confidence": 0.85
+        },
+        {
+          "target_role": "patient",
+          "state": "distressed",
+          "domain": "emotional",
+          "relation": "causes",
+          "confidence": 0.8
+        }
+      ],
+      "surface_aliases": [
+        "hurt",
+        "hurts",
+        "hurt",
+        "hurting"
+      ]
+    },
+    "heal": {
+      "predicate_id": "heal",
+      "semantic_class": "verb.contact",
+      "atom_kind": "event",
+      "default_cause_kind": "natural_process",
+      "roles": [
+        "patient"
+      ],
+      "effects": [
+        {
+          "target_role": "patient",
+          "state": "healed",
+          "domain": "physical",
+          "relation": "causes",
+          "confidence": 0.95
+        },
+        {
+          "target_role": "patient",
+          "state": "healthy",
+          "domain": "physical",
+          "relation": "causes",
+          "confidence": 0.85
+        },
+        {
+          "target_role": "patient",
+          "state": "recovered",
+          "domain": "physical",
+          "relation": "causes",
+          "confidence": 0.8
+        }
+      ],
+      "surface_aliases": [
+        "heal",
+        "heals",
+        "healed",
+        "healing"
+      ]
+    },
+    "wear": {
+      "predicate_id": "wear",
+      "semantic_class": "verb.contact",
+      "atom_kind": "event",
+      "default_cause_kind": "intentional_action",
+      "roles": [
+        "agent",
+        "patient"
+      ],
+      "effects": [
+        {
+          "target_role": "patient",
+          "state": "worn",
+          "domain": "physical",
+          "relation": "causes",
+          "confidence": 0.95
+        },
+        {
+          "target_role": "agent",
+          "state": "clothed",
+          "domain": "physical",
+          "relation": "causes",
+          "confidence": 0.85
+        }
+      ],
+      "surface_aliases": [
+        "wear",
+        "wears",
+        "wore",
+        "worn",
+        "wearing"
+      ]
+    },
+    "paint": {
+      "predicate_id": "paint",
+      "semantic_class": "verb.create",
+      "atom_kind": "event",
+      "default_cause_kind": "intentional_action",
+      "roles": [
+        "agent",
+        "patient"
+      ],
+      "effects": [
+        {
+          "target_role": "patient",
+          "state": "painted",
+          "domain": "physical",
+          "relation": "causes",
+          "confidence": 0.95
+        },
+        {
+          "target_role": "patient",
+          "state": "colored",
+          "domain": "physical",
+          "relation": "causes",
+          "confidence": 0.9
+        },
+        {
+          "target_role": "patient",
+          "state": "decorated",
+          "domain": "physical",
+          "relation": "causes",
+          "confidence": 0.85
+        }
+      ],
+      "surface_aliases": [
+        "paint",
+        "paints",
+        "painted",
+        "painting"
+      ]
+    },
+    "draw": {
+      "predicate_id": "draw",
+      "semantic_class": "verb.create",
+      "atom_kind": "event",
+      "default_cause_kind": "intentional_action",
+      "roles": [
+        "agent",
+        "patient"
+      ],
+      "effects": [
+        {
+          "target_role": "patient",
+          "state": "drawn",
+          "domain": "physical",
+          "relation": "causes",
+          "confidence": 0.95
+        },
+        {
+          "target_role": "patient",
+          "state": "depicted",
+          "domain": "physical",
+          "relation": "causes",
+          "confidence": 0.9
+        }
+      ],
+      "surface_aliases": [
+        "draw",
+        "draws",
+        "drew",
+        "drawn",
+        "drawing"
+      ]
+    },
+    "wake": {
+      "predicate_id": "wake",
+      "semantic_class": "verb.body",
+      "atom_kind": "event",
+      "default_cause_kind": "natural_process",
+      "roles": [
+        "patient"
+      ],
+      "effects": [
+        {
+          "target_role": "patient",
+          "state": "awake",
+          "domain": "physical",
+          "relation": "causes",
+          "confidence": 0.95
+        },
+        {
+          "target_role": "patient",
+          "state": "alert",
+          "domain": "physical",
+          "relation": "causes",
+          "confidence": 0.85
+        },
+        {
+          "target_role": "patient",
+          "state": "conscious",
+          "domain": "physical",
+          "relation": "causes",
+          "confidence": 0.9
+        }
+      ],
+      "surface_aliases": [
+        "wake",
+        "wakes",
+        "woke",
+        "woken",
+        "waking"
+      ]
+    },
+    "wash": {
+      "predicate_id": "wash",
+      "semantic_class": "verb.contact",
+      "atom_kind": "event",
+      "default_cause_kind": "intentional_action",
+      "roles": [
+        "agent",
+        "patient"
+      ],
+      "effects": [
+        {
+          "target_role": "patient",
+          "state": "clean",
+          "domain": "physical",
+          "relation": "causes",
+          "confidence": 0.95
+        },
+        {
+          "target_role": "patient",
+          "state": "wet",
+          "domain": "physical",
+          "relation": "causes",
+          "confidence": 0.85
+        },
+        {
+          "target_role": "patient",
+          "state": "fresh",
+          "domain": "physical",
+          "relation": "causes",
+          "confidence": 0.75
+        }
+      ],
+      "surface_aliases": [
+        "wash",
+        "washes",
+        "washed",
+        "washing"
+      ]
+    },
+    "dress": {
+      "predicate_id": "dress",
+      "semantic_class": "verb.body",
+      "atom_kind": "event",
+      "default_cause_kind": "intentional_action",
+      "roles": [
+        "agent"
+      ],
+      "effects": [
+        {
+          "target_role": "agent",
+          "state": "clothed",
+          "domain": "physical",
+          "relation": "causes",
+          "confidence": 0.95
+        },
+        {
+          "target_role": "agent",
+          "state": "ready",
+          "domain": "physical",
+          "relation": "causes",
+          "confidence": 0.8
+        }
+      ],
+      "surface_aliases": [
+        "dress",
+        "dresses",
+        "dressed",
+        "dressing"
+      ]
+    },
+    "prepare": {
+      "predicate_id": "prepare",
+      "semantic_class": "verb.cognition",
+      "atom_kind": "event",
+      "default_cause_kind": "intentional_action",
+      "roles": [
+        "agent",
+        "patient"
+      ],
+      "effects": [
+        {
+          "target_role": "patient",
+          "state": "ready",
+          "domain": "physical",
+          "relation": "causes",
+          "confidence": 0.95
+        },
+        {
+          "target_role": "agent",
+          "state": "prepared",
+          "domain": "mental",
+          "relation": "causes",
+          "confidence": 0.85
+        }
+      ],
+      "surface_aliases": [
+        "prepare",
+        "prepares",
+        "prepared",
+        "preparing"
+      ]
+    },
+    "chop": {
+      "predicate_id": "chop",
+      "semantic_class": "verb.contact",
+      "atom_kind": "event",
+      "default_cause_kind": "intentional_action",
+      "roles": [
+        "agent",
+        "patient"
+      ],
+      "effects": [
+        {
+          "target_role": "patient",
+          "state": "chopped",
+          "domain": "physical",
+          "relation": "causes",
+          "confidence": 0.95
+        },
+        {
+          "target_role": "patient",
+          "state": "divided",
+          "domain": "physical",
+          "relation": "causes",
+          "confidence": 0.85
+        },
+        {
+          "target_role": "patient",
+          "state": "smaller",
+          "domain": "physical",
+          "relation": "causes",
+          "confidence": 0.8
+        }
+      ],
+      "surface_aliases": [
+        "chop",
+        "chops",
+        "chopped",
+        "chopping"
+      ]
+    },
+    "slice": {
+      "predicate_id": "slice",
+      "semantic_class": "verb.contact",
+      "atom_kind": "event",
+      "default_cause_kind": "intentional_action",
+      "roles": [
+        "agent",
+        "patient"
+      ],
+      "effects": [
+        {
+          "target_role": "patient",
+          "state": "sliced",
+          "domain": "physical",
+          "relation": "causes",
+          "confidence": 0.95
+        },
+        {
+          "target_role": "patient",
+          "state": "thin",
+          "domain": "physical",
+          "relation": "causes",
+          "confidence": 0.85
+        }
+      ],
+      "surface_aliases": [
+        "slice",
+        "slices",
+        "sliced",
+        "slicing"
+      ]
+    },
+    "mix": {
+      "predicate_id": "mix",
+      "semantic_class": "verb.contact",
+      "atom_kind": "event",
+      "default_cause_kind": "intentional_action",
+      "roles": [
+        "agent",
+        "patient"
+      ],
+      "effects": [
+        {
+          "target_role": "patient",
+          "state": "mixed",
+          "domain": "physical",
+          "relation": "causes",
+          "confidence": 0.95
+        },
+        {
+          "target_role": "patient",
+          "state": "combined",
+          "domain": "physical",
+          "relation": "causes",
+          "confidence": 0.9
+        },
+        {
+          "target_role": "patient",
+          "state": "uniform",
+          "domain": "physical",
+          "relation": "causes",
+          "confidence": 0.8
+        }
+      ],
+      "surface_aliases": [
+        "mix",
+        "mixes",
+        "mixed",
+        "mixing"
+      ]
+    },
+    "stir": {
+      "predicate_id": "stir",
+      "semantic_class": "verb.contact",
+      "atom_kind": "event",
+      "default_cause_kind": "intentional_action",
+      "roles": [
+        "agent",
+        "patient"
+      ],
+      "effects": [
+        {
+          "target_role": "patient",
+          "state": "stirred",
+          "domain": "physical",
+          "relation": "causes",
+          "confidence": 0.95
+        },
+        {
+          "target_role": "patient",
+          "state": "moving",
+          "domain": "physical",
+          "relation": "causes",
+          "confidence": 0.85
+        }
+      ],
+      "surface_aliases": [
+        "stir",
+        "stirs",
+        "stirred",
+        "stirring"
+      ]
+    },
+    "fry": {
+      "predicate_id": "fry",
+      "semantic_class": "verb.create",
+      "atom_kind": "event",
+      "default_cause_kind": "intentional_action",
+      "roles": [
+        "agent",
+        "patient"
+      ],
+      "effects": [
+        {
+          "target_role": "patient",
+          "state": "fried",
+          "domain": "physical",
+          "relation": "causes",
+          "confidence": 0.95
+        },
+        {
+          "target_role": "patient",
+          "state": "cooked",
+          "domain": "physical",
+          "relation": "causes",
+          "confidence": 0.9
+        },
+        {
+          "target_role": "patient",
+          "state": "hot",
+          "domain": "physical",
+          "relation": "causes",
+          "confidence": 0.8
+        }
+      ],
+      "surface_aliases": [
+        "fry",
+        "fries",
+        "fried",
+        "frying"
+      ]
+    },
+    "bake": {
+      "predicate_id": "bake",
+      "semantic_class": "verb.create",
+      "atom_kind": "event",
+      "default_cause_kind": "intentional_action",
+      "roles": [
+        "agent",
+        "patient"
+      ],
+      "effects": [
+        {
+          "target_role": "patient",
+          "state": "baked",
+          "domain": "physical",
+          "relation": "causes",
+          "confidence": 0.95
+        },
+        {
+          "target_role": "patient",
+          "state": "cooked",
+          "domain": "physical",
+          "relation": "causes",
+          "confidence": 0.9
+        },
+        {
+          "target_role": "patient",
+          "state": "firm",
+          "domain": "physical",
+          "relation": "causes",
+          "confidence": 0.8
+        }
+      ],
+      "surface_aliases": [
+        "bake",
+        "bakes",
+        "baked",
+        "baking"
+      ]
+    },
+    "go": {
+      "predicate_id": "go",
+      "semantic_class": "verb.move",
+      "atom_kind": "event",
+      "default_cause_kind": "intentional_action",
+      "roles": [
+        "agent"
+      ],
+      "effects": [
+        {
+          "target_role": "agent",
+          "state": "departed",
+          "domain": "physical",
+          "relation": "causes",
+          "confidence": 0.95
+        },
+        {
+          "target_role": "agent",
+          "state": "in_motion",
+          "domain": "physical",
+          "relation": "causes",
+          "confidence": 0.9
+        },
+        {
+          "target_role": "agent",
+          "state": "absent",
+          "domain": "physical",
+          "relation": "causes",
+          "confidence": 0.8
+        }
+      ],
+      "surface_aliases": [
+        "go",
+        "goes",
+        "went",
+        "gone",
+        "going"
+      ]
+    },
+    "come": {
+      "predicate_id": "come",
+      "semantic_class": "verb.move",
+      "atom_kind": "event",
+      "default_cause_kind": "intentional_action",
+      "roles": [
+        "agent"
+      ],
+      "effects": [
+        {
+          "target_role": "agent",
+          "state": "arrived",
+          "domain": "physical",
+          "relation": "causes",
+          "confidence": 0.95
+        },
+        {
+          "target_role": "agent",
+          "state": "present",
+          "domain": "physical",
+          "relation": "causes",
+          "confidence": 0.85
+        }
+      ],
+      "surface_aliases": [
+        "come",
+        "comes",
+        "came",
+        "come",
+        "coming"
+      ]
+    },
+    "arrive": {
+      "predicate_id": "arrive",
+      "semantic_class": "verb.move",
+      "atom_kind": "event",
+      "default_cause_kind": "intentional_action",
+      "roles": [
+        "agent"
+      ],
+      "effects": [
+        {
+          "target_role": "agent",
+          "state": "arrived",
+          "domain": "physical",
+          "relation": "causes",
+          "confidence": 0.95
+        },
+        {
+          "target_role": "agent",
+          "state": "present",
+          "domain": "physical",
+          "relation": "causes",
+          "confidence": 0.9
+        }
+      ],
+      "surface_aliases": [
+        "arrive",
+        "arrives",
+        "arrived",
+        "arriving"
+      ]
+    },
+    "leave": {
+      "predicate_id": "leave",
+      "semantic_class": "verb.move",
+      "atom_kind": "event",
+      "default_cause_kind": "intentional_action",
+      "roles": [
+        "agent"
+      ],
+      "effects": [
+        {
+          "target_role": "agent",
+          "state": "departed",
+          "domain": "physical",
+          "relation": "causes",
+          "confidence": 0.95
+        },
+        {
+          "target_role": "agent",
+          "state": "absent",
+          "domain": "physical",
+          "relation": "causes",
+          "confidence": 0.9
+        }
+      ],
+      "surface_aliases": [
+        "leave",
+        "leaves",
+        "left",
+        "left",
+        "leaving"
+      ]
+    },
+    "run": {
+      "predicate_id": "run",
+      "semantic_class": "verb.move",
+      "atom_kind": "event",
+      "default_cause_kind": "intentional_action",
+      "roles": [
+        "agent"
+      ],
+      "effects": [
+        {
+          "target_role": "agent",
+          "state": "in_motion",
+          "domain": "physical",
+          "relation": "causes",
+          "confidence": 0.95
+        },
+        {
+          "target_role": "agent",
+          "state": "breathless",
+          "domain": "physical",
+          "relation": "causes",
+          "confidence": 0.8
+        },
+        {
+          "target_role": "agent",
+          "state": "relocated",
+          "domain": "physical",
+          "relation": "causes",
+          "confidence": 0.9
+        }
+      ],
+      "surface_aliases": [
+        "run",
+        "runs",
+        "ran",
+        "run",
+        "running"
+      ]
+    },
+    "ask": {
+      "predicate_id": "ask",
+      "semantic_class": "verb.communicate",
+      "atom_kind": "event",
+      "default_cause_kind": "intentional_action",
+      "roles": [
+        "agent",
+        "patient"
+      ],
+      "effects": [
+        {
+          "target_role": "patient",
+          "state": "questioned",
+          "domain": "mental",
+          "relation": "causes",
+          "confidence": 0.95
+        },
+        {
+          "target_role": "agent",
+          "state": "inquiring",
+          "domain": "mental",
+          "relation": "causes",
+          "confidence": 0.85
+        }
+      ],
+      "surface_aliases": [
+        "ask",
+        "asks",
+        "asked",
+        "asking"
+      ]
+    },
+    "tell": {
+      "predicate_id": "tell",
+      "semantic_class": "verb.communicate",
+      "atom_kind": "event",
+      "default_cause_kind": "intentional_action",
+      "roles": [
+        "agent",
+        "patient"
+      ],
+      "effects": [
+        {
+          "target_role": "patient",
+          "state": "informed",
+          "domain": "mental",
+          "relation": "causes",
+          "confidence": 0.95
+        },
+        {
+          "target_role": "patient",
+          "state": "aware",
+          "domain": "mental",
+          "relation": "causes",
+          "confidence": 0.85
+        },
+        {
+          "target_role": "agent",
+          "state": "communicated",
+          "domain": "mental",
+          "relation": "causes",
+          "confidence": 0.8
+        }
+      ],
+      "surface_aliases": [
+        "tell",
+        "tells",
+        "told",
+        "told",
+        "telling"
+      ]
+    },
+    "explain": {
+      "predicate_id": "explain",
+      "semantic_class": "verb.communicate",
+      "atom_kind": "event",
+      "default_cause_kind": "intentional_action",
+      "roles": [
+        "agent",
+        "patient"
+      ],
+      "effects": [
+        {
+          "target_role": "patient",
+          "state": "informed",
+          "domain": "mental",
+          "relation": "causes",
+          "confidence": 0.9
+        },
+        {
+          "target_role": "patient",
+          "state": "enlightened",
+          "domain": "mental",
+          "relation": "causes",
+          "confidence": 0.85
+        },
+        {
+          "target_role": "patient",
+          "state": "clear",
+          "domain": "mental",
+          "relation": "causes",
+          "confidence": 0.8
+        }
+      ],
+      "surface_aliases": [
+        "explain",
+        "explains",
+        "explained",
+        "explaining"
+      ]
+    },
+    "suggest": {
+      "predicate_id": "suggest",
+      "semantic_class": "verb.communicate",
+      "atom_kind": "event",
+      "default_cause_kind": "intentional_action",
+      "roles": [
+        "agent",
+        "patient"
+      ],
+      "effects": [
+        {
+          "target_role": "patient",
+          "state": "considered",
+          "domain": "mental",
+          "relation": "causes",
+          "confidence": 0.85
+        },
+        {
+          "target_role": "patient",
+          "state": "aware",
+          "domain": "mental",
+          "relation": "causes",
+          "confidence": 0.8
+        }
+      ],
+      "surface_aliases": [
+        "suggest",
+        "suggests",
+        "suggested",
+        "suggesting"
+      ]
+    },
+    "thank": {
+      "predicate_id": "thank",
+      "semantic_class": "verb.social",
+      "atom_kind": "event",
+      "default_cause_kind": "intentional_action",
+      "roles": [
+        "agent",
+        "patient"
+      ],
+      "effects": [
+        {
+          "target_role": "patient",
+          "state": "appreciated",
+          "domain": "emotional",
+          "relation": "causes",
+          "confidence": 0.95
+        },
+        {
+          "target_role": "patient",
+          "state": "valued",
+          "domain": "emotional",
+          "relation": "causes",
+          "confidence": 0.85
+        }
+      ],
+      "surface_aliases": [
+        "thank",
+        "thanks",
+        "thanked",
+        "thanking"
+      ]
+    },
+    "meet": {
+      "predicate_id": "meet",
+      "semantic_class": "verb.social",
+      "atom_kind": "event",
+      "default_cause_kind": "intentional_action",
+      "roles": [
+        "agent",
+        "patient"
+      ],
+      "effects": [
+        {
+          "target_role": "patient",
+          "state": "introduced",
+          "domain": "social",
+          "relation": "causes",
+          "confidence": 0.95
+        },
+        {
+          "target_role": "agent",
+          "state": "acquainted",
+          "domain": "social",
+          "relation": "causes",
+          "confidence": 0.85
+        }
+      ],
+      "surface_aliases": [
+        "meet",
+        "meets",
+        "met",
+        "met",
+        "meeting"
+      ]
+    },
+    "grab": {
+      "predicate_id": "grab",
+      "semantic_class": "verb.contact",
+      "atom_kind": "event",
+      "default_cause_kind": "intentional_action",
+      "roles": [
+        "agent",
+        "patient"
+      ],
+      "effects": [
+        {
+          "target_role": "patient",
+          "state": "held",
+          "domain": "physical",
+          "relation": "causes",
+          "confidence": 0.95
+        },
+        {
+          "target_role": "patient",
+          "state": "secured",
+          "domain": "physical",
+          "relation": "causes",
+          "confidence": 0.85
+        }
+      ],
+      "surface_aliases": [
+        "grab",
+        "grabs",
+        "grabbed",
+        "grabbing"
+      ]
+    },
+    "hold": {
+      "predicate_id": "hold",
+      "semantic_class": "verb.contact",
+      "atom_kind": "event",
+      "default_cause_kind": "intentional_action",
+      "roles": [
+        "agent",
+        "patient"
+      ],
+      "effects": [
+        {
+          "target_role": "patient",
+          "state": "held",
+          "domain": "physical",
+          "relation": "causes",
+          "confidence": 0.95
+        },
+        {
+          "target_role": "patient",
+          "state": "stationary",
+          "domain": "physical",
+          "relation": "causes",
+          "confidence": 0.85
+        }
+      ],
+      "surface_aliases": [
+        "hold",
+        "holds",
+        "held",
+        "held",
+        "holding"
+      ]
+    },
+    "release": {
+      "predicate_id": "release",
+      "semantic_class": "verb.contact",
+      "atom_kind": "event",
+      "default_cause_kind": "intentional_action",
+      "roles": [
+        "agent",
+        "patient"
+      ],
+      "effects": [
+        {
+          "target_role": "patient",
+          "state": "released",
+          "domain": "physical",
+          "relation": "causes",
+          "confidence": 0.95
+        },
+        {
+          "target_role": "patient",
+          "state": "free",
+          "domain": "physical",
+          "relation": "causes",
+          "confidence": 0.9
+        },
+        {
+          "target_role": "patient",
+          "state": "falling",
+          "domain": "physical",
+          "relation": "causes",
+          "confidence": 0.8
+        }
+      ],
+      "surface_aliases": [
+        "release",
+        "releases",
+        "released",
+        "releasing"
+      ]
+    },
+    "breathe": {
+      "predicate_id": "breathe",
+      "semantic_class": "verb.body",
+      "atom_kind": "event",
+      "default_cause_kind": "natural_process",
+      "roles": [
+        "patient"
+      ],
+      "effects": [
+        {
+          "target_role": "patient",
+          "state": "oxygenated",
+          "domain": "physical",
+          "relation": "causes",
+          "confidence": 0.95
+        },
+        {
+          "target_role": "patient",
+          "state": "alive",
+          "domain": "physical",
+          "relation": "causes",
+          "confidence": 0.9
+        },
+        {
+          "target_role": "patient",
+          "state": "calm",
+          "domain": "physical",
+          "relation": "causes",
+          "confidence": 0.75
+        }
+      ],
+      "surface_aliases": [
+        "breathe",
+        "breathes",
+        "breathed",
+        "breathing"
+      ]
+    },
+    "rest": {
+      "predicate_id": "rest",
+      "semantic_class": "verb.body",
+      "atom_kind": "event",
+      "default_cause_kind": "natural_process",
+      "roles": [
+        "patient"
+      ],
+      "effects": [
+        {
+          "target_role": "patient",
+          "state": "rested",
+          "domain": "physical",
+          "relation": "causes",
+          "confidence": 0.95
+        },
+        {
+          "target_role": "patient",
+          "state": "recovered",
+          "domain": "physical",
+          "relation": "causes",
+          "confidence": 0.85
+        },
+        {
+          "target_role": "patient",
+          "state": "energized",
+          "domain": "physical",
+          "relation": "causes",
+          "confidence": 0.8
+        }
+      ],
+      "surface_aliases": [
+        "rest",
+        "rests",
+        "rested",
+        "resting"
+      ]
+    },
+    "practice": {
+      "predicate_id": "practice",
+      "semantic_class": "verb.cognition",
+      "atom_kind": "event",
+      "default_cause_kind": "intentional_action",
+      "roles": [
+        "agent"
+      ],
+      "effects": [
+        {
+          "target_role": "agent",
+          "state": "skilled",
+          "domain": "mental",
+          "relation": "causes",
+          "confidence": 0.9
+        },
+        {
+          "target_role": "agent",
+          "state": "improved",
+          "domain": "mental",
+          "relation": "causes",
+          "confidence": 0.85
+        },
+        {
+          "target_role": "agent",
+          "state": "prepared",
+          "domain": "mental",
+          "relation": "causes",
+          "confidence": 0.8
+        }
+      ],
+      "surface_aliases": [
+        "practice",
+        "practices",
+        "practiced",
+        "practicing"
+      ]
+    },
+    "improve": {
+      "predicate_id": "improve",
+      "semantic_class": "verb.change",
+      "atom_kind": "event",
+      "default_cause_kind": "intentional_action",
+      "roles": [
+        "agent",
+        "patient"
+      ],
+      "effects": [
+        {
+          "target_role": "patient",
+          "state": "improved",
+          "domain": "mental",
+          "relation": "causes",
+          "confidence": 0.95
+        },
+        {
+          "target_role": "patient",
+          "state": "better",
+          "domain": "mental",
+          "relation": "causes",
+          "confidence": 0.9
+        },
+        {
+          "target_role": "agent",
+          "state": "satisfied",
+          "domain": "emotional",
+          "relation": "causes",
+          "confidence": 0.75
+        }
+      ],
+      "surface_aliases": [
+        "improve",
+        "improves",
+        "improved",
+        "improving"
+      ]
+    },
+    "save": {
+      "predicate_id": "save",
+      "semantic_class": "verb.contact",
+      "atom_kind": "event",
+      "default_cause_kind": "intentional_action",
+      "roles": [
+        "agent",
+        "patient"
+      ],
+      "effects": [
+        {
+          "target_role": "patient",
+          "state": "saved",
+          "domain": "physical",
+          "relation": "causes",
+          "confidence": 0.95
+        },
+        {
+          "target_role": "patient",
+          "state": "protected",
+          "domain": "physical",
+          "relation": "causes",
+          "confidence": 0.9
+        },
+        {
+          "target_role": "patient",
+          "state": "preserved",
+          "domain": "physical",
+          "relation": "causes",
+          "confidence": 0.85
+        }
+      ],
+      "surface_aliases": [
+        "save",
+        "saves",
+        "saved",
+        "saving"
+      ]
+    },
+    "love": {
+      "predicate_id": "love",
+      "semantic_class": "verb.emotion",
+      "atom_kind": "event",
+      "default_cause_kind": "natural_process",
+      "roles": [
+        "agent",
+        "patient"
+      ],
+      "effects": [
+        {
+          "target_role": "agent",
+          "state": "affectionate",
+          "domain": "emotional",
+          "relation": "causes",
+          "confidence": 0.95
+        },
+        {
+          "target_role": "patient",
+          "state": "cherished",
+          "domain": "emotional",
+          "relation": "causes",
+          "confidence": 0.9
+        }
+      ],
+      "surface_aliases": [
+        "love",
+        "loves",
+        "loved",
+        "loving"
+      ]
+    },
+    "enjoy": {
+      "predicate_id": "enjoy",
+      "semantic_class": "verb.emotion",
+      "atom_kind": "event",
+      "default_cause_kind": "natural_process",
+      "roles": [
+        "agent",
+        "patient"
+      ],
+      "effects": [
+        {
+          "target_role": "agent",
+          "state": "pleased",
+          "domain": "emotional",
+          "relation": "causes",
+          "confidence": 0.95
+        },
+        {
+          "target_role": "agent",
+          "state": "entertained",
+          "domain": "emotional",
+          "relation": "causes",
+          "confidence": 0.85
+        }
+      ],
+      "surface_aliases": [
+        "enjoy",
+        "enjoys",
+        "enjoyed",
+        "enjoying"
+      ]
+    },
+    "relax": {
+      "predicate_id": "relax",
+      "semantic_class": "verb.body",
+      "atom_kind": "event",
+      "default_cause_kind": "intentional_action",
+      "roles": [
+        "agent"
+      ],
+      "effects": [
+        {
+          "target_role": "agent",
+          "state": "calm",
+          "domain": "emotional",
+          "relation": "causes",
+          "confidence": 0.95
+        },
+        {
+          "target_role": "agent",
+          "state": "rested",
+          "domain": "physical",
+          "relation": "causes",
+          "confidence": 0.85
+        }
+      ],
+      "surface_aliases": [
+        "relax",
+        "relaxes",
+        "relaxed",
+        "relaxing"
+      ]
+    },
+    "fear": {
+      "predicate_id": "fear",
+      "semantic_class": "verb.emotion",
+      "atom_kind": "event",
+      "default_cause_kind": "natural_process",
+      "roles": [
+        "agent",
+        "patient"
+      ],
+      "effects": [
+        {
+          "target_role": "agent",
+          "state": "afraid",
+          "domain": "emotional",
+          "relation": "causes",
+          "confidence": 0.95
+        },
+        {
+          "target_role": "agent",
+          "state": "anxious",
+          "domain": "emotional",
+          "relation": "causes",
+          "confidence": 0.85
+        }
+      ],
+      "surface_aliases": [
+        "fear",
+        "fears",
+        "feared",
+        "fearing"
+      ]
+    },
+    "worry": {
+      "predicate_id": "worry",
+      "semantic_class": "verb.emotion",
+      "atom_kind": "event",
+      "default_cause_kind": "natural_process",
+      "roles": [
+        "agent"
+      ],
+      "effects": [
+        {
+          "target_role": "agent",
+          "state": "anxious",
+          "domain": "emotional",
+          "relation": "causes",
+          "confidence": 0.95
+        },
+        {
+          "target_role": "agent",
+          "state": "stressed",
+          "domain": "emotional",
+          "relation": "causes",
+          "confidence": 0.85
+        },
+        {
+          "target_role": "agent",
+          "state": "distracted",
+          "domain": "mental",
+          "relation": "causes",
+          "confidence": 0.75
+        }
+      ],
+      "surface_aliases": [
+        "worry",
+        "worries",
+        "worried",
+        "worrying"
+      ]
+    },
+    "learn": {
+      "predicate_id": "learn",
+      "semantic_class": "verb.cognition",
+      "atom_kind": "event",
+      "default_cause_kind": "intentional_action",
+      "roles": [
+        "agent",
+        "patient"
+      ],
+      "effects": [
+        {
+          "target_role": "agent",
+          "state": "knowledgeable",
+          "domain": "mental",
+          "relation": "causes",
+          "confidence": 0.95
+        },
+        {
+          "target_role": "agent",
+          "state": "skilled",
+          "domain": "mental",
+          "relation": "causes",
+          "confidence": 0.85
+        },
+        {
+          "target_role": "patient",
+          "state": "learned",
+          "domain": "mental",
+          "relation": "causes",
+          "confidence": 0.9
+        }
+      ],
+      "surface_aliases": [
+        "learn",
+        "learns",
+        "learned",
+        "learning"
+      ]
+    },
+    "focus": {
+      "predicate_id": "focus",
+      "semantic_class": "verb.cognition",
+      "atom_kind": "event",
+      "default_cause_kind": "intentional_action",
+      "roles": [
+        "agent"
+      ],
+      "effects": [
+        {
+          "target_role": "agent",
+          "state": "concentrating",
+          "domain": "mental",
+          "relation": "causes",
+          "confidence": 0.95
+        },
+        {
+          "target_role": "agent",
+          "state": "productive",
+          "domain": "mental",
+          "relation": "causes",
+          "confidence": 0.8
+        }
+      ],
+      "surface_aliases": [
+        "focus",
+        "focuses",
+        "focused",
+        "focusing"
+      ]
+    },
+    "search": {
+      "predicate_id": "search",
+      "semantic_class": "verb.cognition",
+      "atom_kind": "event",
+      "default_cause_kind": "intentional_action",
+      "roles": [
+        "agent",
+        "patient"
+      ],
+      "effects": [
+        {
+          "target_role": "patient",
+          "state": "searched",
+          "domain": "physical",
+          "relation": "causes",
+          "confidence": 0.95
+        },
+        {
+          "target_role": "agent",
+          "state": "looking",
+          "domain": "physical",
+          "relation": "causes",
+          "confidence": 0.85
+        }
+      ],
+      "surface_aliases": [
+        "search",
+        "searches",
+        "searched",
+        "searching"
+      ]
+    },
+    "find": {
+      "predicate_id": "find",
+      "semantic_class": "verb.perceive",
+      "atom_kind": "event",
+      "default_cause_kind": "natural_process",
+      "roles": [
+        "agent",
+        "patient"
+      ],
+      "effects": [
+        {
+          "target_role": "agent",
+          "state": "knowledgeable",
+          "domain": "mental",
+          "relation": "causes",
+          "confidence": 0.9
+        },
+        {
+          "target_role": "patient",
+          "state": "discovered",
+          "domain": "physical",
+          "relation": "causes",
+          "confidence": 0.95
+        }
+      ],
+      "surface_aliases": [
+        "find",
+        "finds",
+        "found",
+        "found",
+        "finding"
+      ]
+    },
+    "start": {
+      "predicate_id": "start",
+      "semantic_class": "verb.change",
+      "atom_kind": "event",
+      "default_cause_kind": "intentional_action",
+      "roles": [
+        "agent",
+        "patient"
+      ],
+      "effects": [
+        {
+          "target_role": "patient",
+          "state": "active",
+          "domain": "physical",
+          "relation": "causes",
+          "confidence": 0.95
+        },
+        {
+          "target_role": "patient",
+          "state": "running",
+          "domain": "physical",
+          "relation": "causes",
+          "confidence": 0.9
+        }
+      ],
+      "surface_aliases": [
+        "start",
+        "starts",
+        "started",
+        "starting"
+      ]
+    },
+    "stop": {
+      "predicate_id": "stop",
+      "semantic_class": "verb.change",
+      "atom_kind": "event",
+      "default_cause_kind": "intentional_action",
+      "roles": [
+        "agent",
+        "patient"
+      ],
+      "effects": [
+        {
+          "target_role": "patient",
+          "state": "stopped",
+          "domain": "physical",
+          "relation": "causes",
+          "confidence": 0.95
+        },
+        {
+          "target_role": "patient",
+          "state": "inactive",
+          "domain": "physical",
+          "relation": "causes",
+          "confidence": 0.9
+        },
+        {
+          "target_role": "patient",
+          "state": "still",
+          "domain": "physical",
+          "relation": "causes",
+          "confidence": 0.85
+        }
+      ],
+      "surface_aliases": [
+        "stop",
+        "stops",
+        "stopped",
+        "stopping"
+      ]
+    },
+    "continue": {
+      "predicate_id": "continue",
+      "semantic_class": "verb.stative",
+      "atom_kind": "event",
+      "default_cause_kind": "intentional_action",
+      "roles": [
+        "agent",
+        "patient"
+      ],
+      "effects": [
+        {
+          "target_role": "patient",
+          "state": "ongoing",
+          "domain": "physical",
+          "relation": "causes",
+          "confidence": 0.95
+        },
+        {
+          "target_role": "agent",
+          "state": "persistent",
+          "domain": "mental",
+          "relation": "causes",
+          "confidence": 0.8
+        }
+      ],
+      "surface_aliases": [
+        "continue",
+        "continues",
+        "continued",
+        "continuing"
+      ]
+    },
+    "finish": {
+      "predicate_id": "finish",
+      "semantic_class": "verb.change",
+      "atom_kind": "event",
+      "default_cause_kind": "intentional_action",
+      "roles": [
+        "agent",
+        "patient"
+      ],
+      "effects": [
+        {
+          "target_role": "patient",
+          "state": "finished",
+          "domain": "physical",
+          "relation": "causes",
+          "confidence": 0.95
+        },
+        {
+          "target_role": "agent",
+          "state": "done",
+          "domain": "mental",
+          "relation": "causes",
+          "confidence": 0.85
+        },
+        {
+          "target_role": "patient",
+          "state": "complete",
+          "domain": "physical",
+          "relation": "causes",
+          "confidence": 0.9
+        }
+      ],
+      "surface_aliases": [
+        "finish",
+        "finishes",
+        "finished",
+        "finishing"
+      ]
+    },
+    "try": {
+      "predicate_id": "try",
+      "semantic_class": "verb.cognition",
+      "atom_kind": "event",
+      "default_cause_kind": "intentional_action",
+      "roles": [
+        "agent",
+        "patient"
+      ],
+      "effects": [
+        {
+          "target_role": "agent",
+          "state": "attempting",
+          "domain": "mental",
+          "relation": "causes",
+          "confidence": 0.95
+        },
+        {
+          "target_role": "patient",
+          "state": "tested",
+          "domain": "physical",
+          "relation": "causes",
+          "confidence": 0.85
+        }
+      ],
+      "surface_aliases": [
+        "try",
+        "tries",
+        "tried",
+        "trying"
+      ]
+    },
+    "wait": {
+      "predicate_id": "wait",
+      "semantic_class": "verb.stative",
+      "atom_kind": "event",
+      "default_cause_kind": "intentional_action",
+      "roles": [
+        "agent"
+      ],
+      "effects": [
+        {
+          "target_role": "agent",
+          "state": "waiting",
+          "domain": "physical",
+          "relation": "causes",
+          "confidence": 0.95
+        },
+        {
+          "target_role": "agent",
+          "state": "patient",
+          "domain": "mental",
+          "relation": "causes",
+          "confidence": 0.75
+        }
+      ],
+      "surface_aliases": [
+        "wait",
+        "waits",
+        "waited",
+        "waiting"
+      ]
+    },
+    "stay": {
+      "predicate_id": "stay",
+      "semantic_class": "verb.stative",
+      "atom_kind": "event",
+      "default_cause_kind": "intentional_action",
+      "roles": [
+        "agent"
+      ],
+      "effects": [
+        {
+          "target_role": "agent",
+          "state": "stationary",
+          "domain": "physical",
+          "relation": "causes",
+          "confidence": 0.95
+        },
+        {
+          "target_role": "agent",
+          "state": "present",
+          "domain": "physical",
+          "relation": "causes",
+          "confidence": 0.85
+        }
+      ],
+      "surface_aliases": [
+        "stay",
+        "stays",
+        "stayed",
+        "staying"
+      ]
+    },
+    "keep": {
+      "predicate_id": "keep",
+      "semantic_class": "verb.possess",
+      "atom_kind": "event",
+      "default_cause_kind": "intentional_action",
+      "roles": [
+        "agent",
+        "patient"
+      ],
+      "effects": [
+        {
+          "target_role": "patient",
+          "state": "retained",
+          "domain": "physical",
+          "relation": "causes",
+          "confidence": 0.95
+        },
+        {
+          "target_role": "patient",
+          "state": "possession",
+          "domain": "physical",
+          "relation": "causes",
+          "confidence": 0.9
+        }
+      ],
+      "surface_aliases": [
+        "keep",
+        "keeps",
+        "kept",
+        "kept",
+        "keeping"
+      ]
+    },
+    "call": {
+      "predicate_id": "call",
+      "semantic_class": "verb.communicate",
+      "atom_kind": "event",
+      "default_cause_kind": "intentional_action",
+      "roles": [
+        "agent",
+        "patient"
+      ],
+      "effects": [
+        {
+          "target_role": "patient",
+          "state": "contacted",
+          "domain": "social",
+          "relation": "causes",
+          "confidence": 0.95
+        },
+        {
+          "target_role": "agent",
+          "state": "communicated",
+          "domain": "social",
+          "relation": "causes",
+          "confidence": 0.85
+        }
+      ],
+      "surface_aliases": [
+        "call",
+        "calls",
+        "called",
+        "calling"
+      ]
+    },
+    "reply": {
+      "predicate_id": "reply",
+      "semantic_class": "verb.communicate",
+      "atom_kind": "event",
+      "default_cause_kind": "intentional_action",
+      "roles": [
+        "agent",
+        "patient"
+      ],
+      "effects": [
+        {
+          "target_role": "patient",
+          "state": "answered",
+          "domain": "social",
+          "relation": "causes",
+          "confidence": 0.95
+        },
+        {
+          "target_role": "agent",
+          "state": "responded",
+          "domain": "social",
+          "relation": "causes",
+          "confidence": 0.9
+        }
+      ],
+      "surface_aliases": [
+        "reply",
+        "replies",
+        "replied",
+        "replying"
+      ]
+    },
+    "like": {
+      "predicate_id": "like",
+      "semantic_class": "verb.emotion",
+      "atom_kind": "event",
+      "default_cause_kind": "natural_process",
+      "roles": [
+        "agent",
+        "patient"
+      ],
+      "effects": [
+        {
+          "target_role": "agent",
+          "state": "pleased",
+          "domain": "emotional",
+          "relation": "causes",
+          "confidence": 0.95
+        },
+        {
+          "target_role": "patient",
+          "state": "appreciated",
+          "domain": "emotional",
+          "relation": "causes",
+          "confidence": 0.8
+        }
+      ],
+      "surface_aliases": [
+        "like",
+        "likes",
+        "liked",
+        "liking"
+      ]
+    },
+    "need": {
+      "predicate_id": "need",
+      "semantic_class": "verb.stative",
+      "atom_kind": "event",
+      "default_cause_kind": "natural_process",
+      "roles": [
+        "agent",
+        "patient"
+      ],
+      "effects": [
+        {
+          "target_role": "agent",
+          "state": "wanting",
+          "domain": "mental",
+          "relation": "causes",
+          "confidence": 0.95
+        },
+        {
+          "target_role": "patient",
+          "state": "required",
+          "domain": "physical",
+          "relation": "causes",
+          "confidence": 0.9
+        }
+      ],
+      "surface_aliases": [
+        "need",
+        "needs",
+        "needed",
+        "needing"
+      ]
+    },
+    "want": {
+      "predicate_id": "want",
+      "semantic_class": "verb.emotion",
+      "atom_kind": "event",
+      "default_cause_kind": "natural_process",
+      "roles": [
+        "agent",
+        "patient"
+      ],
+      "effects": [
+        {
+          "target_role": "agent",
+          "state": "desiring",
+          "domain": "mental",
+          "relation": "causes",
+          "confidence": 0.95
+        },
+        {
+          "target_role": "patient",
+          "state": "desired",
+          "domain": "mental",
+          "relation": "causes",
+          "confidence": 0.85
+        }
+      ],
+      "surface_aliases": [
+        "want",
+        "wants",
+        "wanted",
+        "wanting"
+      ]
+    },
+    "change": {
+      "predicate_id": "change",
+      "semantic_class": "verb.change",
+      "atom_kind": "event",
+      "default_cause_kind": "intentional_action",
+      "roles": [
+        "agent",
+        "patient"
+      ],
+      "effects": [
+        {
+          "target_role": "patient",
+          "state": "changed",
+          "domain": "physical",
+          "relation": "causes",
+          "confidence": 0.95
+        },
+        {
+          "target_role": "patient",
+          "state": "different",
+          "domain": "physical",
+          "relation": "causes",
+          "confidence": 0.85
+        },
+        {
+          "target_role": "patient",
+          "state": "transformed",
+          "domain": "physical",
+          "relation": "causes",
+          "confidence": 0.8
+        }
+      ],
+      "surface_aliases": [
+        "change",
+        "changes",
+        "changed",
+        "changing"
+      ]
+    },
+    "cause": {
+      "predicate_id": "cause",
+      "semantic_class": "verb.stative",
+      "atom_kind": "event",
+      "default_cause_kind": "natural_process",
+      "roles": [
+        "agent",
+        "patient"
+      ],
+      "effects": [
+        {
+          "target_role": "patient",
+          "state": "effected",
+          "domain": "physical",
+          "relation": "causes",
+          "confidence": 0.95
+        },
+        {
+          "target_role": "patient",
+          "state": "produced",
+          "domain": "physical",
+          "relation": "causes",
+          "confidence": 0.9
+        }
+      ],
+      "surface_aliases": [
+        "cause",
+        "causes",
+        "caused",
+        "causing"
+      ]
+    },
+    "prevent": {
+      "predicate_id": "prevent",
+      "semantic_class": "verb.change",
+      "atom_kind": "event",
+      "default_cause_kind": "intentional_action",
+      "roles": [
+        "agent",
+        "patient"
+      ],
+      "effects": [
+        {
+          "target_role": "patient",
+          "state": "prevented",
+          "domain": "physical",
+          "relation": "causes",
+          "confidence": 0.95
+        },
+        {
+          "target_role": "patient",
+          "state": "averted",
+          "domain": "physical",
+          "relation": "causes",
+          "confidence": 0.85
+        }
+      ],
+      "surface_aliases": [
+        "prevent",
+        "prevents",
+        "prevented",
+        "preventing"
+      ]
+    },
+    "play": {
+      "predicate_id": "play",
+      "semantic_class": "verb.perform_media",
+      "atom_kind": "event",
+      "default_cause_kind": "intentional_action",
+      "roles": [
+        "agent",
+        "patient"
+      ],
+      "effects": [
+        {
+          "target_role": "patient",
+          "state": "playing",
+          "domain": "physical",
+          "relation": "causes",
+          "confidence": 0.95
+        },
+        {
+          "target_role": "agent",
+          "state": "entertained",
+          "domain": "emotional",
+          "relation": "causes",
+          "confidence": 0.85
+        },
+        {
+          "target_role": "patient",
+          "state": "audible",
+          "domain": "physical",
+          "relation": "causes",
+          "confidence": 0.9
+        }
+      ],
+      "surface_aliases": [
+        "play",
+        "plays",
+        "played",
+        "playing"
+      ]
+    },
+    "sing": {
+      "predicate_id": "sing",
+      "semantic_class": "verb.perform_media",
+      "atom_kind": "event",
+      "default_cause_kind": "intentional_action",
+      "roles": [
+        "agent"
+      ],
+      "effects": [
+        {
+          "target_role": "agent",
+          "state": "singing",
+          "domain": "physical",
+          "relation": "causes",
+          "confidence": 0.95
+        },
+        {
+          "target_role": "patient",
+          "state": "audible",
+          "domain": "physical",
+          "relation": "causes",
+          "confidence": 0.9
+        }
+      ],
+      "surface_aliases": [
+        "sing",
+        "sings",
+        "sang",
+        "sung",
+        "singing"
+      ]
+    },
+    "listen": {
+      "predicate_id": "listen",
+      "semantic_class": "verb.perceive",
+      "atom_kind": "event",
+      "default_cause_kind": "intentional_action",
+      "roles": [
+        "agent",
+        "patient"
+      ],
+      "effects": [
+        {
+          "target_role": "agent",
+          "state": "attentive",
+          "domain": "mental",
+          "relation": "causes",
+          "confidence": 0.95
+        },
+        {
+          "target_role": "patient",
+          "state": "heard",
+          "domain": "physical",
+          "relation": "causes",
+          "confidence": 0.9
+        },
+        {
+          "target_role": "agent",
+          "state": "informed",
+          "domain": "mental",
+          "relation": "causes",
+          "confidence": 0.8
+        }
+      ],
+      "surface_aliases": [
+        "listen",
+        "listens",
+        "listened",
+        "listening"
+      ]
+    },
+    "imagine": {
+      "predicate_id": "imagine",
+      "semantic_class": "verb.cognition",
+      "atom_kind": "event",
+      "default_cause_kind": "intentional_action",
+      "roles": [
+        "agent",
+        "patient"
+      ],
+      "effects": [
+        {
+          "target_role": "patient",
+          "state": "imagined",
+          "domain": "mental",
+          "relation": "causes",
+          "confidence": 0.95
+        },
+        {
+          "target_role": "agent",
+          "state": "creative",
+          "domain": "mental",
+          "relation": "causes",
+          "confidence": 0.85
+        }
+      ],
+      "surface_aliases": [
+        "imagine",
+        "imagines",
+        "imagined",
+        "imagining"
+      ]
+    },
+    "create": {
+      "predicate_id": "create",
+      "semantic_class": "verb.create",
+      "atom_kind": "event",
+      "default_cause_kind": "intentional_action",
+      "roles": [
+        "agent",
+        "patient"
+      ],
+      "effects": [
+        {
+          "target_role": "patient",
+          "state": "created",
+          "domain": "physical",
+          "relation": "causes",
+          "confidence": 0.95
+        },
+        {
+          "target_role": "patient",
+          "state": "new",
+          "domain": "physical",
+          "relation": "causes",
+          "confidence": 0.85
+        },
+        {
+          "target_role": "patient",
+          "state": "existing",
+          "domain": "physical",
+          "relation": "causes",
+          "confidence": 0.9
+        }
+      ],
+      "surface_aliases": [
+        "create",
+        "creates",
+        "created",
+        "creating"
+      ]
+    },
+    "treat": {
+      "predicate_id": "treat",
+      "semantic_class": "verb.contact",
+      "atom_kind": "event",
+      "default_cause_kind": "intentional_action",
+      "roles": [
+        "agent",
+        "patient"
+      ],
+      "effects": [
+        {
+          "target_role": "patient",
+          "state": "treated",
+          "domain": "physical",
+          "relation": "causes",
+          "confidence": 0.95
+        },
+        {
+          "target_role": "agent",
+          "state": "caring",
+          "domain": "emotional",
+          "relation": "causes",
+          "confidence": 0.8
+        },
+        {
+          "target_role": "patient",
+          "state": "better",
+          "domain": "physical",
+          "relation": "causes",
+          "confidence": 0.75
+        }
+      ],
+      "surface_aliases": [
+        "treat",
+        "treats",
+        "treated",
+        "treating"
+      ]
+    },
+    "recover": {
+      "predicate_id": "recover",
+      "semantic_class": "verb.body",
+      "atom_kind": "event",
+      "default_cause_kind": "natural_process",
+      "roles": [
+        "agent"
+      ],
+      "effects": [
+        {
+          "target_role": "agent",
+          "state": "recovered",
+          "domain": "physical",
+          "relation": "causes",
+          "confidence": 0.95
+        },
+        {
+          "target_role": "agent",
+          "state": "healthy",
+          "domain": "physical",
+          "relation": "causes",
+          "confidence": 0.85
+        },
+        {
+          "target_role": "agent",
+          "state": "restored",
+          "domain": "physical",
+          "relation": "causes",
+          "confidence": 0.9
+        }
+      ],
+      "surface_aliases": [
+        "recover",
+        "recovers",
+        "recovered",
+        "recovering"
+      ]
+    },
+    "prescribe": {
+      "predicate_id": "prescribe",
+      "semantic_class": "verb.communicate",
+      "atom_kind": "event",
+      "default_cause_kind": "intentional_action",
+      "roles": [
+        "agent",
+        "patient"
+      ],
+      "effects": [
+        {
+          "target_role": "patient",
+          "state": "prescribed",
+          "domain": "physical",
+          "relation": "causes",
+          "confidence": 0.95
+        },
+        {
+          "target_role": "agent",
+          "state": "helpful",
+          "domain": "social",
+          "relation": "causes",
+          "confidence": 0.8
+        }
+      ],
+      "surface_aliases": [
+        "prescribe",
+        "prescribes",
+        "prescribed",
+        "prescribing"
+      ]
+    },
+    "advise": {
+      "predicate_id": "advise",
+      "semantic_class": "verb.communicate",
+      "atom_kind": "event",
+      "default_cause_kind": "intentional_action",
+      "roles": [
+        "agent",
+        "patient"
+      ],
+      "effects": [
+        {
+          "target_role": "patient",
+          "state": "advised",
+          "domain": "social",
+          "relation": "causes",
+          "confidence": 0.95
+        },
+        {
+          "target_role": "patient",
+          "state": "informed",
+          "domain": "mental",
+          "relation": "causes",
+          "confidence": 0.85
+        }
+      ],
+      "surface_aliases": [
+        "advise",
+        "advises",
+        "advised",
+        "advising"
+      ]
+    },
+    "remember": {
+      "predicate_id": "remember",
+      "semantic_class": "verb.cognition",
+      "atom_kind": "event",
+      "default_cause_kind": "natural_process",
+      "roles": [
+        "agent",
+        "patient"
+      ],
+      "effects": [
+        {
+          "target_role": "agent",
+          "state": "remembering",
+          "domain": "mental",
+          "relation": "causes",
+          "confidence": 0.95
+        },
+        {
+          "target_role": "patient",
+          "state": "recalled",
+          "domain": "mental",
+          "relation": "causes",
+          "confidence": 0.85
+        }
+      ],
+      "surface_aliases": [
+        "remember",
+        "remembers",
+        "remembered",
+        "remembering"
+      ]
+    },
+    "forget": {
+      "predicate_id": "forget",
+      "semantic_class": "verb.cognition",
+      "atom_kind": "event",
+      "default_cause_kind": "natural_process",
+      "roles": [
+        "agent",
+        "patient"
+      ],
+      "effects": [
+        {
+          "target_role": "patient",
+          "state": "forgotten",
+          "domain": "mental",
+          "relation": "causes",
+          "confidence": 0.95
+        },
+        {
+          "target_role": "agent",
+          "state": "unaware",
+          "domain": "mental",
+          "relation": "causes",
+          "confidence": 0.85
+        }
+      ],
+      "surface_aliases": [
+        "forget",
+        "forgets",
+        "forgot",
+        "forgotten",
+        "forgetting"
+      ]
+    },
+    "remind": {
+      "predicate_id": "remind",
+      "semantic_class": "verb.communicate",
+      "atom_kind": "event",
+      "default_cause_kind": "intentional_action",
+      "roles": [
+        "agent",
+        "patient"
+      ],
+      "effects": [
+        {
+          "target_role": "patient",
+          "state": "reminded",
+          "domain": "mental",
+          "relation": "causes",
+          "confidence": 0.95
+        },
+        {
+          "target_role": "patient",
+          "state": "aware",
+          "domain": "mental",
+          "relation": "causes",
+          "confidence": 0.85
+        }
+      ],
+      "surface_aliases": [
+        "remind",
+        "reminds",
+        "reminded",
+        "reminding"
+      ]
+    },
+    "schedule": {
+      "predicate_id": "schedule",
+      "semantic_class": "verb.communicate",
+      "atom_kind": "event",
+      "default_cause_kind": "intentional_action",
+      "roles": [
+        "agent",
+        "patient"
+      ],
+      "effects": [
+        {
+          "target_role": "patient",
+          "state": "scheduled",
+          "domain": "social",
+          "relation": "causes",
+          "confidence": 0.95
+        },
+        {
+          "target_role": "patient",
+          "state": "planned",
+          "domain": "social",
+          "relation": "causes",
+          "confidence": 0.9
+        }
+      ],
+      "surface_aliases": [
+        "schedule",
+        "schedules",
+        "scheduled",
+        "scheduling"
+      ]
+    },
+    "promise": {
+      "predicate_id": "promise",
+      "semantic_class": "verb.communicate",
+      "atom_kind": "event",
+      "default_cause_kind": "intentional_action",
+      "roles": [
+        "agent",
+        "patient"
+      ],
+      "effects": [
+        {
+          "target_role": "patient",
+          "state": "promised",
+          "domain": "social",
+          "relation": "causes",
+          "confidence": 0.95
+        },
+        {
+          "target_role": "agent",
+          "state": "committed",
+          "domain": "emotional",
+          "relation": "causes",
+          "confidence": 0.9
+        }
+      ],
+      "surface_aliases": [
+        "promise",
+        "promises",
+        "promised",
+        "promising"
+      ]
+    },
+    "feel": {
+      "predicate_id": "feel",
+      "semantic_class": "verb.perceive",
+      "atom_kind": "event",
+      "default_cause_kind": "natural_process",
+      "roles": [
+        "agent"
+      ],
+      "effects": [
+        {
+          "target_role": "agent",
+          "state": "feeling",
+          "domain": "emotional",
+          "relation": "causes",
+          "confidence": 0.95
+        },
+        {
+          "target_role": "agent",
+          "state": "aware",
+          "domain": "mental",
+          "relation": "causes",
+          "confidence": 0.85
+        }
+      ],
+      "surface_aliases": [
+        "feel",
+        "feels",
+        "felt",
+        "felt",
+        "feeling"
+      ]
+    },
+    "know": {
+      "predicate_id": "know",
+      "semantic_class": "verb.cognition",
+      "atom_kind": "event",
+      "default_cause_kind": "natural_process",
+      "roles": [
+        "agent",
+        "patient"
+      ],
+      "effects": [
+        {
+          "target_role": "agent",
+          "state": "knowing",
+          "domain": "mental",
+          "relation": "causes",
+          "confidence": 0.95
+        },
+        {
+          "target_role": "patient",
+          "state": "known",
+          "domain": "mental",
+          "relation": "causes",
+          "confidence": 0.9
+        }
+      ],
+      "surface_aliases": [
+        "know",
+        "knows",
+        "knew",
+        "known",
+        "knowing"
+      ]
+    },
+    "believe": {
+      "predicate_id": "believe",
+      "semantic_class": "verb.cognition",
+      "atom_kind": "event",
+      "default_cause_kind": "natural_process",
+      "roles": [
+        "agent",
+        "patient"
+      ],
+      "effects": [
+        {
+          "target_role": "agent",
+          "state": "believing",
+          "domain": "mental",
+          "relation": "causes",
+          "confidence": 0.95
+        },
+        {
+          "target_role": "patient",
+          "state": "believed",
+          "domain": "mental",
+          "relation": "causes",
+          "confidence": 0.85
+        }
+      ],
+      "surface_aliases": [
+        "believe",
+        "believes",
+        "believed",
+        "believing"
+      ]
+    },
+    "think": {
+      "predicate_id": "think",
+      "semantic_class": "verb.cognition",
+      "atom_kind": "event",
+      "default_cause_kind": "natural_process",
+      "roles": [
+        "agent"
+      ],
+      "effects": [
+        {
+          "target_role": "agent",
+          "state": "thinking",
+          "domain": "mental",
+          "relation": "causes",
+          "confidence": 0.95
+        },
+        {
+          "target_role": "agent",
+          "state": "contemplating",
+          "domain": "mental",
+          "relation": "causes",
+          "confidence": 0.85
+        },
+        {
+          "target_role": "patient",
+          "state": "considered",
+          "domain": "mental",
+          "relation": "causes",
+          "confidence": 0.8
+        }
+      ],
+      "surface_aliases": [
+        "think",
+        "thinks",
+        "thought",
+        "thought",
+        "thinking"
+      ]
+    },
+    "agree": {
+      "predicate_id": "agree",
+      "semantic_class": "verb.communicate",
+      "atom_kind": "event",
+      "default_cause_kind": "intentional_action",
+      "roles": [
+        "agent",
+        "patient"
+      ],
+      "effects": [
+        {
+          "target_role": "agent",
+          "state": "agreeing",
+          "domain": "mental",
+          "relation": "causes",
+          "confidence": 0.95
+        },
+        {
+          "target_role": "patient",
+          "state": "agreed",
+          "domain": "social",
+          "relation": "causes",
+          "confidence": 0.9
+        },
+        {
+          "target_role": "agent",
+          "state": "aligned",
+          "domain": "social",
+          "relation": "causes",
+          "confidence": 0.85
+        }
+      ],
+      "surface_aliases": [
+        "agree",
+        "agrees",
+        "agreed",
+        "agreeing"
+      ]
+    },
+    "confirm": {
+      "predicate_id": "confirm",
+      "semantic_class": "verb.communicate",
+      "atom_kind": "event",
+      "default_cause_kind": "intentional_action",
+      "roles": [
+        "agent",
+        "patient"
+      ],
+      "effects": [
+        {
+          "target_role": "patient",
+          "state": "confirmed",
+          "domain": "social",
+          "relation": "causes",
+          "confidence": 0.95
+        },
+        {
+          "target_role": "patient",
+          "state": "verified",
+          "domain": "mental",
+          "relation": "causes",
+          "confidence": 0.9
+        }
+      ],
+      "surface_aliases": [
+        "confirm",
+        "confirms",
+        "confirmed",
+        "confirming"
+      ]
+    },
+    "message": {
+      "predicate_id": "message",
+      "semantic_class": "verb.communicate",
+      "atom_kind": "event",
+      "default_cause_kind": "intentional_action",
+      "roles": [
+        "agent",
+        "patient"
+      ],
+      "effects": [
+        {
+          "target_role": "patient",
+          "state": "messaged",
+          "domain": "social",
+          "relation": "causes",
+          "confidence": 0.95
+        },
+        {
+          "target_role": "patient",
+          "state": "contacted",
+          "domain": "social",
+          "relation": "causes",
+          "confidence": 0.9
+        }
+      ],
+      "surface_aliases": [
+        "message",
+        "messages",
+        "messaged",
+        "messaging"
+      ]
+    },
+    "invite": {
+      "predicate_id": "invite",
+      "semantic_class": "verb.social",
+      "atom_kind": "event",
+      "default_cause_kind": "intentional_action",
+      "roles": [
+        "agent",
+        "patient"
+      ],
+      "effects": [
+        {
+          "target_role": "patient",
+          "state": "invited",
+          "domain": "social",
+          "relation": "causes",
+          "confidence": 0.95
+        },
+        {
+          "target_role": "patient",
+          "state": "welcomed",
+          "domain": "social",
+          "relation": "causes",
+          "confidence": 0.85
+        }
+      ],
+      "surface_aliases": [
+        "invite",
+        "invites",
+        "invited",
+        "inviting"
+      ]
+    },
+    "describe": {
+      "predicate_id": "describe",
+      "semantic_class": "verb.communicate",
+      "atom_kind": "event",
+      "default_cause_kind": "intentional_action",
+      "roles": [
+        "agent",
+        "patient"
+      ],
+      "effects": [
+        {
+          "target_role": "patient",
+          "state": "described",
+          "domain": "social",
+          "relation": "causes",
+          "confidence": 0.95
+        },
+        {
+          "target_role": "patient",
+          "state": "explained",
+          "domain": "mental",
+          "relation": "causes",
+          "confidence": 0.85
+        }
+      ],
+      "surface_aliases": [
+        "describe",
+        "describes",
+        "described",
+        "describing"
+      ]
+    },
+    "introduce": {
+      "predicate_id": "introduce",
+      "semantic_class": "verb.social",
+      "atom_kind": "event",
+      "default_cause_kind": "intentional_action",
+      "roles": [
+        "agent",
+        "patient"
+      ],
+      "effects": [
+        {
+          "target_role": "patient",
+          "state": "introduced",
+          "domain": "social",
+          "relation": "causes",
+          "confidence": 0.95
+        },
+        {
+          "target_role": "patient",
+          "state": "presented",
+          "domain": "social",
+          "relation": "causes",
+          "confidence": 0.9
+        }
+      ],
+      "surface_aliases": [
+        "introduce",
+        "introduces",
+        "introduced",
+        "introducing"
+      ]
+    },
+    "snow": {
+      "predicate_id": "snow",
+      "semantic_class": "verb.weather",
+      "atom_kind": "event",
+      "default_cause_kind": "natural_process",
+      "roles": [
+        "patient"
+      ],
+      "effects": [
+        {
+          "target_role": "patient",
+          "state": "snowy",
+          "domain": "physical",
+          "relation": "causes",
+          "confidence": 0.95
+        },
+        {
+          "target_role": "patient",
+          "state": "cold",
+          "domain": "physical",
+          "relation": "causes",
+          "confidence": 0.85
+        },
+        {
+          "target_role": "patient",
+          "state": "white",
+          "domain": "physical",
+          "relation": "causes",
+          "confidence": 0.8
+        }
+      ],
+      "surface_aliases": [
+        "snow",
+        "snows",
+        "snowed",
+        "snowing"
+      ]
+    },
+    "blow": {
+      "predicate_id": "blow",
+      "semantic_class": "verb.weather",
+      "atom_kind": "event",
+      "default_cause_kind": "natural_process",
+      "roles": [
+        "patient"
+      ],
+      "effects": [
+        {
+          "target_role": "patient",
+          "state": "windy",
+          "domain": "physical",
+          "relation": "causes",
+          "confidence": 0.95
+        },
+        {
+          "target_role": "patient",
+          "state": "displaced",
+          "domain": "physical",
+          "relation": "causes",
+          "confidence": 0.8
+        }
+      ],
+      "surface_aliases": [
+        "blow",
+        "blows",
+        "blew",
+        "blown",
+        "blowing"
+      ]
+    },
+    "compose": {
+      "predicate_id": "compose",
+      "semantic_class": "verb.create",
+      "atom_kind": "event",
+      "default_cause_kind": "intentional_action",
+      "roles": [
+        "agent",
+        "patient"
+      ],
+      "effects": [
+        {
+          "target_role": "patient",
+          "state": "composed",
+          "domain": "physical",
+          "relation": "causes",
+          "confidence": 0.95
+        },
+        {
+          "target_role": "patient",
+          "state": "created",
+          "domain": "physical",
+          "relation": "causes",
+          "confidence": 0.9
+        },
+        {
+          "target_role": "agent",
+          "state": "creative",
+          "domain": "mental",
+          "relation": "causes",
+          "confidence": 0.85
+        }
+      ],
+      "surface_aliases": [
+        "compose",
+        "composes",
+        "composed",
+        "composing"
+      ]
+    },
+    "perform": {
+      "predicate_id": "perform",
+      "semantic_class": "verb.perform_media",
+      "atom_kind": "event",
+      "default_cause_kind": "intentional_action",
+      "roles": [
+        "agent",
+        "patient"
+      ],
+      "effects": [
+        {
+          "target_role": "patient",
+          "state": "performed",
+          "domain": "physical",
+          "relation": "causes",
+          "confidence": 0.95
+        },
+        {
+          "target_role": "patient",
+          "state": "audible",
+          "domain": "physical",
+          "relation": "causes",
+          "confidence": 0.9
+        }
+      ],
+      "surface_aliases": [
+        "perform",
+        "performs",
+        "performed",
+        "performing"
+      ]
+    },
+    "examine": {
+      "predicate_id": "examine",
+      "semantic_class": "verb.perceive",
+      "atom_kind": "event",
+      "default_cause_kind": "intentional_action",
+      "roles": [
+        "agent",
+        "patient"
+      ],
+      "effects": [
+        {
+          "target_role": "patient",
+          "state": "examined",
+          "domain": "physical",
+          "relation": "causes",
+          "confidence": 0.95
+        },
+        {
+          "target_role": "agent",
+          "state": "informed",
+          "domain": "mental",
+          "relation": "causes",
+          "confidence": 0.85
+        }
+      ],
+      "surface_aliases": [
+        "examine",
+        "examines",
+        "examined",
+        "examining"
+      ]
+    },
+    "consult": {
+      "predicate_id": "consult",
+      "semantic_class": "verb.communicate",
+      "atom_kind": "event",
+      "default_cause_kind": "intentional_action",
+      "roles": [
+        "agent",
+        "patient"
+      ],
+      "effects": [
+        {
+          "target_role": "patient",
+          "state": "consulted",
+          "domain": "social",
+          "relation": "causes",
+          "confidence": 0.95
+        },
+        {
+          "target_role": "agent",
+          "state": "informed",
+          "domain": "mental",
+          "relation": "causes",
+          "confidence": 0.85
+        }
+      ],
+      "surface_aliases": [
+        "consult",
+        "consults",
+        "consulted",
+        "consulting"
+      ]
+    },
+    "diagnose": {
+      "predicate_id": "diagnose",
+      "semantic_class": "verb.cognition",
+      "atom_kind": "event",
+      "default_cause_kind": "intentional_action",
+      "roles": [
+        "agent",
+        "patient"
+      ],
+      "effects": [
+        {
+          "target_role": "patient",
+          "state": "diagnosed",
+          "domain": "mental",
+          "relation": "causes",
+          "confidence": 0.95
+        },
+        {
+          "target_role": "agent",
+          "state": "informed",
+          "domain": "mental",
+          "relation": "causes",
+          "confidence": 0.85
+        }
+      ],
+      "surface_aliases": [
+        "diagnose",
+        "diagnoses",
+        "diagnosed",
+        "diagnosing"
+      ]
+    },
+    "commit": {
+      "predicate_id": "commit",
+      "semantic_class": "verb.communicate",
+      "atom_kind": "event",
+      "default_cause_kind": "intentional_action",
+      "roles": [
+        "agent"
+      ],
+      "effects": [
+        {
+          "target_role": "agent",
+          "state": "committed",
+          "domain": "emotional",
+          "relation": "causes",
+          "confidence": 0.95
+        },
+        {
+          "target_role": "agent",
+          "state": "obligated",
+          "domain": "social",
+          "relation": "causes",
+          "confidence": 0.85
+        }
+      ],
+      "surface_aliases": [
+        "commit",
+        "commits",
+        "committed",
+        "committing"
+      ]
+    },
+    "defer": {
+      "predicate_id": "defer",
+      "semantic_class": "verb.change",
+      "atom_kind": "event",
+      "default_cause_kind": "intentional_action",
+      "roles": [
+        "agent",
+        "patient"
+      ],
+      "effects": [
+        {
+          "target_role": "patient",
+          "state": "deferred",
+          "domain": "physical",
+          "relation": "causes",
+          "confidence": 0.95
+        },
+        {
+          "target_role": "patient",
+          "state": "postponed",
+          "domain": "social",
+          "relation": "causes",
+          "confidence": 0.9
+        }
+      ],
+      "surface_aliases": [
+        "defer",
+        "defers",
+        "deferred",
+        "deferring"
+      ]
+    },
+    "doubt": {
+      "predicate_id": "doubt",
+      "semantic_class": "verb.cognition",
+      "atom_kind": "event",
+      "default_cause_kind": "natural_process",
+      "roles": [
+        "agent",
+        "patient"
+      ],
+      "effects": [
+        {
+          "target_role": "agent",
+          "state": "uncertain",
+          "domain": "mental",
+          "relation": "causes",
+          "confidence": 0.95
+        },
+        {
+          "target_role": "patient",
+          "state": "questioned",
+          "domain": "mental",
+          "relation": "causes",
+          "confidence": 0.85
+        }
+      ],
+      "surface_aliases": [
+        "doubt",
+        "doubts",
+        "doubted",
+        "doubting"
+      ]
+    },
+    "disagree": {
+      "predicate_id": "disagree",
+      "semantic_class": "verb.communicate",
+      "atom_kind": "event",
+      "default_cause_kind": "intentional_action",
+      "roles": [
+        "agent",
+        "patient"
+      ],
+      "effects": [
+        {
+          "target_role": "agent",
+          "state": "dissenting",
+          "domain": "mental",
+          "relation": "causes",
+          "confidence": 0.95
+        },
+        {
+          "target_role": "patient",
+          "state": "disputed",
+          "domain": "social",
+          "relation": "causes",
+          "confidence": 0.85
+        }
+      ],
+      "surface_aliases": [
+        "disagree",
+        "disagrees",
+        "disagreed",
+        "disagreeing"
+      ]
+    },
+    "recall": {
+      "predicate_id": "recall",
+      "semantic_class": "verb.cognition",
+      "atom_kind": "event",
+      "default_cause_kind": "intentional_action",
+      "roles": [
+        "agent",
+        "patient"
+      ],
+      "effects": [
+        {
+          "target_role": "patient",
+          "state": "recalled",
+          "domain": "mental",
+          "relation": "causes",
+          "confidence": 0.95
+        },
+        {
+          "target_role": "agent",
+          "state": "remembering",
+          "domain": "mental",
+          "relation": "causes",
+          "confidence": 0.9
+        }
+      ],
+      "surface_aliases": [
+        "recall",
+        "recalls",
+        "recalled",
+        "recalling"
+      ]
+    },
+    "name": {
+      "predicate_id": "name",
+      "semantic_class": "verb.communicate",
+      "atom_kind": "event",
+      "default_cause_kind": "intentional_action",
+      "roles": [
+        "agent",
+        "patient"
+      ],
+      "effects": [
+        {
+          "target_role": "patient",
+          "state": "named",
+          "domain": "social",
+          "relation": "causes",
+          "confidence": 0.95
+        },
+        {
+          "target_role": "patient",
+          "state": "labeled",
+          "domain": "social",
+          "relation": "causes",
+          "confidence": 0.9
+        }
+      ],
+      "surface_aliases": [
+        "name",
+        "names",
+        "named",
+        "naming"
+      ]
+    },
+    "identify": {
+      "predicate_id": "identify",
+      "semantic_class": "verb.cognition",
+      "atom_kind": "event",
+      "default_cause_kind": "intentional_action",
+      "roles": [
+        "agent",
+        "patient"
+      ],
+      "effects": [
+        {
+          "target_role": "patient",
+          "state": "identified",
+          "domain": "mental",
+          "relation": "causes",
+          "confidence": 0.95
+        },
+        {
+          "target_role": "agent",
+          "state": "knowing",
+          "domain": "mental",
+          "relation": "causes",
+          "confidence": 0.85
+        }
+      ],
+      "surface_aliases": [
+        "identify",
+        "identifies",
+        "identified",
+        "identifying"
+      ]
+    }
+  },
+  "state_definitions": {
+    "wet": {
+      "state_id": "wet",
+      "semantic_class": "state",
+      "aliases": [
+        "wet",
+        "damp",
+        "moist"
+      ],
+      "definition": "has moisture or water on or in the target",
+      "definition_atoms": [
+        {
+          "predicate_id": "have",
+          "roles": {
+            "theme": "$target",
+            "substance": "water"
+          }
+        }
+      ],
+      "opposites": [
+        "dry"
+      ]
+    },
+    "dry": {
+      "state_id": "dry",
+      "semantic_class": "state",
+      "aliases": [
+        "dry",
+        "dried"
+      ],
+      "definition": "has little or no moisture on or in the target",
+      "opposites": [
+        "wet"
+      ]
+    },
+    "bright": {
+      "state_id": "bright",
+      "semantic_class": "state",
+      "aliases": [
+        "bright",
+        "brighter",
+        "sunny",
+        "luminous"
+      ],
+      "definition": "has high visible light or illumination",
+      "opposites": [
+        "dark"
+      ]
+    },
+    "warmer": {
+      "state_id": "warmer",
+      "semantic_class": "state",
+      "aliases": [
+        "warmer",
+        "hotter",
+        "heated"
+      ],
+      "definition": "has increased temperature relative to prior state",
+      "opposites": [
+        "cooler"
+      ]
+    },
+    "cooler": {
+      "state_id": "cooler",
+      "semantic_class": "state",
+      "aliases": [
+        "cooler",
+        "colder",
+        "cooled"
+      ],
+      "definition": "has decreased temperature relative to prior state",
+      "opposites": [
+        "warmer"
+      ]
+    },
+    "broken": {
+      "state_id": "broken",
+      "semantic_class": "state",
+      "aliases": [
+        "broken",
+        "shattered",
+        "cracked",
+        "fractured"
+      ],
+      "definition": "is physically separated into pieces or no longer intact",
+      "opposites": [
+        "intact"
+      ]
+    },
+    "damaged": {
+      "state_id": "damaged",
+      "semantic_class": "state",
+      "aliases": [
+        "damaged",
+        "harmed",
+        "impaired"
+      ],
+      "definition": "has suffered physical harm or impairment to function or integrity",
+      "opposites": [
+        "undamaged"
+      ]
+    },
+    "fragmented": {
+      "state_id": "fragmented",
+      "semantic_class": "state",
+      "aliases": [
+        "fragmented",
+        "in_pieces",
+        "shattered"
+      ],
+      "definition": "is broken into multiple fragments or pieces",
+      "opposites": [
+        "whole"
+      ]
+    },
+    "reduced_volume": {
+      "state_id": "reduced_volume",
+      "semantic_class": "state",
+      "aliases": [
+        "reduced",
+        "less",
+        "diminished",
+        "lower"
+      ],
+      "definition": "has decreased quantity or volume relative to prior state",
+      "opposites": [
+        "increased_volume"
+      ]
+    },
+    "shot": {
+      "state_id": "shot",
+      "semantic_class": "state",
+      "aliases": [
+        "shot",
+        "discharged"
+      ],
+      "definition": "has been fired from a firearm",
+      "opposites": [
+        "unfired"
+      ]
+    },
+    "created": {
+      "state_id": "created",
+      "semantic_class": "state",
+      "aliases": [
+        "created",
+        "made",
+        "produced",
+        "generated"
+      ],
+      "definition": "has been brought into existence",
+      "opposites": [
+        "destroyed"
+      ]
+    },
+    "injured": {
+      "state_id": "injured",
+      "semantic_class": "state",
+      "aliases": [
+        "injured",
+        "hurt",
+        "wounded"
+      ],
+      "definition": "has suffered bodily harm",
+      "opposites": [
+        "uninjured"
+      ]
+    },
+    "slippery": {
+      "state_id": "slippery",
+      "semantic_class": "state",
+      "external_state_seed": true,
+      "definition": "is a surface with reduced friction, likely to cause slipping",
+      "opposites": [
+        "grippy"
+      ]
+    },
+    "gunshot_sound": {
+      "state_id": "gunshot_sound",
+      "semantic_class": "state",
+      "external_state_seed": true,
+      "definition": "is the loud explosive sound produced by firing a firearm",
+      "opposites": [
+        "silence"
+      ]
+    },
+    "satisfied": {
+      "state_id": "satisfied",
+      "semantic_class": "state",
+      "aliases": [
+        "satisfied",
+        "content",
+        "full"
+      ],
+      "definition": "has had hunger or desire fulfilled",
+      "opposites": [
+        "hungry"
+      ]
+    },
+    "nourished": {
+      "state_id": "nourished",
+      "semantic_class": "state",
+      "aliases": [
+        "nourished",
+        "fed",
+        "sustained"
+      ],
+      "definition": "has received nutrition or sustenance",
+      "opposites": [
+        "malnourished"
+      ]
+    },
+    "rested": {
+      "state_id": "rested",
+      "semantic_class": "state",
+      "aliases": [
+        "rested",
+        "well_rested",
+        "refreshed"
+      ],
+      "definition": "has recovered energy through rest or sleep",
+      "opposites": [
+        "tired"
+      ]
+    },
+    "energetic": {
+      "state_id": "energetic",
+      "semantic_class": "state",
+      "aliases": [
+        "energetic",
+        "energized",
+        "active"
+      ],
+      "definition": "has high physical energy or vitality",
+      "opposites": [
+        "lethargic"
+      ]
+    },
+    "alert": {
+      "state_id": "alert",
+      "semantic_class": "state",
+      "aliases": [
+        "alert",
+        "awake",
+        "attentive",
+        "focused"
+      ],
+      "definition": "is mentally awake and attentive",
+      "opposites": [
+        "drowsy"
+      ]
+    },
+    "cooked": {
+      "state_id": "cooked",
+      "semantic_class": "state",
+      "aliases": [
+        "cooked",
+        "done",
+        "heated",
+        "baked"
+      ],
+      "definition": "has been heated or prepared through cooking",
+      "opposites": [
+        "raw"
+      ]
+    },
+    "prepared": {
+      "state_id": "prepared",
+      "semantic_class": "state",
+      "aliases": [
+        "prepared",
+        "ready",
+        "assembled"
+      ],
+      "definition": "has been made ready for consumption or use",
+      "opposites": [
+        "unprepared"
+      ]
+    },
+    "aided": {
+      "state_id": "aided",
+      "semantic_class": "state",
+      "aliases": [
+        "aided",
+        "assisted",
+        "helped",
+        "supported"
+      ],
+      "definition": "has received assistance or support",
+      "opposites": [
+        "unaided"
+      ]
+    },
+    "relieved": {
+      "state_id": "relieved",
+      "semantic_class": "state",
+      "aliases": [
+        "relieved",
+        "comforted",
+        "soothed"
+      ],
+      "definition": "has had distress or burden reduced",
+      "opposites": [
+        "distressed"
+      ]
+    },
+    "hurt": {
+      "state_id": "hurt",
+      "semantic_class": "state",
+      "aliases": [
+        "hurt",
+        "injured",
+        "sore",
+        "in_pain"
+      ],
+      "definition": "is experiencing physical pain or injury",
+      "opposites": [
+        "pain_free"
+      ]
+    },
+    "burned": {
+      "state_id": "burned",
+      "semantic_class": "state",
+      "aliases": [
+        "burned",
+        "burnt",
+        "scorched",
+        "charred"
+      ],
+      "definition": "has been damaged or altered by fire or heat",
+      "opposites": [
+        "unburned"
+      ]
+    },
+    "destroyed": {
+      "state_id": "destroyed",
+      "semantic_class": "state",
+      "aliases": [
+        "destroyed",
+        "ruined",
+        "wrecked",
+        "obliterated"
+      ],
+      "definition": "has been completely damaged beyond repair or use",
+      "opposites": [
+        "intact"
+      ]
+    },
+    "constructed": {
+      "state_id": "constructed",
+      "semantic_class": "state",
+      "aliases": [
+        "constructed",
+        "built",
+        "erected",
+        "assembled"
+      ],
+      "definition": "has been built or assembled from components",
+      "opposites": [
+        "dismantled"
+      ]
+    },
+    "repaired": {
+      "state_id": "repaired",
+      "semantic_class": "state",
+      "aliases": [
+        "repaired",
+        "fixed",
+        "mended",
+        "restored"
+      ],
+      "definition": "has been restored to working condition after damage",
+      "opposites": [
+        "broken"
+      ]
+    },
+    "functional": {
+      "state_id": "functional",
+      "semantic_class": "state",
+      "aliases": [
+        "functional",
+        "working",
+        "operational"
+      ],
+      "definition": "is in working order and capable of performing its intended function",
+      "opposites": [
+        "broken"
+      ]
+    },
+    "knowledgeable": {
+      "state_id": "knowledgeable",
+      "semantic_class": "state",
+      "aliases": [
+        "knowledgeable",
+        "educated",
+        "learned"
+      ],
+      "definition": "has acquired knowledge or understanding",
+      "opposites": [
+        "ignorant"
+      ]
+    },
+    "informed": {
+      "state_id": "informed",
+      "semantic_class": "state",
+      "aliases": [
+        "informed",
+        "aware",
+        "up_to_date"
+      ],
+      "definition": "has received current information about a topic",
+      "opposites": [
+        "uninformed"
+      ]
+    },
+    "fit": {
+      "state_id": "fit",
+      "semantic_class": "state",
+      "aliases": [
+        "fit",
+        "in_shape",
+        "healthy"
+      ],
+      "definition": "has good physical condition through activity",
+      "opposites": [
+        "unfit"
+      ]
+    },
+    "strong": {
+      "state_id": "strong",
+      "semantic_class": "state",
+      "aliases": [
+        "strong",
+        "powerful",
+        "muscular"
+      ],
+      "definition": "has physical strength or power",
+      "opposites": [
+        "weak"
+      ]
+    },
+    "clean": {
+      "state_id": "clean",
+      "semantic_class": "state",
+      "aliases": [
+        "clean",
+        "cleaned",
+        "washed",
+        "sanitized"
+      ],
+      "definition": "is free from dirt, marks, or unwanted matter",
+      "opposites": [
+        "dirty"
+      ]
+    },
+    "restored": {
+      "state_id": "restored",
+      "semantic_class": "state",
+      "aliases": [
+        "restored",
+        "renewed",
+        "revived"
+      ],
+      "definition": "has been returned to a previous good condition or state",
+      "opposites": [
+        "degraded"
+      ]
+    },
+    "safe": {
+      "state_id": "safe",
+      "semantic_class": "state",
+      "aliases": [
+        "safe",
+        "protected",
+        "secure",
+        "out_of_danger"
+      ],
+      "definition": "is free from harm, danger, or risk",
+      "opposites": [
+        "in_danger"
+      ]
+    },
+    "hydrated": {
+      "state_id": "hydrated",
+      "semantic_class": "state",
+      "aliases": [
+        "hydrated",
+        "quenched"
+      ],
+      "definition": "has sufficient water or fluids in the body",
+      "opposites": [
+        "dehydrated"
+      ]
+    },
+    "quenched": {
+      "state_id": "quenched",
+      "semantic_class": "state",
+      "aliases": [
+        "quenched",
+        "slaked"
+      ],
+      "definition": "has had thirst relieved",
+      "opposites": [
+        "thirsty"
+      ]
+    },
+    "entertained": {
+      "state_id": "entertained",
+      "semantic_class": "state",
+      "aliases": [
+        "entertained",
+        "amused",
+        "delighted"
+      ],
+      "definition": "is experiencing enjoyment or amusement",
+      "opposites": [
+        "bored"
+      ]
+    },
+    "moved": {
+      "state_id": "moved",
+      "semantic_class": "state",
+      "aliases": [
+        "moved",
+        "displaced",
+        "relocated",
+        "shifted"
+      ],
+      "definition": "has changed physical position or location",
+      "opposites": [
+        "stationary"
+      ]
+    },
+    "transported": {
+      "state_id": "transported",
+      "semantic_class": "state",
+      "aliases": [
+        "transported",
+        "conveyed",
+        "carried",
+        "brought"
+      ],
+      "definition": "has been carried or conveyed from one place to another",
+      "opposites": [
+        "unmoved"
+      ]
+    },
+    "tired": {
+      "state_id": "tired",
+      "semantic_class": "state",
+      "aliases": [
+        "tired",
+        "fatigued",
+        "exhausted",
+        "weary",
+        "sleepy",
+        "drowsy"
+      ],
+      "definition": "is in need of rest or sleep due to exertion",
+      "opposites": [
+        "rested"
+      ]
+    },
+    "written": {
+      "state_id": "written",
+      "semantic_class": "state",
+      "aliases": [
+        "written",
+        "documented",
+        "inscribed"
+      ],
+      "definition": "has been recorded in written form",
+      "opposites": [
+        "unwritten"
+      ]
+    },
+    "recorded": {
+      "state_id": "recorded",
+      "semantic_class": "state",
+      "aliases": [
+        "recorded",
+        "saved",
+        "stored",
+        "captured"
+      ],
+      "definition": "has been preserved in a durable medium",
+      "opposites": [
+        "unrecorded"
+      ]
+    },
+    "thrown": {
+      "state_id": "thrown",
+      "semantic_class": "state",
+      "aliases": [
+        "thrown",
+        "tossed",
+        "launched",
+        "flung"
+      ],
+      "definition": "has been propelled through the air",
+      "opposites": [
+        "held"
+      ]
+    },
+    "moving": {
+      "state_id": "moving",
+      "semantic_class": "state",
+      "aliases": [
+        "moving",
+        "in_motion",
+        "in_flight",
+        "traveling"
+      ],
+      "definition": "is in a state of motion through space",
+      "opposites": [
+        "still"
+      ]
+    },
+    "cut": {
+      "state_id": "cut",
+      "semantic_class": "state",
+      "aliases": [
+        "cut",
+        "severed",
+        "sliced",
+        "gashed"
+      ],
+      "definition": "has been divided or incised with a sharp edge",
+      "opposites": [
+        "uncut"
+      ]
+    },
+    "separated": {
+      "state_id": "separated",
+      "semantic_class": "state",
+      "aliases": [
+        "separated",
+        "divided",
+        "split",
+        "parted"
+      ],
+      "definition": "has been divided into two or more parts",
+      "opposites": [
+        "together"
+      ]
+    },
+    "grown": {
+      "state_id": "grown",
+      "semantic_class": "state",
+      "aliases": [
+        "grown",
+        "increased",
+        "expanded"
+      ],
+      "definition": "has increased in size, quantity, or development",
+      "opposites": [
+        "shrunk"
+      ]
+    },
+    "larger": {
+      "state_id": "larger",
+      "semantic_class": "state",
+      "aliases": [
+        "larger",
+        "bigger",
+        "greater",
+        "expanded"
+      ],
+      "definition": "has greater physical dimensions or magnitude than before",
+      "opposites": [
+        "smaller"
+      ]
+    },
+    "mature": {
+      "state_id": "mature",
+      "semantic_class": "state",
+      "aliases": [
+        "mature",
+        "ripe",
+        "fully_developed",
+        "grown_up"
+      ],
+      "definition": "has reached full natural growth or development",
+      "opposites": [
+        "immature"
+      ]
+    },
+    "opened": {
+      "state_id": "opened",
+      "semantic_class": "state",
+      "aliases": [
+        "opened",
+        "open",
+        "unsealed",
+        "ajar"
+      ],
+      "definition": "is no longer closed, allowing access or passage",
+      "opposites": [
+        "closed"
+      ]
+    },
+    "accessible": {
+      "state_id": "accessible",
+      "semantic_class": "state",
+      "aliases": [
+        "accessible",
+        "reachable",
+        "available",
+        "unblocked"
+      ],
+      "definition": "can be entered, reached, or used",
+      "opposites": [
+        "blocked"
+      ]
+    },
+    "closed": {
+      "state_id": "closed",
+      "semantic_class": "state",
+      "aliases": [
+        "closed",
+        "shut",
+        "not_open"
+      ],
+      "definition": "is not open, preventing access or passage",
+      "opposites": [
+        "opened"
+      ]
+    },
+    "sealed": {
+      "state_id": "sealed",
+      "semantic_class": "state",
+      "aliases": [
+        "sealed",
+        "secured",
+        "airtight",
+        "watertight"
+      ],
+      "definition": "is closed tightly to prevent entry or leakage",
+      "opposites": [
+        "unsealed"
+      ]
+    },
+    "secure": {
+      "state_id": "secure",
+      "semantic_class": "state",
+      "aliases": [
+        "secure",
+        "safe",
+        "locked",
+        "fastened",
+        "protected"
+      ],
+      "definition": "is firmly fixed or protected from risk",
+      "opposites": [
+        "vulnerable"
+      ]
+    },
+    "skilled": {
+      "state_id": "skilled",
+      "semantic_class": "state",
+      "aliases": [
+        "skilled",
+        "proficient",
+        "adept",
+        "expert"
+      ],
+      "definition": "has developed ability or expertise through training or practice",
+      "opposites": [
+        "unskilled"
+      ]
+    },
+    "educated": {
+      "state_id": "educated",
+      "semantic_class": "state",
+      "aliases": [
+        "educated",
+        "trained",
+        "schooled",
+        "instructed"
+      ],
+      "definition": "has received formal teaching or instruction",
+      "opposites": [
+        "uneducated"
+      ]
+    },
+    "seated": {
+      "state_id": "seated",
+      "semantic_class": "state",
+      "aliases": [
+        "seated",
+        "sitting",
+        "settled"
+      ],
+      "definition": "is resting on a seat or surface with support",
+      "opposites": [
+        "standing"
+      ]
+    },
+    "happy": {
+      "state_id": "happy",
+      "semantic_class": "state",
+      "aliases": [
+        "happy",
+        "glad",
+        "joyful",
+        "cheerful",
+        "delighted"
+      ],
+      "definition": "is experiencing pleasure, joy, or contentment",
+      "opposites": [
+        "sad"
+      ]
+    },
+    "friendly": {
+      "state_id": "friendly",
+      "semantic_class": "state",
+      "aliases": [
+        "friendly",
+        "warm",
+        "welcoming",
+        "amicable"
+      ],
+      "definition": "is kind, pleasant, and approachable toward others",
+      "opposites": [
+        "hostile"
+      ]
+    },
+    "sad": {
+      "state_id": "sad",
+      "semantic_class": "state",
+      "aliases": [
+        "sad",
+        "unhappy",
+        "sorrowful",
+        "melancholy"
+      ],
+      "definition": "is experiencing unhappiness or sorrow",
+      "opposites": [
+        "happy"
+      ]
+    },
+    "upset": {
+      "state_id": "upset",
+      "semantic_class": "state",
+      "aliases": [
+        "upset",
+        "distressed",
+        "troubled",
+        "agitated"
+      ],
+      "definition": "is emotionally disturbed or distressed",
+      "opposites": [
+        "calm"
+      ]
+    },
+    "tearful": {
+      "state_id": "tearful",
+      "semantic_class": "state",
+      "aliases": [
+        "tearful",
+        "crying",
+        "weeping",
+        "sobbing",
+        "in_tears"
+      ],
+      "definition": "is shedding tears as a result of emotion",
+      "opposites": [
+        "dry_eyed"
+      ]
+    },
+    "in_motion": {
+      "state_id": "in_motion",
+      "semantic_class": "state",
+      "aliases": [
+        "moving",
+        "in motion"
+      ],
+      "definition": "is moving through space"
+    },
+    "relocated": {
+      "state_id": "relocated",
+      "semantic_class": "state",
+      "aliases": [
+        "relocated",
+        "moved"
+      ],
+      "definition": "has changed position"
+    },
+    "exerted": {
+      "state_id": "exerted",
+      "semantic_class": "state",
+      "aliases": [
+        "exerted",
+        "strained",
+        "tired"
+      ],
+      "definition": "has expended physical effort"
+    },
+    "loaded": {
+      "state_id": "loaded",
+      "semantic_class": "state",
+      "aliases": [
+        "loaded",
+        "burdened"
+      ],
+      "definition": "is carrying or holding something"
+    },
+    "elevated": {
+      "state_id": "elevated",
+      "semantic_class": "state",
+      "aliases": [
+        "elevated",
+        "raised"
+      ],
+      "definition": "is at a higher position"
+    },
+    "stretched": {
+      "state_id": "stretched",
+      "semantic_class": "state",
+      "aliases": [
+        "stretched",
+        "elongated"
+      ],
+      "definition": "is extended beyond normal length"
+    },
+    "lowered": {
+      "state_id": "lowered",
+      "semantic_class": "state",
+      "aliases": [
+        "lowered",
+        "dropped"
+      ],
+      "definition": "is at a lower position"
+    },
+    "grounded": {
+      "state_id": "grounded",
+      "semantic_class": "state",
+      "aliases": [
+        "grounded",
+        "on the ground"
+      ],
+      "definition": "is in contact with the ground"
+    },
+    "covered": {
+      "state_id": "covered",
+      "semantic_class": "state",
+      "aliases": [
+        "covered",
+        "covered up"
+      ],
+      "definition": "has something on top or all over"
+    },
+    "concealed": {
+      "state_id": "concealed",
+      "semantic_class": "state",
+      "aliases": [
+        "concealed",
+        "hidden"
+      ],
+      "definition": "is not visible or hidden from view"
+    },
+    "protected": {
+      "state_id": "protected",
+      "semantic_class": "state",
+      "aliases": [
+        "protected",
+        "shielded"
+      ],
+      "definition": "is safe from harm or damage"
+    },
+    "full": {
+      "state_id": "full",
+      "semantic_class": "state",
+      "aliases": [
+        "full",
+        "filled"
+      ],
+      "definition": "contains as much as possible"
+    },
+    "containing": {
+      "state_id": "containing",
+      "semantic_class": "state",
+      "aliases": [
+        "containing",
+        "holding"
+      ],
+      "definition": "has contents inside"
+    },
+    "empty": {
+      "state_id": "empty",
+      "semantic_class": "state",
+      "aliases": [
+        "empty",
+        "emptied",
+        "vacant"
+      ],
+      "definition": "contains nothing"
+    },
+    "cleared": {
+      "state_id": "cleared",
+      "semantic_class": "state",
+      "aliases": [
+        "cleared",
+        "removed"
+      ],
+      "definition": "has had contents removed"
+    },
+    "locked": {
+      "state_id": "locked",
+      "semantic_class": "state",
+      "aliases": [
+        "locked",
+        "fastened"
+      ],
+      "definition": "is secured and cannot be opened without a key"
+    },
+    "secured": {
+      "state_id": "secured",
+      "semantic_class": "state",
+      "aliases": [
+        "secured",
+        "safe"
+      ],
+      "definition": "is fixed in place and cannot move"
+    },
+    "unlocked": {
+      "state_id": "unlocked",
+      "semantic_class": "state",
+      "aliases": [
+        "unlocked",
+        "unfastened"
+      ],
+      "definition": "is openable and not secured"
+    },
+    "blocked": {
+      "state_id": "blocked",
+      "semantic_class": "state",
+      "aliases": [
+        "blocked",
+        "obstructed"
+      ],
+      "definition": "has an obstacle preventing movement"
+    },
+    "obstructed": {
+      "state_id": "obstructed",
+      "semantic_class": "state",
+      "aliases": [
+        "obstructed",
+        "blocked"
+      ],
+      "definition": "path or view is blocked"
+    },
+    "inaccessible": {
+      "state_id": "inaccessible",
+      "semantic_class": "state",
+      "aliases": [
+        "inaccessible",
+        "unreachable"
+      ],
+      "definition": "cannot be reached or entered"
+    },
+    "supported": {
+      "state_id": "supported",
+      "semantic_class": "state",
+      "aliases": [
+        "supported",
+        "held up"
+      ],
+      "definition": "is held up by something underneath"
+    },
+    "stable": {
+      "state_id": "stable",
+      "semantic_class": "state",
+      "aliases": [
+        "stable",
+        "steady"
+      ],
+      "definition": "is not likely to fall or collapse"
+    },
+    "encouraged": {
+      "state_id": "encouraged",
+      "semantic_class": "state",
+      "aliases": [
+        "encouraged",
+        "motivated"
+      ],
+      "definition": "feels supported and motivated"
+    },
+    "scheduled": {
+      "state_id": "scheduled",
+      "semantic_class": "state",
+      "aliases": [
+        "scheduled",
+        "arranged",
+        "planned"
+      ],
+      "definition": "has been arranged for a specific time"
+    },
+    "committed": {
+      "state_id": "committed",
+      "semantic_class": "state",
+      "aliases": [
+        "committed",
+        "decided"
+      ],
+      "definition": "has made a firm decision"
+    },
+    "resolved": {
+      "state_id": "resolved",
+      "semantic_class": "state",
+      "aliases": [
+        "resolved",
+        "settled"
+      ],
+      "definition": "has been determined or settled"
+    },
+    "selected": {
+      "state_id": "selected",
+      "semantic_class": "state",
+      "aliases": [
+        "selected",
+        "chosen"
+      ],
+      "definition": "has been picked from alternatives"
+    },
+    "cared_for": {
+      "state_id": "cared_for",
+      "semantic_class": "state",
+      "aliases": [
+        "cared for",
+        "looked after"
+      ],
+      "definition": "is receiving care and attention"
+    },
+    "valued": {
+      "state_id": "valued",
+      "semantic_class": "state",
+      "aliases": [
+        "valued",
+        "appreciated",
+        "loved"
+      ],
+      "definition": "feels important and appreciated"
+    },
+    "defended": {
+      "state_id": "defended",
+      "semantic_class": "state",
+      "aliases": [
+        "defended",
+        "guarded"
+      ],
+      "definition": "is protected from attack"
+    },
+    "warm": {
+      "state_id": "warm",
+      "semantic_class": "state",
+      "aliases": [
+        "warm",
+        "warmed"
+      ],
+      "definition": "has a comfortable, warm temperature"
+    },
+    "heated": {
+      "state_id": "heated",
+      "semantic_class": "state",
+      "aliases": [
+        "heated",
+        "hot"
+      ],
+      "definition": "has increased in temperature"
+    },
+    "cool": {
+      "state_id": "cool",
+      "semantic_class": "state",
+      "aliases": [
+        "cool",
+        "cooled"
+      ],
+      "definition": "has a decreased temperature"
+    },
+    "cooled": {
+      "state_id": "cooled",
+      "semantic_class": "state",
+      "aliases": [
+        "cooled",
+        "chilled"
+      ],
+      "definition": "has been made cool"
+    },
+    "melted": {
+      "state_id": "melted",
+      "semantic_class": "state",
+      "aliases": [
+        "melted",
+        "melted down"
+      ],
+      "definition": "has turned from solid to liquid"
+    },
+    "liquid": {
+      "state_id": "liquid",
+      "semantic_class": "state",
+      "aliases": [
+        "liquid",
+        "liquefied"
+      ],
+      "definition": "is in liquid form"
+    },
+    "formless": {
+      "state_id": "formless",
+      "semantic_class": "state",
+      "aliases": [
+        "formless",
+        "shapeless"
+      ],
+      "definition": "has lost its solid shape"
+    },
+    "frozen": {
+      "state_id": "frozen",
+      "semantic_class": "state",
+      "aliases": [
+        "frozen",
+        "iced",
+        "icy"
+      ],
+      "definition": "has turned from liquid to solid"
+    },
+    "solid": {
+      "state_id": "solid",
+      "semantic_class": "state",
+      "aliases": [
+        "solid",
+        "hard",
+        "rigid"
+      ],
+      "definition": "is in solid form"
+    },
+    "immobilized": {
+      "state_id": "immobilized",
+      "semantic_class": "state",
+      "aliases": [
+        "immobilized",
+        "stuck"
+      ],
+      "definition": "cannot move"
+    },
+    "impacted": {
+      "state_id": "impacted",
+      "semantic_class": "state",
+      "aliases": [
+        "impacted",
+        "struck"
+      ],
+      "definition": "has been struck by something"
+    },
+    "struck": {
+      "state_id": "struck",
+      "semantic_class": "state",
+      "aliases": [
+        "struck",
+        "hit"
+      ],
+      "definition": "has been hit by something"
+    },
+    "in_pain": {
+      "state_id": "in_pain",
+      "semantic_class": "state",
+      "aliases": [
+        "in pain",
+        "suffering"
+      ],
+      "definition": "is experiencing physical pain"
+    },
+    "distressed": {
+      "state_id": "distressed",
+      "semantic_class": "state",
+      "aliases": [
+        "distressed",
+        "upset"
+      ],
+      "definition": "is in emotional distress"
+    },
+    "healed": {
+      "state_id": "healed",
+      "semantic_class": "state",
+      "aliases": [
+        "healed",
+        "recovered"
+      ],
+      "definition": "has returned to health"
+    },
+    "healthy": {
+      "state_id": "healthy",
+      "semantic_class": "state",
+      "aliases": [
+        "healthy",
+        "well"
+      ],
+      "definition": "is in good health"
+    },
+    "recovered": {
+      "state_id": "recovered",
+      "semantic_class": "state",
+      "aliases": [
+        "recovered",
+        "restored"
+      ],
+      "definition": "has regained health or function"
+    },
+    "worn": {
+      "state_id": "worn",
+      "semantic_class": "state",
+      "aliases": [
+        "worn",
+        "wearing"
+      ],
+      "definition": "is on someone's body as clothing"
+    },
+    "clothed": {
+      "state_id": "clothed",
+      "semantic_class": "state",
+      "aliases": [
+        "clothed",
+        "dressed"
+      ],
+      "definition": "is wearing clothes on the body"
+    },
+    "painted": {
+      "state_id": "painted",
+      "semantic_class": "state",
+      "aliases": [
+        "painted",
+        "coated"
+      ],
+      "definition": "has a layer of paint on the surface"
+    },
+    "colored": {
+      "state_id": "colored",
+      "semantic_class": "state",
+      "aliases": [
+        "colored",
+        "dyed"
+      ],
+      "definition": "has been given a color"
+    },
+    "decorated": {
+      "state_id": "decorated",
+      "semantic_class": "state",
+      "aliases": [
+        "decorated",
+        "adorned"
+      ],
+      "definition": "has decorative elements added"
+    },
+    "drawn": {
+      "state_id": "drawn",
+      "semantic_class": "state",
+      "aliases": [
+        "drawn",
+        "sketched"
+      ],
+      "definition": "has been rendered as a picture"
+    },
+    "depicted": {
+      "state_id": "depicted",
+      "semantic_class": "state",
+      "aliases": [
+        "depicted",
+        "portrayed",
+        "drawn"
+      ],
+      "definition": "is shown in a visual representation"
+    },
+    "awake": {
+      "state_id": "awake",
+      "semantic_class": "state",
+      "aliases": [
+        "awake",
+        "woken up"
+      ],
+      "definition": "is no longer sleeping; conscious and aware"
+    },
+    "conscious": {
+      "state_id": "conscious",
+      "semantic_class": "state",
+      "aliases": [
+        "conscious",
+        "aware"
+      ],
+      "definition": "has awareness of surroundings and self"
+    },
+    "fresh": {
+      "state_id": "fresh",
+      "semantic_class": "state",
+      "aliases": [
+        "fresh",
+        "refreshed"
+      ],
+      "definition": "feels clean and renewed"
+    },
+    "ready": {
+      "state_id": "ready",
+      "semantic_class": "state",
+      "aliases": [
+        "ready",
+        "prepared"
+      ],
+      "definition": "is in a suitable state for an action or purpose"
+    },
+    "chopped": {
+      "state_id": "chopped",
+      "semantic_class": "state",
+      "aliases": [
+        "chopped",
+        "cut up"
+      ],
+      "definition": "has been cut into small pieces"
+    },
+    "divided": {
+      "state_id": "divided",
+      "semantic_class": "state",
+      "aliases": [
+        "divided",
+        "separated"
+      ],
+      "definition": "has been split into parts"
+    },
+    "smaller": {
+      "state_id": "smaller",
+      "semantic_class": "state",
+      "aliases": [
+        "smaller",
+        "reduced"
+      ],
+      "definition": "has become smaller in size"
+    },
+    "sliced": {
+      "state_id": "sliced",
+      "semantic_class": "state",
+      "aliases": [
+        "sliced",
+        "in slices"
+      ],
+      "definition": "has been cut into flat, thin pieces"
+    },
+    "thin": {
+      "state_id": "thin",
+      "semantic_class": "state",
+      "aliases": [
+        "thin",
+        "narrow"
+      ],
+      "definition": "has been made thin or thinner"
+    },
+    "mixed": {
+      "state_id": "mixed",
+      "semantic_class": "state",
+      "aliases": [
+        "mixed",
+        "blended"
+      ],
+      "definition": "has been combined with other substances"
+    },
+    "combined": {
+      "state_id": "combined",
+      "semantic_class": "state",
+      "aliases": [
+        "combined",
+        "merged"
+      ],
+      "definition": "is together with other elements"
+    },
+    "uniform": {
+      "state_id": "uniform",
+      "semantic_class": "state",
+      "aliases": [
+        "uniform",
+        "homogeneous"
+      ],
+      "definition": "has the same composition throughout"
+    },
+    "stirred": {
+      "state_id": "stirred",
+      "semantic_class": "state",
+      "aliases": [
+        "stirred",
+        "agitated"
+      ],
+      "definition": "has been moved in a circular motion"
+    },
+    "fried": {
+      "state_id": "fried",
+      "semantic_class": "state",
+      "aliases": [
+        "fried",
+        "pan-fried"
+      ],
+      "definition": "has been cooked in hot oil or fat"
+    },
+    "hot": {
+      "state_id": "hot",
+      "semantic_class": "state",
+      "aliases": [
+        "hot",
+        "heated"
+      ],
+      "definition": "has a high temperature"
+    },
+    "baked": {
+      "state_id": "baked",
+      "semantic_class": "state",
+      "aliases": [
+        "baked",
+        "oven-cooked"
+      ],
+      "definition": "has been cooked in an oven"
+    },
+    "firm": {
+      "state_id": "firm",
+      "semantic_class": "state",
+      "aliases": [
+        "firm",
+        "solidified"
+      ],
+      "definition": "has become solid or firm in texture"
+    },
+    "departed": {
+      "state_id": "departed",
+      "semantic_class": "state",
+      "aliases": [
+        "departed",
+        "gone"
+      ],
+      "definition": "has left or moved away"
+    },
+    "absent": {
+      "state_id": "absent",
+      "semantic_class": "state",
+      "aliases": [
+        "absent",
+        "not here"
+      ],
+      "definition": "is not present at the current location"
+    },
+    "arrived": {
+      "state_id": "arrived",
+      "semantic_class": "state",
+      "aliases": [
+        "arrived",
+        "here"
+      ],
+      "definition": "has reached the destination"
+    },
+    "present": {
+      "state_id": "present",
+      "semantic_class": "state",
+      "aliases": [
+        "present",
+        "here"
+      ],
+      "definition": "is at the current location"
+    },
+    "breathless": {
+      "state_id": "breathless",
+      "semantic_class": "state",
+      "aliases": [
+        "breathless",
+        "out of breath",
+        "panting"
+      ],
+      "definition": "is breathing heavily from exertion"
+    },
+    "questioned": {
+      "state_id": "questioned",
+      "semantic_class": "state",
+      "aliases": [
+        "questioned",
+        "queried"
+      ],
+      "definition": "has been asked about something"
+    },
+    "inquiring": {
+      "state_id": "inquiring",
+      "semantic_class": "state",
+      "aliases": [
+        "inquiring",
+        "curious"
+      ],
+      "definition": "is seeking information"
+    },
+    "aware": {
+      "state_id": "aware",
+      "semantic_class": "state",
+      "aliases": [
+        "aware",
+        "knowing"
+      ],
+      "definition": "has knowledge or awareness of something"
+    },
+    "communicated": {
+      "state_id": "communicated",
+      "semantic_class": "state",
+      "aliases": [
+        "communicated",
+        "expressed"
+      ],
+      "definition": "has conveyed a message"
+    },
+    "enlightened": {
+      "state_id": "enlightened",
+      "semantic_class": "state",
+      "aliases": [
+        "enlightened",
+        "educated"
+      ],
+      "definition": "has gained understanding"
+    },
+    "clear": {
+      "state_id": "clear",
+      "semantic_class": "state",
+      "aliases": [
+        "clear",
+        "understood"
+      ],
+      "definition": "is easy to understand or free from confusion"
+    },
+    "considered": {
+      "state_id": "considered",
+      "semantic_class": "state",
+      "aliases": [
+        "considered",
+        "weighed"
+      ],
+      "definition": "has been thought about as an option"
+    },
+    "appreciated": {
+      "state_id": "appreciated",
+      "semantic_class": "state",
+      "aliases": [
+        "appreciated",
+        "thanked"
+      ],
+      "definition": "has received gratitude or recognition"
+    },
+    "introduced": {
+      "state_id": "introduced",
+      "semantic_class": "state",
+      "aliases": [
+        "introduced",
+        "presented"
+      ],
+      "definition": "has been presented to someone for the first time"
+    },
+    "acquainted": {
+      "state_id": "acquainted",
+      "semantic_class": "state",
+      "aliases": [
+        "acquainted",
+        "familiar"
+      ],
+      "definition": "has met someone and knows them slightly"
+    },
+    "held": {
+      "state_id": "held",
+      "semantic_class": "state",
+      "aliases": [
+        "held",
+        "grasped"
+      ],
+      "definition": "is being gripped or carried"
+    },
+    "stationary": {
+      "state_id": "stationary",
+      "semantic_class": "state",
+      "aliases": [
+        "stationary",
+        "still"
+      ],
+      "definition": "is not moving"
+    },
+    "released": {
+      "state_id": "released",
+      "semantic_class": "state",
+      "aliases": [
+        "released",
+        "let go"
+      ],
+      "definition": "is no longer being held or constrained"
+    },
+    "free": {
+      "state_id": "free",
+      "semantic_class": "state",
+      "aliases": [
+        "free",
+        "unconstrained"
+      ],
+      "definition": "is not confined or restricted"
+    },
+    "falling": {
+      "state_id": "falling",
+      "semantic_class": "state",
+      "aliases": [
+        "falling",
+        "dropping"
+      ],
+      "definition": "is moving downward due to gravity"
+    },
+    "oxygenated": {
+      "state_id": "oxygenated",
+      "semantic_class": "state",
+      "aliases": [
+        "oxygenated",
+        "oxygen-rich"
+      ],
+      "definition": "has received oxygen"
+    },
+    "alive": {
+      "state_id": "alive",
+      "semantic_class": "state",
+      "aliases": [
+        "alive",
+        "living"
+      ],
+      "definition": "is living and not dead"
+    },
+    "calm": {
+      "state_id": "calm",
+      "semantic_class": "state",
+      "aliases": [
+        "calm",
+        "peaceful"
+      ],
+      "definition": "feels relaxed and not stressed"
+    },
+    "energized": {
+      "state_id": "energized",
+      "semantic_class": "state",
+      "aliases": [
+        "energized",
+        "full of energy"
+      ],
+      "definition": "feels energetic and revitalized"
+    },
+    "improved": {
+      "state_id": "improved",
+      "semantic_class": "state",
+      "aliases": [
+        "improved",
+        "better"
+      ],
+      "definition": "has become better than before"
+    },
+    "better": {
+      "state_id": "better",
+      "semantic_class": "state",
+      "aliases": [
+        "better",
+        "enhanced"
+      ],
+      "definition": "is in a superior state or condition"
+    },
+    "saved": {
+      "state_id": "saved",
+      "semantic_class": "state",
+      "aliases": [
+        "saved",
+        "rescued"
+      ],
+      "definition": "has been kept safe from harm or loss"
+    },
+    "preserved": {
+      "state_id": "preserved",
+      "semantic_class": "state",
+      "aliases": [
+        "preserved",
+        "maintained"
+      ],
+      "definition": "has been kept in its existing state"
+    },
+    "affectionate": {
+      "state_id": "affectionate",
+      "semantic_class": "state",
+      "aliases": [
+        "affectionate",
+        "loving"
+      ],
+      "definition": "feels warmth and fondness toward someone"
+    },
+    "cherished": {
+      "state_id": "cherished",
+      "semantic_class": "state",
+      "aliases": [
+        "cherished",
+        "treasured"
+      ],
+      "definition": "is deeply valued and cared for"
+    },
+    "pleased": {
+      "state_id": "pleased",
+      "semantic_class": "state",
+      "aliases": [
+        "pleased",
+        "happy",
+        "glad"
+      ],
+      "definition": "feels satisfaction or enjoyment"
+    },
+    "afraid": {
+      "state_id": "afraid",
+      "semantic_class": "state",
+      "aliases": [
+        "afraid",
+        "scared",
+        "frightened"
+      ],
+      "definition": "feels fear or apprehension"
+    },
+    "anxious": {
+      "state_id": "anxious",
+      "semantic_class": "state",
+      "aliases": [
+        "anxious",
+        "nervous",
+        "worried"
+      ],
+      "definition": "feels worry or unease"
+    },
+    "stressed": {
+      "state_id": "stressed",
+      "semantic_class": "state",
+      "aliases": [
+        "stressed",
+        "tense"
+      ],
+      "definition": "feels mental or emotional strain"
+    },
+    "distracted": {
+      "state_id": "distracted",
+      "semantic_class": "state",
+      "aliases": [
+        "distracted",
+        "distracted"
+      ],
+      "definition": "is unable to concentrate on a task"
+    },
+    "learned": {
+      "state_id": "learned",
+      "semantic_class": "state",
+      "aliases": [
+        "learned",
+        "acquired"
+      ],
+      "definition": "has been studied and understood"
+    },
+    "concentrating": {
+      "state_id": "concentrating",
+      "semantic_class": "state",
+      "aliases": [
+        "concentrating",
+        "focused"
+      ],
+      "definition": "is directing full attention to one thing"
+    },
+    "productive": {
+      "state_id": "productive",
+      "semantic_class": "state",
+      "aliases": [
+        "productive",
+        "efficient"
+      ],
+      "definition": "is achieving useful results"
+    },
+    "searched": {
+      "state_id": "searched",
+      "semantic_class": "state",
+      "aliases": [
+        "searched",
+        "examined"
+      ],
+      "definition": "has been looked through thoroughly"
+    },
+    "looking": {
+      "state_id": "looking",
+      "semantic_class": "state",
+      "aliases": [
+        "looking",
+        "searching"
+      ],
+      "definition": "is actively trying to find something"
+    },
+    "discovered": {
+      "state_id": "discovered",
+      "semantic_class": "state",
+      "aliases": [
+        "discovered",
+        "found"
+      ],
+      "definition": "has been located or uncovered"
+    },
+    "active": {
+      "state_id": "active",
+      "semantic_class": "state",
+      "aliases": [
+        "active",
+        "operating"
+      ],
+      "definition": "is in a state of operation or motion"
+    },
+    "running": {
+      "state_id": "running",
+      "semantic_class": "state",
+      "aliases": [
+        "running",
+        "operating"
+      ],
+      "definition": "is functioning or in progress"
+    },
+    "stopped": {
+      "state_id": "stopped",
+      "semantic_class": "state",
+      "aliases": [
+        "stopped",
+        "halted"
+      ],
+      "definition": "is no longer moving or operating"
+    },
+    "inactive": {
+      "state_id": "inactive",
+      "semantic_class": "state",
+      "aliases": [
+        "inactive",
+        "idle"
+      ],
+      "definition": "is not currently active or functioning"
+    },
+    "still": {
+      "state_id": "still",
+      "semantic_class": "state",
+      "aliases": [
+        "still",
+        "motionless"
+      ],
+      "definition": "is not moving"
+    },
+    "ongoing": {
+      "state_id": "ongoing",
+      "semantic_class": "state",
+      "aliases": [
+        "ongoing",
+        "continuing"
+      ],
+      "definition": "is still in progress and not finished"
+    },
+    "persistent": {
+      "state_id": "persistent",
+      "semantic_class": "state",
+      "aliases": [
+        "persistent",
+        "determined"
+      ],
+      "definition": "continues despite difficulty or delay"
+    },
+    "finished": {
+      "state_id": "finished",
+      "semantic_class": "state",
+      "aliases": [
+        "finished",
+        "ended"
+      ],
+      "definition": "has come to an end"
+    },
+    "done": {
+      "state_id": "done",
+      "semantic_class": "state",
+      "aliases": [
+        "done",
+        "completed"
+      ],
+      "definition": "has completed what was needed"
+    },
+    "complete": {
+      "state_id": "complete",
+      "semantic_class": "state",
+      "aliases": [
+        "complete",
+        "whole"
+      ],
+      "definition": "has all required parts; fully done"
+    },
+    "attempting": {
+      "state_id": "attempting",
+      "semantic_class": "state",
+      "aliases": [
+        "attempting",
+        "trying"
+      ],
+      "definition": "is making an effort to do something"
+    },
+    "tested": {
+      "state_id": "tested",
+      "semantic_class": "state",
+      "aliases": [
+        "tested",
+        "tried out"
+      ],
+      "definition": "has been examined or tried"
+    },
+    "waiting": {
+      "state_id": "waiting",
+      "semantic_class": "state",
+      "aliases": [
+        "waiting",
+        "awaiting"
+      ],
+      "definition": "is staying in place until something happens"
+    },
+    "patient": {
+      "state_id": "patient",
+      "semantic_class": "state",
+      "aliases": [
+        "patient",
+        "tolerant"
+      ],
+      "definition": "is able to wait without frustration"
+    },
+    "retained": {
+      "state_id": "retained",
+      "semantic_class": "state",
+      "aliases": [
+        "retained",
+        "kept"
+      ],
+      "definition": "has been kept or maintained"
+    },
+    "possession": {
+      "state_id": "possession",
+      "semantic_class": "state",
+      "aliases": [
+        "possession",
+        "owned",
+        "kept"
+      ],
+      "definition": "is in someone's possession"
+    },
+    "contacted": {
+      "state_id": "contacted",
+      "semantic_class": "state",
+      "aliases": [
+        "contacted",
+        "reached"
+      ],
+      "definition": "has been communicated with"
+    },
+    "answered": {
+      "state_id": "answered",
+      "semantic_class": "state",
+      "aliases": [
+        "answered",
+        "responded to"
+      ],
+      "definition": "has received a response"
+    },
+    "responded": {
+      "state_id": "responded",
+      "semantic_class": "state",
+      "aliases": [
+        "responded",
+        "replied"
+      ],
+      "definition": "has given an answer or reply"
+    },
+    "wanting": {
+      "state_id": "wanting",
+      "semantic_class": "state",
+      "aliases": [
+        "wanting",
+        "needing"
+      ],
+      "definition": "feels a desire or requirement for something"
+    },
+    "required": {
+      "state_id": "required",
+      "semantic_class": "state",
+      "aliases": [
+        "required",
+        "necessary"
+      ],
+      "definition": "is needed or essential"
+    },
+    "desiring": {
+      "state_id": "desiring",
+      "semantic_class": "state",
+      "aliases": [
+        "desiring",
+        "wishing"
+      ],
+      "definition": "wants something to happen or be obtained"
+    },
+    "desired": {
+      "state_id": "desired",
+      "semantic_class": "state",
+      "aliases": [
+        "desired",
+        "wanted"
+      ],
+      "definition": "is wanted or wished for"
+    },
+    "changed": {
+      "state_id": "changed",
+      "semantic_class": "state",
+      "aliases": [
+        "changed",
+        "altered"
+      ],
+      "definition": "has become different from before"
+    },
+    "different": {
+      "state_id": "different",
+      "semantic_class": "state",
+      "aliases": [
+        "different",
+        "not the same"
+      ],
+      "definition": "is unlike the previous state"
+    },
+    "transformed": {
+      "state_id": "transformed",
+      "semantic_class": "state",
+      "aliases": [
+        "transformed",
+        "converted"
+      ],
+      "definition": "has undergone a complete change"
+    },
+    "effected": {
+      "state_id": "effected",
+      "semantic_class": "state",
+      "aliases": [
+        "effected",
+        "brought about"
+      ],
+      "definition": "has been produced as a result"
+    },
+    "produced": {
+      "state_id": "produced",
+      "semantic_class": "state",
+      "aliases": [
+        "produced",
+        "generated"
+      ],
+      "definition": "has been created or brought into being"
+    },
+    "prevented": {
+      "state_id": "prevented",
+      "semantic_class": "state",
+      "aliases": [
+        "prevented",
+        "stopped"
+      ],
+      "definition": "has been stopped from happening"
+    },
+    "averted": {
+      "state_id": "averted",
+      "semantic_class": "state",
+      "aliases": [
+        "averted",
+        "avoided"
+      ],
+      "definition": "has been avoided or diverted"
+    },
+    "playing": {
+      "state_id": "playing",
+      "semantic_class": "state",
+      "aliases": [
+        "playing",
+        "performing"
+      ],
+      "definition": "is producing music or sounds"
+    },
+    "audible": {
+      "state_id": "audible",
+      "semantic_class": "state",
+      "aliases": [
+        "audible",
+        "sounding"
+      ],
+      "definition": "can be heard"
+    },
+    "singing": {
+      "state_id": "singing",
+      "semantic_class": "state",
+      "aliases": [
+        "singing"
+      ],
+      "definition": "is producing musical sounds with voice"
+    },
+    "attentive": {
+      "state_id": "attentive",
+      "semantic_class": "state",
+      "aliases": [
+        "attentive",
+        "listening"
+      ],
+      "definition": "is paying close attention"
+    },
+    "heard": {
+      "state_id": "heard",
+      "semantic_class": "state",
+      "aliases": [
+        "heard",
+        "audible"
+      ],
+      "definition": "has been perceived by ear"
+    },
+    "imagined": {
+      "state_id": "imagined",
+      "semantic_class": "state",
+      "aliases": [
+        "imagined",
+        "pictured"
+      ],
+      "definition": "has been formed in the mind"
+    },
+    "creative": {
+      "state_id": "creative",
+      "semantic_class": "state",
+      "aliases": [
+        "creative",
+        "inspired"
+      ],
+      "definition": "is able to create new ideas or things"
+    },
+    "new": {
+      "state_id": "new",
+      "semantic_class": "state",
+      "aliases": [
+        "new",
+        "fresh"
+      ],
+      "definition": "has just been made or begun"
+    },
+    "existing": {
+      "state_id": "existing",
+      "semantic_class": "state",
+      "aliases": [
+        "existing",
+        "present"
+      ],
+      "definition": "is currently present in reality"
+    },
+    "treated": {
+      "state_id": "treated",
+      "semantic_class": "state",
+      "aliases": [
+        "treated",
+        "cared for"
+      ],
+      "definition": "has received medical care"
+    },
+    "caring": {
+      "state_id": "caring",
+      "semantic_class": "state",
+      "aliases": [
+        "caring",
+        "compassionate"
+      ],
+      "definition": "feels concern for others"
+    },
+    "prescribed": {
+      "state_id": "prescribed",
+      "semantic_class": "state",
+      "aliases": [
+        "prescribed",
+        "recommended"
+      ],
+      "definition": "has received a medical recommendation"
+    },
+    "helpful": {
+      "state_id": "helpful",
+      "semantic_class": "state",
+      "aliases": [
+        "helpful",
+        "useful"
+      ],
+      "definition": "provides assistance or benefit"
+    },
+    "advised": {
+      "state_id": "advised",
+      "semantic_class": "state",
+      "aliases": [
+        "advised",
+        "counseled"
+      ],
+      "definition": "has received guidance or recommendation"
+    },
+    "remembering": {
+      "state_id": "remembering",
+      "semantic_class": "state",
+      "aliases": [
+        "remembering",
+        "recalling"
+      ],
+      "definition": "is actively bringing memory to mind"
+    },
+    "recalled": {
+      "state_id": "recalled",
+      "semantic_class": "state",
+      "aliases": [
+        "recalled",
+        "remembered"
+      ],
+      "definition": "has been brought back to mind"
+    },
+    "forgotten": {
+      "state_id": "forgotten",
+      "semantic_class": "state",
+      "aliases": [
+        "forgotten",
+        "lost"
+      ],
+      "definition": "has been erased from memory"
+    },
+    "unaware": {
+      "state_id": "unaware",
+      "semantic_class": "state",
+      "aliases": [
+        "unaware",
+        "unconscious"
+      ],
+      "definition": "is not knowing or conscious"
+    },
+    "reminded": {
+      "state_id": "reminded",
+      "semantic_class": "state",
+      "aliases": [
+        "reminded",
+        "jogged"
+      ],
+      "definition": "has been caused to remember something"
+    },
+    "promised": {
+      "state_id": "promised",
+      "semantic_class": "state",
+      "aliases": [
+        "promised",
+        "pledged"
+      ],
+      "definition": "has been assured"
+    },
+    "feeling": {
+      "state_id": "feeling",
+      "semantic_class": "state",
+      "aliases": [
+        "feeling",
+        "sensing"
+      ],
+      "definition": "is experiencing an emotion or sensation"
+    },
+    "knowing": {
+      "state_id": "knowing",
+      "semantic_class": "state",
+      "aliases": [
+        "knowing",
+        "aware"
+      ],
+      "definition": "has information or understanding"
+    },
+    "known": {
+      "state_id": "known",
+      "semantic_class": "state",
+      "aliases": [
+        "known",
+        "familiar"
+      ],
+      "definition": "is recognized or understood"
+    },
+    "believing": {
+      "state_id": "believing",
+      "semantic_class": "state",
+      "aliases": [
+        "believing",
+        "convinced"
+      ],
+      "definition": "accepts something as true"
+    },
+    "believed": {
+      "state_id": "believed",
+      "semantic_class": "state",
+      "aliases": [
+        "believed",
+        "trusted"
+      ],
+      "definition": "is accepted as true"
+    },
+    "thinking": {
+      "state_id": "thinking",
+      "semantic_class": "state",
+      "aliases": [
+        "thinking",
+        "pondering"
+      ],
+      "definition": "is using the mind to consider"
+    },
+    "contemplating": {
+      "state_id": "contemplating",
+      "semantic_class": "state",
+      "aliases": [
+        "contemplating",
+        "reflecting"
+      ],
+      "definition": "is thinking deeply about something"
+    },
+    "agreeing": {
+      "state_id": "agreeing",
+      "semantic_class": "state",
+      "aliases": [
+        "agreeing",
+        "concurring"
+      ],
+      "definition": "has the same opinion or willingness"
+    },
+    "agreed": {
+      "state_id": "agreed",
+      "semantic_class": "state",
+      "aliases": [
+        "agreed",
+        "accepted"
+      ],
+      "definition": "has been accepted or assented to"
+    },
+    "aligned": {
+      "state_id": "aligned",
+      "semantic_class": "state",
+      "aliases": [
+        "aligned",
+        "in agreement"
+      ],
+      "definition": "is on the same side or page"
+    },
+    "confirmed": {
+      "state_id": "confirmed",
+      "semantic_class": "state",
+      "aliases": [
+        "confirmed",
+        "validated"
+      ],
+      "definition": "has been affirmed as true or correct"
+    },
+    "verified": {
+      "state_id": "verified",
+      "semantic_class": "state",
+      "aliases": [
+        "verified",
+        "authenticated"
+      ],
+      "definition": "has been checked and found accurate"
+    },
+    "messaged": {
+      "state_id": "messaged",
+      "semantic_class": "state",
+      "aliases": [
+        "messaged",
+        "texted"
+      ],
+      "definition": "has received a message"
+    },
+    "invited": {
+      "state_id": "invited",
+      "semantic_class": "state",
+      "aliases": [
+        "invited",
+        "asked"
+      ],
+      "definition": "has been requested to participate"
+    },
+    "welcomed": {
+      "state_id": "welcomed",
+      "semantic_class": "state",
+      "aliases": [
+        "welcomed",
+        "received"
+      ],
+      "definition": "has been greeted or accepted warmly"
+    },
+    "described": {
+      "state_id": "described",
+      "semantic_class": "state",
+      "aliases": [
+        "described",
+        "portrayed"
+      ],
+      "definition": "has been explained in words"
+    },
+    "explained": {
+      "state_id": "explained",
+      "semantic_class": "state",
+      "aliases": [
+        "explained",
+        "clarified"
+      ],
+      "definition": "has been made clear or understandable"
+    },
+    "presented": {
+      "state_id": "presented",
+      "semantic_class": "state",
+      "aliases": [
+        "presented",
+        "shown"
+      ],
+      "definition": "has been shown or offered"
+    },
+    "snowy": {
+      "state_id": "snowy",
+      "semantic_class": "state",
+      "aliases": [
+        "snowy",
+        "snow-covered"
+      ],
+      "definition": "is covered in or experiencing snow"
+    },
+    "white": {
+      "state_id": "white",
+      "semantic_class": "state",
+      "aliases": [
+        "white",
+        "snowy white"
+      ],
+      "definition": "has the color of snow"
+    },
+    "windy": {
+      "state_id": "windy",
+      "semantic_class": "state",
+      "aliases": [
+        "windy",
+        "breezy",
+        "gusty"
+      ],
+      "definition": "has strong wind blowing"
+    },
+    "displaced": {
+      "state_id": "displaced",
+      "semantic_class": "state",
+      "aliases": [
+        "displaced",
+        "moved"
+      ],
+      "definition": "has been moved from its original position"
+    },
+    "composed": {
+      "state_id": "composed",
+      "semantic_class": "state",
+      "aliases": [
+        "composed",
+        "written"
+      ],
+      "definition": "has been created artistically"
+    },
+    "performed": {
+      "state_id": "performed",
+      "semantic_class": "state",
+      "aliases": [
+        "performed",
+        "executed"
+      ],
+      "definition": "has been presented or carried out"
+    },
+    "examined": {
+      "state_id": "examined",
+      "semantic_class": "state",
+      "aliases": [
+        "examined",
+        "inspected"
+      ],
+      "definition": "has been looked at closely"
+    },
+    "consulted": {
+      "state_id": "consulted",
+      "semantic_class": "state",
+      "aliases": [
+        "consulted",
+        "asked"
+      ],
+      "definition": "has been referred to for information"
+    },
+    "diagnosed": {
+      "state_id": "diagnosed",
+      "semantic_class": "state",
+      "aliases": [
+        "diagnosed",
+        "identified"
+      ],
+      "definition": "has been recognized as a particular condition"
+    },
+    "obligated": {
+      "state_id": "obligated",
+      "semantic_class": "state",
+      "aliases": [
+        "obligated",
+        "bound"
+      ],
+      "definition": "feels a duty or commitment"
+    },
+    "deferred": {
+      "state_id": "deferred",
+      "semantic_class": "state",
+      "aliases": [
+        "deferred",
+        "delayed"
+      ],
+      "definition": "has been put off to a later time"
+    },
+    "postponed": {
+      "state_id": "postponed",
+      "semantic_class": "state",
+      "aliases": [
+        "postponed",
+        "delayed",
+        "rescheduled"
+      ],
+      "definition": "has been moved to a later date"
+    },
+    "uncertain": {
+      "state_id": "uncertain",
+      "semantic_class": "state",
+      "aliases": [
+        "uncertain",
+        "unsure",
+        "doubtful"
+      ],
+      "definition": "lacks certainty or confidence"
+    },
+    "dissenting": {
+      "state_id": "dissenting",
+      "semantic_class": "state",
+      "aliases": [
+        "dissenting",
+        "objecting"
+      ],
+      "definition": "holds a contrary opinion"
+    },
+    "disputed": {
+      "state_id": "disputed",
+      "semantic_class": "state",
+      "aliases": [
+        "disputed",
+        "contested"
+      ],
+      "definition": "has been argued against"
+    },
+    "named": {
+      "state_id": "named",
+      "semantic_class": "state",
+      "aliases": [
+        "named",
+        "called"
+      ],
+      "definition": "has been given a name"
+    },
+    "labeled": {
+      "state_id": "labeled",
+      "semantic_class": "state",
+      "aliases": [
+        "labeled",
+        "designated"
+      ],
+      "definition": "has been assigned a category or title"
+    },
+    "identified": {
+      "state_id": "identified",
+      "semantic_class": "state",
+      "aliases": [
+        "identified",
+        "recognized"
+      ],
+      "definition": "has been recognized as something specific"
+    }
+  },
+  "active_entity_affordances": {
+    "sun": {
+      "surface_forms": [
+        "sun",
+        "sunlight"
+      ],
+      "semantic_class": "physical_object",
+      "role_bindings": [
+        {
+          "predicate_id": "shine",
+          "entity_role": "source",
+          "confidence": 0.95
+        }
+      ]
+    },
+    "gun": {
+      "surface_forms": [
+        "gun",
+        "firearm"
+      ],
+      "semantic_class": "physical_object.instrument",
+      "role_bindings": [
+        {
+          "predicate_id": "shoot",
+          "entity_role": "instrument",
+          "confidence": 0.95
+        }
+      ]
+    },
+    "water": {
+      "surface_forms": [
+        "water",
+        "liquid"
+      ],
+      "semantic_class": "substance",
+      "role_bindings": [
+        {
+          "predicate_id": "rain",
+          "entity_role": "substance",
+          "confidence": 0.95
+        },
+        {
+          "predicate_id": "pour",
+          "entity_role": "substance",
+          "confidence": 0.95
+        },
+        {
+          "predicate_id": "leak",
+          "entity_role": "substance",
+          "confidence": 0.95
+        }
+      ]
+    },
+    "fire": {
+      "surface_forms": [
+        "fire",
+        "flame",
+        "flames"
+      ],
+      "semantic_class": "phenomenon",
+      "role_bindings": [
+        {
+          "predicate_id": "burn",
+          "entity_role": "source",
+          "confidence": 0.95
+        }
+      ]
+    },
+    "food": {
+      "surface_forms": [
+        "food",
+        "meal",
+        "ingredient",
+        "groceries"
+      ],
+      "semantic_class": "food_item",
+      "role_bindings": [
+        {
+          "predicate_id": "eat",
+          "entity_role": "patient",
+          "confidence": 0.95
+        },
+        {
+          "predicate_id": "cook",
+          "entity_role": "patient",
+          "confidence": 0.9
+        }
+      ]
+    },
+    "person": {
+      "surface_forms": [
+        "person",
+        "someone",
+        "somebody",
+        "people"
+      ],
+      "semantic_class": "person",
+      "role_bindings": [
+        {
+          "predicate_id": "help",
+          "entity_role": "patient",
+          "confidence": 0.9
+        },
+        {
+          "predicate_id": "fall",
+          "entity_role": "agent",
+          "confidence": 0.8
+        },
+        {
+          "predicate_id": "teach",
+          "entity_role": "patient",
+          "confidence": 0.9
+        },
+        {
+          "predicate_id": "walk",
+          "entity_role": "agent",
+          "confidence": 0.85
+        },
+        {
+          "predicate_id": "sit",
+          "entity_role": "agent",
+          "confidence": 0.85
+        },
+        {
+          "predicate_id": "smile",
+          "entity_role": "agent",
+          "confidence": 0.85
+        },
+        {
+          "predicate_id": "cry",
+          "entity_role": "agent",
+          "confidence": 0.85
+        }
+      ]
+    },
+    "book": {
+      "surface_forms": [
+        "book",
+        "books",
+        "text",
+        "article",
+        "document",
+        "reading material"
+      ],
+      "semantic_class": "physical_object",
+      "role_bindings": [
+        {
+          "predicate_id": "read",
+          "entity_role": "theme",
+          "confidence": 0.95
+        }
+      ]
+    },
+    "vehicle": {
+      "surface_forms": [
+        "vehicle",
+        "car",
+        "truck",
+        "bus",
+        "bike",
+        "bicycle"
+      ],
+      "semantic_class": "physical_object",
+      "role_bindings": [
+        {
+          "predicate_id": "drive",
+          "entity_role": "patient",
+          "confidence": 0.95
+        }
+      ]
+    },
+    "door": {
+      "surface_forms": [
+        "door",
+        "gate",
+        "window",
+        "lid",
+        "entrance"
+      ],
+      "semantic_class": "physical_object",
+      "role_bindings": [
+        {
+          "predicate_id": "open",
+          "entity_role": "patient",
+          "confidence": 0.95
+        },
+        {
+          "predicate_id": "close",
+          "entity_role": "patient",
+          "confidence": 0.95
+        }
+      ]
+    }
+  },
+  "surface_aliases": {
+    "gunshot": {
+      "canonical": "gunshot",
+      "sense_type": "event_nominalization",
+      "decomposes_to": [
+        {
+          "predicate_id": "shoot",
+          "instrument": "gun"
+        },
+        {
+          "predicate_id": "produce",
+          "theme": "gunshot_sound"
+        }
+      ],
+      "caused_by": [
+        {
+          "predicate_id": "shoot",
+          "instrument": "gun",
+          "confidence": 0.95
+        }
+      ]
+    },
+    "gun shot": {
+      "canonical": "gunshot",
+      "sense_type": "spaced_compound_alias"
+    }
+  }
+}

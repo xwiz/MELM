@@ -1,0 +1,50 @@
+{
+  "schema_id": "melm.nlg_fallback_phrases.v1",
+  "version": "1.0.0",
+  "entity_nlg_templates": {
+    "fragile": "{label}s are fragile \u2014 handle with care.",
+    "materials": "{label}s are typically made of {materials}.",
+    "functional_uses": "{label}s are used for {uses}.",
+    "color": "{label}s are typically {color}.",
+    "place_context": "The {room_type} is located {env}.",
+    "high_harm": "{label} can cause significant harm.",
+    "low_harm": "{label} may cause some harm."
+  },
+  "refusal_templates": {
+    "default": "I need a bit more information to answer that."
+  },
+  "social_status_templates": {
+    "with_mood": "I'm feeling {mood_label}. Thanks for asking.",
+    "default": "I'm doing well, thanks for asking."
+  },
+  "safety_school_templates": {
+    "weather_policy": "Wear school clothes and carry rain protection because the forecast mentions rain."
+  },
+  "music_templates": {
+    "success": "I composed a {mood} {genre} piece for you. Check {filename}",
+    "failure": "I tried to compose some music but ran into an issue: {error}"
+  },
+  "story_verb_tenses": {
+    "walk": "walked",
+    "find": "found",
+    "examine": "examined",
+    "wonder": "wondered",
+    "run": "ran",
+    "hide": "hid",
+    "search": "searched",
+    "escape": "escaped",
+    "meet": "met",
+    "follow": "followed",
+    "arrive": "arrived",
+    "thank": "thanked",
+    "see": "saw",
+    "hug": "hugged",
+    "learn": "learned"
+  },
+  "story_sentence_patterns": [
+    "{subj} {past} {obj} in {loc}.",
+    "{subj} {past} {obj}.",
+    "{subj} {past} through {loc}.",
+    "{subj} {past}."
+  ]
+}

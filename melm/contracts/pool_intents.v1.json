@@ -1,0 +1,6 @@
+{
+  "schema_id": "melm.pool_intents.v1",
+  "version": "1.0.0",
+  "description": "Intents whose answers are selected from a response pool rather than computed",
+  "intents": ["social_greeting", "assistant_status"]
+}

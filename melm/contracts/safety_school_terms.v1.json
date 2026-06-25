@@ -1,0 +1,11 @@
+{
+  "schema_id": "melm.safety_school_terms.v1",
+  "version": "1.0.0",
+  "description": "Token sets for school clothing safety policy detection",
+  "nudity_terms": ["naked", "undressed"],
+  "school_clothing_terms": ["wear", "clothes", "coat", "raincoat"],
+  "object_mapping": {
+    "school": "school_clothing",
+    "default": "public_safety"
+  }
+}

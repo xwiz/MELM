@@ -1,0 +1,6 @@
+{
+  "schema_id": "melm.persona_emoji_intents.v1",
+  "version": "1.0.0",
+  "description": "Intents that receive a persona emoji prefix in synthesis answers",
+  "intents": ["assistant_identity", "assistant_status", "social_greeting"]
+}

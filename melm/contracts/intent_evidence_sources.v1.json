@@ -1,0 +1,25 @@
+{
+  "schema_id": "melm.intent_evidence_sources.v1",
+  "version": "1.0.0",
+  "description": "Maps each assistant intent to its default evidence source string",
+  "sources": {
+    "assistant_identity": "self_model",
+    "assistant_status": "event_ledger",
+    "personal_memory": "local_memory",
+    "autobiographical_memory": "event_ledger",
+    "story": "story_inventory",
+    "weather": "weather_cache",
+    "meal_suggestion": "food_inventory",
+    "health_advice": "local_health_policy",
+    "common_sense_safety": "local_policy",
+    "media_playback": "media_library",
+    "music_generation": "media_library",
+    "social_contact": "trusted_contacts",
+    "social_greeting": "self_model",
+    "mail": "mailbox",
+    "personal_goal_advice": "functional_grammar",
+    "assistant_behavior": "self_model",
+    "open_domain": "functional_grammar",
+    "unknown": "none"
+  }
+}

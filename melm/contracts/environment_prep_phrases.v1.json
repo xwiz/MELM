@@ -1,0 +1,13 @@
+{
+  "schema_id": "melm.environment_prep_phrases.v1",
+  "version": "1.0.0",
+  "description": "Maps environment identifiers to human-readable prepositional phrases for NLG entity descriptions",
+  "mapping": {
+    "indoor": "inside a building",
+    "outdoor": "outdoors",
+    "urban": "in an urban area",
+    "wilderness": "in the wilderness",
+    "digital": "in a digital environment"
+  },
+  "default_format": "in a {environment} environment"
+}

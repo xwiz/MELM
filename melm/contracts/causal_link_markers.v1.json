@@ -1,0 +1,63 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "melm.causal_link_markers.v1",
+  "schema_id": "melm.causal_link_markers.v1",
+  "version": "1.0.0",
+  "description": "Causal clause markers that link UOL atoms. Each marker maps to a causal relation and the direction of the link between the clause it introduces and the other clause in the utterance.",
+  "markers": {
+    "because": {
+      "relation": "caused_by",
+      "direction": "effect_to_cause",
+      "introduces": "cause",
+      "description": "The clause introduced by 'because' is the cause of the main clause."
+    },
+    "since": {
+      "relation": "caused_by",
+      "direction": "effect_to_cause",
+      "introduces": "cause",
+      "description": "The clause introduced by 'since' is the cause of the main clause."
+    },
+    "so": {
+      "relation": "causes",
+      "direction": "cause_to_effect",
+      "introduces": "effect",
+      "description": "The clause introduced by 'so' is the effect of the main clause."
+    },
+    "therefore": {
+      "relation": "causes",
+      "direction": "cause_to_effect",
+      "introduces": "effect",
+      "description": "The clause introduced by 'therefore' is the effect of the main clause."
+    },
+    "if": {
+      "relation": "causes",
+      "direction": "cause_to_effect",
+      "introduces": "cause",
+      "description": "The clause introduced by 'if' is the cause of the main clause."
+    },
+    "cause": {
+      "relation": "causes",
+      "direction": "cause_to_effect",
+      "introduces": "cause",
+      "description": "The subject causes the object."
+    },
+    "lead": {
+      "relation": "causes",
+      "direction": "cause_to_effect",
+      "introduces": "cause",
+      "description": "The subject leads to the object."
+    },
+    "enable": {
+      "relation": "enables",
+      "direction": "cause_to_effect",
+      "introduces": "cause",
+      "description": "The subject enables the object."
+    },
+    "prevent": {
+      "relation": "prevents",
+      "direction": "cause_to_effect",
+      "introduces": "cause",
+      "description": "The subject prevents the object."
+    }
+  }
+}

@@ -1,0 +1,17 @@
+{
+  "schema_id": "melm.mood_emoji_map.v1",
+  "version": "1.0.0",
+  "description": "Maps mood state IDs to display emoji characters for synthesis answers",
+  "moods": {
+    "neutral": "😐",
+    "calm": "😌",
+    "happy": "😊",
+    "excited": "🤩",
+    "curious": "🤔",
+    "annoyed": "😒",
+    "frustrated": "😤",
+    "hurt": "😢",
+    "sad": "😞",
+    "listening": "👂"
+  }
+}

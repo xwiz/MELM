@@ -1,0 +1,21 @@
+{
+  "schema_id": "melm.short_circuit_responses.v1",
+  "version": "1.0.0",
+  "description": "Response templates for short-circuit intent overrides",
+  "responses": {
+    "complaint_acknowledged": "I hear you're not satisfied with how I responded. Tell me what went wrong and I'll try to do better.",
+    "emotional_expression_very_negative": "That sounds really difficult. I'm here for you.",
+    "emotional_expression_negative": "I hear that you're feeling down. I'm here if you'd like to talk.",
+    "emotional_expression_positive": "I'm glad you're feeling good!",
+    "emotional_expression_neutral": "I hear you.",
+    "common_sense_safety": "That sounds urgent. If there may be danger, move to safety and alert someone now."
+  },
+  "valence_thresholds": {
+    "very_negative": -0.5,
+    "negative": -0.3,
+    "positive": 0.3
+  },
+  "evidence_keys": {
+    "common_sense_safety": ["local_safety_policy.perception_urgency"]
+  }
+}

@@ -1,0 +1,16 @@
+{
+  "schema_id": "melm.task_domain_terms.v1",
+  "version": "1.0.0",
+  "terms": [
+    "health", "healthy", "wellness",
+    "eat", "food", "meal", "cook", "breakfast", "lunch", "dinner",
+    "weather", "forecast", "rain",
+    "story", "stories", "tale",
+    "song", "music",
+    "call", "phone",
+    "school",
+    "clothes", "naked",
+    "routine",
+    "family", "household", "child"
+  ]
+}

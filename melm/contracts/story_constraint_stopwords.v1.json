@@ -1,0 +1,11 @@
+{
+  "schema_id": "melm.story_constraint_stopwords.v1",
+  "version": "1.0.0",
+  "stopwords": [
+    "a", "an", "and", "about", "with",
+    "featuring", "feature", "features",
+    "for", "me", "please",
+    "story", "stories", "tale", "tales", "fable", "fables",
+    "tell", "read", "make", "give"
+  ]
+}

@@ -1,0 +1,5 @@
+{
+  "schema_id": "melm.music_instruments.v1",
+  "version": "1.0.0",
+  "instruments": ["piano", "guitar", "violin", "flute", "drums", "keyboard"]
+}

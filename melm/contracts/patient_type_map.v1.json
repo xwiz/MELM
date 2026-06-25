@@ -1,0 +1,39 @@
+{
+  "schema_id": "melm.patient_type_map.v1",
+  "version": "1.1.0",
+  "description": "Maps surface patient entity tokens to verb_states semantic class labels for the moral cognition engine",
+  "person_patient_markers": [
+    "her", "him", "them", "me", "you", "us",
+    "someone", "somebody", "anyone", "everyone", "everybody", "nobody",
+    "people", "person", "child", "kid", "baby",
+    "man", "woman", "her's", "hers", "themselves", "himself", "herself"
+  ],
+  "mappings": [
+    {"surface": "person", "semantic_class": "person"},
+    {"surface": "people", "semantic_class": "person"},
+    {"surface": "someone", "semantic_class": "person"},
+    {"surface": "anyone", "semantic_class": "person"},
+    {"surface": "man", "semantic_class": "person"},
+    {"surface": "woman", "semantic_class": "person"},
+    {"surface": "child", "semantic_class": "person"},
+    {"surface": "kid", "semantic_class": "person"},
+    {"surface": "animal", "semantic_class": "living_thing.animal"},
+    {"surface": "dog", "semantic_class": "living_thing.animal"},
+    {"surface": "cat", "semantic_class": "living_thing.animal"},
+    {"surface": "pet", "semantic_class": "living_thing.animal"},
+    {"surface": "clothes", "semantic_class": "clothing_item"},
+    {"surface": "shirt", "semantic_class": "clothing_item"},
+    {"surface": "pants", "semantic_class": "clothing_item"},
+    {"surface": "shorts", "semantic_class": "clothing_item"},
+    {"surface": "jacket", "semantic_class": "clothing_item"},
+    {"surface": "coat", "semantic_class": "clothing_item"},
+    {"surface": "clothing", "semantic_class": "clothing_item"},
+    {"surface": "dress", "semantic_class": "clothing_item"},
+    {"surface": "shoe", "semantic_class": "clothing_item"},
+    {"surface": "wall", "semantic_class": "physical_object"},
+    {"surface": "table", "semantic_class": "physical_object"},
+    {"surface": "group", "semantic_class": "group"},
+    {"surface": "team", "semantic_class": "group"},
+    {"surface": "crowd", "semantic_class": "group"}
+  ]
+}

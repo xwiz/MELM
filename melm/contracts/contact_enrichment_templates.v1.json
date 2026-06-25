@@ -1,0 +1,10 @@
+{
+  "schema_id": "melm.contact_enrichment_templates.v1",
+  "version": "1.0.0",
+  "description": "Templates for enriching social_contact device-action answers",
+  "templates": {
+    "default": "{answer} at {number}. One moment — connecting now.",
+    "with_relationship": "{answer} {relationship} at {number}. One moment — connecting now.",
+    "confirming_relationship": "Connecting to {contact} at {number}. One moment."
+  }
+}

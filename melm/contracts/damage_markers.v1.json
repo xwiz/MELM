@@ -1,0 +1,4 @@
+{
+  "schema_id": "melm.damage_markers.v1",
+  "markers": ["damage", "break", "destroy", "shatter", "crack", "bend", "tear", "cut", "scrape", "dent"]
+}

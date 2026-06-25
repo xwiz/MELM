@@ -1,0 +1,17 @@
+{
+  "schema_id": "melm.short_circuit_reasons.v1",
+  "version": "1.0.0",
+  "description": "Decision reasons that bypass standard answer generation and go directly to pool selection or template resolution",
+  "reasons": [
+    "complaint_acknowledged",
+    "rapid_repetition",
+    "perception_urgency_high",
+    "identity_switch",
+    "identity_probe_detected",
+    "gibberish_detected"
+  ],
+  "template_only_reasons": [
+    "gibberish_detected",
+    "complaint_acknowledged"
+  ]
+}

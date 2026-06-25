@@ -1,0 +1,16 @@
+{
+  "schema_id": "melm.contact_object_tokens.v1",
+  "version": "1.1.0",
+  "description": "Contact relationship tokens for contact object resolution and automatic relationship extraction from utterances",
+  "relationship_tokens": [
+    "mom", "dad", "mother", "father", "parent",
+    "daughter", "son", "child", "sister", "brother",
+    "wife", "husband", "partner", "fiance", "fiancee",
+    "aunt", "uncle", "cousin", "niece", "nephew",
+    "grandma", "grandpa", "grandmother", "grandfather",
+    "friend", "caregiver", "neighbor", "assistant"
+  ],
+  "relationship_object": "relationship_contact",
+  "someone_token": "someone",
+  "default_object": "trusted_contact"
+}

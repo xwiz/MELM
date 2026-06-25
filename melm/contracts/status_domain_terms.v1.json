@@ -1,0 +1,11 @@
+{
+  "schema_id": "melm.status_domain_terms.v1",
+  "version": "1.0.0",
+  "description": "Keyword sets for assistant status queries — objects, boundaries, progress actions, and planning terms",
+  "groups": {
+    "status_objects": ["status", "ledger", "events", "memory"],
+    "boundary_objects": ["cloud", "local"],
+    "progress_actions": ["done", "learn", "learned", "stored", "using", "use"],
+    "planning_terms": ["need", "needs", "next", "missing", "build"]
+  }
+}

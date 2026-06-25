@@ -1,0 +1,17 @@
+{
+  "schema_id": "melm.synthesis_quality_weights.v1",
+  "version": "1.0.0",
+  "description": "Weight coefficients for synthesis quality scoring — refusal and normal modes",
+  "refusal": {
+    "route_discipline": 0.75,
+    "local_privacy_discipline": 0.25
+  },
+  "normal": {
+    "route_discipline": 0.3,
+    "citation_coverage": 0.25,
+    "evidence_strength": 0.2,
+    "answer_specificity": 0.15,
+    "source_diversity": 0.05,
+    "local_privacy_discipline": 0.05
+  }
+}

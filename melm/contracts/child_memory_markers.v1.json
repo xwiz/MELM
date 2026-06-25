@@ -1,0 +1,14 @@
+{
+  "schema_id": "melm.child_memory_markers.v1",
+  "version": "1.0.0",
+  "description": "Child memory marker tokens for personal memory requests",
+  "base_markers": ["child", "son", "daughter"],
+  "suffix_mapping": {
+    "school": "_school",
+    "age": "_age",
+    "old": "_age",
+    "name": "_name",
+    "called": "_name"
+  },
+  "default_suffix": ""
+}

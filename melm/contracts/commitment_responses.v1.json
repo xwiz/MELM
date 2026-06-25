@@ -1,0 +1,10 @@
+{
+  "schema_id": "melm.commitment_responses.v1",
+  "version": "1.0.0",
+  "description": "Response templates for user commitment memory reminders",
+  "responses": {
+    "prefix_to": "Got it. I will remind you {topic}.",
+    "prefix_that": "Got it. I will remind you {topic}.",
+    "default": "Got it. I will remind you that {topic}."
+  }
+}

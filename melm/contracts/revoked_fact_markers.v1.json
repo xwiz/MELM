@@ -1,0 +1,26 @@
+{
+  "schema_id": "melm.revoked_fact_markers.v1",
+  "version": "1.0.0",
+  "forget_markers": ["forget", "stop remembering", "stop using", "don't remember", "do not remember", "remove", "delete"],
+  "simple_markers": {
+    "facts.favorite_color": ["favorite color"],
+    "facts.morning_routine": ["morning routine", "routine"],
+    "facts.job": ["job"],
+    "facts.trip": ["trip"],
+    "facts.accessibility": ["accessibility"],
+    "preferences.story_theme": ["story theme", "story preference"],
+    "preferences.music": ["music", "song preference"],
+    "preferences.breakfast": ["breakfast"]
+  },
+  "child_parent_markers": ["child", "kid", "son", "daughter", "child's", "kid's", "son's", "daughter's"],
+  "child_markers": {
+    "school": "facts.child_school",
+    "name": "facts.child_name",
+    "called": "facts.child_name",
+    "age": "facts.child_age",
+    "old": "facts.child_age"
+  },
+  "child_default": "facts.child_age",
+  "household_markers": ["household", "family memory", "shared device", "our family"],
+  "household_key": "facts.household_context"
+}

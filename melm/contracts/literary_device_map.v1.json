@@ -1,0 +1,12 @@
+{
+  "schema_id": "melm.literary_device_map.v1",
+  "version": "1.0.0",
+  "description": "Maps lesson keywords and themes to literary devices for story generation",
+  "lesson_device_groups": {
+    "proverb": ["patience", "kindness", "honesty", "gratitude", "humility", "wisdom"],
+    "riddle": ["curiosity", "bravery", "perseverance"],
+    "poem": ["courage"]
+  },
+  "theme_default_device": "riddle",
+  "default_device": "proverb"
+}

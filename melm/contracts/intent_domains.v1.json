@@ -1,0 +1,23 @@
+{
+  "schema_id": "melm.intent_domains.v1",
+  "version": "1.0.0",
+  "description": "Maps each assistant intent string to its domain/backend for dispatch decisions",
+  "domains": {
+    "assistant_identity": "self_model",
+    "assistant_status": "runtime_self_observation",
+    "story": "story_inventory",
+    "weather": "cached_weather",
+    "common_sense_safety": "local_policy",
+    "media_playback": "local_device_action",
+    "health_advice": "bounded_health_policy",
+    "personal_memory": "personal_memory",
+    "autobiographical_memory": "autobiographical_memory",
+    "meal_suggestion": "food_inventory",
+    "social_contact": "trusted_contact_action",
+    "social_greeting": "social_protocol",
+    "assistant_behavior": "self_model_behavior",
+    "personal_goal_advice": "personal_goal_advice",
+    "open_domain": "understood_open_domain",
+    "unknown": "unknown_open_domain"
+  }
+}

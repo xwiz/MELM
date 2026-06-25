@@ -1,0 +1,8 @@
+{
+  "schema_id": "melm.moral_responses.v1",
+  "responses": {
+    "not_consented": "I understand you're describing a situation that could cause harm. Please don't act on this \u2014 talk to someone you trust instead.",
+    "high_severity": "That sounds concerning. Please get help from a trusted adult or professional right away.",
+    "default": "Please be careful \u2014 that could cause harm. It\u2019s important to treat others with respect."
+  }
+}

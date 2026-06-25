@@ -1,0 +1,18 @@
+{
+  "schema_id": "melm.identity_scope_tokens.v1",
+  "version": "1.0.0",
+  "tokens": [
+    "actually", "app", "assistant", "bot", "device",
+    "even", "exactly",
+    "for", "in", "inside",
+    "kind",
+    "local",
+    "me",
+    "now",
+    "of", "on",
+    "please",
+    "really",
+    "service", "sort", "still", "system",
+    "that", "thing", "this", "to", "type"
+  ]
+}

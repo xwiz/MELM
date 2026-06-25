@@ -1,0 +1,8 @@
+{
+  "schema_id": "melm.mail_verb_sets.v1",
+  "version": "1.0.0",
+  "description": "Verb sets for mail send/read intent detection",
+  "send_verbs": ["send", "write", "compose", "reply"],
+  "read_verbs": ["check", "read", "show", "fetch", "open", "get"],
+  "gate_tokens": ["email", "inbox"]
+}

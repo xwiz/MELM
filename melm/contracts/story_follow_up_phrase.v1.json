@@ -1,0 +1,7 @@
+{
+  "schema_id": "melm.story_follow_up_phrase.v1",
+  "version": "1.0.0",
+  "description": "Follow-up question appended after story answers",
+  "phrase": "\n\nWhat do you think {name} learned from this story?",
+  "default_name": "the character"
+}
