@@ -2530,6 +2530,16 @@ class AssistantOSStore:
         ).fetchone()
         return int(row["cnt"]) if row else 0
 
+    def count_utterances_rapid_window(self, utterance: str, session_id: str, window_seconds: int = 60) -> int:
+        """Count identical utterances in this session within a time window."""
+        from datetime import datetime, timezone, timedelta
+        cutoff = (datetime.now(timezone.utc) - timedelta(seconds=window_seconds)).isoformat()
+        row = self.connection.execute(
+            "SELECT COUNT(*) AS cnt FROM events WHERE utterance=? AND session_id=? AND created_at >= ?",
+            (utterance, session_id, cutoff),
+        ).fetchone()
+        return int(row["cnt"]) if row else 0
+
     def current_mood_state(self, session_id: str, user_id: str) -> MoodState | None:
         rows = self.connection.execute("""
             SELECT e.entity_id FROM entities e

@@ -993,6 +993,18 @@ class BoundedLocalSynthesizer:
             is_listening = getattr(mood, "is_listening", False)
             if is_listening and decision.intent not in _get_always_respond_intents():
                 return "..."
+        # Complaint acknowledgements are contract-owned short-circuit answers.
+        # Render them before generic response pools so the grounded
+        # acknowledgement is not replaced by atom/open-domain fallback text.
+        if decision.reason == "complaint_acknowledged":
+            try:
+                from melm.contracts import load_short_circuit_responses
+                responses = load_short_circuit_responses().get("responses", {})
+                complaint = responses.get("complaint_acknowledged", "")
+                if complaint:
+                    return complaint
+            except Exception:
+                pass
         pool_intents = _get_pool_intents()
         if decision.reason in _get_short_circuit_reasons()["reasons"] or decision.intent in pool_intents:
             pool_result = _pool_select(decision, self.profile)

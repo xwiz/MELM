@@ -77,6 +77,11 @@ class TestRoutingReasonOutput(unittest.TestCase):
         self.assertEqual(d.intent, "meal_suggestion")
         self.assertEqual(d.route, "local_answer")
 
+    def test_meal_suggestion_with_future_travel_context(self):
+        d = self.kernel.handle("What should I eat before travel?")
+        self.assertEqual(d.intent, "meal_suggestion")
+        self.assertEqual(d.reason, "memory_plus_weather_cache")
+
     def test_contact_call(self):
         d = self.kernel.handle("Call mom")
         self.assertEqual(d.intent, "social_contact")
@@ -99,16 +104,15 @@ class TestRoutingReasonOutput(unittest.TestCase):
         self.assertIn(d.intent, ("personal_memory", "meal_suggestion"))
 
     def test_rapid_repetition(self):
-        """After 5+ identical utterances, the intent should change from the
-        original (story) to a short-circuit override (assistant_status)."""
+        """Repeated content requests remain content unless event timing shows
+        low-information rapid repetition."""
         router = OnDeviceAssistantRouter(LocalAssistantProfile())
         utterance = "Tell me a story"
         intents_seen = set()
         for _ in range(6):
             d = router.handle(utterance)
             intents_seen.add(d.intent)
-        # At least two different intents should have been observed
-        self.assertGreaterEqual(len(intents_seen), 2)
+        self.assertEqual(intents_seen, {"story"})
 
 
 # ---------------------------------------------------------------------------
@@ -173,10 +177,10 @@ class TestRoutingNegationAndEdgeCases(unittest.TestCase):
         self.router = OnDeviceAssistantRouter(LocalAssistantProfile())
 
     def test_not_health_negation_not_handled(self):
-        """'I do NOT feel sick' routes to health_advice because the router
-        does not handle negation. This documents the pre-existing gap."""
+        """Negated health claims preserve UOL polarity instead of routing as
+        an asserted health concern."""
         d = self.router.handle("I do NOT feel sick")
-        self.assertEqual(d.intent, "health_advice")
+        self.assertEqual(d.intent, "open_domain")
 
     def test_not_story(self):
         d = self.router.handle("Tell me your name, not a story")

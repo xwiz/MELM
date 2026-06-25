@@ -101,6 +101,28 @@ class CounterSemanticsTests(unittest.TestCase):
         self.assertIsInstance(d.ambient_valence, float)
         self.assertIsInstance(d.ambient_valence_delta, float)
 
+    def test_old_repeated_content_requests_are_not_rapid_repetition(self):
+        self.kernel.handle("Tell me a story.")
+        self.kernel.handle("Tell me a story.")
+        old = "2026-01-01T00:00:00+00:00"
+        self.store.connection.execute("UPDATE events SET created_at=?", (old,))
+        self.store.connection.commit()
+
+        d = self.kernel.handle("Tell me a story.")
+
+        self.assertEqual(d.intent, "story")
+        self.assertEqual(d.rapid_occurrence, 0)
+
+    def test_recent_low_information_repetition_short_circuits(self):
+        self.kernel.handle("Hello")
+        self.kernel.handle("Hello")
+
+        d = self.kernel.handle("Hello")
+
+        self.assertEqual(d.intent, "assistant_status")
+        self.assertEqual(d.reason, "rapid_repetition")
+        self.assertGreaterEqual(d.rapid_occurrence, 2)
+
 
 if __name__ == "__main__":
     unittest.main()

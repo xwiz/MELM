@@ -55,6 +55,7 @@ _MORAL_ENGINE: Any | None = None
 _ATOM_PREDICATES_CACHE: dict[str, list[str]] | None = None
 _PRIVATE_CLOUD_EVIDENCE_CACHE: dict[str, Any] | None = None
 _MUSIC_STYLE_CACHE: dict[str, Any] | None = None
+_SHORT_CIRCUIT_RESPONSES_CACHE: dict[str, Any] | None = None
 
 # Maps surface entity types to verb_states.v1.json semantic class labels
 _PATIENT_TYPE_CLASS_MAP: dict[str, str] = {
@@ -88,6 +89,34 @@ def _get_private_cloud_evidence() -> dict[str, Any]:
         except Exception:
             _PRIVATE_CLOUD_EVIDENCE_CACHE = {}
     return _PRIVATE_CLOUD_EVIDENCE_CACHE
+
+def _get_short_circuit_responses() -> dict[str, Any]:
+    global _SHORT_CIRCUIT_RESPONSES_CACHE
+    if _SHORT_CIRCUIT_RESPONSES_CACHE is None:
+        try:
+            from melm.contracts import load_short_circuit_responses
+            _SHORT_CIRCUIT_RESPONSES_CACHE = load_short_circuit_responses()
+        except Exception:
+            _SHORT_CIRCUIT_RESPONSES_CACHE = {}
+    return _SHORT_CIRCUIT_RESPONSES_CACHE
+
+def _short_circuit_response(reason: str, fallback: str = "") -> str:
+    payload = _get_short_circuit_responses()
+    responses = payload.get("responses", {}) if isinstance(payload, dict) else {}
+    value = responses.get(reason)
+    return str(value) if value else fallback
+
+def _is_low_information_repetition_candidate(parse_bundle: "_ParseBundle") -> bool:
+    """Return true for ledger-level repeat guards, not task/content requests."""
+    parse = parse_bundle.functional_parse
+    tokens = tuple(t.lower() for t in parse_bundle.tokens)
+    if parse is not None and parse.speech_act == "greeting":
+        return True
+    if parse is None:
+        return len(tokens) <= 3
+    if parse.speech_act in {"wh_question", "yes_no_question", "request", "command"}:
+        return False
+    return len(tokens) <= 2 and not getattr(parse, "object", "")
 
 def _resolve_patient_type(patient_raw: str) -> str:
     """Map surface patient text to verb_states semantic class label."""
@@ -616,17 +645,39 @@ class OnDeviceAssistantRouter:
             if informal is not None:
                 affect = informal
 
-        # Rapid repetition: track consecutive same-utterance text
-        prev_text = rapid.get("last_utterance", "")
+        # Rapid repetition: use store-backed temporal query when available,
+        # fall back to in-memory counter for no-store (test) mode.
+        # The store counts identical utterances within a 60-second window,
+        # so repetitions across different days/sessions don't trigger.
         normalized = utterance.strip().lower()
-        if normalized and normalized == prev_text:
-            rapid["count"] += 1
+        if self.store is not None:
+            try:
+                rapid_count = self.store.count_utterances_rapid_window(
+                    utterance, session_id, window_seconds=60,
+                )
+            except Exception:
+                rapid_count = 0
         else:
-            rapid["count"] = 0
-            rapid["last_utterance"] = normalized
+            from datetime import datetime, timezone
+            prev_text = rapid.get("last_utterance", "")
+            last_seen = rapid.get("last_seen_at")
+            now = datetime.now(timezone.utc)
+            within_window = False
+            if last_seen:
+                try:
+                    within_window = (now - last_seen).total_seconds() <= 60
+                except Exception:
+                    within_window = False
+            if normalized and normalized == prev_text and within_window:
+                rapid["count"] += 1
+            else:
+                rapid["count"] = 0
+                rapid["last_utterance"] = normalized
+            rapid["last_seen_at"] = now
+            rapid_count = rapid["count"]
 
         short_circuit = self._apply_short_circuits(
-            utterance, parse_bundle, affect, current_mood, rapid,
+            utterance, parse_bundle, affect, current_mood, {"count": rapid_count},
         )
         regions = self._mood_regions_list()
         updated_mood = update_session_mood(
@@ -648,7 +699,7 @@ class OnDeviceAssistantRouter:
             "ambient_valence": ambient_valence,
             "ambient_valence_delta": ambient_valence_delta,
             "short_circuit": short_circuit,
-            "rapid_count": rapid["count"],
+            "rapid_count": rapid_count,
             "familiarity": familiarity,
         }
 
@@ -931,18 +982,8 @@ class OnDeviceAssistantRouter:
             result["reason"] = "identity_probe_detected"
             result["override_intent"] = "assistant_identity"
             return result
-        # P0-2b: Self-probe questions ("Are you conscious?", "Are you real?")
-        # Catch these before reasoning:self_query or open_domain take them.
-        self_probe_tokens = {"conscious", "sentient", "self-aware", "aware", "alive", "real"}
-        if (
-            assistant_directed
-            and is_question_like_act(uol_act)
-            and bool(set(tokens_lower) & self_probe_tokens)
-        ):
-            result["is_short_circuit"] = True
-            result["reason"] = "identity_self_probe"
-            result["override_intent"] = "assistant_behavior"
-            return result
+        # Self-probe questions ("Are you conscious?", "Are you real?") are
+        # handled by the reasoning/self-query path after short-circuits.
         # P0-3: Complaint detected — acknowledge as assistant_behavior, NOT a greeting.
         if affect is not None and affect.is_complaint:
             result["is_short_circuit"] = True
@@ -966,18 +1007,13 @@ class OnDeviceAssistantRouter:
                 result["reason"] = "emotional_expression"
                 result["override_intent"] = "assistant_behavior"
                 return result
-        # P0-4: Rapid repetition
-        # Skip for content requests (story, weather, etc.) where repeating
-        # the same utterance is a legitimate user action, not a glitch.
-        if rapid.get("count", 0) >= 2:
-            content_verbs = {"tell", "play", "what", "how", "give", "show",
-                             "remind", "call", "send", "cancel", "yes", "no"}
-            has_content_verb = bool(set(tokens_lower) & content_verbs)
-            if not has_content_verb:
-                result["is_short_circuit"] = True
-                result["reason"] = "rapid_repetition"
-                result["override_intent"] = "assistant_status"
-                return result
+        # P0-4: Rapid repetition (temporal: only fires when same utterance
+        # was recorded in the event ledger within the last 60 seconds)
+        if rapid.get("count", 0) >= 2 and _is_low_information_repetition_candidate(parse_bundle):
+            result["is_short_circuit"] = True
+            result["reason"] = "rapid_repetition"
+            result["override_intent"] = "assistant_status"
+            return result
         # P0-5: Perception urgency
         if affect is not None and affect.source == "perception" and affect.confidence >= 0.9:
             result["is_short_circuit"] = True
@@ -1002,16 +1038,15 @@ class OnDeviceAssistantRouter:
                 decision = self._greeting(utterance)
             elif override_intent == "assistant_status":
                 decision = self._assistant_status(utterance)
+                if sc_reason == "rapid_repetition":
+                    decision = replace(decision, reason=sc_reason)
             elif override_intent == "assistant_behavior":
                 decision = self._assistant_behavior(utterance)
                 if sc_reason == "complaint_acknowledged":
                     decision = replace(
                         decision,
                         reason=sc_reason,
-                        answer=(
-                            "I hear you're not satisfied with how I responded. "
-                            "Tell me what went wrong and I'll try to do better."
-                        ),
+                        answer=_short_circuit_response(sc_reason, decision.answer),
                     )
                 elif sc_reason in {"emotional_expression", "identity_self_probe"}:
                     decision = replace(decision, reason=sc_reason)
@@ -2851,6 +2886,7 @@ def _classify_from_atoms(
     is_meal_scope = bool(set(tokens) & {"breakfast", "lunch", "dinner"})
     atom_context = main_atom.get("context", {})
     atom_tense = str(atom_context.get("tense", "present")).strip().lower()
+    atom_modality = str(atom_context.get("modality", "assertive")).strip().lower()
     atom_time = atom_context.get("time")
     has_temporal_context = atom_tense in {"past", "future"} or atom_time is not None
     if (
@@ -2858,6 +2894,7 @@ def _classify_from_atoms(
         and is_question_act
         and (pred_id in meal_predicates or (pred_id in {"have"} and is_meal_scope))
         and agent_values & {"user", "i", "we"}
+        and atom_modality != "obligation"
         and (
             has_temporal_context
             or set(tokens) & temporal_memory_tokens
@@ -4569,7 +4606,7 @@ def _identity_composition(text: str, tokens: tuple[str, ...]) -> dict[str, Any] 
         )
     elif _matches_name_identity_frame(text, tokens):
         pattern = "what_copula_possessive_name"
-        action = "name_awareness" if {"real", "actual", "full"} & set(tokens) else "name"
+        action = "name_awareness"
         focus = "name"
         basis = (
             "what:attribute_question",
