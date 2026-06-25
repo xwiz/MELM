@@ -52,6 +52,9 @@ from .uol_types import AffectSignal
 import functools
 
 _MORAL_ENGINE: Any | None = None
+_ATOM_PREDICATES_CACHE: dict[str, list[str]] | None = None
+_PRIVATE_CLOUD_EVIDENCE_CACHE: dict[str, Any] | None = None
+_MUSIC_STYLE_CACHE: dict[str, Any] | None = None
 
 # Maps surface entity types to verb_states.v1.json semantic class labels
 _PATIENT_TYPE_CLASS_MAP: dict[str, str] = {
@@ -65,6 +68,26 @@ _PATIENT_TYPE_CLASS_MAP: dict[str, str] = {
     "wall": "physical_object", "table": "physical_object",
     "group": "group", "team": "group", "crowd": "group",
 }
+
+def _get_atom_predicates() -> dict[str, list[str]]:
+    global _ATOM_PREDICATES_CACHE
+    if _ATOM_PREDICATES_CACHE is None:
+        try:
+            from melm.contracts import load_atom_intent_predicates
+            _ATOM_PREDICATES_CACHE = load_atom_intent_predicates()
+        except Exception:
+            _ATOM_PREDICATES_CACHE = {}
+    return _ATOM_PREDICATES_CACHE
+
+def _get_private_cloud_evidence() -> dict[str, Any]:
+    global _PRIVATE_CLOUD_EVIDENCE_CACHE
+    if _PRIVATE_CLOUD_EVIDENCE_CACHE is None:
+        try:
+            from melm.contracts import load_private_cloud_evidence_map
+            _PRIVATE_CLOUD_EVIDENCE_CACHE = load_private_cloud_evidence_map()
+        except Exception:
+            _PRIVATE_CLOUD_EVIDENCE_CACHE = {}
+    return _PRIVATE_CLOUD_EVIDENCE_CACHE
 
 def _resolve_patient_type(patient_raw: str) -> str:
     """Map surface patient text to verb_states semantic class label."""
@@ -458,7 +481,13 @@ class AssistantStrategyReport:
 
 
 class OnDeviceAssistantRouter:
-    """Tiny deterministic assistant router over local memory/tool/action state."""
+    """Intent classifier, frame resolver, and answer dispatch.
+
+    Routes utterances to local-answer, device-action, or cloud-handoff via
+    a 17-classifier cascade and frame linker. Mood/affect computation and
+    knowledge extraction run inline. Profile-setup learning and open-domain
+    auto-research are handled by the kernel (caller), not here.
+    """
 
     def __init__(
         self,
@@ -476,6 +505,14 @@ class OnDeviceAssistantRouter:
 
     def _build_parse_bundle(self, utterance: str, last_intent: str = "") -> _ParseBundle:
         return _build_parse_bundle(utterance, last_intent=last_intent)
+
+    @staticmethod
+    def _enrich_media_playback_answer(answer: str, uol_act: Any = None) -> str | None:
+        return _enrich_media_playback_answer(answer, uol_act=uol_act)
+
+    @staticmethod
+    def _enrich_contact_answer(answer: str, number: str, *, contact_name: str = "", store: Any = None) -> str | None:
+        return _enrich_contact_answer(answer, number, contact_name=contact_name, store=store)
 
     def _mood_regions(self) -> list[dict[str, Any]]:
         if not self._mood_regions_loaded:
@@ -674,26 +711,19 @@ class OnDeviceAssistantRouter:
         kt = classify_knowledge(uol_act, utterance)
         if kt not in ("static_fact", "negated_fact", "opinion"):
             return None
-        prop = extract_proposition(uol_act)
+        prop = extract_proposition(uol_act, utterance)
         if prop is None:
             return None
         import uuid
-        eid = f"wf_{uuid.uuid4().hex[:12]}"
         polarity = "asserted" if kt != "negated_fact" else "negated"
-        self.store.set_world_fact(
-            eid, prop["subject"], prop["relation"], prop["object"],
-            polarity=polarity, provenance="user",
-            confidence=prop.get("confidence", 0.6),
-            source_utterance=utterance,
-        )
         from melm.contracts.validation import load_knowledge_types
         kt_data = load_knowledge_types()
         contradictions = self.store.find_contradicting_facts(
             prop["subject"], prop["relation"], prop["object"], polarity,
         )
+        prop_str = f"{prop['subject']} {prop['relation']} {prop['object']}"
         if contradictions:
             existing = contradictions[0]
-            prop_str = f"{prop['subject']} {prop['relation']} {prop['object']}"
             if existing.get("confidence", 0) >= prop.get("confidence", 0.6):
                 answer = kt_data.get("truth_arbitration", {}).get(
                     "contradiction_prompt", "That differs from what I have."
@@ -702,11 +732,16 @@ class OnDeviceAssistantRouter:
                     utterance=utterance, intent="personal_memory", route="local_answer",
                     answer=answer, reasoning_result={"task": "knowledge_contradiction",
                         "proposition": prop_str, "stored_polarity": existing.get("polarity", "")},
-                    evidence_keys=(f"world_fact.{eid}",), confidence=0.9,
+                    evidence_keys=(), confidence=0.9,
                     reason="knowledge_contradiction",
                 )
-        # Positive ack
-        prop_str = f"{prop['subject']} {prop['relation']} {prop['object']}"
+        eid = f"wf_{uuid.uuid4().hex[:12]}"
+        self.store.set_world_fact(
+            eid, prop["subject"], prop["relation"], prop["object"],
+            polarity=polarity, provenance="user",
+            confidence=prop.get("confidence", 0.6),
+            source_utterance=utterance,
+        )
         if kt == "negated_fact":
             negated = f"{prop['subject']} is not {prop['object']}"
             answer = kt_data.get("truth_arbitration", {}).get(
@@ -790,14 +825,21 @@ class OnDeviceAssistantRouter:
         grounding 'feeling' in the current operating mood."""
         from melm.contracts import load_assistant_identity
         category = str(task.get("category", ""))
-        templates = load_assistant_identity()
-        text = templates.get(f"reflection_{category}", "")
+        identity = load_assistant_identity()
+        text = identity.get(f"reflection_{category}", "")
         if not text:
             return None
         if category == "feeling":
             mood = self._mood_state.get(self.profile.user_id)
             mood_id = getattr(mood, "mood_id", "neutral") if mood else "neutral"
             text = text.replace("{mood}", mood_id or "neutral")
+        elif category == "dated_name":
+            first_available = identity.get("first_available_date", "")
+            requested_date = str(task.get("date", ""))
+            if requested_date and first_available and requested_date < first_available:
+                text = identity.get("reflection_dated_name_before_start", text)
+            text = text.replace("{date}", requested_date).replace("{name}", identity.get("technical_name", ""))
+            text = text.replace("{first_available_date}", first_available)
         return AssistantDecision(
             utterance=utterance, intent="reasoning:self_query", route="local_answer",
             answer=text, reasoning_result={"task": "self_query", "category": category},
@@ -888,12 +930,41 @@ class OnDeviceAssistantRouter:
             result["reason"] = "identity_probe_detected"
             result["override_intent"] = "assistant_identity"
             return result
+        # P0-2b: Self-probe questions ("Are you conscious?", "Are you real?")
+        # Catch these before reasoning:self_query or open_domain take them.
+        self_probe_tokens = {"conscious", "sentient", "self-aware", "aware", "alive", "real"}
+        if (
+            assistant_directed
+            and is_question_like_act(uol_act)
+            and bool(set(tokens_lower) & self_probe_tokens)
+        ):
+            result["is_short_circuit"] = True
+            result["reason"] = "identity_self_probe"
+            result["override_intent"] = "assistant_behavior"
+            return result
         # P0-3: Complaint detected — acknowledge as assistant_behavior, NOT a greeting.
         if affect is not None and affect.is_complaint:
             result["is_short_circuit"] = True
             result["reason"] = "complaint_acknowledged"
             result["override_intent"] = "assistant_behavior"
             return result
+        # P0-3b: Mood expression — route emotionally valenced claims to assistant_behavior.
+        # Exclude pain/complaint/profanity tags so "I feel sick" still routes to health_advice.
+        if (
+            affect is not None
+            and affect.confidence > 0
+            and abs(affect.valence) > 0.3
+            and uol_act is not None
+            and str(uol_act.get("act", "")).strip().lower() == "claim"
+        ):
+            tags = set(affect.dominant_tags)
+            is_emotion = bool(tags & {"positive", "negative"})
+            is_health_or_complaint = bool(tags & {"pain", "complaint", "profanity", "moral_violation"})
+            if is_emotion and not is_health_or_complaint:
+                result["is_short_circuit"] = True
+                result["reason"] = "emotional_expression"
+                result["override_intent"] = "assistant_behavior"
+                return result
         # P0-4: Rapid repetition
         if rapid.get("count", 0) >= 2:
             result["is_short_circuit"] = True
@@ -935,6 +1006,8 @@ class OnDeviceAssistantRouter:
                             "Tell me what went wrong and I'll try to do better."
                         ),
                     )
+                elif sc_reason in {"emotional_expression", "identity_self_probe"}:
+                    decision = replace(decision, reason=sc_reason)
             elif override_intent == "common_sense_safety":
                 decision = AssistantDecision(
                     utterance=utterance,
@@ -1082,6 +1155,11 @@ class OnDeviceAssistantRouter:
         if intent == "personal_goal_advice":
             return _cloud(utterance, intent, reason="understood_personal_goal_advice")
         if intent == "open_domain":
+            text_lower = utterance.lower()
+            if ("latest news" in text_lower or "breaking news" in text_lower) and not (
+                " about " in text_lower or " on " in text_lower
+            ):
+                return _cloud(utterance, intent, reason="time_sensitive_open_domain")
             return AssistantDecision(
                 utterance=utterance,
                 intent=intent,
@@ -1270,6 +1348,30 @@ class OnDeviceAssistantRouter:
 
     def _weather(self, utterance: str) -> AssistantDecision:
         cached = self.profile.weekly_weather.get("today")
+        # Detect dated weather queries (historical or forecast)
+        text = _normalize(utterance)
+        dated_reason = ""
+        from .reasoning.dates import parse_absolute_date
+        parsed_date = parse_absolute_date(text)
+        if parsed_date is not None:
+            from datetime import datetime
+            try:
+                d = datetime.strptime(parsed_date, "%Y-%m-%d")
+                is_past = d.date() < datetime.now().date()
+                dated_reason = "historical" if is_past else "forecast"
+            except Exception:
+                pass
+        if dated_reason:
+            return AssistantDecision(
+                utterance=utterance,
+                intent="weather",
+                route="external_fetch",
+                answer=f"Fetch weather for {parsed_date}.",
+                external_fetch_needed=True,
+                confidence=0.88,
+                reason=f"weather_{dated_reason}",
+                evidence_keys=(parsed_date or "",),
+            )
         if cached:
             return AssistantDecision(
                 utterance=utterance,
@@ -2096,54 +2198,64 @@ def _private_cloud_evidence_keys(
     tokens = _tokenize(text)
     token_set = set(tokens)
     keys: list[str] = []
-    if {"favorite", "color"} <= token_set:
-        keys.append("facts.favorite_color")
+    evidence = _get_private_cloud_evidence()
+    default_key = evidence.get("default_key", "profile.local_private_context")
+
+    # Trusted contact takes precedence
     trusted_contact = _matched_trusted_contact_name(tokens, trusted_contact_names)
     if trusted_contact:
         keys.append(f"contacts.{trusted_contact}")
-    elif token_set & {"mom", "dad", "caregiver", "contact"}:
-        keys.append("contacts.local")
-    if "job" in token_set:
-        keys.append("facts.job")
-    if "trip" in token_set:
-        keys.append("facts.trip")
-    if "routine" in token_set:
-        keys.append("facts.morning_routine")
-    if "accessibility" in token_set:
-        keys.append("facts.accessibility")
-    if "preference" in token_set:
-        keys.append("preferences.local")
-    if {"health", "goal"} <= token_set or {"health", "goals"} <= token_set:
-        keys.append("health_goals")
+
+    # Iterate evidence groups
     child_context = _is_child_memory_request(tokens) or bool(
-        token_set & {"son", "daughter", "kid"}
+        token_set & set(evidence.get("child_triggers", ["son", "daughter", "kid"]))
     )
+    for group in evidence.get("evidence_groups", []):
+        match = group.get("match", "any")
+        key = group.get("key", "")
+        if group.get("exclude_child") and child_context:
+            continue
+        if group.get("skip_if_trusted_contact") and trusted_contact:
+            continue
+        matched = False
+        if match == "any":
+            tokens_list = group.get("tokens", [])
+            matched = bool(token_set & set(tokens_list))
+        elif match == "all":
+            tokens_list = group.get("tokens", [])
+            matched = set(tokens_list) <= token_set
+        elif match == "any_group":
+            for sub in group.get("groups", []):
+                if set(sub) <= token_set:
+                    matched = True
+                    break
+        elif match == "any_or_all":
+            any_tokens = group.get("any", [])
+            all_tokens = group.get("all", [])
+            matched = (
+                bool(token_set & set(any_tokens))
+                or set(all_tokens) <= token_set
+            )
+        elif match == "all_with_any":
+            anchor = group.get("anchor", "")
+            any_tokens = group.get("any", [])
+            matched = anchor in token_set and bool(token_set & set(any_tokens))
+        if matched:
+            keys.append(key)
+
+    # Child context evidence groups
     if child_context:
-        if token_set & {"age", "old", "child", "kid"}:
-            keys.append("facts.child_age")
-        if token_set & {"school", "son", "daughter"}:
-            keys.append("facts.child_school")
-        if token_set & {"location", "where", "lives", "live"}:
-            keys.append("facts.child_location")
-        if token_set & {"name", "called"}:
-            keys.append("facts.child_name")
-    elif "my" in token_set and "age" in token_set:
-        keys.append("profile.age")
-    if "school" in token_set and not child_context:
-        keys.append("facts.school")
-    if token_set & {"household", "family"} or {"shared", "device"} <= token_set:
-        keys.append("facts.household_context")
-    if {"public", "profile"} <= token_set:
-        keys.append("facts.public_profile")
-    if (
-        token_set & {"location"} or {"where", "i", "live"} <= token_set
-    ) and not child_context:
-        keys.append("profile.location")
-    if "about" in token_set and token_set & {"me", "myself"}:
-        keys.append("facts.local_profile")
-    if "conversation" in token_set or {"talked", "about"} <= token_set:
-        keys.append("events.local_conversation")
-    return tuple(dict.fromkeys(keys or ["profile.local_private_context"]))
+        for group in evidence.get("child_groups", []):
+            match = group.get("match", "any")
+            key = group.get("key", "")
+            matched = False
+            if match == "any":
+                tokens_list = group.get("tokens", [])
+                matched = bool(token_set & set(tokens_list))
+            if matched:
+                keys.append(key)
+
+    return tuple(dict.fromkeys(keys or [default_key]))
 
 
 def _report(
@@ -2604,54 +2716,103 @@ def _classify_from_atoms(
         for r in roles
         if r.get("role") == "agent"
     }
+    # Collect beneficiary/patient values
+    beneficiary_values = {
+        str(r.get("value", "")).strip().lower()
+        for r in roles
+        if r.get("role") in {"beneficiary", "recipient", "patient"}
+    }
 
     # Map UolAct.act → speech_act equivalents
     is_question_act = act_type in {"question"}
     is_request_act = act_type in {"request", "command"}
 
     # Semantic class checks
-    health_sem_classes = {"health_domain", "health_condition", "advice_action", "medical_procedure"}
+    atom_predicates = _get_atom_predicates()
+    health_sem_classes = set(atom_predicates.get("health_advice_classes", ["health_domain", "health_condition", "advice_action", "medical_procedure"]))
     has_health_sem = any(
         sc in sem_class or sc in sem_class.replace(".", "_")
         for sc in health_sem_classes
     ) or bool(health_sem_classes & _semantic_classes_from_atom(main_atom))
+
+    # Personal memory: remind/remember/recall + user agent or beneficiary
+    personal_memory_predicates = set(atom_predicates.get("personal_memory", ["remind", "remind_me", "remember", "recall"]))
+    if (
+        not blocked_action_match
+        and pred_id in personal_memory_predicates
+        and (
+            agent_values & {"user", "i", "we", "user_group"}
+            or beneficiary_values & {"user", "me", "i", "we", "us", "user_group"}
+            or not agent_values
+        )
+    ):
+        return "personal_memory"
+
+    # Meal suggestion predicates (also used for temporal-memory override)
+    meal_predicates = set(atom_predicates.get("meal_suggestion", ["eat", "cook", "prepare", "eri", "nri"]))
+
+    # Temporal personal memory: eat/cook/prepare/have + past/future + first-person + temporal/meal token
+    temporal_memory_tokens = {"yesterday", "today", "tomorrow", "last", "ago", "earlier", "recently", "before", "breakfast", "lunch", "dinner"}
+    past_tense_markers = {"did", "was", "were", "had", "ate", "cooked", "prepared", "drank", "drunk", "bought", "made"}
+    is_meal_scope = bool(set(tokens) & {"breakfast", "lunch", "dinner"})
+    atom_context = main_atom.get("context", {})
+    atom_tense = str(atom_context.get("tense", "present")).strip().lower()
+    atom_time = atom_context.get("time")
+    has_temporal_context = atom_tense in {"past", "future"} or atom_time is not None
+    if (
+        not blocked_action_match
+        and is_question_act
+        and (pred_id in meal_predicates or (pred_id in {"have"} and is_meal_scope))
+        and agent_values & {"user", "i", "we"}
+        and (
+            has_temporal_context
+            or set(tokens) & temporal_memory_tokens
+            or set(tokens) & past_tense_markers
+        )
+    ):
+        return "personal_memory"
 
     # Meal suggestion: eat/cook/prepare + question/request + user agent
     if (
         not blocked_action_match
         and
         (is_question_act or is_request_act)
-        and pred_id in {"eat", "cook", "prepare", "eri", "nri"}
+        and pred_id in meal_predicates
         and (agent_values & {"user", "i", "we"} or not agent_values)
     ):
         return "meal_suggestion"
 
     # Story: tell/read/make/give + story/tale in theme
+    story_predicates = set(atom_predicates.get("story", ["tell", "read", "make", "give"]))
+    story_themes = set(atom_predicates.get("story_theme_values", ["story", "tale", "fable", "narrative"]))
     if (
         not blocked_action_match
         and
         (is_question_act or is_request_act)
-        and pred_id in {"tell", "read", "make", "give"}
-        and bool(theme_values & {"story", "tale", "fable", "narrative"})
+        and pred_id in story_predicates
+        and bool(theme_values & story_themes)
     ):
         return "story"
 
     # Weather: rain/snow/forecast predicate
+    weather_predicates = set(atom_predicates.get("weather", ["rain", "snow", "forecast", "weather"]))
     if (
         not blocked_action_match
         and
         (is_question_act or is_request_act)
-        and pred_id in {"rain", "snow", "forecast", "weather"}
+        and pred_id in weather_predicates
     ):
         return "weather"
 
     # Media playback: play/start + music/song theme
+    media_verbs = set(atom_predicates.get("media_playback_verbs", ["play", "start"]))
+    media_objects = set(atom_predicates.get("media_playback_objects", ["music", "song", "audio", "media", "radio"]))
     if (
         not blocked_action_match
         and
         is_request_act
-        and pred_id in {"play", "start"}
-        and bool(theme_values & {"music", "song", "audio", "media", "radio"})
+        and pred_id in media_verbs
+        and bool(theme_values & media_objects)
     ):
         return "media_playback"
 
@@ -2670,11 +2831,13 @@ def _classify_from_atoms(
 
     # Social contact: call/phone + social_relation
     has_social_relation = "social_relation" in atom_sem_classes or "child_relation" in atom_sem_classes
-    if not blocked_action_match and has_social_relation and pred_id in {"call", "phone", "ring", "reach", "contact"}:
+    social_contact_predicates = set(atom_predicates.get("social_contact", ["call", "phone", "ring", "reach", "contact"]))
+    if not blocked_action_match and has_social_relation and pred_id in social_contact_predicates:
         return "social_contact"
 
     # Personal memory: memory_recall semantic class
-    if bool(atom_sem_classes & {"memory_recall", "personal_attribute", "autobiographical_event"}):
+    personal_memory_classes = set(atom_predicates.get("personal_memory_classes", ["memory_recall", "personal_attribute", "autobiographical_event"]))
+    if bool(atom_sem_classes & personal_memory_classes):
         return "personal_memory"
 
     return None
@@ -2692,6 +2855,23 @@ def is_request_like_act(uol_act: dict[str, Any] | None) -> bool:
     if uol_act is None:
         return False
     return str(uol_act.get("act", "")) in {"request", "command"}
+
+
+def _main_atom_negated(uol_act: dict[str, Any] | None) -> bool:
+    """Return True if the first atom in a UOL act is negated or counterfactual."""
+    if uol_act is None or not isinstance(uol_act, dict):
+        return False
+    content = uol_act.get("content", [])
+    if not content:
+        return False
+    main = content[0]
+    if not isinstance(main, dict):
+        return False
+    context = main.get("context", {})
+    polarity = str(context.get("polarity", "positive")).strip().lower()
+    negation_scope = bool(context.get("negation_scope", False))
+    modality = str(context.get("modality", "assertive")).strip().lower()
+    return polarity == "negative" or negation_scope or modality == "counterfactual"
 
 
 def _frame_linker_candidates_from_atoms(
@@ -2828,7 +3008,7 @@ def _classify_intent_from_uol_slots(
         use_margin=False,
     ):
         return "media_playback"
-    if _route_frame_match(
+    if not _main_atom_negated(uol_act) and _route_frame_match(
         "health_advice",
         collector_classes=frozenset({"health_domain", "health_condition", "advice_action"}),
         use_margin=False,
@@ -4288,7 +4468,7 @@ def _identity_composition(text: str, tokens: tuple[str, ...]) -> dict[str, Any] 
         )
     elif _matches_name_identity_frame(text, tokens):
         pattern = "what_copula_possessive_name"
-        action = "name"
+        action = "name_awareness" if {"real", "actual", "full"} & set(tokens) else "name"
         focus = "name"
         basis = (
             "what:attribute_question",
@@ -4338,10 +4518,10 @@ def _identity_composition(text: str, tokens: tuple[str, ...]) -> dict[str, Any] 
                 action = "suggest_name"
                 focus = "name"
                 basis = ("what:attribute_question", "should:deontic_modal", "i:self_deixis", "call:label_action", "you:assistant_deixis")
-            elif "name" in tokens and \
+            elif ("name" in tokens or "named" in tokens) and \
                  ("your" in tokens or ("you" in tokens and "my" not in tokens) or "yourself" in tokens) and \
                  any(q in tokens for q in ("do", "what", "did", "have", "who", "is", "are")):
-                if "yourself" in tokens:
+                if "yourself" in tokens or ("who" in tokens and "named" in tokens):
                     action = "name_origin"
                 else:
                     action = "name_awareness"
@@ -4939,6 +5119,24 @@ def _personal_memory_object_from_text(text: str, tokens: tuple[str, ...]) -> str
     return "user_profile"
 
 
+_CONTACT_OBJECT_TOKENS_CACHE: dict | None = None
+
+def _get_contact_object_tokens() -> dict:
+    global _CONTACT_OBJECT_TOKENS_CACHE
+    if _CONTACT_OBJECT_TOKENS_CACHE is None:
+        try:
+            from melm.contracts import load_contact_object_tokens
+            _CONTACT_OBJECT_TOKENS_CACHE = load_contact_object_tokens()
+        except Exception:
+            _CONTACT_OBJECT_TOKENS_CACHE = {
+                "relationship_tokens": ["mom", "dad", "caregiver"],
+                "relationship_object": "relationship_contact",
+                "someone_token": "someone",
+                "default_object": "trusted_contact",
+            }
+    return _CONTACT_OBJECT_TOKENS_CACHE
+
+
 def _contact_object_from_tokens(
     tokens: tuple[str, ...],
     trusted_contact_names: tuple[str, ...] = (),
@@ -4946,12 +5144,14 @@ def _contact_object_from_tokens(
     trusted_contact = _matched_trusted_contact_name(tokens, trusted_contact_names)
     if trusted_contact:
         return trusted_contact
+    tokens_data = _get_contact_object_tokens()
+    relationship_tokens = frozenset(tokens_data.get("relationship_tokens", []))
     for token in tokens:
-        if token in {"mom", "dad", "caregiver"}:
-            return "relationship_contact"
-        if token == "someone":
+        if token in relationship_tokens:
+            return str(tokens_data.get("relationship_object", "relationship_contact"))
+        if token == tokens_data.get("someone_token", "someone"):
             return token
-    return "trusted_contact"
+    return str(tokens_data.get("default_object", "trusted_contact"))
 
 
 def _matched_trusted_contact_name(
@@ -5801,6 +6001,102 @@ def _has_urgent_health_frame(tokens: tuple[str, ...]) -> bool:
         token_set & _URGENT_HEALTH_CACHE["urgent_terms"]
         or _has_any_token_sequence(tokens, _URGENT_HEALTH_CACHE["urgent_pairs"])
     )
+
+
+def _get_music_style_cache() -> dict[str, Any]:
+    global _MUSIC_STYLE_CACHE
+    if _MUSIC_STYLE_CACHE is None:
+        try:
+            from melm.contracts import load_contract_json
+            _MUSIC_STYLE_CACHE = load_contract_json("music_style_templates.v1.json")
+        except Exception:
+            _MUSIC_STYLE_CACHE = {}
+    return _MUSIC_STYLE_CACHE
+
+
+def _enrich_media_playback_answer(answer: str, uol_act: Any = None) -> str | None:
+    if not answer:
+        return None
+    music_style = _get_music_style_cache()
+    if not music_style:
+        return None
+    mapping = music_style.get("semantic_class_mapping", [])
+    if not mapping:
+        return None
+    target_style: str | None = None
+    target_tempo: int = 80
+    best_index: int = len(mapping)
+    if uol_act and isinstance(uol_act, dict):
+        atoms = uol_act.get("content") or []
+        semantic_classes: list[str] = []
+        for atom in atoms:
+            if not isinstance(atom, dict):
+                continue
+            roles = atom.get("roles") or []
+            for role in roles if isinstance(roles, list) else []:
+                sc = role.get("semantic_class") if isinstance(role, dict) else None
+                if sc:
+                    semantic_classes.append(sc)
+            modifiers = atom.get("modifiers") or []
+            for modifier in modifiers if isinstance(modifiers, list) else []:
+                sc = modifier.get("semantic_class") if isinstance(modifier, dict) else None
+                if sc:
+                    semantic_classes.append(sc)
+        for idx, entry in enumerate(mapping):
+            if entry.get("semantic_class") in semantic_classes and idx < best_index:
+                best_index = idx
+                target_style = entry.get("style", "ambient")
+                target_tempo = entry.get("tempo", 80)
+    if best_index >= len(mapping):
+        target_style = "ambient"
+        target_tempo = 80
+    templates = music_style.get("templates", {})
+    phrase = templates.get(target_style, {}).get("answer_phrase", f"a {target_style} piece at {target_tempo} BPM")
+    try:
+        phrase = phrase.format(tempo=target_tempo)
+    except Exception:
+        pass
+    phrase = phrase[0].upper() + phrase[1:] if phrase else phrase
+    return f"{answer} — {phrase}."
+
+
+def _enrich_contact_answer(answer: str, number: str, *, contact_name: str = "", store: Any = None) -> str | None:
+    if not answer:
+        return None
+    try:
+        from melm.contracts import load_contact_enrichment_templates
+        template_data = load_contact_enrichment_templates()
+    except Exception:
+        return None
+    relationship: str | None = None
+    if store is not None and contact_name:
+        try:
+            from .assistant_os_store import AssistantOSStore
+            if isinstance(store, AssistantOSStore):
+                import json
+                rel = store.get_entity_slot(f"contact:{contact_name}", "relationship")
+                if rel and rel.value_json:
+                    raw = json.loads(rel.value_json)
+                    relationship = str(raw) if raw else None
+        except Exception:
+            pass
+    if relationship and "with_relationship" in template_data:
+        body = template_data["with_relationship"]
+    elif answer and "default" in template_data:
+        body = template_data["default"]
+    elif contact_name and "confirming_relationship" in template_data:
+        body = template_data["confirming_relationship"]
+    else:
+        body = template_data.get("default", "One moment — connecting now.")
+    try:
+        body = body.replace("{answer}", answer).replace("{number}", number)
+        if relationship:
+            body = body.replace("{relationship}", relationship)
+        if contact_name:
+            body = body.replace("{contact}", contact_name)
+    except Exception:
+        pass
+    return body
 
 
 def _normalize(text: str) -> str:

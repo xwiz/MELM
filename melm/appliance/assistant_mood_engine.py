@@ -13,6 +13,10 @@ from dataclasses import dataclass
 from datetime import datetime, timezone
 from typing import Any
 
+import logging
+
+logger = logging.getLogger(__name__)
+
 from melm.appliance.uol_types import AffectSignal
 
 
@@ -133,6 +137,7 @@ def _lexicon_affect(
         source="lexicon",
         recovery_signals=_filter_recovery(tags),
         is_complaint=_is_complaint(tags),
+        dominant_tags=tuple(sorted(tags)),
     )
 
 
@@ -198,12 +203,12 @@ def _perception_priming(
         try:
             candidates.append(getattr(atom.predicate, "lemma", ""))
         except Exception:
-            pass
+            logger.warning("mood_engine: getattr atom.predicate.lemma failed", exc_info=True)
         for role in getattr(atom, "roles", ()):
             try:
                 candidates.append(getattr(role, "value", ""))
             except Exception:
-                pass
+                logger.warning("mood_engine: getattr role.value failed", exc_info=True)
 
     for lemma in candidates:
         sig = _perception_signal_for_lemma(lemma, pmap)
@@ -273,13 +278,16 @@ def _clause_is_negated(uol_act: dict | Any) -> bool:
 # Surface markers that denote a sentient person patient ("hurt her",
 # "kill someone"). Used only to confirm a person patient; the affect tier
 # cares about harm-to-sentient and defaults to "person" regardless, so this
-# set is a documentation aid more than a gate.
-_PERSON_PATIENT_MARKERS: frozenset = frozenset({
-    "her", "him", "them", "me", "you", "us",
-    "someone", "somebody", "anyone", "everyone", "everybody", "nobody",
-    "people", "person", "child", "kid", "baby",
-    "man", "woman", "her's", "hers", "themselves", "himself", "herself",
-})
+# set is a documentation aid more than a gate.  Read from patient_type_map.v1.json.
+def _get_person_patient_markers() -> frozenset:
+    if not hasattr(_get_person_patient_markers, "_cache"):
+        try:
+            from melm.contracts.validation import load_contract_json
+            data = load_contract_json("patient_type_map.v1.json")
+            _get_person_patient_markers._cache = frozenset(data.get("person_patient_markers", []))
+        except Exception:
+            _get_person_patient_markers._cache = frozenset()
+    return _get_person_patient_markers._cache
 
 
 def _patient_type_for_affect(uol_act: dict | Any) -> str:
@@ -313,7 +321,7 @@ def _patient_type_for_affect(uol_act: dict | Any) -> str:
                     continue
                 if role.get("role") in ("theme", "patient"):
                     surface = str(role.get("value", "") or "").lower().strip()
-                    if surface in _PERSON_PATIENT_MARKERS:
+                    if surface in _get_person_patient_markers():
                         return "person"
         # Alternate shape: roles is a {role_name: {...}} mapping.
         elif isinstance(roles, dict):
@@ -321,7 +329,7 @@ def _patient_type_for_affect(uol_act: dict | Any) -> str:
                 slot = roles.get(key)
                 if isinstance(slot, dict):
                     surface = str(slot.get("value", "") or "").lower().strip()
-                    if surface in _PERSON_PATIENT_MARKERS:
+                    if surface in _get_person_patient_markers():
                         return "person"
         return "person"
     except Exception:
@@ -449,46 +457,13 @@ def compute_utterance_affect(
                         )
                         candidates.append(causal_signal)
             except Exception:
-                pass
+                logger.warning("mood_engine: causal signal loop failed", exc_info=True)
 
         if not candidates:
             return _NULL_AFFECT
         return max(candidates, key=lambda s: s.confidence)
     except Exception:
         return _NULL_AFFECT
-
-
-def compute_epistemic_affect(store: Any) -> AffectSignal | None:
-    """Read open epistemic states and user_commitments from store,
-    returns an AffectSignal if any are found (gated by capability flag).
-    """
-    from .local_assistant_router import _capability_flag
-    if not _capability_flag("mood_affect", "epistemic_affect", False):
-        return None
-    if store is None:
-        return None
-    try:
-        from .assistant_skill_epistemic import load_open_epistemic_states
-        from melm.contracts import load_epistemic_states as load_epi_config
-        states = load_open_epistemic_states(store)
-        if not states:
-            return None
-        config = load_epi_config()
-        mappings = config.get("valence_mappings", {})
-        total_valence = 0.0
-        for s in states:
-            st = s.get("state_type", "")
-            total_valence += mappings.get(st, 0.0)
-        avg_valence = total_valence / len(states)
-        return AffectSignal(
-            valence=avg_valence,
-            arousal=abs(avg_valence) * 0.5,
-            confidence=0.3,
-            source="epistemic",
-            mood_id="",
-        )
-    except Exception:
-        return None
 
 
 def _classify_mood_region(
@@ -727,7 +702,7 @@ def initial_mood_from_baseline(
             now = datetime.now(timezone.utc).isoformat()
             return decay_mood(result, now=now)
     except Exception:
-        pass
+        logger.warning("mood_engine: initial_mood_from_baseline() failed", exc_info=True)
     return MoodState(user_id=user_id)
 
 
@@ -1055,43 +1030,6 @@ else:
     ResponsePool = dict
 
 
-def infer_affect(
-    uol_act: dict | Any | None,
-    mood: dict[str, Any] | None = None,
-) -> AffectSignal | None:
-    """Infer affect from a UOL act and current mood state.
-
-    The *mood* parameter is the mood state dict (minimally with
-    ``valence`` and ``arousal`` keys).  Returns ``None`` when no
-    affect can be determined.
-    """
-    if uol_act is None:
-        return None
-    try:
-        candidates: list[AffectSignal] = []
-
-        content: tuple = (
-            uol_act.get("content", ()) if isinstance(uol_act, dict)
-            else getattr(uol_act, "content", ())
-        )
-        for atom in content:
-            sig = _perception_priming(atom, _PERCEPTION_AFFECT_MAP, None)
-            if sig is not None and sig.confidence > 0:
-                candidates.append(sig)
-
-        act = uol_act.get("act") if isinstance(uol_act, dict) else getattr(uol_act, "act", None)
-        if act in ("warning", "advice_request"):
-            candidates.append(AffectSignal(
-                valence=-0.2, arousal=0.5, confidence=0.3, source="uol_act_type",
-            ))
-
-        if not candidates:
-            return AffectSignal(confidence=0.0, source="uol_no_signal")
-        return max(candidates, key=lambda s: s.confidence)
-    except Exception:
-        return None
-
-
 def load_mood_regions() -> dict[str, Any]:
     """Return mood region definitions as a dict with a ``"moods"`` key.
 
@@ -1107,7 +1045,7 @@ def load_mood_regions() -> dict[str, Any]:
                 return {"moods": raw}
             return {"moods": {r.get("label", r.get("mood_id", f"mood_{i}")): r for i, r in enumerate(raw)}}
     except Exception:
-        pass
+        logger.warning("mood_engine: load_mood_regions() fallback to defaults", exc_info=True)
     _defaults = [
         {"label": "happy", "valence": 0.7, "arousal": 0.6, "response_mode": "normal", "engagement_floor": 0.5},
         {"label": "excited", "valence": 0.6, "arousal": 0.8, "response_mode": "normal", "engagement_floor": 0.7},
@@ -1135,7 +1073,7 @@ def load_affect_lexicon() -> dict[str, dict[str, Any]]:
         if raw and isinstance(raw, dict):
             return raw
     except Exception:
-        pass
+        logger.warning("mood_engine: load_affect_lexicon() fallback to defaults", exc_info=True)
     return dict(_AFFECTIVE_LEXICON_DEFAULTS)
 
 
@@ -1152,7 +1090,7 @@ def load_response_pools() -> dict[str, Any]:
         if raw and isinstance(raw, dict):
             return raw
     except Exception:
-        pass
+        logger.warning("mood_engine: load_response_pools() fallback to empty", exc_info=True)
     return {}
 
 
