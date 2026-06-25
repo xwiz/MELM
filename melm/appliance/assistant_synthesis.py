@@ -12,7 +12,11 @@ import re
 from dataclasses import dataclass, field
 from typing import Any
 
-from melm.contracts import load_answer_templates, load_assistant_identity, load_health_disclaimers, load_noun_atoms, load_prompt_seeds, load_safety_policies, load_self_identity, load_verb_atoms
+import logging
+
+from melm.contracts import load_answer_templates, load_assistant_identity, load_health_disclaimers, load_nlg_fallback_phrases, load_noun_atoms, load_prompt_seeds, load_safety_policies, load_self_identity, load_verb_atoms
+
+logger = logging.getLogger(__name__)
 
 # Module-level caches for NLG entity property lookups (loaded from contract,
 # never from store — avoids seeding 280 entities on every kernel init).
@@ -51,6 +55,29 @@ SYNTHESIS_QUALITY_FLOOR = 0.65
 _VERB_STATES_CACHE: dict | None = None
 _VALENCE_DATA_CACHE: dict | None = None
 _MORAL_RESPONSES_CACHE: dict | None = None
+
+# Cached fallback NLG phrases (loaded from nlg_fallback_phrases.v1.json)
+_NLG_FALLBACK_CACHE: dict[str, Any] | None = None
+
+
+def _get_fallback_phrases() -> dict[str, Any]:
+    global _NLG_FALLBACK_CACHE
+    if _NLG_FALLBACK_CACHE is None:
+        try:
+            _NLG_FALLBACK_CACHE = load_nlg_fallback_phrases()
+        except Exception:
+            _NLG_FALLBACK_CACHE = {}
+    return _NLG_FALLBACK_CACHE
+
+
+def _get_story_follow_up() -> dict[str, str]:
+    if not hasattr(_get_story_follow_up, "_cache"):
+        try:
+            from melm.contracts import load_story_follow_up_phrase
+            _get_story_follow_up._cache = load_story_follow_up_phrase()
+        except Exception:
+            _get_story_follow_up._cache = {}
+    return _get_story_follow_up._cache
 
 
 def _load_moral_cognition_data() -> None:
@@ -203,7 +230,7 @@ def _handle_identity_derived(self: BoundedLocalSynthesizer, decision: AssistantD
                 if narrative is not None:
                     return narrative
     except Exception:
-        pass
+        logger.warning("assistant_synthesis: identity narrative handler failed", exc_info=True)
     summary = _assistant_identity_summary(evidence)
     return summary if summary else None
 
@@ -219,7 +246,7 @@ def _handle_identity_name_suggestion(self: BoundedLocalSynthesizer, decision: As
                 if result is not None:
                     return result
     except Exception:
-        pass
+        logger.warning("assistant_synthesis: identity name suggestion handler failed", exc_info=True)
     summary = _assistant_identity_summary(evidence)
     return summary if summary else None
 
@@ -236,7 +263,7 @@ def _handle_identity_name_awareness(self: BoundedLocalSynthesizer, decision: Ass
                 if result is not None:
                     return result
     except Exception:
-        pass
+        logger.warning("assistant_synthesis: identity name awareness handler failed", exc_info=True)
     summary = _assistant_identity_summary(evidence)
     return summary if summary else None
 
@@ -248,7 +275,7 @@ def _handle_identity_name_origin(self: BoundedLocalSynthesizer, decision: Assist
         if template:
             return template
     except Exception:
-        pass
+        logger.warning("assistant_synthesis: identity name origin handler failed", exc_info=True)
     return None
 
 
@@ -263,14 +290,14 @@ def _handle_identity_explain(self: BoundedLocalSynthesizer, decision: AssistantD
                 if result is not None:
                     return result
     except Exception:
-        pass
+        logger.warning("assistant_synthesis: identity explain handler (store) failed", exc_info=True)
     try:
         contract = load_self_identity()
         template = contract.get("name_awareness_templates", {}).get("explain_fallback")
         if template:
             return template
     except Exception:
-        pass
+        logger.warning("assistant_synthesis: identity explain handler (fallback) failed", exc_info=True)
     return None
 
 
@@ -290,7 +317,7 @@ def _handle_identity_name_given(self: BoundedLocalSynthesizer, decision: Assista
                 )
                 return template.format(given_name=given_name)
     except Exception:
-        pass
+        logger.warning("assistant_synthesis: identity name given handler failed", exc_info=True)
     summary = _assistant_identity_summary(evidence)
     return summary if summary else None
 
@@ -322,7 +349,7 @@ def _handle_common_sense_safety(self: BoundedLocalSynthesizer, decision: Assista
     weather = _first_kind(evidence, "weather")
     if weather is not None and "school_clothing_weather_policy" in decision.reason:
         template = _load_answer_template(decision.intent, "school_clothing_weather_policy")
-        return template if template else "Wear school clothes and carry rain protection because the forecast mentions rain."
+        return template if template else _get_fallback_phrases().get("safety_school_templates", {}).get("weather_policy", "Wear school clothes and carry rain protection because the forecast mentions rain.")
     if decision.reason == "local_common_sense_policy":
         return _public_clothing_safety_answer(decision.utterance)
     if decision.reason == "safety_policy_triggered":
@@ -366,9 +393,11 @@ def _handle_music_generation(self: BoundedLocalSynthesizer, decision: AssistantD
         fpath = os.path.join(out_dir, fname)
         with open(fpath, "wb") as f:
             f.write(midi_bytes)
-        return f"I composed a {desc.mood} {desc.genre} piece for you. Check {fname}"
+        tpl = _get_fallback_phrases().get("music_templates", {}).get("success", "I composed a {mood} {genre} piece for you. Check {filename}")
+        return tpl.replace("{mood}", desc.mood).replace("{genre}", desc.genre).replace("{filename}", fname)
     except Exception as exc:
-        return f"I tried to compose some music but ran into an issue: {exc}"
+        tpl = _get_fallback_phrases().get("music_templates", {}).get("failure", "I tried to compose some music but ran into an issue: {error}")
+        return tpl.replace("{error}", str(exc))
 
 
 def _format_open_domain_answer(
@@ -407,10 +436,11 @@ def _handle_unknown(
     from .local_assistant_router import _detect_social_status
     if _detect_social_status(decision.utterance):
         mood = decision.session_mood
+        templates = _get_fallback_phrases().get("social_status_templates", {})
         if mood and hasattr(mood, "mood_id") and mood.mood_id:
             mood_label = str(mood.mood_id).replace("_", " ").title()
-            return f"I'm feeling {mood_label.lower()}. Thanks for asking."
-        return "I'm doing well, thanks for asking."
+            return templates.get("with_mood", "I'm feeling {mood_label}. Thanks for asking.").replace("{mood_label}", mood_label.lower())
+        return templates.get("default", "I'm doing well, thanks for asking.")
     return _format_open_domain_answer(decision, evidence)
 
 
@@ -800,7 +830,7 @@ class BoundedLocalSynthesizer:
                                     getattr(m, "label", "") for m in memories[-2:] if getattr(m, "label", "")
                                 )
                             except Exception:
-                                pass
+                                logger.warning("assistant_synthesis: story facts/memories fetch in _decode_verified failed", exc_info=True)
                         valence = getattr(decision.session_mood, "valence", 0.0) if decision.session_mood else 0.0
                         arousal = getattr(decision.session_mood, "arousal", 0.0) if decision.session_mood else 0.0
                         story_plan = plan_story(
@@ -820,7 +850,7 @@ class BoundedLocalSynthesizer:
                     else:
                         template_hint = f"{system}\n\n{user_msg}"
         except Exception:
-            pass
+            logger.warning("assistant_synthesis: template hint builder in _decode_verified failed", exc_info=True)
 
         grammar = build_decoding_grammar(
             plan, template_hint, evidence_entities,
@@ -840,17 +870,12 @@ class BoundedLocalSynthesizer:
                     if v.passed:
                         answer = result.answer
                         if decision.intent == "story":
-                            def _get_story_follow_up():
-                                if not hasattr(_get_story_follow_up, "_cache"):
-                                    try:
-                                        from melm.contracts import load_story_follow_up_phrase
-                                        _get_story_follow_up._cache = load_story_follow_up_phrase()
-                                    except Exception:
-                                        _get_story_follow_up._cache = {"phrase": "\n\nWhat do you think {name} learned from this story?", "default_name": "the character"}
-                                return _get_story_follow_up._cache
                             _sf = _get_story_follow_up()
-                            name = self.profile.user_name or _sf["default_name"]
-                            answer += _sf["phrase"].format(name=name)
+                            phrase = _sf.get("phrase", "")
+                            default_name = _sf.get("default_name", "the character")
+                            if phrase:
+                                name = self.profile.user_name or default_name
+                                answer += phrase.format(name=name)
                         return answer, result.decoder
             finally:
                 self.decoder.preferred(previous)
@@ -861,17 +886,12 @@ class BoundedLocalSynthesizer:
             if v.passed:
                 answer = result.answer
                 if decision.intent == "story":
-                            def _get_story_follow_up():
-                                if not hasattr(_get_story_follow_up, "_cache"):
-                                    try:
-                                        from melm.contracts import load_story_follow_up_phrase
-                                        _get_story_follow_up._cache = load_story_follow_up_phrase()
-                                    except Exception:
-                                        _get_story_follow_up._cache = {"phrase": "\n\nWhat do you think {name} learned from this story?", "default_name": "the character"}
-                                return _get_story_follow_up._cache
-                            _sf = _get_story_follow_up()
-                            name = self.profile.user_name or _sf["default_name"]
-                            answer += _sf["phrase"].format(name=name)
+                    _sf = _get_story_follow_up()
+                    phrase = _sf.get("phrase", "")
+                    default_name = _sf.get("default_name", "the character")
+                    if phrase:
+                        name = self.profile.user_name or default_name
+                        answer += phrase.format(name=name)
                 return answer, result.decoder
         return template_answer, "template"
 
@@ -906,6 +926,7 @@ class BoundedLocalSynthesizer:
         if _NLG_VERB_CACHE is None:
             _NLG_VERB_CACHE = load_verb_atoms()
         noun_lookup, verb_lookup = _NLG_NOUN_CACHE, _NLG_VERB_CACHE
+        templates = _get_fallback_phrases().get("entity_nlg_templates", {})
         appendices: list[str] = []
         for eid in entity_ids:
             entry = verb_lookup.get(eid) or noun_lookup.get(eid)
@@ -916,47 +937,44 @@ class BoundedLocalSynthesizer:
             _added = 0
             bs = slots.get("build_strength")
             if bs == "fragile" and _added < 2:
-                appendices.append(
-                    f"{label.capitalize()}s are fragile \u2014 handle with care."
-                )
+                tpl = templates.get("fragile", "{label}s are fragile \u2014 handle with care.")
+                appendices.append(tpl.replace("{label}", label.capitalize()))
                 _added += 1
             materials = slots.get("materials")
             if isinstance(materials, list) and materials and _added < 2:
                 mat_str = ", ".join(materials[:-1]) + f", and {materials[-1]}" if len(materials) > 1 else materials[0]
-                appendices.append(
-                    f"{label.capitalize()}s are typically made of {mat_str}."
-                )
+                tpl = templates.get("materials", "{label}s are typically made of {materials}.")
+                appendices.append(tpl.replace("{label}", label.capitalize()).replace("{materials}", mat_str))
                 _added += 1
             uses = slots.get("functional_uses")
             if isinstance(uses, list) and uses and _added < 2:
                 use_str = ", ".join(uses[:-1]) + f", and {uses[-1]}" if len(uses) > 1 else uses[0]
-                appendices.append(
-                    f"{label.capitalize()}s are used for {use_str}."
-                )
+                tpl = templates.get("functional_uses", "{label}s are used for {uses}.")
+                appendices.append(tpl.replace("{label}", label.capitalize()).replace("{uses}", use_str))
                 _added += 1
             color = slots.get("color")
             if isinstance(color, str) and color.lower() not in ("variable", "") and _added < 2:
-                appendices.append(
-                    f"{label.capitalize()}s are typically {color}."
-                )
+                tpl = templates.get("color", "{label}s are typically {color}.")
+                appendices.append(tpl.replace("{label}", label.capitalize()).replace("{color}", color))
                 _added += 1
             pc = slots.get("place_context")
             if isinstance(pc, dict) and _added < 2:
                 room_type = pc.get("room_type", "")
                 if room_type:
                     env = pc.get("environment", "a building")
-                    appendices.append(
-                        f"The {room_type} is located {_env_prep(env)}."
-                    )
+                    tpl = templates.get("place_context", "The {room_type} is located {env}.")
+                    appendices.append(tpl.replace("{room_type}", room_type).replace("{env}", _env_prep(env)))
                     _added += 1
             if entry.get("kind") == "action" and _added < 2:
                 harm = slots.get("harm_severity", 0)
                 if isinstance(harm, (int, float)):
                     if harm >= 0.5:
-                        appendices.append(f"{label} can cause significant harm.")
+                        tpl = templates.get("high_harm", "{label} can cause significant harm.")
+                        appendices.append(tpl.replace("{label}", label))
                         _added += 1
                     elif harm > 0:
-                        appendices.append(f"{label} may cause some harm.")
+                        tpl = templates.get("low_harm", "{label} may cause some harm.")
+                        appendices.append(tpl.replace("{label}", label))
                         _added += 1
         if not appendices:
             return answer
@@ -1011,6 +1029,10 @@ class BoundedLocalSynthesizer:
         fallback = _render_contract_answer(decision, evidence, self.profile)
         if fallback is not None:
             return self._finalize_answer(fallback, decision)
+        # Semantic attention packet renderer — preferred before atom template fallback
+        packet_answer = self._render_semantic_attention(decision)
+        if packet_answer is not None:
+            return self._finalize_answer(packet_answer, decision)
         if decision.uol_act is not None:
             fallback = self._atom_generate(decision.intent, decision, evidence)
         if fallback is None:
@@ -1033,6 +1055,20 @@ class BoundedLocalSynthesizer:
     def _atom_generate(self, template_key: str, decision: AssistantDecision, evidence: tuple[SynthesisEvidence, ...]) -> str | None:
         backend = self._get_atom_backend()
         return backend.generate(template_key, decision.uol_act, evidence)
+
+    def _render_semantic_attention(self, decision: AssistantDecision) -> str | None:
+        """Build a SemanticAttentionPacket and try to render from it."""
+        try:
+            from .assistant_semantic_attention import build_attention_packet
+            from .assistant_nlg_renderer import render_from_packet
+            packet = build_attention_packet(
+                text=decision.utterance,
+                decisions=decision,
+                store=self.store,
+            )
+            return render_from_packet(packet)
+        except Exception:
+            return None
 
     def _maybe_emoji(self, decision: AssistantDecision, answer: str) -> str:
         """Prepend persona emoji (identity.json) and/or mood emoji (capability flag)."""
@@ -1115,7 +1151,7 @@ class BoundedLocalSynthesizer:
             if folk_story is not None and len(folk_story.split()) >= 80:
                 return folk_story
         except Exception:
-            pass
+            logger.warning("assistant_synthesis: folk tale generator failed", exc_info=True)
 
         # Tier 2: Symbolic story scaffold (UOL-driven, deterministic)
         try:
@@ -1127,7 +1163,7 @@ class BoundedLocalSynthesizer:
                 if story and len(story.split()) >= 80:
                     return story
         except Exception:
-            pass
+            logger.warning("assistant_synthesis: symbolic story engine failed", exc_info=True)
 
         # Tier 3: LLM pipeline — deprecated (35-93s, ~950 words, TinyStories-biased).
         if is_pipeline_available():
@@ -1138,7 +1174,7 @@ class BoundedLocalSynthesizer:
                 if story is not None and len(story.split()) >= 100:
                     return story
             except Exception:
-                pass
+                logger.warning("assistant_synthesis: story pipeline engine failed", exc_info=True)
 
         if not payload:
             frame = self._story_frame(evidence)
@@ -1195,20 +1231,21 @@ class BoundedLocalSynthesizer:
         subj_str = subj_str[:1].upper() + subj_str[1:] if subj_str else "Someone"
         obj_str = obj.label if obj else ""
         loc_str = loc.label if loc else ""
-        tense_map = {
-            "walk": "walked", "find": "found", "examine": "examined", "wonder": "wondered",
-            "run": "ran", "hide": "hid", "search": "searched", "escape": "escaped",
-            "meet": "met", "follow": "followed", "arrive": "arrived", "thank": "thanked",
-            "see": "saw", "hug": "hugged", "learn": "learned",
-        }
-        past = tense_map.get(verb, verb + "ed")
+        phrases = _get_fallback_phrases()
+        tense_map = phrases.get("story_verb_tenses", {})
+        past = tense_map.get(verb, verb + "ed") if tense_map else verb + "ed"
+        patterns = phrases.get("story_sentence_patterns", [])
         if obj_str and loc_str:
-            return f"{subj_str} {past} {obj_str} in {loc_str}."
+            p = patterns[0] if len(patterns) > 0 else "{subj} {past} {obj} in {loc}."
+            return p.replace("{subj}", subj_str).replace("{past}", past).replace("{obj}", obj_str).replace("{loc}", loc_str)
         if obj_str:
-            return f"{subj_str} {past} {obj_str}."
+            p = patterns[1] if len(patterns) > 1 else "{subj} {past} {obj}."
+            return p.replace("{subj}", subj_str).replace("{past}", past).replace("{obj}", obj_str)
         if loc_str:
-            return f"{subj_str} {past} through {loc_str}."
-        return f"{subj_str} {past}."
+            p = patterns[2] if len(patterns) > 2 else "{subj} {past} through {loc}."
+            return p.replace("{subj}", subj_str).replace("{past}", past).replace("{loc}", loc_str)
+        p = patterns[3] if len(patterns) > 3 else "{subj} {past}."
+        return p.replace("{subj}", subj_str).replace("{past}", past)
 
     def _story_payload(self, evidence: SynthesisEvidence) -> dict[str, Any]:
         if self.store is None or not evidence.key.startswith("story_models."):
@@ -1598,7 +1635,7 @@ class BoundedLocalSynthesizer:
             templates = load_reasoning_templates()
             rendered = render_reasoning_result(result, templates)
         except Exception:
-            pass
+            logger.warning("assistant_synthesis: reasoning NLG template renderer failed", exc_info=True)
         # Try atom template for causal tasks if structured rendering failed
         if not rendered:
             task = str(result.get("task", "")) if isinstance(result, dict) else ""
@@ -1638,7 +1675,7 @@ class BoundedLocalSynthesizer:
     def _render_refusal(
         self, decision: AssistantDecision, boundary_crossed: str,
     ) -> BoundedSynthesisResult:
-        answer = decision.answer or "I need a bit more information to answer that."
+        answer = decision.answer or _get_fallback_phrases().get("refusal_templates", {}).get("default", "I need a bit more information to answer that.")
         evidence = (
             SynthesisEvidence(
                 key="reasoning.refusal",
@@ -1700,7 +1737,7 @@ def _enforce_response_mode(answer: str, mood: Any) -> str:
             words = answer.split()
             return " ".join(words[:max_words]) + "..."
     except Exception:
-        pass
+        logger.warning("assistant_synthesis: _finalize_answer mood_states response mode failed", exc_info=True)
     return answer
 
 

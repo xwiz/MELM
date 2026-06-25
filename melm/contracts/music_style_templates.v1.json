@@ -1,7 +1,16 @@
 {
   "schema_id": "melm.music_style_templates.v1",
+  "version": "1.1.0",
+  "semantic_class_mapping": [
+    {"semantic_class": "media_descriptor.music_genre", "style": "jazz", "tempo": 120},
+    {"semantic_class": "media_content.nature_audio", "style": "ambient", "tempo": 60},
+    {"semantic_class": "media_descriptor.music_instrument", "style": "classical", "tempo": 90},
+    {"semantic_class": "media_descriptor.music_mood", "style": "ambient", "tempo": 70},
+    {"semantic_class": "media_content.music_work", "style": "classical", "tempo": 80}
+  ],
   "templates": {
     "waltz": {
+      "answer_phrase": "a lively waltz at {tempo} BPM",
       "time_signature": "3/4",
       "tempo_range": [80, 140],
       "chord_voicing": "triad",
@@ -10,6 +19,7 @@
       "scale_preference": "major"
     },
     "lullaby": {
+      "answer_phrase": "a gentle lullaby at {tempo} BPM",
       "time_signature": "4/4",
       "tempo_range": [60, 90],
       "chord_voicing": "open",
@@ -18,6 +28,7 @@
       "scale_preference": "major"
     },
     "jazz": {
+      "answer_phrase": "a syncopated jazz piece at {tempo} BPM",
       "time_signature": "4/4",
       "tempo_range": [100, 180],
       "chord_voicing": "seventh",
@@ -26,6 +37,7 @@
       "scale_preference": "blues"
     },
     "classical": {
+      "answer_phrase": "a classical melody at {tempo} BPM",
       "time_signature": "4/4",
       "tempo_range": [60, 160],
       "chord_voicing": "triad",
@@ -34,6 +46,7 @@
       "scale_preference": "major_minor"
     },
     "ambient": {
+      "answer_phrase": "an ambient soundscape at {tempo} BPM",
       "time_signature": "4/4",
       "tempo_range": [40, 70],
       "chord_voicing": "sustained",

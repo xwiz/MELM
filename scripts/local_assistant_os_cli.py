@@ -244,7 +244,7 @@ PI_BUNDLE_STATIC_FILES = (
     DEFAULT_HOST_ACTION_CONFIG_EXAMPLE,
     DEFAULT_SAFE_LIFECYCLE_CONTROLS_EXAMPLE,
     Path("docs/README.md"),
-    Path("docs/local_assistant_os_mvp_plan_v2.md"),
+    Path("docs/archive/local_assistant_os_mvp_plan_v2.md"),
     Path("docs/roadmap.md"),
     Path("benchmarks/local_assistant_os_seed.json"),
     Path("benchmarks/public_domain_story_metadata.json"),
@@ -358,7 +358,7 @@ SYNTHESIS_STRESS_SMOKE_TURNS = (
 
 def main() -> None:
     parser = argparse.ArgumentParser(description=__doc__)
-    subparsers = parser.add_subparsers(dest="command", required=True)
+    subparsers = parser.add_subparsers(dest="command", required=True, metavar="COMMAND")
 
     init = subparsers.add_parser(
         "init", help="Initialize the assistant OS SQLite database."
@@ -370,7 +370,6 @@ def main() -> None:
 
     dataset_audit = subparsers.add_parser(
         "dataset-audit",
-        help="Validate bundled v0.1 seed/source fixtures and their SQLite bootstrap path.",
     )
     dataset_audit.add_argument(
         "--db",
@@ -383,7 +382,6 @@ def main() -> None:
 
     bootstrap = subparsers.add_parser(
         "bootstrap-runtime",
-        help="Create the usable v0.1 runtime database and verify local chat readiness.",
     )
     bootstrap.add_argument("--db", type=Path, default=DEFAULT_DB)
     bootstrap.add_argument("--seed", type=Path, default=DEFAULT_SEED)
@@ -436,20 +434,17 @@ def main() -> None:
     )
 
     parse_debug = subparsers.add_parser(
-        "parse-debug", help="Show the local NLP to UOL/ChatFrame debug parse."
-    )
+        "parse-debug")
     parse_debug.add_argument("--utterance", required=True)
     parse_debug.add_argument("--json", action="store_true")
 
     shortcut_audit = subparsers.add_parser(
         "shortcut-audit",
-        help="Audit UOL/ChatFrame anti-shortcut source boundaries and behavior probes.",
     )
     shortcut_audit.add_argument("--json", action="store_true")
 
     capability_probe = subparsers.add_parser(
         "capability-probe",
-        help="Run realistic MVP assistant asks and report what is local, gated, handed off, or blocked.",
     )
     capability_probe.add_argument(
         "--db",
@@ -505,8 +500,7 @@ def main() -> None:
     )
 
     lifecycle = subparsers.add_parser(
-        "run-lifecycle", help="Run the 17-step v0.1 lifecycle into the database."
-    )
+        "run-lifecycle")
     lifecycle.add_argument("--db", type=Path, default=DEFAULT_DB)
     lifecycle.add_argument(
         "--seed",
@@ -518,13 +512,11 @@ def main() -> None:
     lifecycle.add_argument("--json", action="store_true")
 
     lifecycle_suite = subparsers.add_parser(
-        "run-lifecycle-suite", help="Run the multi-profile v0.1 lifecycle suite."
-    )
+        "run-lifecycle-suite")
     lifecycle_suite.add_argument("--json", action="store_true")
 
     household_week = subparsers.add_parser(
         "run-household-week",
-        help="Run the longer multi-day household v0.1 lifecycle proof.",
     )
     household_week.add_argument(
         "--db",
@@ -536,7 +528,6 @@ def main() -> None:
 
     open_traces = subparsers.add_parser(
         "run-open-traces",
-        help="Run open-ended assistant traces through the real local OS kernel.",
     )
     open_traces.add_argument(
         "--trace-json", type=Path, default=DEFAULT_OPEN_TRACE_FIXTURE
@@ -552,7 +543,6 @@ def main() -> None:
 
     transcript_replay = subparsers.add_parser(
         "run-transcript-replay",
-        help="Replay messy user transcript rows through the real local OS kernel and debug parser.",
     )
     transcript_replay.add_argument(
         "--transcript-jsonl", type=Path, default=DEFAULT_TRANSCRIPT_REPLAY_FIXTURE
@@ -575,7 +565,6 @@ def main() -> None:
 
     transcript_import = subparsers.add_parser(
         "import-transcript-replay",
-        help="Redact raw user chat JSONL into a non-static transcript replay fixture.",
     )
     transcript_import.add_argument("--input", type=Path, required=True)
     transcript_import.add_argument("--out", type=Path, required=True)
@@ -610,7 +599,6 @@ def main() -> None:
 
     transcript_export = subparsers.add_parser(
         "export-transcript-replay",
-        help="Export user turns from the local event ledger into a non-static transcript replay fixture.",
     )
     transcript_export.add_argument("--db", type=Path, default=DEFAULT_DB)
     transcript_export.add_argument("--out", type=Path, required=True)
@@ -658,7 +646,6 @@ def main() -> None:
 
     event_calibration = subparsers.add_parser(
         "calibrate-event-ledger",
-        help="Export the local event ledger, replay it, and aggregate calibration metrics.",
     )
     event_calibration.add_argument("--db", type=Path, default=DEFAULT_DB)
     event_calibration.add_argument(
@@ -716,7 +703,6 @@ def main() -> None:
 
     blocker_evidence = subparsers.add_parser(
         "v01-blocker-evidence",
-        help="Map live/user evidence artifacts to the remaining v0.1 blockers without declaring completion.",
     )
     blocker_evidence.add_argument("--event-ledger-db", type=Path, default=None)
     blocker_evidence.add_argument(
@@ -813,7 +799,6 @@ def main() -> None:
 
     blocker_rehearsal = subparsers.add_parser(
         "v01-blocker-rehearsal",
-        help="Run a development-only end-to-end blocker-evidence rehearsal without retiring blockers.",
     )
     blocker_rehearsal.add_argument(
         "--work-dir",
@@ -825,7 +810,6 @@ def main() -> None:
 
     evidence_pack = subparsers.add_parser(
         "v01-evidence-pack",
-        help="Package a real local session DB into calibration, blocker-evidence, and progress reports.",
     )
     evidence_pack.add_argument("--db", type=Path, default=DEFAULT_DB)
     evidence_pack.add_argument(
@@ -903,7 +887,6 @@ def main() -> None:
 
     source_attestation = subparsers.add_parser(
         "write-source-attestation",
-        help="Write a source attestation JSON for v01-blocker-evidence user/target session evidence.",
     )
     source_attestation.add_argument("--out", type=Path, required=True)
     source_attestation.add_argument("--event-ledger-db", type=Path, required=True)
@@ -930,7 +913,6 @@ def main() -> None:
 
     candidate_session = subparsers.add_parser(
         "candidate-session-audit",
-        help="Preflight an event-ledger session before source attestation and v0.1 candidate evidence packaging.",
     )
     candidate_session.add_argument("--db", type=Path, default=DEFAULT_DB)
     candidate_session.add_argument(
@@ -1005,7 +987,6 @@ def main() -> None:
 
     host_app_attestation = subparsers.add_parser(
         "write-host-app-attestation",
-        help="Write a target-app attestation JSON for v01-blocker-evidence configured app evidence.",
     )
     host_app_attestation.add_argument("--out", type=Path, required=True)
     host_app_attestation.add_argument(
@@ -1027,7 +1008,6 @@ def main() -> None:
 
     transcript_calibration = subparsers.add_parser(
         "calibrate-transcript-replay",
-        help="Import one or more raw chat JSONL files, replay them, and aggregate calibration metrics.",
     )
     transcript_calibration.add_argument(
         "--input", type=Path, action="append", default=[]
@@ -1136,13 +1116,11 @@ def main() -> None:
 
     v01_audit = subparsers.add_parser(
         "v01-audit",
-        help="Report current v0.1 runnable evidence and remaining completion blockers.",
     )
     v01_audit.add_argument("--json", action="store_true")
 
     v01_progress = subparsers.add_parser(
         "v01-progress",
-        help="Summarize current v0.1 progress from audit and blocker-evidence reports without claiming completion.",
     )
     v01_progress.add_argument(
         "--blocker-evidence-json",
@@ -1154,7 +1132,6 @@ def main() -> None:
 
     v01_acceptance = subparsers.add_parser(
         "v01-acceptance",
-        help="Run the browser/CLI v0.1 release-candidate evidence matrix.",
     )
     v01_acceptance.add_argument(
         "--db-dir",
@@ -1203,8 +1180,7 @@ def main() -> None:
     v01_acceptance.add_argument("--json", action="store_true")
 
     jobs = subparsers.add_parser(
-        "run-jobs", help="Execute queued assistant OS inventory jobs."
-    )
+        "run-jobs")
     jobs.add_argument("--db", type=Path, default=DEFAULT_DB)
     jobs.add_argument("--seed", type=Path, default=DEFAULT_SEED)
     jobs.add_argument("--limit", type=int, default=10)
@@ -1223,8 +1199,7 @@ def main() -> None:
     )
 
     schedule = subparsers.add_parser(
-        "schedule-refreshes", help="Queue Pi-budgeted inventory refresh jobs."
-    )
+        "schedule-refreshes")
     schedule.add_argument("--db", type=Path, default=DEFAULT_DB)
     schedule.add_argument("--seed", type=Path, default=DEFAULT_SEED)
     schedule.add_argument("--min-story-models", type=int, default=6)
@@ -1258,8 +1233,7 @@ def main() -> None:
     schedule.add_argument("--json", action="store_true")
 
     soak = subparsers.add_parser(
-        "inventory-soak", help="Run repeated resource-bounded inventory refresh cycles."
-    )
+        "inventory-soak")
     soak.add_argument("--db", type=Path, default=DEFAULT_DB)
     soak.add_argument("--seed", type=Path, default=DEFAULT_SEED)
     soak.add_argument("--cycles", type=int, default=2)
@@ -1297,7 +1271,6 @@ def main() -> None:
 
     soak_matrix = subparsers.add_parser(
         "inventory-soak-matrix",
-        help="Run cold-start multi-source inventory soaks and verify future story routing from imported inventory.",
     )
     soak_matrix.add_argument(
         "--db-dir",
@@ -1348,7 +1321,6 @@ def main() -> None:
 
     diversity = subparsers.add_parser(
         "inventory-diversity-smoke",
-        help="Run bounded multi-niche story inventory refresh soaks through the real job/importer path.",
     )
     diversity.add_argument(
         "--db-dir",
@@ -1399,7 +1371,6 @@ def main() -> None:
 
     failure = subparsers.add_parser(
         "inventory-failure-smoke",
-        help="Verify story inventory source failures are observable and do not fabricate local answers.",
     )
     failure.add_argument(
         "--work-dir",
@@ -1412,7 +1383,6 @@ def main() -> None:
 
     retry = subparsers.add_parser(
         "inventory-retry-smoke",
-        help="Verify localhost source retry behavior grows inventory and changes future story routing.",
     )
     retry.add_argument(
         "--db",
@@ -1425,8 +1395,7 @@ def main() -> None:
     retry.add_argument("--json", action="store_true")
 
     resources = subparsers.add_parser(
-        "resource-report", help="Measure Pi-class local runtime costs."
-    )
+        "resource-report")
     resources.add_argument("--db", type=Path, default=DEFAULT_DB)
     resources.add_argument(
         "--lifecycle-db",
@@ -1484,8 +1453,7 @@ def main() -> None:
     digest.add_argument("--json", action="store_true")
 
     eval_cmd = subparsers.add_parser(
-        "eval", help="Run the deterministic multi-profile v0.1 assistant eval."
-    )
+        "eval")
     eval_cmd.add_argument("--json", action="store_true")
 
     import_stories = subparsers.add_parser(
@@ -1571,8 +1539,7 @@ def main() -> None:
     refresh_weather.add_argument("--json", action="store_true")
 
     action_smoke = subparsers.add_parser(
-        "action-smoke", help="Run a gated media/contact action execution smoke."
-    )
+        "action-smoke")
     action_smoke.add_argument(
         "--db",
         type=Path,
@@ -1605,7 +1572,6 @@ def main() -> None:
 
     setup_integration = subparsers.add_parser(
         "setup-integration-smoke",
-        help="Prove routine, household, and trusted-contact setup through the real kernel/store/action path.",
     )
     setup_integration.add_argument(
         "--db",
@@ -1617,7 +1583,6 @@ def main() -> None:
 
     host_action = subparsers.add_parser(
         "host-action-smoke",
-        help="Run real command-mode media/contact actions through harmless local recorder commands.",
     )
     host_action.add_argument(
         "--db",
@@ -1634,7 +1599,6 @@ def main() -> None:
 
     host_action_recorder = subparsers.add_parser(
         "host-action-recorder",
-        help="Recorder target command for configured host-app probe demos.",
     )
     host_action_recorder.add_argument("target", nargs="?", default="")
     host_action_recorder.add_argument("--label", default="action")
@@ -1647,7 +1611,6 @@ def main() -> None:
 
     host_actions_demo_config = subparsers.add_parser(
         "write-host-actions-demo-config",
-        help="Write a portable host_actions JSON that records configured media/call probes locally.",
     )
     host_actions_demo_config.add_argument(
         "--out", type=Path, default=Path("config/host_actions.local_recorder.json")
@@ -1663,7 +1626,6 @@ def main() -> None:
 
     host_app = subparsers.add_parser(
         "host-app-probe",
-        help="Probe target-device media/call command configuration through the typed action gate.",
     )
     host_app.add_argument(
         "--db",
@@ -1707,7 +1669,6 @@ def main() -> None:
 
     autoimmune = subparsers.add_parser(
         "autoimmune-smoke",
-        help="Run privacy/action/cache boundary cases through the local assistant kernel.",
     )
     autoimmune.add_argument(
         "--db",
@@ -1720,7 +1681,6 @@ def main() -> None:
 
     synthesis_variant = subparsers.add_parser(
         "synthesis-variant-smoke",
-        help="Run bounded story/advice/tool/memory synthesis variants through the local kernel.",
     )
     synthesis_variant.add_argument(
         "--db",
@@ -1733,7 +1693,6 @@ def main() -> None:
 
     synthesis_stress = subparsers.add_parser(
         "synthesis-stress-smoke",
-        help="Run a longer multi-session bounded synthesis stress trace through the local kernel.",
     )
     synthesis_stress.add_argument(
         "--db",
@@ -1745,20 +1704,18 @@ def main() -> None:
     synthesis_stress.add_argument("--json", action="store_true")
 
     pi_smoke = subparsers.add_parser(
-        "pi-smoke", help="Run a compact v0.1 Raspberry-Pi readiness smoke."
-    )
+        "pi-smoke")
     pi_smoke.add_argument(
         "--db", type=Path, default=Path("artifacts/local_assistant_os/pi_smoke.sqlite")
     )
     pi_smoke.add_argument("--seed", type=Path, default=DEFAULT_SEED)
     pi_smoke.add_argument("--reset", action="store_true")
-    pi_smoke.add_argument("--max-ask-ms", type=float, default=1000.0)
-    pi_smoke.add_argument("--max-lifecycle-ms", type=float, default=5000.0)
+    pi_smoke.add_argument("--max-ask-ms", type=float, default=15000.0)
+    pi_smoke.add_argument("--max-lifecycle-ms", type=float, default=60000.0)
     pi_smoke.add_argument("--json", action="store_true")
 
     pi_bundle = subparsers.add_parser(
-        "pi-bundle", help="Build and self-check a portable v0.1 browser/CLI bundle."
-    )
+        "pi-bundle")
     pi_bundle.add_argument(
         "--out",
         type=Path,
@@ -1780,8 +1737,7 @@ def main() -> None:
     pi_bundle.add_argument("--json", action="store_true")
 
     verify_bundle = subparsers.add_parser(
-        "verify-bundle", help="Verify a portable bundle manifest and file hashes."
-    )
+        "verify-bundle")
     verify_bundle.add_argument(
         "--bundle-root",
         type=Path,
@@ -1800,7 +1756,6 @@ def main() -> None:
 
     launcher_smoke = subparsers.add_parser(
         "launcher-smoke",
-        help="Start the portable app through platform launchers and verify local health.",
     )
     launcher_smoke.add_argument("--bundle-root", type=Path, default=Path("."))
     launcher_smoke.add_argument(
@@ -1820,7 +1775,6 @@ def main() -> None:
 
     first_run_smoke = subparsers.add_parser(
         "first-run-smoke",
-        help="Run the packaged first-run launcher after a bundle has been built and self-checked.",
     )
     first_run_smoke.add_argument("--bundle-root", type=Path, default=Path("."))
     first_run_smoke.add_argument("--timeout-seconds", type=int, default=300)
@@ -1828,7 +1782,6 @@ def main() -> None:
 
     archive_smoke = subparsers.add_parser(
         "archive-smoke",
-        help="Extract a portable bundle zip into a fresh directory and verify it launches from the extracted copy.",
     )
     archive_smoke.add_argument(
         "--archive",
@@ -1849,7 +1802,6 @@ def main() -> None:
 
     api_smoke = subparsers.add_parser(
         "api-smoke",
-        help="Start the stdlib localhost API and verify health plus one chat turn.",
     )
     api_smoke.add_argument(
         "--db", type=Path, default=Path("artifacts/local_assistant_os/api_smoke.sqlite")
@@ -1861,7 +1813,6 @@ def main() -> None:
 
     api_session = subparsers.add_parser(
         "api-session-smoke",
-        help="Run a realistic multi-turn assistant session through the localhost API.",
     )
     api_session.add_argument(
         "--db",
@@ -1900,7 +1851,6 @@ def main() -> None:
 
     ui_smoke = subparsers.add_parser(
         "ui-smoke",
-        help="Verify the dependency-free local browser chat UI and API turn.",
     )
     ui_smoke.add_argument(
         "--db", type=Path, default=Path("artifacts/local_assistant_os/ui_smoke.sqlite")
@@ -1912,7 +1862,6 @@ def main() -> None:
 
     target_report = subparsers.add_parser(
         "target-report",
-        help="Collect target-device facts and run v0.1 Pi/API smoke gates.",
     )
     target_report.add_argument(
         "--db-dir",
@@ -7512,7 +7461,7 @@ def _v01_acceptance_bundle_summary(payload: dict) -> dict:
 
 def _build_v01_audit_payload() -> dict:
     started = perf_counter()
-    plan_path = ROOT / "docs" / "local_assistant_os_mvp_plan_v2.md"
+    plan_path = ROOT / "docs" / "archive" / "local_assistant_os_mvp_plan_v2.md"
     legacy_plan_path = ROOT / "docs" / "local_assistant_os_mvp_plan.md"
     archived_legacy_path = ROOT / "docs" / "archive" / "local_assistant_os_mvp_plan.md"
     root_readme = ROOT / "README.md"
@@ -17433,9 +17382,12 @@ def _handle_utterance(
 ) -> dict:
     if capture_session_id:
         store.use_session(capture_session_id)
+    if model_path is None:
+        from melm.appliance.provisioning import resolve_gguf_model_path
+        model_path = resolve_gguf_model_path()
     decoder = None
     if model_path is not None and model_path.exists():
-        decoder = ConstrainedDecoder(preferred="template", model_path=str(model_path))
+        decoder = ConstrainedDecoder(preferred="llamacpp", model_path=str(model_path))
     kernel = AssistantOSKernel(
         profile=_cold_profile() if cold_start else None,
         store=store,

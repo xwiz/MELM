@@ -2,6 +2,8 @@
 
 from __future__ import annotations
 
+from typing import Any
+
 from melm.contracts import load_story_components
 from .assistant_skill_base import SkillManifest, register_skill
 
@@ -13,6 +15,19 @@ MANIFEST = SkillManifest(
 )
 
 register_skill(MANIFEST)
+
+
+def _get_story_answer_templates() -> list[str]:
+    if not hasattr(_get_story_answer_templates, "_cache"):
+        components = load_story_components()
+        _get_story_answer_templates._cache = list(
+            components.get("answer_templates") or [
+                "I picked {title} from the local story inventory{fit}. In {location}, {name} {image}. {challenge} By the end, {name} {lesson}",
+                "Here is a story called {title}{fit}. {name} is in {location}, where {name} {image}. {challenge} At the end, {name} {lesson}",
+                "Let me tell you {title}{fit}. Once, in {location}, {name} {image}. {challenge} In the end, {name} {lesson}",
+            ]
+        )
+    return _get_story_answer_templates._cache
 
 
 def format_story_answer(
@@ -33,10 +48,11 @@ def format_story_answer(
         fit = f" with a {culture} flavor"
     elif location and location in cultures:
         fit = f" in {location}"
-    return (
-        f"I picked {title} from the local story inventory{fit}. "
-        f"In {location}, {name} {image}. {challenge} "
-        f"By the end, {name} {lesson}"
+    templates = _get_story_answer_templates()
+    idx = (len(title) + len(summary)) % len(templates)
+    return templates[idx].format(
+        title=title, name=name, location=location,
+        image=image, challenge=challenge, lesson=lesson, fit=fit,
     )
 
 
