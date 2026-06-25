@@ -20,9 +20,8 @@ It is deliberately conservative:
   * leaves 3rd-person-singular subjects (he/she/it/<name>) alone;
   * leaves already-correct input ("you go", "they were", "she goes") unchanged.
 
-The rules below are module-level constants. A JSON contract migration
-(agreement_rules.v1.json) is a documented follow-up (design doc §10), not done
-here.
+Rules are loaded from ``agreement_rules.v1.json`` at import time, falling back
+to the module-level constants below if the contract is unavailable.
 """
 
 from __future__ import annotations
@@ -34,12 +33,8 @@ from melm.appliance.normalization.ner_mask import protected_indices
 
 _PUNCT = ".,!?;:\"'()[]{}"
 
-# Subject pronouns that require a non-3sg verb form (1st/2nd person + plurals).
-# "he"/"she"/"it" are intentionally excluded -- they take the 3sg form.
+# Fallback constants — overridden by contract at module load below.
 _NON_3SG_SUBJECTS: frozenset[str] = frozenset({"i", "you", "we", "they"})
-
-# Irregular 3sg verb form -> agreeing (non-3sg) form. The de-inflection target
-# for the plural/1st/2nd-person subjects handled here.
 _IRREGULAR_3SG: dict[str, str] = {
     "is": "are",
     "was": "were",
@@ -47,13 +42,27 @@ _IRREGULAR_3SG: dict[str, str] = {
     "does": "do",
     "goes": "go",
 }
-
-# Tokens that may sit between the subject and the verb without breaking the
-# adjacency match (a single optional adverb). Kept tiny and unambiguous.
 _INTERVENING_ADVERBS: frozenset[str] = frozenset(
     {"really", "always", "never", "still", "just", "also", "often", "sometimes",
      "usually", "now", "then", "already"}
 )
+
+
+def _load_rules_from_contract() -> None:
+    """Populate module globals from agreement_rules.v1.json if available."""
+    global _NON_3SG_SUBJECTS, _IRREGULAR_3SG, _INTERVENING_ADVERBS
+    try:
+        from melm.contracts.validation import load_agreement_rules
+
+        data = load_agreement_rules()
+        _NON_3SG_SUBJECTS = frozenset(data["non_3sg_subjects"])
+        _IRREGULAR_3SG = dict(data["irregular_3sg_map"])
+        _INTERVENING_ADVERBS = frozenset(data["intervening_adverbs"])
+    except Exception:
+        pass  # contract unavailable — keep module-level defaults
+
+
+_load_rules_from_contract()
 
 
 def _split_affixes(tok: str) -> tuple[str, str, str]:

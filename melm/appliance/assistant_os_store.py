@@ -758,6 +758,7 @@ class AssistantOSStore:
                 confidence=0.86,
                 provenance="profile.contacts",
             )
+            # relationship slot intentionally empty — not derivable from profile contacts
         for item in profile.media_library:
             self.upsert_profile_inventory(
                 "media",
@@ -921,6 +922,7 @@ class AssistantOSStore:
             story_models=story_models,
             media_library=media,
             food_inventory=food,
+            user_id=profile.user_id,
         )
 
     def add_entity(
@@ -1283,6 +1285,100 @@ class AssistantOSStore:
             for row in rows
         ]
 
+    # ── Causal rule CRUD (V4B runtime rule merge) ──────────────────────
+
+    def set_causal_rule(
+        self,
+        entity_id: str,
+        cause_lemma: str,
+        effect_state: str,
+        *,
+        confidence: float = 0.5,
+        provenance: str = "user_stated",
+        review_status: str = "pending",
+        scope: str = "user_local",
+        effect_domain: str = "",
+        patient_types: list[str] | None = None,
+        source_entity_id: str = "",
+    ) -> None:
+        """Store or overwrite a causal_rule entity.
+
+        Callers must normalize cause_lemma/effect_state before passing them in.
+        """
+        now = _now()
+        self.add_entity(
+            entity_id=entity_id,
+            kind="causal_rule",
+            label=f"{cause_lemma} -> {effect_state}",
+            semantic_class_id="causal_rule",
+            canonical_lemma=f"{cause_lemma} {effect_state}",
+        )
+        slots: dict[str, Any] = {
+            "cause_lemma": cause_lemma,
+            "effect_state": effect_state,
+            "confidence": confidence,
+            "provenance": provenance,
+            "review_status": review_status,
+            "scope": scope,
+            "created_at": now,
+        }
+        if effect_domain:
+            slots["effect_domain"] = effect_domain
+        if patient_types is not None:
+            slots["patient_types"] = list(patient_types)
+        if source_entity_id:
+            slots["source_entity_id"] = source_entity_id
+        for slot_name, value in slots.items():
+            self.set_entity_slot(entity_id, slot_name, value, provenance="causal_rule")
+
+    def query_causal_rules(
+        self,
+        cause_lemma: str | None = None,
+        effect_state: str | None = None,
+        review_status: str | None = "approved",
+        scope: str | None = None,
+    ) -> list[dict]:
+        """Return causal_rule entities matching the given filters.
+
+        Pass ``review_status=None`` to include pending and rejected rules.
+        """
+        clauses: list[str] = ["e.kind='causal_rule'", "e.semantic_class_id='causal_rule'"]
+        params: list[Any] = []
+        if cause_lemma:
+            clauses.append("es_cause.value_json = ?")
+            params.append(json.dumps(cause_lemma))
+        if effect_state:
+            clauses.append("es_effect.value_json = ?")
+            params.append(json.dumps(effect_state))
+        if review_status:
+            clauses.append("es_review.value_json = ?")
+            params.append(json.dumps(review_status))
+        if scope:
+            clauses.append("es_scope.value_json = ?")
+            params.append(json.dumps(scope))
+        query = f"""
+            SELECT e.entity_id
+            FROM entities e
+            LEFT JOIN entity_slots es_cause ON e.entity_id = es_cause.entity_id AND es_cause.slot_name = 'cause_lemma'
+            LEFT JOIN entity_slots es_effect ON e.entity_id = es_effect.entity_id AND es_effect.slot_name = 'effect_state'
+            LEFT JOIN entity_slots es_review ON e.entity_id = es_review.entity_id AND es_review.slot_name = 'review_status'
+            LEFT JOIN entity_slots es_scope ON e.entity_id = es_scope.entity_id AND es_scope.slot_name = 'scope'
+            WHERE {' AND '.join(clauses)}
+            ORDER BY e.created_at DESC
+        """
+        rows = self.connection.execute(query, tuple(params)).fetchall()
+        result = []
+        for row in rows:
+            rule = {"entity_id": str(row["entity_id"])}
+            slot_rows = self.connection.execute(
+                "SELECT slot_name, value_json FROM entity_slots WHERE entity_id=?",
+                (row["entity_id"],),
+            ).fetchall()
+            for sr in slot_rows:
+                rule[str(sr["slot_name"])] = _loads(sr["value_json"])
+            result.append(rule)
+        return result
+
     # ── Learning ledger CRUD ──────────────────────────────────────────────
 
     def add_atlas_edge(
@@ -1633,7 +1729,8 @@ class AssistantOSStore:
         rows = self.connection.execute("SELECT key, value_json FROM self_state")
         return {str(row["key"]): _loads(row["value_json"]) for row in rows}
 
-    def save_self_identity(self, identity_dict: dict[str, Any]) -> None:
+    def save_self_identity(self, identity_dict: dict[str, Any], user_id: str = "default") -> None:
+        key = f"self_identity:{user_id}" if user_id else "self_identity"
         self.connection.execute(
             """
             INSERT INTO self_state(key, value_json, updated_at)
@@ -1642,20 +1739,26 @@ class AssistantOSStore:
                 value_json=excluded.value_json,
                 updated_at=excluded.updated_at
             """,
-            ("self_identity", _json(identity_dict), _now()),
+            (key, _json(identity_dict), _now()),
         )
         self.connection.commit()
 
-    def load_self_identity(self) -> dict[str, Any] | None:
+    def load_self_identity(self, user_id: str = "default") -> dict[str, Any] | None:
+        key = f"self_identity:{user_id}" if user_id else "self_identity"
         row = self.connection.execute(
             "SELECT value_json FROM self_state WHERE key = ?",
-            ("self_identity",),
+            (key,),
         ).fetchone()
+        if row is None and user_id == "default":
+            row = self.connection.execute(
+                "SELECT value_json FROM self_state WHERE key = ?",
+                ("self_identity",),
+            ).fetchone()
         if row is None:
             return None
         return _loads(row["value_json"])
 
-    def set_given_name(self, name: str) -> None:
+    def set_given_name(self, name: str, user_id: str = "default") -> None:
         self.connection.execute(
             """
             INSERT INTO self_state(key, value_json, updated_at)
@@ -1664,7 +1767,7 @@ class AssistantOSStore:
                 value_json=excluded.value_json,
                 updated_at=excluded.updated_at
             """,
-            ("given_name", _json(name), _now()),
+            (f"given_name:{user_id}", _json(name), _now()),
         )
         self.connection.execute(
             """
@@ -1674,7 +1777,7 @@ class AssistantOSStore:
                 value_json=excluded.value_json,
                 updated_at=excluded.updated_at
             """,
-            ("has_name", _json(True), _now()),
+            (f"has_name:{user_id}", _json(True), _now()),
         )
         self.connection.commit()
 
@@ -3384,6 +3487,7 @@ def seed_class_schemas(store: AssistantOSStore) -> None:
             ("personal_experience", "follow_up", "text", 0, "Follow-up needed: check_tomorrow | monitor | null"),
             ("personal_experience", "intent_achieved", "text", 0, "Whether the primary intent was achieved: yes | partial | no"),
             ("personal_experience", "user_id", "text", 0, "User identifier this experience belongs to"),
+            ("personal_experience", "intent", "text", 0, "Routed intent for this turn"),
         ],
     )
     store.connection.execute(
@@ -3471,6 +3575,26 @@ def seed_class_schemas(store: AssistantOSStore) -> None:
             ("anonymous_fact", "privacy_level", "text", 1, "Privacy level: anonymous | aggregated"),
             ("anonymous_fact", "session_hash", "text", 0, "Hashed session identifier"),
             ("anonymous_fact", "timestamp", "text", 1, "ISO timestamp of fact recording"),
+        ],
+    )
+    # ── causal_rule (V4B runtime rule merge) ───────────────────────────
+    store.connection.execute(
+        "INSERT INTO class_schemas(semantic_class_id, parent_class_id, label, base_entity_kind, description, updated_at) VALUES (?, ?, ?, ?, ?, ?)",
+        ("causal_rule", "abstract", "CausalRule", "object", "An approved or candidate causal rule derived from contracts or experience", now),
+    )
+    store.connection.executemany(
+        "INSERT INTO class_schema_slots(semantic_class_id, slot_name, value_type, required, description) VALUES (?, ?, ?, ?, ?)",
+        [
+            ("causal_rule", "cause_lemma", "text", 1, "Canonical cause lemma"),
+            ("causal_rule", "effect_state", "text", 1, "Canonical effect state lemma"),
+            ("causal_rule", "effect_domain", "text", 0, "Domain tag for the effect"),
+            ("causal_rule", "patient_types", "json", 0, "JSON list of patient types this rule applies to"),
+            ("causal_rule", "confidence", "real", 1, "Confidence 0.0-1.0"),
+            ("causal_rule", "provenance", "text", 1, "Source: manual_curated | offline_extractor | user_stated | cloud_candidate"),
+            ("causal_rule", "review_status", "text", 1, "Review state: pending | approved | rejected"),
+            ("causal_rule", "scope", "text", 1, "Scope: global | user_local | session_local"),
+            ("causal_rule", "source_entity_id", "text", 0, "Optional source entity ID (uol_parse, personal_experience, etc.)"),
+            ("causal_rule", "created_at", "text", 1, "ISO timestamp"),
         ],
     )
     # ── curiosity/context/agreement schemas (Phase 1A) ─────────────────

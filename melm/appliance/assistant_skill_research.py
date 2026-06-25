@@ -11,6 +11,7 @@ Does NOT contain inline knowledge. All strings come from the contract registry.
 from __future__ import annotations
 
 import json
+import re
 from abc import ABC, abstractmethod
 from dataclasses import dataclass
 from datetime import datetime, timezone
@@ -21,6 +22,14 @@ from urllib.request import urlopen
 
 from melm.contracts import load_open_domain_templates
 
+from .assistant_lexicon import (
+    _compute_class_candidates,
+    _controlled_lexemes,
+    _extract_genus_lemma,
+    _normalize_term,
+    _timestamp,
+    lexicon_ingest,
+)
 from .functional_grammar import FunctionalParse
 
 
@@ -93,6 +102,65 @@ class WikipediaResearchProvider(ResearchProvider):
         )
 
 
+_DEFINITION_PATTERN = re.compile(
+    r"^(?:a|an|the)\s+(?P<word>[a-z0-9' -]+)\s+is\s+(?:a|an|the)\s+(?P<rest>.+)$",
+    re.IGNORECASE,
+)
+
+
+def research_to_lexicon(store: Any, topic: str, summary: str) -> dict | None:
+    """Parse a Wikipedia summary as a definition and build a lexicon candidate.
+
+    If the summary matches ``_DEFINITION_PATTERN`` (e.g. "A vase is an open
+    container used to hold cut flowers"), extracts the genus and resolves a
+    semantic class. Returns a candidate dict for ``lexicon_ingest()``, or
+    ``None`` if the summary doesn't match a noun-definition pattern.
+    """
+    cleaned = summary.strip()
+    m = _DEFINITION_PATTERN.match(cleaned)
+    if not m:
+        return None
+    word = _normalize_term(m.group("word"))
+    if word != _normalize_term(topic):
+        return None
+    rest = m.group("rest").strip().rstrip(".!?")
+    genus_lemma = _extract_genus_lemma(rest)
+    if genus_lemma:
+        candidates = _compute_class_candidates(store, genus_lemma, "noun")
+        if not candidates or candidates[0].get("confidence", 0) < 0.1:
+            # Genus unresolvable — omit genus_lemma to bypass
+            # the unresolved-genus guard in lexicon_ingest.
+            genus_lemma = ""
+            candidates = [{"class_id": "abstract", "method": "genus_walk", "confidence": 0.01}]
+    else:
+        candidates = [{"class_id": "abstract", "method": "genus_walk", "confidence": 0.01}]
+    reserved, policy = _controlled_lexemes()
+    candidate: dict[str, Any] = {
+        "schema_id": "melm.sense_candidate.v1",
+        "lemma": word,
+        "language": "en",
+        "pos": "noun",
+        "source": {
+            "provenance": "auto_research",
+            "source_ref": f"wikipedia:{topic}",
+            "license": "cc-by-sa",
+        },
+        "definition": rest,
+        "semantic_class_candidates": candidates,
+        "forms": [],
+        "relations": [],
+        "safety": {
+            "reserved_conflict": word in reserved,
+            "policy_term_overlap": word in policy,
+        },
+        "suggested_status": "active",
+        "confidence_prior": 0.70,
+    }
+    if genus_lemma:
+        candidate["genus_lemma"] = genus_lemma
+    return candidate
+
+
 def learn_topic(
     store: Any,
     topic: str,
@@ -102,6 +170,10 @@ def learn_topic(
 
     Idempotent — if a matching learned_fact already exists, returns it
     without calling the provider again.
+
+    After storing a learned_fact, also attempts to parse the Wikipedia
+    summary as a definition and ingest into the lexicon via
+    ``research_to_lexicon()``, making the term recognizable.
     """
     if store is None:
         return provider.research(topic)
@@ -121,6 +193,12 @@ def learn_topic(
             summary=result.summary,
             source=result.source,
         )
+        candidate = research_to_lexicon(store, topic, result.summary)
+        if candidate is not None:
+            try:
+                lexicon_ingest(store, candidate, expected_provenance="auto_research")
+            except Exception:
+                pass
     return result
 
 
@@ -236,18 +314,28 @@ def format_open_domain_answer(
     topic: str,
     action: str = "learn about",
     learned_fact: dict[str, Any] | None = None,
+    speech_act: str = "",
 ) -> str:
     """Render an open_domain/unknown fallback using the contract template registry.
 
-    Selects:
-    - "acknowledge_and_learned" if a learned_fact is present
-    - "acknowledge_and_handoff" otherwise
+    Selects template variant by speech_act type:
+    - wh_question → inquisitive tone
+    - yes_no_question → search-oriented
+    - statement/claim → reflective
+    - request/command → action-oriented
+    - default → generic handoff
+
+    Within each speech_act group, three variants exist:
+    - "handoff" (no learned_fact, needs external fetch)
+    - "learned" (learned_fact evidence present)
+    - "unknown" (fallback when no learned_fact and no handoff possible)
     """
     templates = load_open_domain_templates()
-    intent_templates = templates.get("open_domain", {}).get("templates", {})
+    speech_act_group = templates.get("speech_act_templates", {})
+    group_templates = speech_act_group.get(speech_act) or speech_act_group.get("default", {})
     if learned_fact:
-        tmpl = intent_templates.get(
-            "acknowledge_and_learned",
+        tmpl = group_templates.get(
+            "learned",
             "You asked about {topic}. This is what I found: {summary}",
         )
         return tmpl.format(
@@ -255,8 +343,8 @@ def format_open_domain_answer(
             action=action,
             summary=learned_fact.get("summary", ""),
         )
-    tmpl = intent_templates.get(
-        "acknowledge_and_handoff",
+    tmpl = group_templates.get(
+        "handoff",
         "You asked about {topic}. I do not have that information locally, so I will need to look it up.",
     )
     return tmpl.format(topic=topic, action=action)

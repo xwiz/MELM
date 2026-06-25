@@ -101,6 +101,49 @@ _FUNCTION_WORDS_CACHE: dict[str, set[str]] | None = None
 _FUNCTION_WORD_ENTRIES: dict[tuple[str, str], dict[str, Any]] | None = None
 _PREDICATE_ENTRIES: dict[tuple[str, str], dict[str, Any]] | None = None
 
+_MODIFIER_ATOM_LEMMAS: set[str] | None = None
+_NOUN_ATOM_LEMMAS: set[str] | None = None
+
+_ADJECTIVE_SUFFIXES: dict[str, frozenset[str]] = {
+    "en": frozenset({"able", "ible", "al", "ful", "ic", "ive", "less",
+                     "ous", "ish", "like", "proof", "ward"}),
+}
+
+
+def _load_modifier_atom_lemmas() -> set[str]:
+    global _MODIFIER_ATOM_LEMMAS
+    if _MODIFIER_ATOM_LEMMAS is not None:
+        return _MODIFIER_ATOM_LEMMAS
+    try:
+        from melm.contracts import load_modifier_atoms
+        payload = load_modifier_atoms()
+        _MODIFIER_ATOM_LEMMAS = {
+            str(e["canonical_lemma"]).strip().lower()
+            for e in payload.get("entries", [])
+            if e.get("canonical_lemma")
+        }
+    except Exception:
+        _MODIFIER_ATOM_LEMMAS = set()
+    return _MODIFIER_ATOM_LEMMAS
+
+
+def _load_noun_atom_lemmas() -> set[str]:
+    global _NOUN_ATOM_LEMMAS
+    if _NOUN_ATOM_LEMMAS is not None:
+        return _NOUN_ATOM_LEMMAS
+    try:
+        from melm.contracts import load_noun_atoms as _load_na
+        payload = _load_na()
+        _NOUN_ATOM_LEMMAS = {
+            str(e["canonical_lemma"]).strip().lower()
+            for e in payload.get("entities", [])
+            if e.get("canonical_lemma")
+        }
+    except Exception:
+        _NOUN_ATOM_LEMMAS = set()
+    return _NOUN_ATOM_LEMMAS
+
+
 _POS_BY_ROLE = {
     "greeting": "INTJ",
     "wh_word": "PRON",
@@ -174,6 +217,27 @@ def predicate_entry(language_code: str, lemma: str) -> dict[str, Any]:
     return _cached_predicate_entries().get((language_code, lemma), {})
 
 
+def _lemma_in_modifier_atoms(lemma: str) -> bool:
+    return lemma.strip().lower() in _load_modifier_atom_lemmas()
+
+
+def _lemma_in_noun_atoms(lemma: str) -> bool:
+    return lemma.strip().lower() in _load_noun_atom_lemmas()
+
+
+def _guess_is_adjective(language_code: str, lemma: str) -> bool:
+    """Heuristic: check modifier_atoms contract first, then suffix patterns."""
+    if _lemma_in_modifier_atoms(lemma):
+        return True
+    if _lemma_in_noun_atoms(lemma):
+        return False
+    suffixes = _ADJECTIVE_SUFFIXES.get(language_code, frozenset())
+    if not suffixes:
+        return False
+    stem = lemma.strip().lower()
+    return any(stem.endswith(suf) for suf in suffixes)
+
+
 def pos_tag_for(language_code: str, lemma: str) -> str:
     role = str(function_word_entry(language_code, lemma).get("role", "")).strip().lower()
     if role:
@@ -182,6 +246,8 @@ def pos_tag_for(language_code: str, lemma: str) -> str:
         return "VERB"
     if lemma.isdigit():
         return "NUM"
+    if _guess_is_adjective(language_code, lemma):
+        return "ADJ"
     return "NOUN"
 
 
@@ -200,6 +266,95 @@ def morph_features_for(language_code: str, lemma: str, pos_tag: str) -> dict[str
     return features
 
 
+def _load_causal_link_markers() -> dict[str, dict[str, Any]]:
+    try:
+        from melm.contracts import load_causal_link_markers
+        return load_causal_link_markers()
+    except Exception:
+        return {}
+
+
+def _is_predicate_token(language_code: str, lemma: str, allow_copula: bool = False) -> bool:
+    role = str(function_word_entry(language_code, lemma).get("role", "")).strip().lower()
+    subrole = str(function_word_entry(language_code, lemma).get("subrole", "")).strip().lower()
+    if not predicate_entry(language_code, lemma):
+        return False
+    if role in {"modal", "auxiliary"}:
+        return allow_copula and subrole == "copula"
+    return True
+
+
+def _default_root_index(language_code: str, lemmas: tuple[str, ...]) -> int:
+    for index, lemma in enumerate(lemmas):
+        if _is_predicate_token(language_code, lemma, allow_copula=False):
+            return index
+    return 0
+
+
+def _find_causal_clause_roots(
+    language_code: str,
+    lemmas: tuple[str, ...],
+) -> tuple[int, int, str] | None:
+    """Return (main_root_index, subordinate_root_index, marker_lemma) or None."""
+    markers = _load_causal_link_markers()
+    marker_indices = [(i, lemmas[i]) for i in range(len(lemmas)) if lemmas[i] in markers]
+    if not marker_indices:
+        return None
+
+    predicate_indices = [
+        i for i, lemma in enumerate(lemmas)
+        if _is_predicate_token(language_code, lemma, allow_copula=True)
+    ]
+    if len(predicate_indices) < 2:
+        return None
+
+    marker_idx, marker_lemma = marker_indices[0]
+    direction = markers[marker_lemma].get("direction", "")
+
+    # Subordinate predicate is the predicate in the clause introduced by the marker.
+    subordinate_index = None
+    for pred_idx in predicate_indices:
+        if pred_idx > marker_idx:
+            subordinate_index = pred_idx
+            break
+    if subordinate_index is None:
+        return None
+
+    main_index = None
+    if direction == "effect_to_cause" or marker_lemma in {"so", "therefore"}:
+        # Main clause is the predicate before the marker.
+        for pred_idx in reversed(predicate_indices):
+            if pred_idx < marker_idx:
+                main_index = pred_idx
+                break
+    else:
+        # cause_to_effect: main clause follows the subordinate clause.
+        found_subordinate = False
+        for pred_idx in predicate_indices:
+            if found_subordinate:
+                main_index = pred_idx
+                break
+            if pred_idx == subordinate_index:
+                found_subordinate = True
+
+    if main_index is None or main_index == subordinate_index:
+        return None
+    return (main_index, subordinate_index, marker_lemma)
+
+
+def _find_marker_index(
+    lemmas: tuple[str, ...],
+    marker_lemma: str,
+    subordinate_index: int,
+) -> int | None:
+    best: int | None = None
+    for i, lemma in enumerate(lemmas):
+        if lemma == marker_lemma:
+            if best is None or abs(i - subordinate_index) < abs(best - subordinate_index):
+                best = i
+    return best
+
+
 def simple_dependencies(
     language_code: str,
     lemmas: tuple[str, ...],
@@ -207,15 +362,33 @@ def simple_dependencies(
 ) -> tuple[DepEdge, ...]:
     if not lemmas:
         return ()
-    root_index = 0
-    for index, lemma in enumerate(lemmas):
-        role = str(function_word_entry(language_code, lemma).get("role", "")).strip().lower()
-        if predicate_entry(language_code, lemma) and role not in {"modal", "auxiliary"}:
-            root_index = index
-            break
+
+    causal_roots = _find_causal_clause_roots(language_code, lemmas)
+    subordinate_index: int | None = None
+    marker_index: int | None = None
+    marker_lemma: str = ""
+    if causal_roots is not None:
+        root_index, subordinate_index, marker_lemma = causal_roots
+    else:
+        root_index = _default_root_index(language_code, lemmas)
+
     edges: list[DepEdge] = [DepEdge(head=root_index, dependent=root_index, relation="root")]
+
+    subordinate_clause_indices: set[int] = set()
+    if subordinate_index is not None and subordinate_index != root_index:
+        marker_index = _find_marker_index(lemmas, marker_lemma, subordinate_index)
+        if marker_index is not None:
+            edges.append(DepEdge(head=subordinate_index, dependent=marker_index, relation="mark"))
+            edges.append(DepEdge(head=root_index, dependent=subordinate_index, relation="advcl"))
+            start, end = sorted([marker_index, subordinate_index])
+            subordinate_clause_indices = set(range(start, end + 1))
+        else:
+            subordinate_clause_indices = {subordinate_index}
+
     for index, lemma in enumerate(lemmas):
-        if index == root_index:
+        if index == root_index or index == subordinate_index:
+            continue
+        if index == marker_index:
             continue
         role = str(function_word_entry(language_code, lemma).get("role", "")).strip().lower()
         subrole = str(function_word_entry(language_code, lemma).get("subrole", "")).strip().lower()
@@ -228,6 +401,8 @@ def simple_dependencies(
             relation = "obj"
         elif pos_tags[index] == "NOUN":
             relation = "obj" if index > root_index else "nsubj"
+        elif pos_tags[index] == "ADJ":
+            relation = "amod"
         elif role == "preposition":
             relation = "case"
         elif role == "modal":
@@ -240,7 +415,10 @@ def simple_dependencies(
             relation = "det"
         elif role == "conjunction":
             relation = "cc"
-        edges.append(DepEdge(head=root_index, dependent=index, relation=relation))
+        # Attach subordinate clause tokens to the subordinate predicate so that
+        # each clause gets its own local roles in the atomizer.
+        head = subordinate_index if subordinate_index is not None and index in subordinate_clause_indices else root_index
+        edges.append(DepEdge(head=head, dependent=index, relation=relation))
     return tuple(edges)
 
 

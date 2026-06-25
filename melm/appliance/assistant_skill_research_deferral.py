@@ -46,10 +46,10 @@ def queue_research_task(
     provider_hint: str = "",
     session_id: str = "",
 ) -> str | None:
-    """Queue a deferred research task in the entity store."""
+    """Queue a deferred research task in the entity store and as a background job."""
     from datetime import datetime, timezone
     now = datetime.now(timezone.utc).isoformat()
-    return queue_deferred_task(
+    entity_id = queue_deferred_task(
         store=store,
         topic=topic,
         action=action,
@@ -57,6 +57,14 @@ def queue_research_task(
         session_id=session_id,
         engagement_prompt=f"I was looking into {topic} while you were away.",
     )
+    if entity_id and hasattr(store, "enqueue_job"):
+        store.enqueue_job(
+            kind="deferred_research",
+            payload={"topic": topic, "action": action, "provider_hint": provider_hint, "session_id": session_id},
+            priority=0.5,
+            resource_budget={"cpu_seconds": 30, "memory_mb": 128},
+        )
+    return entity_id
 
 
 def run_deferred_research(store: Any, provider: Any) -> list[dict[str, Any]]:

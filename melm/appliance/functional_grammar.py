@@ -16,6 +16,56 @@ from typing import Any
 # class through this back-reference.
 _UOL_LEXICON: dict[str, frozenset[str]] = {}
 
+_MODIFIER_ATOM_LEMMAS: set[str] | None = None
+_NOUN_ATOM_LEMMAS: set[str] | None = None
+_ADJECTIVE_SUFFIXES: frozenset[str] = frozenset({
+    "able", "ible", "al", "ful", "ic", "ive", "less",
+    "ous", "ish", "like", "proof", "ward",
+})
+
+
+def _load_noun_lemmas_for_grammar() -> set[str]:
+    global _NOUN_ATOM_LEMMAS
+    if _NOUN_ATOM_LEMMAS is not None:
+        return _NOUN_ATOM_LEMMAS
+    try:
+        from melm.contracts import load_noun_atoms as _load_na
+        payload = _load_na()
+        _NOUN_ATOM_LEMMAS = {
+            str(e["canonical_lemma"]).strip().lower()
+            for e in payload.get("entities", [])
+            if e.get("canonical_lemma")
+        }
+    except Exception:
+        _NOUN_ATOM_LEMMAS = set()
+    return _NOUN_ATOM_LEMMAS
+
+
+def _load_modifier_lemmas_for_grammar() -> set[str]:
+    global _MODIFIER_ATOM_LEMMAS
+    if _MODIFIER_ATOM_LEMMAS is not None:
+        return _MODIFIER_ATOM_LEMMAS
+    try:
+        from melm.contracts import load_modifier_atoms
+        payload = load_modifier_atoms()
+        _MODIFIER_ATOM_LEMMAS = {
+            str(e["canonical_lemma"]).strip().lower()
+            for e in payload.get("entries", [])
+            if e.get("canonical_lemma")
+        }
+    except Exception:
+        _MODIFIER_ATOM_LEMMAS = set()
+    return _MODIFIER_ATOM_LEMMAS
+
+
+def _is_adjective_candidate(lemma: str) -> bool:
+    norm = lemma.strip().lower()
+    if norm in _load_modifier_lemmas_for_grammar():
+        return True
+    if norm in _load_noun_lemmas_for_grammar():
+        return False
+    return any(norm.endswith(suf) for suf in _ADJECTIVE_SUFFIXES)
+
 
 def set_uol_lexicon(lexicon: dict[str, frozenset[str]]) -> None:
     global _UOL_LEXICON
@@ -231,29 +281,6 @@ _VERBS = _verb_projection()
 _KNOWN_NOMINAL_DOMAINS = _content_domain_projection()
 
 
-def _verb_info(token: str) -> tuple[str, str] | None:
-    """Return (canonical, semantic_class) for a verb.
-
-    Checks the contract-projected ``_VERBS`` compatibility export first, then
-    falls back to the runtime lexicon (``_UOL_LEXICON``), which contains
-    acquired / bulk-seeded verbs. Returns ``None`` when *token* is not known
-    in either source.
-
-    Only matches lexical entries whose semantic class starts with ``verb.``
-    (pure verb senses).  Noun entries like ``narrative_content`` or
-    ``weather_phenomenon`` are excluded to avoid false predicate matches.
-    """
-    entry = _VERBS.get(token)
-    if entry is not None:
-        return entry
-    classes = _UOL_LEXICON.get(token)
-    if classes:
-        first = next(iter(classes))
-        if first.startswith("verb."):
-            return (token, first)
-    return None
-
-
 @dataclass(frozen=True)
 class FunctionalParse:
     speech_act: str
@@ -304,6 +331,40 @@ def parse_functional_relations(
     if not tokens:
         return None
     lemmas = tuple(_lemma(token, language=language) for token in tokens)
+    # Multi-token greeting idiom patterns (catches "wassup"→"what is up" expansion, etc.)
+    _GREETING_IDIOMS = {
+        ("what", "be", "up"),
+        ("whats", "up"),
+        ("what's", "up"),
+        ("sup",),
+    }
+    if lemmas in _GREETING_IDIOMS:
+        roles = tuple(
+            _role(index, token, lemma, "discourse_greeting", "social_opening", 1.0)
+            for index, (token, lemma) in enumerate(zip(tokens, lemmas))
+        )
+        return FunctionalParse(
+            speech_act="greeting",
+            subject="user",
+            action="greet",
+            object="",
+            target="assistant",
+            complement_action="",
+            indirect_object="",
+            modifiers={},
+            relations=(
+                {"type": "agent", "head": "greet", "value": "user", "weight": 1.0},
+                {"type": "target", "head": "greet", "value": "assistant", "weight": 1.0},
+            ),
+            token_roles=roles,
+            candidates=(
+                {"action": "greet", "semantic_class": "social", "score": 1.0, "index": 0},
+            ),
+            parse_score=1.0,
+            syntactic_coverage=1.0,
+            semantic_unknown_tokens=(),
+            pattern="greeting_interjection",
+        )
     if all(_get_role(token, language=language) in {"greeting", "politeness", "discourse_particle"} for token in lemmas):
         roles = tuple(
             _role(index, token, lemma, "discourse_greeting", "social_opening", 1.0)
@@ -770,16 +831,19 @@ def _token_roles(
                 else:
                     role, meaning, weight = "pronoun_relation", f"{referent}:{pronoun_role}", 0.82
             else:
-                pred = _get_predicate(lemma, language=language)
-                if pred is not None:
-                    role, meaning, weight = "secondary_predicate_candidate", f"{pred['predicate_id']}:{pred['semantic_class']}", 0.62
+                if _is_adjective_candidate(lemma):
+                    role, meaning, weight = "adjectival_modifier", "descriptor", 0.86
                 else:
-                    domain = _get_content_domain(lemma)
-                    if domain is not None:
-                        role, meaning, weight = "content_nominal", domain, 0.58
+                    pred = _get_predicate(lemma, language=language)
+                    if pred is not None:
+                        role, meaning, weight = "secondary_predicate_candidate", f"{pred['predicate_id']}:{pred['semantic_class']}", 0.62
                     else:
-                        role, meaning, weight = "content_nominal", "semantic_class_unknown", 0.58
-                        semantic_unknown.append(lemma)
+                        domain = _get_content_domain(lemma)
+                        if domain is not None:
+                            role, meaning, weight = "content_nominal", domain, 0.58
+                        else:
+                            role, meaning, weight = "content_nominal", "semantic_class_unknown", 0.58
+                            semantic_unknown.append(lemma)
         roles.append(_role(index, token, lemma, role, meaning, weight))
     return roles, list(dict.fromkeys(semantic_unknown))
 

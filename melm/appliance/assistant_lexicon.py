@@ -23,7 +23,7 @@ from melm.contracts import (
 from .assistant_os_store import AssistantOSStore
 
 
-RUNTIME_PROVENANCE = frozenset({"user_taught", "cloud_lookup"})
+RUNTIME_PROVENANCE = frozenset({"user_taught", "cloud_lookup", "auto_research"})
 STATUS_RANK = {"defeated": -1, "quarantined": 0, "dormant": 1, "active": 2}
 ROUTER_LEXICON_FAMILIES_KEY = "lexicon_router_families"
 
@@ -277,6 +277,13 @@ _GENUS_PP_MARKERS: frozenset[str] = frozenset({
     "that", "which", "who", "whose", "whom", "where", "when",
 })
 
+# Words that introduce trailing purpose/relative clauses in definitions.
+# These are stripped (along with everything after) before genus extraction.
+# Example: "container used to hold cut flowers" → strip from "used" → "container"
+_PURPOSE_MARKERS: frozenset[str] = frozenset({
+    "used", "which",
+})
+
 
 def acquire_definition(
     store: AssistantOSStore,
@@ -361,20 +368,29 @@ def _extract_genus_lemma(rest: str) -> str:
     PP-marking preposition (possibly with intervening skip words)
     are treated as PP objects and skipped; the first content word
     found before any PP boundary is the head.
+
+    Purpose/relative clauses introduced by ``used``, ``which``, or
+    ``that`` are first stripped from the tail to avoid misidentifying
+    their objects as the head noun (e.g. "container used to hold cut
+    flowers" -> "container", not "flowers").
     """
-    words = _normalize_term(rest).split()
+    raw = _normalize_term(rest)
+    words = raw.split()
+    # Strip trailing purpose/relative clauses
+    for idx, w in enumerate(words):
+        if w in _PURPOSE_MARKERS and idx >= 1:
+            words = words[:idx]
+            break
     i = len(words) - 1
     while i >= 0:
         word = words[i]
         if word not in _GENUS_SKIP:
-            # Scan backwards across any skip words to detect a PP marker.
+            # Scan backwards all the way to 0 looking for a PP marker.
             pp_boundary = False
             for j in range(i - 1, -1, -1):
                 if words[j] in _GENUS_PP_MARKERS:
                     pp_boundary = True
                     i = j - 1
-                    break
-                if words[j] not in _GENUS_SKIP:
                     break
             if pp_boundary:
                 continue

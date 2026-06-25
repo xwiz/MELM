@@ -8,9 +8,10 @@ projecting atoms back into FunctionalParse when the old pipeline is active.
 from __future__ import annotations
 
 import uuid
+from dataclasses import replace
 from typing import Any
 
-from melm.contracts import load_function_words
+from melm.contracts import load_function_words, load_causal_link_markers
 
 from .functional_grammar import FunctionalParse
 from .language_adapters import SyntaxGraph, function_word_entry, predicate_entry
@@ -18,6 +19,7 @@ from .uol_types import (
     AtomContext,
     AtomKind,
     AtomLinks,
+    Modifier,
     PredicateRef,
     RoleAssignment,
     RoleStatus,
@@ -75,6 +77,8 @@ _ACT_MAP: dict[str, str] = {
 }
 
 _FUNCTION_WORD_META: dict[tuple[str, str], dict[str, Any]] | None = None
+_CAUSAL_LINK_MARKERS: dict[str, dict[str, Any]] | None = None
+_MODIFIER_SEMCLASS_MAP: dict[str, str] | None = None
 
 
 def _function_word_meta(lemma: str, language: str) -> dict[str, Any]:
@@ -90,6 +94,83 @@ def _function_word_meta(lemma: str, language: str) -> dict[str, Any]:
     return _FUNCTION_WORD_META.get((language, lemma), {})
 
 
+def _load_causal_link_markers() -> dict[str, dict[str, Any]]:
+    global _CAUSAL_LINK_MARKERS
+    if _CAUSAL_LINK_MARKERS is None:
+        try:
+            _CAUSAL_LINK_MARKERS = load_causal_link_markers()
+        except Exception:
+            _CAUSAL_LINK_MARKERS = {}
+    return _CAUSAL_LINK_MARKERS
+
+
+def _load_modifier_semclass_map() -> dict[str, str]:
+    global _MODIFIER_SEMCLASS_MAP
+    if _MODIFIER_SEMCLASS_MAP is None:
+        try:
+            from melm.contracts import load_modifier_atoms
+            payload = load_modifier_atoms()
+            _MODIFIER_SEMCLASS_MAP = {
+                str(e["canonical_lemma"]).strip().lower(): str(e.get("semantic_class_id", "attribute"))
+                for e in payload.get("entries", [])
+                if e.get("canonical_lemma")
+            }
+        except Exception:
+            _MODIFIER_SEMCLASS_MAP = {}
+    return _MODIFIER_SEMCLASS_MAP
+
+
+def _modifier_semantic_class(lemma: str) -> str:
+    return _load_modifier_semclass_map().get(lemma.strip().lower(), "attribute")
+
+
+def _extract_modifiers_from_parse(
+    parse: FunctionalParse,
+    index_to_role: dict[int, dict[str, Any]],
+) -> list[tuple[int, str, str]]:
+    """Return (adj_token_index, canonical_lemma, semantic_class_id) per ADJ token."""
+    results: list[tuple[int, str, str]] = []
+    for tr in parse.token_roles:
+        if tr.get("role") == "adjectival_modifier":
+            idx = int(tr["index"])
+            lemma = str(tr.get("lemma", tr.get("token", ""))).strip().lower()
+            sem_class = _modifier_semantic_class(lemma)
+            results.append((idx, lemma, sem_class))
+    return results
+
+
+def _extract_modifiers_from_graph(
+    graph: SyntaxGraph,
+    allowed_indices: set[int],
+) -> list[tuple[int, str, str]]:
+    """Return (adj_token_index, canonical_lemma, semantic_class_id) per ADJ token."""
+    amod_map: dict[int, int] = {}  # adj_index -> noun_index
+    for edge in graph.dependencies:
+        if edge.relation == "amod" and edge.dependent in allowed_indices:
+            amod_map[edge.dependent] = edge.head
+    results: list[tuple[int, str, str]] = []
+    for adj_idx, noun_idx in amod_map.items():
+        lemma = graph.lemmas[adj_idx].strip().lower()
+        sem_class = _modifier_semantic_class(lemma)
+        results.append((adj_idx, lemma, sem_class))
+    return results
+
+
+def _attach_modifiers(
+    atom: UolAtom,
+    modifiers: list[tuple[int, str, str]],
+) -> UolAtom:
+    """Return a new UolAtom with modifiers attached."""
+    if not modifiers:
+        return atom
+    new_modifiers = [
+        Modifier(lemma=lemma, semantic_class=sem_class, modifier_type="adjective")
+        for _, lemma, sem_class in modifiers
+    ]
+    combined = list(atom.modifiers) + new_modifiers
+    return replace(atom, modifiers=tuple(combined))
+
+
 def _atom_kind(semantic_class: str) -> AtomKind:
     for prefix, kind in _SEMANTIC_CLASS_TO_KIND.items():
         if semantic_class.startswith(prefix):
@@ -102,6 +183,93 @@ def _parse_predicate(meaning: str) -> tuple[str, str]:
     if ":" in meaning:
         return meaning.split(":", 1)
     return meaning, "unknown"
+
+
+_NounEntityIndex: dict[str, dict[str, str]] | None = None
+
+
+def _load_noun_entity_index() -> dict[str, dict[str, str]]:
+    """Lazy-load noun_atoms.v1.json into a lemma → {semantic_class, entity_id} index."""
+    global _NounEntityIndex
+    if _NounEntityIndex is not None:
+        return _NounEntityIndex
+    try:
+        from melm.contracts.validation import load_contract_json
+        payload = load_contract_json("noun_atoms.v1.json")
+        mapping: dict[str, dict[str, str]] = {}
+        for entry in payload.get("entities", []):
+            lemma = str(entry.get("canonical_lemma", "")).strip().lower()
+            if lemma:
+                mapping[lemma] = {
+                    "semantic_class": str(entry.get("semantic_class_id", "")),
+                    "entity_id": str(entry.get("entity_id", "")),
+                }
+        _NounEntityIndex = mapping
+    except Exception:
+        _NounEntityIndex = {}
+    return _NounEntityIndex
+
+
+def enrich_role_entities(
+    roles: list[RoleAssignment],
+) -> list[RoleAssignment]:
+    """Enrich role values that match known noun entities with semantic_class + entity_id.
+    
+    Lazy-loads noun_atoms.v1.json — silently degrades to pass-through on error.
+    """
+    index = _load_noun_entity_index()
+    if not index:
+        return roles
+    enriched: list[RoleAssignment] = []
+    for role in roles:
+        entry = index.get(role.value.strip().lower())
+        if entry:
+            enriched.append(replace(
+                role,
+                semantic_class=entry["semantic_class"],
+                entity_id=entry["entity_id"],
+            ))
+        else:
+            enriched.append(role)
+    return enriched
+
+
+_VerbAtomIndex: dict[str, str] | None = None
+
+def _load_verb_atom_index() -> dict[str, str]:
+    global _VerbAtomIndex
+    if _VerbAtomIndex is not None:
+        return _VerbAtomIndex
+    try:
+        from melm.contracts.validation import load_contract_json
+        payload = load_contract_json("verb_atoms.v1.json")
+        mapping: dict[str, str] = {}
+        for entry in payload.get("entities", []):
+            lemma = str(entry.get("canonical_lemma", "")).strip().lower()
+            if lemma:
+                mapping[lemma] = str(entry.get("entity_id", ""))
+        _VerbAtomIndex = mapping
+    except Exception:
+        _VerbAtomIndex = {}
+    return _VerbAtomIndex
+
+
+def enrich_verb_predicate(predicate: PredicateRef) -> PredicateRef:
+    """Enrich a predicate with entity_id from verb_atoms.v1.json.
+
+    Matches by predicate.lemma (or predicate.id as fallback).
+    Silently degrades to pass-through when contract is unavailable.
+    """
+    if predicate.entity_id:
+        return predicate
+    index = _load_verb_atom_index()
+    if not index:
+        return predicate
+    key = (predicate.lemma or predicate.id).strip().lower()
+    eid = index.get(key)
+    if eid:
+        return replace(predicate, entity_id=eid)
+    return predicate
 
 
 def atomize(parse: FunctionalParse | None, language: str = "en") -> UolAct | None:
@@ -123,8 +291,11 @@ def atomize(parse: FunctionalParse | None, language: str = "en") -> UolAct | Non
     # Main clause atom from the primary predicate
     main_pred = _extract_predicate(parse, language)
     if main_pred:
+        main_pred = enrich_verb_predicate(main_pred)
         main_roles = _extract_roles(parse, index_to_role, main_pred.id)
+        main_roles = enrich_role_entities(main_roles)
         ctx = _extract_context(parse, index_to_role, language=language)
+        main_modifiers = _extract_modifiers_from_parse(parse, index_to_role)
         main_atom = UolAtom(
             id=_new_id(),
             kind=_atom_kind(main_pred.semantic_class),
@@ -132,15 +303,16 @@ def atomize(parse: FunctionalParse | None, language: str = "en") -> UolAct | Non
             roles=tuple(main_roles),
             context=ctx,
         )
+        main_atom = _attach_modifiers(main_atom, main_modifiers)
         atoms.append(main_atom)
 
     # Complement predicate → separate atom (if different from main)
     if parse.complement_action and parse.complement_action != parse.action:
-        comp_pred = PredicateRef(
+        comp_pred = enrich_verb_predicate(PredicateRef(
             id=parse.complement_action,
             semantic_class=_guess_semantic_class(parse.complement_action),
             language=language,
-        )
+        ))
         comp_roles: list[RoleAssignment] = []
         comp_atom = UolAtom(
             id=_new_id(),
@@ -173,22 +345,70 @@ def atomize_syntax_graph(graph: SyntaxGraph | None) -> UolAct | None:
             root_index = edge.dependent
             break
 
-    predicate = _predicate_from_graph(graph, root_index)
-    roles = _roles_from_graph(graph, root_index)
+    all_indices = set(range(len(graph.lemmas)))
+    causal_markers = _load_causal_link_markers()
+    subordinate_specs: list[tuple[int, dict[str, Any]]] = []
+    for edge in graph.dependencies:
+        if edge.relation != "advcl" or edge.head != root_index:
+            continue
+        subordinate_index = edge.dependent
+        marker_info = None
+        for mark_edge in graph.dependencies:
+            if mark_edge.relation == "mark" and mark_edge.head == subordinate_index:
+                marker_info = causal_markers.get(graph.lemmas[mark_edge.dependent])
+                break
+        if marker_info is None:
+            continue
+        subordinate_specs.append((subordinate_index, marker_info))
+
+    subordinate_indices = set[int]()
+    for subordinate_index, _ in subordinate_specs:
+        subordinate_indices |= _clause_indices(graph, subordinate_index)
+    main_indices = all_indices - subordinate_indices
+
+    predicate = enrich_verb_predicate(_predicate_from_graph(graph, root_index))
+    roles = _roles_from_graph(graph, root_index, main_indices)
+    roles = enrich_role_entities(roles)
     context = _context_from_graph(graph)
-    atom = UolAtom(
+    main_modifiers = _extract_modifiers_from_graph(graph, main_indices)
+    main_atom = UolAtom(
         id=_new_id(),
         kind=_atom_kind(predicate.semantic_class),
         predicate=predicate,
         roles=tuple(roles),
         context=context,
     )
+    main_atom = _attach_modifiers(main_atom, main_modifiers)
+    atoms: list[UolAtom] = [main_atom]
+
+    for subordinate_index, marker_info in subordinate_specs:
+        sub_indices = _clause_indices(graph, subordinate_index)
+        sub_predicate = enrich_verb_predicate(_predicate_from_graph(graph, subordinate_index))
+        sub_roles = _roles_from_graph(graph, subordinate_index, sub_indices)
+        sub_roles = enrich_role_entities(sub_roles)
+        sub_context = _context_from_graph(graph)
+        sub_modifiers = _extract_modifiers_from_graph(graph, sub_indices)
+        sub_atom = UolAtom(
+            id=_new_id(),
+            kind=_atom_kind(sub_predicate.semantic_class),
+            predicate=sub_predicate,
+            roles=tuple(sub_roles),
+            context=sub_context,
+        )
+        sub_atom = _attach_modifiers(sub_atom, sub_modifiers)
+        atoms.append(sub_atom)
+        main_atom, sub_atom = _link_causal_atoms(
+            main_atom, sub_atom, marker_info.get("relation", ""), marker_info.get("introduces", "cause")
+        )
+        atoms[0] = main_atom
+        atoms[-1] = sub_atom
+
     return UolAct(
         id=_new_id(),
         act=_speech_act_from_graph(graph),  # type: ignore[arg-type]
         speaker="user",
         addressee="assistant",
-        content=(atom,),
+        content=tuple(atoms),
         expected_answer_type=_expected_answer_type_from_graph(graph),
     )
 
@@ -299,12 +519,29 @@ def _extract_roles(
     return roles
 
 
-def _roles_from_graph(graph: SyntaxGraph, root_index: int) -> list[RoleAssignment]:
+def _clause_indices(graph: SyntaxGraph, root_index: int) -> set[int]:
+    """Return all token indices syntactically governed by ``root_index``."""
+    indices: set[int] = {root_index}
+    stack = [root_index]
+    while stack:
+        head = stack.pop()
+        for edge in graph.dependencies:
+            if edge.head == head and edge.dependent not in indices:
+                indices.add(edge.dependent)
+                stack.append(edge.dependent)
+    return indices
+
+
+def _roles_from_graph(
+    graph: SyntaxGraph, root_index: int, allowed_indices: set[int]
+) -> list[RoleAssignment]:
     roles: list[RoleAssignment] = []
     root_predicate = _predicate_from_graph(graph, root_index)
     roles.append(RoleAssignment(role="predicate", value=root_predicate.id, confidence=1.0))
+    # Tokens that are clause markers (e.g. "because", "if") should not become roles.
+    marker_indices = {edge.dependent for edge in graph.dependencies if edge.relation == "mark"}
     for index, lemma in enumerate(graph.lemmas):
-        if index == root_index:
+        if index not in allowed_indices or index == root_index or index in marker_indices:
             continue
         entry = function_word_entry(graph.language, lemma)
         role = str(entry.get("role", "")).strip().lower()
@@ -526,6 +763,44 @@ def _guess_semantic_class(action: str) -> str:
             if sc:
                 return sc
     return "unknown"
+
+
+def _link_causal_atoms(
+    main_atom: UolAtom,
+    sub_atom: UolAtom,
+    relation: str,
+    introduces: str,
+) -> tuple[UolAtom, UolAtom]:
+    """Return (main_atom, sub_atom) with causal links populated.
+
+    ``introduces`` is whether the subordinate clause introduced by the marker
+    is the ``cause`` or the ``effect``.
+    """
+    if relation == "causes":
+        if introduces == "cause":
+            # Subordinate causes main.
+            main_atom = replace(main_atom, links=replace(main_atom.links, caused_by=main_atom.links.caused_by + (sub_atom.id,)))
+            sub_atom = replace(sub_atom, links=replace(sub_atom.links, causes=sub_atom.links.causes + (main_atom.id,)))
+        else:
+            # Main causes subordinate.
+            main_atom = replace(main_atom, links=replace(main_atom.links, causes=main_atom.links.causes + (sub_atom.id,)))
+            sub_atom = replace(sub_atom, links=replace(sub_atom.links, caused_by=sub_atom.links.caused_by + (main_atom.id,)))
+    elif relation == "caused_by":
+        if introduces == "cause":
+            # Subordinate is the cause (same as "causes" introduces=cause).
+            main_atom = replace(main_atom, links=replace(main_atom.links, caused_by=main_atom.links.caused_by + (sub_atom.id,)))
+            sub_atom = replace(sub_atom, links=replace(sub_atom.links, causes=sub_atom.links.causes + (main_atom.id,)))
+        else:
+            # Main is the cause of the subordinate.
+            main_atom = replace(main_atom, links=replace(main_atom.links, causes=main_atom.links.causes + (sub_atom.id,)))
+            sub_atom = replace(sub_atom, links=replace(sub_atom.links, caused_by=sub_atom.links.caused_by + (main_atom.id,)))
+    elif relation == "enables":
+        main_atom = replace(main_atom, links=replace(main_atom.links, enables=main_atom.links.enables + (sub_atom.id,)))
+        sub_atom = replace(sub_atom, links=replace(sub_atom.links, enables=sub_atom.links.enables + (main_atom.id,)))
+    elif relation == "prevents":
+        main_atom = replace(main_atom, links=replace(main_atom.links, prevents=main_atom.links.prevents + (sub_atom.id,)))
+        sub_atom = replace(sub_atom, links=replace(sub_atom.links, prevents=sub_atom.links.prevents + (main_atom.id,)))
+    return main_atom, sub_atom
 
 
 def _new_id() -> str:

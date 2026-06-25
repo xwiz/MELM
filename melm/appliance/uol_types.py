@@ -81,6 +81,7 @@ class PredicateRef:
     semantic_class: str          # e.g. "verb.consume", "verb.stative"
     lemma: str = ""              # surface lemma (language-specific)
     language: str = "en"
+    entity_id: str = ""          # verb atom entity_id when enriched
 
 
 @dataclass(frozen=True)
@@ -89,7 +90,21 @@ class RoleAssignment:
 
     role: str                    # agent, patient, theme, experiencer, beneficiary, instrument, location, time, manner, cause, purpose, result
     value: str                   # canonical referent or surface lemma
+    semantic_class: str = ""     # semantic class from lexicon lookup (enriched after atomizer)
+    entity_id: str = ""          # entity store id from noun entity lookup (enriched after atomizer)
     status: RoleStatus = "asserted"
+    confidence: float = 1.0
+
+
+@dataclass(frozen=True)
+class Modifier:
+    """One adjective/adverb/descriptor modifying a role or predicate within an atom."""
+
+    lemma: str
+    target_ref: str = ""           # "predicate" or "role:{index}" e.g. "role:2"
+    semantic_class: str = ""       # enriched from modifier_atoms.v1.json
+    modifier_type: str = ""        # "adjective", "adverb", "intensifier", "negation_adjunct"
+    language: str = "en"
     confidence: float = 1.0
 
 
@@ -131,6 +146,10 @@ class AtomLinks:
     coreferent_atoms: tuple[str, ...] = ()
     entity_refs: tuple[str, ...] = ()
     temporal_anchor: str = ""
+    causes: tuple[str, ...] = ()              # atom IDs this atom causes
+    caused_by: tuple[str, ...] = ()           # atom IDs that cause this atom
+    enables: tuple[str, ...] = ()             # atom IDs this atom enables
+    prevents: tuple[str, ...] = ()            # atom IDs this atom prevents
 
 
 @dataclass(frozen=True)
@@ -141,6 +160,7 @@ class UolAtom:
     kind: AtomKind
     predicate: PredicateRef
     roles: tuple[RoleAssignment, ...] = ()
+    modifiers: tuple[Modifier, ...] = ()
     context: AtomContext = field(default_factory=AtomContext)
     links: AtomLinks = field(default_factory=AtomLinks)
 
@@ -153,15 +173,29 @@ class UolAtom:
                 "semantic_class": self.predicate.semantic_class,
                 "lemma": self.predicate.lemma,
                 "language": self.predicate.language,
+                "entity_id": self.predicate.entity_id,
             },
             "roles": [
                 {
                     "role": r.role,
                     "value": r.value,
+                    "semantic_class": r.semantic_class,
+                    "entity_id": r.entity_id,
                     "status": r.status,
                     "confidence": r.confidence,
                 }
                 for r in self.roles
+            ],
+            "modifiers": [
+                {
+                    "target_ref": m.target_ref,
+                    "lemma": m.lemma,
+                    "semantic_class": m.semantic_class,
+                    "modifier_type": m.modifier_type,
+                    "language": m.language,
+                    "confidence": m.confidence,
+                }
+                for m in self.modifiers
             ],
             "context": {
                 "polarity": self.context.polarity,
@@ -183,6 +217,10 @@ class UolAtom:
                 "coreferent_atoms": list(self.links.coreferent_atoms),
                 "entity_refs": list(self.links.entity_refs),
                 "temporal_anchor": self.links.temporal_anchor,
+                "causes": list(self.links.causes),
+                "caused_by": list(self.links.caused_by),
+                "enables": list(self.links.enables),
+                "prevents": list(self.links.prevents),
             },
         }
 

@@ -47,19 +47,29 @@ class MoralContext:
 
 
 # ---------------------------------------------------------------------------
-# Default sentience map (hardcoded per spec, overridable at call site)
+# Default sentience map (loaded from sentience_map.v1.json, overridable)
 # ---------------------------------------------------------------------------
 
-_DEFAULT_SENTIENCE_MAP: Dict[str, bool] = {
-    "biological_body": True,
-    "person": True,
-    "autonomous_agent": True,
-    "organization": False,
-    "object": False,
-    "concept": False,
-    "place": False,
-    "event": False,
-}
+_SENTIENCE_MAP_CACHE: Optional[Dict[str, bool]] = None
+
+
+def _get_sentience_map() -> Dict[str, bool]:
+    global _SENTIENCE_MAP_CACHE
+    if _SENTIENCE_MAP_CACHE is None:
+        from melm.contracts import load_sentience_map
+        _SENTIENCE_MAP_CACHE = load_sentience_map()
+    return _SENTIENCE_MAP_CACHE
+
+
+_DAMAGE_MARKERS_CACHE: Optional[set] = None
+
+
+def _get_damage_markers() -> set:
+    global _DAMAGE_MARKERS_CACHE
+    if _DAMAGE_MARKERS_CACHE is None:
+        from melm.contracts import load_damage_markers
+        _DAMAGE_MARKERS_CACHE = load_damage_markers()
+    return _DAMAGE_MARKERS_CACHE
 
 
 # ---------------------------------------------------------------------------
@@ -121,7 +131,7 @@ def derive_moral_context(
         return MoralContext()
 
     # --- sentience ------------------------------------------------------------
-    sentient = (sentience_map or _DEFAULT_SENTIENCE_MAP).get(patient_type, False)
+    sentient = (sentience_map or _get_sentience_map()).get(patient_type, False)
 
     # --- collect valences from patient states ---------------------------------
     valences: Dict[str, float] = valence_contract or {}
@@ -264,10 +274,9 @@ def _process_state(
 
 def _has_physical_damage(patient_states: Dict[str, List[str]]) -> bool:
     """Return True when any patient physical state suggests property damage."""
-    damage_markers = {"damage", "break", "destroy", "shatter", "crack",
-                      "bend", "tear", "cut", "scrape", "dent"}
+    markers = _get_damage_markers()
     for raw in patient_states.get("physical", []):
         state = raw.replace("_if_sentient", "")
-        if any(marker in state for marker in damage_markers):
+        if any(marker in state for marker in markers):
             return True
     return False

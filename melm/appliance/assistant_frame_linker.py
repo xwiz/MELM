@@ -3,10 +3,16 @@
 from __future__ import annotations
 
 import json
-from dataclasses import dataclass, field, replace
+from dataclasses import dataclass, field
 from typing import Any
 
-from ..contracts import CONTRACT_ROOT, validate_frame_templates
+from ..contracts import CONTRACT_ROOT, load_noun_atoms, load_verb_atoms, validate_frame_templates
+
+# Module-level cache for entity property lookups (loaded from contract, avoids
+# store seeding dependency). Used by score_atoms() to enrich FrameCandidate
+# slot_states with noun/verb atom properties (§2.4-3b).
+_FRAME_ENTITY_NOUN_CACHE: dict[str, dict[str, Any]] | None = None
+_FRAME_ENTITY_VERB_CACHE: dict[str, dict[str, Any]] | None = None
 
 
 _WEIGHT_REQUIRED = 0.40
@@ -21,13 +27,6 @@ SLOT_STATE_ASKED_BUT_EMPTY = "asked_but_empty"
 SLOT_STATE_UNKNOWN_ENTITY = "unknown_entity"
 SLOT_STATE_UNKNOWN = "unknown"
 SLOT_STATE_INFERRED = "inferred"
-
-
-def enrich_candidate_slot_states(
-    candidate: FrameCandidate,
-    slot_states: dict[str, str],
-) -> FrameCandidate:
-    return replace(candidate, slot_states=slot_states)
 
 
 @dataclass(frozen=True)
@@ -224,6 +223,23 @@ class FrameLinker:
             return _WEIGHT_STRUCTURE
         return 0.0
 
+    @staticmethod
+    def has_causal_links(act_dict: dict) -> bool:
+        """Check if any atom in the UOL act carries AtomLinks.
+
+        Returns True if any atom has non-empty ``causes``, ``caused_by``,
+        ``enables``, or ``prevents`` link fields. Used as a lightweight
+        pre-check before routing to the causal reasoning solver.
+        """
+        content = act_dict.get("content", [])
+        if not content:
+            return False
+        for atom in content:
+            links = atom.get("links") or {}
+            if links.get("causes") or links.get("caused_by") or links.get("enables") or links.get("prevents"):
+                return True
+        return False
+
     def _check_context_gates(
         self,
         token_set: set[str],
@@ -339,6 +355,7 @@ class FrameLinker:
         atom_classes: set[str] = set()
         pred_ids: set[str] = set()
         role_values: set[str] = set()
+        entity_ids_on_roles: set[str] = set()
 
         for atom in content:
             predicate = atom.get("predicate", {})
@@ -359,6 +376,10 @@ class FrameLinker:
                 role_sc = str(role.get("semantic_class", "")).strip().lower()
                 if role_sc:
                     atom_classes.add(role_sc)
+                # Entity ID from noun/verb atom enrichment (§2.4-3b)
+                eid = str(role.get("entity_id", "")).strip()
+                if eid:
+                    entity_ids_on_roles.add(eid)
 
         # Derive speech act flags
         act_type = str(act_dict.get("act", ""))
@@ -371,6 +392,47 @@ class FrameLinker:
         for value in token_set | role_values:
             if value in lexicon:
                 atom_classes.update(lexicon[value])
+
+        # Resolve entity_ids from atom roles to slot values from contract data
+        # (lazy-loaded, store-independent). These enrich FrameCandidate.slot_states
+        # so downstream reasoning (e.g. _detect_causal) can reference entity props.
+        entity_slot_map: dict[str, dict[str, str]] = {}
+        if entity_ids_on_roles:
+            global _FRAME_ENTITY_NOUN_CACHE, _FRAME_ENTITY_VERB_CACHE
+            if _FRAME_ENTITY_NOUN_CACHE is None:
+                noun_payload = load_noun_atoms()
+                _FRAME_ENTITY_NOUN_CACHE = {
+                    e["entity_id"]: e for e in noun_payload.get("entities", [])
+                }
+            if _FRAME_ENTITY_VERB_CACHE is None:
+                _FRAME_ENTITY_VERB_CACHE = load_verb_atoms()
+            for eid in entity_ids_on_roles:
+                entry = _FRAME_ENTITY_VERB_CACHE.get(eid) or _FRAME_ENTITY_NOUN_CACHE.get(eid)
+                if entry is not None:
+                    slots = entry.get("slots", {})
+                    flattened: dict[str, str] = {}
+                    for k, v in slots.items():
+                        if isinstance(v, str):
+                            flattened[k] = v
+                        elif isinstance(v, (int, float)):
+                            flattened[k] = str(v)
+                        elif isinstance(v, list):
+                            flattened[k] = ", ".join(str(x) for x in v)
+                        elif isinstance(v, dict):
+                            continue  # skip complex nested dicts (dimensions, place_context)
+                    if flattened:
+                        entity_slot_map[eid] = flattened
+
+        def _enrich_slot_states(slot_states: dict[str, str]) -> dict[str, str]:
+            """Merge entity property slot values into the given slot_states."""
+            if not entity_slot_map:
+                return slot_states
+            merged = dict(slot_states)
+            for _eid, props in entity_slot_map.items():
+                for k, v in props.items():
+                    if k not in merged:
+                        merged[k] = v
+            return merged
 
         candidates = []
         for fid, tmpl in self._templates.items():
@@ -448,7 +510,67 @@ class FrameLinker:
                         "exclude_penalty": round(exclude_penalty, 4),
                     },
                     threshold=threshold,
+                    slot_states=_enrich_slot_states({}),
                 ))
+
+        # --- Causal link detection ---
+        # If any atom carries AtomLinks (causes / caused_by / enables / prevents),
+        # emit a causal_reasoning FrameCandidate so the pipeline sees a structural
+        # causal signal even without a matching closed-intent template.
+        causal_found = False
+        cause_ids: set[str] = set()
+        effect_ids: set[str] = set()
+        for atom in content:
+            links = atom.get("links") or {}
+            atom_id = (atom.get("predicate") or {}).get("id", "")
+            if not atom_id:
+                continue
+            # Forward links: current atom causes / enables / prevents the target
+            for target in links.get("causes") or []:
+                if isinstance(target, str):
+                    causal_found = True
+                    cause_ids.add(atom_id)
+                    effect_ids.add(target)
+            for target in links.get("enables") or []:
+                if isinstance(target, str):
+                    causal_found = True
+                    cause_ids.add(atom_id)
+                    effect_ids.add(target)
+            for target in links.get("prevents") or []:
+                if isinstance(target, str):
+                    causal_found = True
+                    cause_ids.add(atom_id)
+                    effect_ids.add(target)
+            # Reverse links: current atom is caused_by the source
+            for source in links.get("caused_by") or []:
+                if isinstance(source, str):
+                    causal_found = True
+                    cause_ids.add(source)
+                    effect_ids.add(atom_id)
+
+        if causal_found:
+            slot_states: dict[str, str] = {}
+            sorted_causes = sorted(cause_ids)
+            sorted_effects = sorted(effect_ids)
+            if sorted_causes:
+                slot_states["cause"] = " ".join(sorted_causes)
+            if sorted_effects:
+                slot_states["effect"] = " ".join(sorted_effects)
+            candidates.append(FrameCandidate(
+                frame_id="causal_reasoning",
+                intent="causal_reasoning",
+                score=0.60,
+                score_components={
+                    "causal_links": 0.60,
+                    "required": 0.0,
+                    "optional": 0.0,
+                    "action": 0.0,
+                    "structure": 0.0,
+                    "exclude_penalty": 0.0,
+                },
+                threshold=0.0,
+                slot_states=_enrich_slot_states(slot_states),
+            ))
 
         candidates.sort(key=lambda c: (-c.score, c.frame_id))
         return candidates

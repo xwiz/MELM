@@ -160,6 +160,23 @@ def _make_verbnet_definition(verb: str, vn_class: str) -> str:
     return f"verbnet class {vn_class}: {verb}"
 
 
+# Supersenses reliable enough for active promotion to the routing lexicon.
+# These categories map to concrete, everyday objects — WordNet's supersense
+# assignment is sufficiently accurate for routing purposes.
+_ACTIVE_SUPERSENSES: frozenset[str] = frozenset({
+    "noun.artifact",     # man-made objects (vase, plate, chair, fridge)
+    "noun.object",       # natural objects (rock, cloud, star)
+    "noun.food",         # food items (apple, bread, rice)
+    "noun.substance",    # substances (water, soap, oil)
+    "noun.body",         # body parts (hand, head, arm)
+    "noun.animal",       # animals (dog, cat, bird)
+    "noun.plant",        # plants (tree, flower, grass)
+    "noun.location",     # locations (room, kitchen, garden)
+    "noun.person",       # person types (doctor, teacher, friend)
+    "noun.attribute",    # attributes (color, size, shape)
+})
+
+
 # ── Public API ───────────────────────────────────────────────────────────────
 
 
@@ -175,7 +192,7 @@ def seed_wordnet_supersenses(
     Reads a word→supersense JSONL file, maps each supersense to a MELM
     semantic class via ``wn_supersense_map.v1.json``, and ingests through
     ``lexicon_ingest()`` with ``provenance=wordnet`` and
-    ``suggested_status=dormant``.
+    ``suggested_status=dormant`` (``active`` for ``_ACTIVE_SUPERSENSES``).
     
     Args:
         store: Entity store to seed into.
@@ -208,6 +225,9 @@ def seed_wordnet_supersenses(
             source_ref=f"wordnet:supersense:{supersense}:{word}",
             provenance=provenance,
         )
+        if supersense in _ACTIVE_SUPERSENSES:
+            candidate["suggested_status"] = "active"
+            # confidence_prior stays at 0.85 (WordNet provenance cap)
         try:
             lexicon_ingest(store, candidate, expected_provenance=provenance)
             applied += 1
@@ -353,8 +373,7 @@ def _resolve_max_entries(max_entries: int | None) -> int | None:
 
     The environment variable allows sub-processes (CLI commands) to inherit
     the limit without threading CLI flags through every sub-command.
-    A default of 5000 is used when nothing is specified, preventing
-    multi-minute hangs from very large seed files (e.g. 165k WordNet entries).
+    When not specified, all entries are processed (None = no cap).
     """
     if max_entries is not None:
         return max_entries
@@ -363,8 +382,8 @@ def _resolve_max_entries(max_entries: int | None) -> int | None:
         try:
             return int(env_val)
         except (ValueError, TypeError):
-            return 5000
-    return 5000
+            return None
+    return None
 
 
 def seed_bulk_lexicon(

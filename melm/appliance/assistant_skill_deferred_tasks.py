@@ -12,6 +12,19 @@ from typing import Any
 
 DEFERRED_TASK_CLASS = "deferred_task"
 
+_DEFERRED_TASK_TEMPLATES_CACHE: dict[str, str] | None = None
+
+
+def _load_deferred_task_templates_cached() -> dict[str, str] | None:
+    global _DEFERRED_TASK_TEMPLATES_CACHE
+    if _DEFERRED_TASK_TEMPLATES_CACHE is None:
+        try:
+            from ..contracts.validation import load_deferred_task_templates
+            _DEFERRED_TASK_TEMPLATES_CACHE = load_deferred_task_templates()
+        except Exception:
+            _DEFERRED_TASK_TEMPLATES_CACHE = {}
+    return _DEFERRED_TASK_TEMPLATES_CACHE or None
+
 
 def queue_deferred_task(
     store: Any,
@@ -85,6 +98,16 @@ def surface_task_context(store: Any, task_entity: dict[str, Any]) -> str:
     """Render a deferred task as a natural-language context string."""
     topic = task_entity.get("topic", "something")
     action = task_entity.get("action", "research")
+    templates = _load_deferred_task_templates_cached()
+    if templates:
+        if action == "auto_research":
+            template = templates.get("task_running", "")
+            if template:
+                return template.format(topic=topic)
+        elif action == "novelty_review":
+            template = templates.get("curiosity_surfacing", "")
+            if template:
+                return template.format(surface_form=topic)
     if action == "auto_research":
         return f"I was looking into {topic}."
     elif action == "novelty_review":

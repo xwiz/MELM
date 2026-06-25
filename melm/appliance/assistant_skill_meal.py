@@ -2,11 +2,12 @@
 
 from __future__ import annotations
 
-import re
 from dataclasses import dataclass
 from typing import Any
 
 from melm.contracts import load_food_tags, load_meal_scopes
+from melm.appliance._utils import tokenize as _tokenize
+from .language_adapters import get_adapter
 from .assistant_skill_base import SkillManifest, register_skill
 
 MANIFEST = SkillManifest(
@@ -126,11 +127,10 @@ def _clean_food_name(value: str) -> str:
     return " ".join(str(value).strip().lower().split())
 
 
-def _tokenize(text: str) -> tuple[str, ...]:
-    return tuple(re.findall(r"[a-z0-9']+", text))
-
-
 def _normalize(text: str) -> str:
+    adapter = get_adapter("en")
+    if adapter is not None:
+        return adapter.normalize(adapter.correct(str(text)))
     return " ".join(text.lower().strip().split())
 
 

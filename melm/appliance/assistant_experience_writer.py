@@ -94,6 +94,10 @@ def record_conversation_experience(
         entity_id, "user_id", user_id,
         provenance="experience_writer",
     )
+    store.set_entity_slot(
+        entity_id, "intent", decision.intent,
+        provenance="experience_writer",
+    )
     # Check for novelty candidates and set follow_up if found
     if store is not None:
         try:

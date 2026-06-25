@@ -10,14 +10,40 @@ from .assistant_skill_base import SkillManifest
 MANIFEST = SkillManifest(
     family="story",
     frames=("story",),
-    knowledge_refs=("story_plan_schema.v1", "story_components.v1"),
+    knowledge_refs=("story_plan_schema.v1", "story_components.v1", "lesson_keywords.v1", "literary_device_map.v1"),
 )
 
-_LESSON_KEYWORDS: frozenset[str] = frozenset({
-    "patience", "kindness", "honesty", "bravery", "courage",
-    "friendship", "sharing", "gratitude", "respect", "curiosity",
-    "perseverance", "forgiveness", "generosity", "humility", "wisdom",
-})
+
+def _get_lesson_keywords() -> frozenset[str]:
+    if not hasattr(_get_lesson_keywords, "_cache"):
+        try:
+            from melm.contracts import load_lesson_keywords
+            _get_lesson_keywords._cache = frozenset(load_lesson_keywords())
+        except Exception:
+            _get_lesson_keywords._cache = frozenset({
+                "patience", "kindness", "honesty", "bravery", "courage",
+                "friendship", "sharing", "gratitude", "respect", "curiosity",
+                "perseverance", "forgiveness", "generosity", "humility", "wisdom",
+            })
+    return _get_lesson_keywords._cache
+
+
+def _get_literary_device_map() -> dict[str, Any]:
+    if not hasattr(_get_literary_device_map, "_cache"):
+        try:
+            from melm.contracts import load_literary_device_map
+            _get_literary_device_map._cache = load_literary_device_map()
+        except Exception:
+            _get_literary_device_map._cache = {
+                "lesson_device_groups": {
+                    "proverb": ["patience", "kindness", "honesty", "gratitude", "humility", "wisdom"],
+                    "riddle": ["curiosity", "bravery", "perseverance"],
+                    "poem": ["courage"],
+                },
+                "theme_default_device": "riddle",
+                "default_device": "proverb",
+            }
+    return _get_literary_device_map._cache
 
 
 @dataclass
@@ -90,12 +116,13 @@ def plan_story(
 
 def _extract_lesson(utterance: str, functional_parse: dict[str, Any] | None) -> str:
     lower = utterance.lower()
-    for word in _LESSON_KEYWORDS:
+    keywords = _get_lesson_keywords()
+    for word in keywords:
         if word in lower:
             return word
     if functional_parse:
         obj = (functional_parse.get("object") or "").lower()
-        for word in _LESSON_KEYWORDS:
+        for word in keywords:
             if word in obj:
                 return word
     return "kindness"
@@ -104,7 +131,8 @@ def _extract_lesson(utterance: str, functional_parse: dict[str, Any] | None) -> 
 def _extract_themes(utterance: str, functional_parse: dict[str, Any] | None) -> tuple[str, ...]:
     lower = utterance.lower()
     themes: set[str] = set()
-    for word in _LESSON_KEYWORDS:
+    keywords = _get_lesson_keywords()
+    for word in keywords:
         if word in lower:
             themes.add(word)
     if functional_parse:
@@ -136,18 +164,17 @@ def _determine_length(utterance: str, age: int) -> str:
 
 
 def _select_literary_devices(lesson: str, themes: tuple[str, ...], culture: str) -> tuple[str, ...]:
+    device_map = _get_literary_device_map()
+    groups = device_map.get("lesson_device_groups", {})
     devices: list[str] = []
-    if lesson in ("patience", "kindness", "honesty", "gratitude", "humility", "wisdom"):
-        devices.append("proverb")
-    if lesson in ("curiosity", "bravery", "perseverance"):
-        devices.append("riddle")
-    if lesson == "courage":
-        devices.append("poem")
+    for device, lessons in groups.items():
+        if lesson in lessons:
+            devices.append(device)
     if "adventure" in themes and not devices:
-        devices.append("riddle")
+        devices.append(device_map.get("theme_default_device", "riddle"))
     if culture and culture != "general":
         devices.append("proverb")
-    return tuple(sorted(set(devices))) or ("proverb",)
+    return tuple(sorted(set(devices))) or (device_map.get("default_device", "proverb"),)
 
 
 def _compute_mood_tone(valence: float, arousal: float) -> str:

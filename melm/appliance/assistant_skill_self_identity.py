@@ -8,12 +8,21 @@ from __future__ import annotations
 
 import json
 from dataclasses import dataclass, field
-from datetime import datetime, timezone
+from datetime import datetime, timedelta, timezone
 from typing import Any
 
 from melm.contracts import load_self_identity
+from .assistant_skill_base import SkillManifest, register_skill
 
 _SELF_IDENTITY_CONTRACT: dict[str, Any] | None = None
+
+MANIFEST = SkillManifest(
+    family="assistant_identity",
+    frames=("assistant_identity",),
+    knowledge_refs=("melm.self_identity.v1",),
+    template_refs={"identity": "melm.self_identity.v1"},
+)
+register_skill(MANIFEST)
 
 
 def _get_self_identity_contract() -> dict[str, Any]:
@@ -45,7 +54,10 @@ def analyze_user_identity(
     days: int = 30,
 ) -> DerivedIdentity | None:
     contract = _get_self_identity_contract()
-    min_data_points = contract.get("min_data_points", 3)
+    min_data_points = int(contract.get("min_data_points", 3))
+    window_days = int(days or contract.get("analysis_window_days", 30))
+    cutoff = datetime.now(timezone.utc) - timedelta(days=window_days)
+    identity_labels = contract.get("identity_labels", {})
 
     entities = store.find_entities(kind="personal_experience")
 
@@ -53,21 +65,24 @@ def analyze_user_identity(
     count_by_intent: dict[str, int] = {}
 
     for entity in entities:
+        created_at = _parse_iso_datetime(getattr(entity, "created_at", ""))
+        if created_at is not None and created_at < cutoff:
+            continue
         uid_slot = store.get_entity_slot(entity.entity_id, "user_id")
         if uid_slot is None:
             continue
-        uid = json.loads(uid_slot.value_json)
-        if uid != user_id:
+        uid = _loads_slot(uid_slot.value_json, default="")
+        if str(uid) != str(user_id):
             continue
 
-        if "turn: " not in entity.label:
+        intent = _intent_for_entity(store, entity)
+        if intent is None or intent not in identity_labels:
             continue
-        intent = entity.label.split("turn: ", 1)[1]
 
         pol_slot = store.get_entity_slot(entity.entity_id, "polarity")
         if pol_slot is not None:
-            polarity = json.loads(pol_slot.value_json)
-            if isinstance(polarity, (int, float)):
+            polarity = _coerce_float(_loads_slot(pol_slot.value_json, default=None))
+            if polarity is not None:
                 polarity_by_intent.setdefault(intent, []).append(float(polarity))
 
         count_by_intent[intent] = count_by_intent.get(intent, 0) + 1
@@ -81,9 +96,17 @@ def analyze_user_identity(
     for intent, vals in polarity_by_intent.items():
         per_intent_mean_polarities[intent] = sum(vals) / len(vals) if vals else 0.0
 
+    reliable_intents = {
+        intent
+        for intent, count in per_intent_counts.items()
+        if count >= min_data_points
+    }
+    if not reliable_intents:
+        return None
+
     intents_with_polarity = [
         (intent, per_intent_mean_polarities.get(intent, 0.0))
-        for intent in per_intent_counts
+        for intent in reliable_intents
     ]
     intents_with_polarity.sort(key=lambda x: (-x[1], -per_intent_counts[x[0]], x[0]))
     highest_meaning_intent = intents_with_polarity[0][0]
@@ -105,8 +128,11 @@ def analyze_user_identity(
     top_intent_mean_polarity = per_intent_mean_polarities.get(top_intent, 0.0)
 
     state = store.load_self_state()
-    has_name = bool(state.get("has_name", False))
-    given_name = state.get("given_name", None)
+    has_name = bool(state.get(f"has_name:{user_id}", False))
+    given_name = state.get(f"given_name:{user_id}", None)
+    if user_id == "default" and not has_name:
+        has_name = bool(state.get("has_name", False))
+        given_name = state.get("given_name", None)
 
     return DerivedIdentity(
         user_id=user_id,
@@ -160,8 +186,11 @@ def derive_identity_explanation(
     if template is None:
         return None
 
-    count = identity.top_intent_count
-    polarity = identity.top_intent_mean_polarity
+    count = identity.per_intent_counts.get(identity.highest_meaning_intent, 0)
+    polarity = identity.per_intent_mean_polarities.get(
+        identity.highest_meaning_intent,
+        identity.highest_meaning_polarity,
+    )
     formatted_polarity = f"{polarity:+0.1f}"
 
     return template.format(frame=frame, count=count, polarity=formatted_polarity)
@@ -183,5 +212,52 @@ def get_name_awareness_template(
     if entry is None:
         return None
     label = entry.get("label", "")
+    frame = entry.get("frame", "")
+    given_name = identity.given_name or ""
 
-    return template.format(label=label)
+    return template.format(label=label, frame=frame, given_name=given_name)
+
+
+def _loads_slot(raw: str, *, default: Any) -> Any:
+    try:
+        return json.loads(raw)
+    except (json.JSONDecodeError, TypeError):
+        return default
+
+
+def _parse_iso_datetime(raw: str) -> datetime | None:
+    if not raw:
+        return None
+    try:
+        normalized = raw.replace("Z", "+00:00")
+        parsed = datetime.fromisoformat(normalized)
+    except ValueError:
+        return None
+    if parsed.tzinfo is None:
+        return parsed.replace(tzinfo=timezone.utc)
+    return parsed.astimezone(timezone.utc)
+
+
+def _coerce_float(value: Any) -> float | None:
+    if isinstance(value, (int, float)):
+        return float(value)
+    if isinstance(value, str):
+        try:
+            return float(value)
+        except ValueError:
+            return None
+    return None
+
+
+def _intent_for_entity(store: Any, entity: Any) -> str | None:
+    slot = store.get_entity_slot(entity.entity_id, "intent")
+    if slot is not None:
+        value = _loads_slot(slot.value_json, default="")
+        intent = str(value).strip()
+        if intent:
+            return intent
+    label = str(getattr(entity, "label", ""))
+    if label.lower().startswith("turn:"):
+        intent = label.split(":", 1)[1].strip()
+        return intent or None
+    return None

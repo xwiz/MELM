@@ -18,6 +18,7 @@ from dataclasses import dataclass, field
 from typing import Any, Protocol
 
 from .assistant_authority import AnswerPlan, DecoderResult
+from .assistant_decoder_atom import build_atom_backend
 from .assistant_decoder_llama_cpp import LlamaCppBackend
 
 
@@ -32,6 +33,8 @@ class DecodingGrammar:
       max_tokens            — maximum generation length
       template_hint         — template answer as generation seed
       mood                  — output tone (neutral, narrative, factual, refusal)
+      uol_act               — serialized UolAct dict for atom-aware backends
+      intent                — intent string for atom-aware template resolution
     """
     allowed_entities: tuple[str, ...] = ()
     required_constraints: tuple[str, ...] = ()
@@ -39,6 +42,8 @@ class DecodingGrammar:
     max_tokens: int = 256
     template_hint: str = ""
     mood: str = "neutral"
+    uol_act: dict | None = None
+    intent: str = ""
 
 
 class DecoderBackend(Protocol):
@@ -66,6 +71,7 @@ class ConstrainedDecoder:
 
     def _register_defaults(self) -> None:
         self.register(TemplateBackend())
+        self.register(build_atom_backend())
 
     @property
     def available(self) -> tuple[str, ...]:
@@ -84,8 +90,17 @@ class ConstrainedDecoder:
         plan: AnswerPlan,
         grammar: DecodingGrammar,
     ) -> DecoderResult | None:
-        """Try preferred backend first, then all others in registration order."""
+        """Try preferred backend first, then all others in registration order.
+
+        When the grammar carries a UOL act, promote the atom backend ahead
+        of template so that atom-aware generation is preferred over the
+        zero-dep template hint.
+        """
         ordered = [self._preferred] if self._preferred in self._backends else []
+        # Promote atom ahead of template when UOL is available.
+        if grammar.uol_act is not None and "atom" in self._backends:
+            ordered = [n for n in ordered if n != "atom"]
+            ordered.insert(0, "atom")
         ordered.extend(n for n in self._backends if n not in ordered)
         for name in ordered:
             backend = self._backends.get(name)
@@ -117,6 +132,8 @@ def build_decoding_grammar(
     plan: AnswerPlan,
     template_hint: str = "",
     allowed_entities: tuple[str, ...] = (),
+    uol_act: dict | None = None,
+    intent: str = "",
 ) -> DecodingGrammar:
     """Build a DecodingGrammar from an AnswerPlan and synthesis context."""
     return DecodingGrammar(
@@ -125,4 +142,6 @@ def build_decoding_grammar(
         prohibited_tokens=plan.forbids,
         template_hint=template_hint,
         mood=plan.mode,
+        uol_act=uol_act,
+        intent=intent,
     )
