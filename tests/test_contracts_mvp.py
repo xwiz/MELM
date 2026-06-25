@@ -314,6 +314,8 @@ class ContractMvpTests(unittest.TestCase):
             if not expected:
                 continue
             content = (CONTRACT_ROOT / path).read_bytes()
+            # Normalize CRLF to LF for cross-platform hash compatibility
+            content = content.replace(b"\r\n", b"\n")
             actual = hashlib.sha256(content).hexdigest()[:16]
             if actual != expected:
                 failures.append(f"{cid}: computed={actual!r} expected={expected!r}")

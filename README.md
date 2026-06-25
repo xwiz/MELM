@@ -1,6 +1,8 @@
-# MELM — Morphological Emotion Language Model
+# MELM — Morphological Event Language Model
 
 **A zero-dependency local assistant OS that understands meaning, not just keywords. Runs on anything from a Raspberry Pi to a laptop — no GPU, no ML framework, no cloud, no vector database.**
+
+> **Why "Event"?** The system's entity architecture is organized around events — every utterance, conversation, personal experience, and causal relation is stored as a typed event entity (`event_instance`, `personal_experience`, etc.). The three-timescale meaning model (utterance → conversation → history) aggregates events across time.
 
 ```powershell
 # bootstrap runtime database (one-time)
@@ -10,7 +12,7 @@ python -m melm bootstrap-runtime --reset --json
 python -m melm chat
 
 # one-shot
-python -m melm ask --utterance "Tell me a story."
+python -m melm ask --utterance "Hello there."
 
 # browser UI at http://127.0.0.1:8771  mood-driven face + Web Audio tones
 python -m melm serve
