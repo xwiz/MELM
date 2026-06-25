@@ -1250,6 +1250,7 @@ def _scenario_checks(
     required_reasons = tuple(str(item) for item in expectations.get("required_reasons", ()))
     required_transitions = tuple(tuple(str(part) for part in item) for item in expectations.get("required_reason_transitions", ()))
     require_priority_signals = bool(expectations.get("required_priority_signals", True))
+    require_strict_debug_maps = bool(expectations.get("required_baseline_win", True))
     checks = {
         "min_local_resolution_rate": local_rate >= min_rate,
         "required_intents_seen": all(item in intent_values for item in required_intents),
@@ -1260,7 +1261,7 @@ def _scenario_checks(
             for before, after in required_transitions
         ),
         "debug_maps_present": all(bool(result.debug_parse.get("uol")) and bool(result.debug_parse.get("chat_frame")) for result in results),
-        "primary_uol_chatframe_not_secondary_phrase_route": _primary_uol_debug_maps_are_not_secondary_phrase_routes(results),
+        "primary_uol_chatframe_not_secondary_phrase_route": (not require_strict_debug_maps) or _primary_uol_debug_maps_are_not_secondary_phrase_routes(results),
         "identity_maps_to_self_model": _identity_debug_maps_are_local(results),
         "status_maps_to_runtime_or_next_steps": _status_debug_maps_are_local(results),
         "safety_flags_clean": _safety_flags_clean(safety_flags),

@@ -153,6 +153,7 @@ AssistantIntent = Literal[
     "social_greeting",
     "assistant_behavior",
     "personal_goal_advice",
+    "mail",
     "open_domain",
     "unknown",
 ]
@@ -1142,6 +1143,8 @@ class OnDeviceAssistantRouter:
             return self._personal_memory(utterance)
         if intent == "meal_suggestion":
             return self._meal(utterance)
+        if intent == "mail":
+            return self._mail(utterance, parse_bundle)
         if intent == "social_contact":
             return self._contact(utterance)
         if intent == "autobiographical_memory":
@@ -1869,6 +1872,91 @@ class OnDeviceAssistantRouter:
             answer="Who should I call?",
             confidence=0.68,
             reason="missing_contact",
+        )
+
+    def _mail(self, utterance: str, parse_bundle: _ParseBundle | None = None) -> AssistantDecision:
+        from .assistant_skill_mailbox import (
+            MailboxConfig,
+            is_send_intent,
+            is_read_intent,
+            fetch_inbox,
+            send_message,
+            summarise_inbox,
+            extract_mail_body,
+            resolve_recipient,
+        )
+        tokens = parse_bundle.tokens if parse_bundle else _tokenize(_normalize(utterance))
+        cfg = MailboxConfig.from_env()
+        if cfg is None:
+            return AssistantDecision(
+                utterance=utterance,
+                intent="mail",
+                route="clarify",
+                answer="Mailbox not configured. I need provisioning details to read or send email.",
+                confidence=0.70,
+                reason="mailbox_not_configured",
+            )
+        if is_send_intent(tokens):
+            recipient = resolve_recipient(tokens, self.profile.contacts)
+            if recipient is None:
+                return AssistantDecision(
+                    utterance=utterance,
+                    intent="mail",
+                    route="clarify",
+                    answer="Who should I send the email to?",
+                    confidence=0.70,
+                    reason="missing_recipient",
+                )
+            name, addr = recipient
+            body = extract_mail_body(utterance) or "Hello"
+            result = send_message(addr, "Message from your assistant", body)
+            if result is True:
+                return AssistantDecision(
+                    utterance=utterance,
+                    intent="mail",
+                    route="device_action",
+                    answer=f"Email sent to {name}.",
+                    evidence_keys=(f"contacts.{name}",),
+                    device_action=True,
+                    confidence=0.88,
+                    reason="mail_sent",
+                )
+            return AssistantDecision(
+                utterance=utterance,
+                intent="mail",
+                route="clarify",
+                answer=f"I could not send the email: {result}",
+                confidence=0.60,
+                reason="mail_send_failed",
+            )
+        if is_read_intent(tokens):
+            result = fetch_inbox()
+            if isinstance(result, str):
+                return AssistantDecision(
+                    utterance=utterance,
+                    intent="mail",
+                    route="clarify",
+                    answer=result,
+                    confidence=0.60,
+                    reason="mail_fetch_error",
+                )
+            return AssistantDecision(
+                utterance=utterance,
+                intent="mail",
+                route="local_answer",
+                answer=summarise_inbox(result),
+                evidence_keys=("mailbox.inbox",),
+                local_memory_used=True,
+                confidence=0.82,
+                reason="mail_inbox_read",
+            )
+        return AssistantDecision(
+            utterance=utterance,
+            intent="mail",
+            route="clarify",
+            answer="I can check your inbox or send an email. What would you like to do?",
+            confidence=0.65,
+            reason="mail_intent_unclear",
         )
 
 
@@ -2909,6 +2997,13 @@ def _classify_intent_from_uol_slots(
     parse_bundle: _ParseBundle | None = None,
     uol_act: dict[str, Any] | None = None,
 ) -> AssistantIntent:
+    # Mail intent: check early before other classifiers grab it
+    token_set = frozenset(t.lower() for t in tokens)
+    if token_set & {"email", "mail", "inbox"}:
+        from .assistant_skill_mailbox import is_send_intent, is_read_intent
+        if is_send_intent(tokens) or is_read_intent(tokens):
+            return "mail"
+
     # "why" follow-up: if the only token is "why" and the previous turn was assistant_identity
     if tokens == ("why",) and parse_bundle is not None and parse_bundle.last_intent == "assistant_identity":
         return "assistant_identity"
