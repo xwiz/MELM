@@ -3,6 +3,21 @@
   "$id": "melm.answer_templates.v1",
   "schema_id": "melm.answer_templates.v1",
   "intents": {
+    "open_domain": {
+      "templates": {
+        "local_handoff": "{default_answer}",
+        "learned_answer": "{default_answer}"
+      }
+    },
+    "music_discovery": {
+      "template": "{default_answer}"
+    },
+    "media_playback": {
+      "templates": {
+        "cancelled_pending_action": "Cancelled. I will not play {title} now. There is no pending media action left to execute unless you ask again."
+      },
+      "requires_evidence": ["preference"]
+    },
     "weather": {
       "template": "Today in {place}: {weather}. That is the cached local forecast for today. For exact timing, I should refresh the weather cache.",
       "requires_evidence": ["weather"]
@@ -18,14 +33,14 @@
     },
     "autobiographical_memory": {
       "templates": {
-        "autobiographical_memory_digest": "From local conversation memory: {summary}.",
-        "autobiographical_session_summary": "From local conversation memory: {summary}.",
-        "autobiographical_memory_summary": "From local conversation memory: {summary}."
+        "default": "From local conversation memory: {summary}."
       }
     },
     "personal_memory": {
       "templates": {
-        "personal_memory_summary": "I know this from local memory: {summary}."
+        "knowledge_write": "{default_answer}",
+        "knowledge_contradiction": "{default_answer}",
+        "default": "I know this from local memory: {personal_summary}."
       }
     },
     "media_playback": {
@@ -72,5 +87,38 @@
       "bonus": 0.3
     }
   ],
+  "reasoning_templates": {
+    "causal_explanation": {
+      "single_cause": "{theme_prefix}{effect} means {state_definition}. A likely cause is {selected_cause}.",
+      "multi_cause": "{theme_prefix}{effect} means {state_definition}. Likely causes include {candidate_causes}.",
+      "unknown": "I do not have a local causal explanation for {effect}."
+    },
+    "causal_prediction": {
+      "effects": "If {cause_phrase} happens, likely effects include {effects}. Some of these effects mean {selected_definitions}.",
+      "unknown": "I do not have enough local causal knowledge to predict what {cause} would lead to."
+    },
+    "causal_contrast": {
+      "contrast": "If {cause_a} happens, likely effects include {effects_a}. In contrast, if {cause_b} happens, likely effects include {effects_b}.",
+      "unknown": "I do not have enough local causal knowledge to compare {cause_a} vs {cause_b}."
+    },
+    "geo_decision": {
+      "walk": "At {distance_text}, that is close — walk.",
+      "drive": "At {distance_text}, that is a drive.",
+      "drive_with_purpose": "It is only {distance_text} away, so by distance I would say walk — but {note}, so drive."
+    },
+    "temporal": {
+      "time": "It is {display}.",
+      "date_today": "Today is {display}.",
+      "absolute_date": "{display} {verb} a {weekday}.",
+      "day_offset_ago": "{magnitude} {unit} ago it was {weekday} ({date}).",
+      "day_offset_from_now": "In {magnitude} {unit} it will be {weekday} ({date})."
+    },
+    "metalinguistic_count": {
+      "count": "There are {count_word} \"{char}\"{plural} in \"{word}\"."
+    },
+    "quantity_arithmetic": {
+      "result": "{value_str} {noun}."
+    }
+  },
   "_note": "Answer response templates keyed by intent. Templates with a 'reason_gate' only apply when decision.reason matches. Templates without a reason_gate apply unconditionally (when not handled by a registered handler). The '!urgent_health_safety_escalation' prefix means 'reason is NOT that value'."
 }

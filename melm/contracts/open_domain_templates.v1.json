@@ -2,6 +2,48 @@
   "$schema": "https://json-schema.org/draft/2020-12/schema",
   "$id": "melm.open_domain_templates.v1",
   "schema_id": "melm.open_domain_templates.v1",
+  "speech_act_templates": {
+    "wh_question": {
+      "handoff": "That is a good question. I do not have information about {topic} locally, but I can look it up.",
+      "learned": "Here is what I found about {topic}: {summary}",
+      "unknown": "I am not sure what {topic} is. I can try to learn about it."
+    },
+    "yes_no_question": {
+      "handoff": "I am not sure about {topic}. Let me search for the answer.",
+      "learned": "Regarding {topic}: {summary}",
+      "unknown": "I do not have enough information about {topic} to answer that yet."
+    },
+    "request": {
+      "handoff": "I understand you want to {action} something about {topic}. I will need to look that up.",
+      "learned": "I found information about {topic}: {summary}",
+      "unknown": "I cannot {action} about {topic} right now, but I can try to learn."
+    },
+    "command": {
+      "handoff": "I understand you want to {action} {topic}. Let me work on that.",
+      "learned": "For {topic}: {summary}",
+      "unknown": "I am not able to {action} {topic} right now."
+    },
+    "statement": {
+      "handoff": "You mentioned {topic}. I do not have information about that locally.",
+      "learned": "Regarding what you said about {topic}: {summary}",
+      "unknown": "I do not have information about {topic} yet."
+    },
+    "claim": {
+      "handoff": "You mentioned {topic}. I do not have information about that locally.",
+      "learned": "Regarding what you said about {topic}: {summary}",
+      "unknown": "I do not have information about {topic} yet."
+    },
+    "greeting": {
+      "handoff": "Hello! I am not sure what you are asking about {topic}, but I can try to help.",
+      "learned": "Hello! I found this about {topic}: {summary}",
+      "unknown": "Hi! I do not have information about {topic} yet."
+    },
+    "default": {
+      "handoff": "You asked about {topic}. I do not have that information locally, so I will need to look it up.",
+      "learned": "You asked about {topic}. This is what I found: {summary}",
+      "unknown": "I understood you want to {action} something about {topic}, but I do not have that information yet."
+    }
+  },
   "intents": {
     "open_domain": {
       "templates": {
@@ -20,5 +62,5 @@
       "requires_evidence": ["learned_fact"]
     }
   },
-  "_note": "Fallback templates for open_domain and unknown intents. Slot {action} may be empty; slot {topic} must be present. The 'acknowledge_and_learned' template is selected when a learned_fact evidence item is present."
+  "_note": "Fallback templates for open_domain and unknown intents. The 'speech_act_templates' section provides varied responses keyed by functional-parse speech_act type. Slot {action} may be empty; slot {topic} must be present. The 'learned' template variant is selected when a learned_fact evidence item is present."
 }

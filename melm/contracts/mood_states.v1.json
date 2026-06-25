@@ -12,11 +12,11 @@
     {"mood_id": "sad",        "valence": -0.60, "arousal": 0.10, "response_mode": "soft",       "engagement_floor": 0.10}
   ],
   "response_modes": {
-    "normal":     {"max_words": 40, "can_ask": true,  "can_withhold": false},
-    "engaged":    {"max_words": 55, "can_ask": true,  "can_withhold": false},
-    "warm":       {"max_words": 50, "can_ask": true,  "can_withhold": false},
-    "expressive": {"max_words": 60, "can_ask": true,  "can_withhold": false},
-    "gentle":     {"max_words": 45, "can_ask": true,  "can_withhold": false},
+    "normal":     {"max_words": 60, "can_ask": true,  "can_withhold": false},
+    "engaged":    {"max_words": 80, "can_ask": true,  "can_withhold": false},
+    "warm":       {"max_words": 75, "can_ask": true,  "can_withhold": false},
+    "expressive": {"max_words": 100, "can_ask": true,  "can_withhold": false},
+    "gentle":     {"max_words": 60, "can_ask": true,  "can_withhold": false},
     "withdrawn":  {"max_words": 10, "can_ask": false, "can_withhold": true},
     "terse":      {"max_words": 8,  "can_ask": false, "can_withhold": true},
     "vulnerable": {"max_words": 15, "can_ask": true,  "can_withhold": true},

@@ -13,7 +13,7 @@
     "assistant_identity:neutral:first:new:*:generic": ["I am MELM Local Assistant OS. I run local-first on this device."],
     "assistant_identity:neutral:few:established:*:generic": ["Still MELM. Same device. What do you need?"],
     "assistant_identity:annoyed:many:*:*:generic": ["You already know who I am. What is this about?"],
-    "assistant_identity:hurt:*:longterm:*:generic": ["...I'm still here. Did I do something wrong?"],
+    "assistant_identity:hurt:*:longterm:*:generic": ["I'm still MELM, and I'm here to help."],
     "complaint_response:*:*:*:*:generic": ["I hear you. Let me try again — what specifically do you need?", "Understood. I want to get this right. What would be a good answer here?"],
     "perception_followup:*:*:*:*:sensory.smoke": ["That sounds unusual. Are you safe right now?"],
     "perception_followup:*:*:*:*:sensory.fire": ["That sounds dangerous. Are you in a safe place?"],

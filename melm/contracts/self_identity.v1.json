@@ -58,7 +58,7 @@
     "neutral": "I don't have a real name yet. But based on our journey so far — the things you've asked me to do — I think of myself as {label}.",
     "happy": "From what we've shared together, I feel like {label}. It makes sense given what we do most together.",
     "annoyed": "If I had to describe myself based on what we do together... {label}. That's who I am right now.",
-    "hurt": "...I still see myself as {label}. Even now.",
+    "hurt": "Even when the conversation feels rough, I still describe my role with you as {label}.",
     "curious": "I've been thinking about this. Based on our conversations, I'd describe myself as {label}.",
     "excited": "From everything we've shared, I see myself as {label}. And I'm excited about that.",
     "calm": "When I reflect on what we do together, I'd describe myself as {label}. That feels right.",
@@ -68,8 +68,11 @@
   },
   "name_awareness_templates": {
     "no_name": "I don't have a real name yet, but from our journey, you could call me {label}.",
-    "has_name": "You've given me a name. But from what we've shared, I still feel like {label} at heart.",
+    "has_name": "You've given me the name {given_name}. From what we've shared, I still feel like {label} at heart.",
+    "given_name": "You can call me {given_name}. That's the name you gave me.",
     "name_suggestion": "Based on our chat together, you could call me {label}. That's what feels right from what we've done.",
-    "why": "You asked me to {frame} {count} times. Each time, the engagement was meaningful (average {polarity}). That's what shaped how I see myself."
+    "name_origin": "I don't name myself at runtime. My technical label comes from the local assistant configuration, and any friendly name comes from you.",
+    "why": "We spent {count} turn(s) on {frame}, with average engagement {polarity}. That's what shaped how I describe my role with you.",
+    "explain_fallback": "I describe myself from our local interaction history: what you ask for, how often it comes up, and whether those turns seem to go well."
   }
 }

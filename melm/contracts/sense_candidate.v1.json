@@ -35,6 +35,7 @@
             "user_taught",
             "offline_dictionary",
             "cloud_lookup",
+            "auto_research",
             "inferred"
           ]
         },

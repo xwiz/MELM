@@ -1,6 +1,6 @@
 {
   "schema_id": "melm.world_relations.v1",
-  "version": "1.0.0",
+  "version": "1.1.0",
   "predicate_to_relation": {
     "be": {
       "pattern": "copula",
@@ -20,6 +20,221 @@
     "have": {
       "pattern": "possessive",
       "relation_id": "has",
+      "confidence": 0.7
+    },
+    "own": {
+      "pattern": "possessive",
+      "relation_id": "owns",
+      "confidence": 0.7
+    },
+    "possess": {
+      "pattern": "possessive",
+      "relation_id": "possesses",
+      "confidence": 0.7
+    },
+    "contain": {
+      "pattern": "compositional",
+      "relation_id": "contains",
+      "confidence": 0.75
+    },
+    "include": {
+      "pattern": "compositional",
+      "relation_id": "includes",
+      "confidence": 0.75
+    },
+    "consist": {
+      "pattern": "compositional",
+      "relation_id": "consists_of",
+      "confidence": 0.7
+    },
+    "make": {
+      "pattern": "creation",
+      "relation_id": "makes",
+      "confidence": 0.7
+    },
+    "create": {
+      "pattern": "creation",
+      "relation_id": "creates",
+      "confidence": 0.7
+    },
+    "build": {
+      "pattern": "creation",
+      "relation_id": "builds",
+      "confidence": 0.7
+    },
+    "produce": {
+      "pattern": "creation",
+      "relation_id": "produces",
+      "confidence": 0.7
+    },
+    "cause": {
+      "pattern": "causal",
+      "relation_id": "causes",
+      "confidence": 0.75
+    },
+    "lead": {
+      "pattern": "causal",
+      "relation_id": "leads_to",
+      "confidence": 0.7
+    },
+    "result": {
+      "pattern": "causal",
+      "relation_id": "results_in",
+      "confidence": 0.7
+    },
+    "use": {
+      "pattern": "instrumental",
+      "relation_id": "uses",
+      "confidence": 0.7
+    },
+    "operate": {
+      "pattern": "functional",
+      "relation_id": "operates",
+      "confidence": 0.65
+    },
+    "work": {
+      "pattern": "functional",
+      "relation_id": "works",
+      "confidence": 0.6
+    },
+    "change": {
+      "pattern": "transformation",
+      "relation_id": "changes",
+      "confidence": 0.7
+    },
+    "transform": {
+      "pattern": "transformation",
+      "relation_id": "transforms",
+      "confidence": 0.7
+    },
+    "convert": {
+      "pattern": "transformation",
+      "relation_id": "converts",
+      "confidence": 0.7
+    },
+    "move": {
+      "pattern": "motion",
+      "relation_id": "moves",
+      "confidence": 0.7
+    },
+    "transfer": {
+      "pattern": "motion",
+      "relation_id": "transfers",
+      "confidence": 0.7
+    },
+    "destroy": {
+      "pattern": "destruction",
+      "relation_id": "destroys",
+      "confidence": 0.7
+    },
+    "break": {
+      "pattern": "destruction",
+      "relation_id": "breaks",
+      "confidence": 0.7
+    },
+    "damage": {
+      "pattern": "destruction",
+      "relation_id": "damages",
+      "confidence": 0.7
+    },
+    "help": {
+      "pattern": "assistance",
+      "relation_id": "helps",
+      "confidence": 0.65
+    },
+    "support": {
+      "pattern": "assistance",
+      "relation_id": "supports",
+      "confidence": 0.65
+    },
+    "need": {
+      "pattern": "necessity",
+      "relation_id": "needs",
+      "confidence": 0.65
+    },
+    "require": {
+      "pattern": "necessity",
+      "relation_id": "requires",
+      "confidence": 0.65
+    },
+    "know": {
+      "pattern": "cognitive",
+      "relation_id": "knows",
+      "confidence": 0.65
+    },
+    "like": {
+      "pattern": "preference",
+      "relation_id": "likes",
+      "confidence": 0.65
+    },
+    "love": {
+      "pattern": "preference",
+      "relation_id": "loves",
+      "confidence": 0.65
+    },
+    "hate": {
+      "pattern": "aversion",
+      "relation_id": "hates",
+      "confidence": 0.65
+    },
+    "begin": {
+      "pattern": "temporal",
+      "relation_id": "begins",
+      "confidence": 0.6
+    },
+    "start": {
+      "pattern": "temporal",
+      "relation_id": "starts",
+      "confidence": 0.6
+    },
+    "stop": {
+      "pattern": "temporal",
+      "relation_id": "stops",
+      "confidence": 0.6
+    },
+    "finish": {
+      "pattern": "temporal",
+      "relation_id": "finishes",
+      "confidence": 0.6
+    },
+    "continue": {
+      "pattern": "temporal",
+      "relation_id": "continues",
+      "confidence": 0.6
+    },
+    "say": {
+      "pattern": "communication",
+      "relation_id": "says",
+      "confidence": 0.65
+    },
+    "tell": {
+      "pattern": "communication",
+      "relation_id": "tells",
+      "confidence": 0.65
+    },
+    "speak": {
+      "pattern": "communication",
+      "relation_id": "speaks",
+      "confidence": 0.65
+    },
+    "write": {
+      "pattern": "communication",
+      "relation_id": "writes",
+      "confidence": 0.65
+    },
+    "read": {
+      "pattern": "perception",
+      "relation_id": "reads",
+      "confidence": 0.65
+    },
+    "eat": {
+      "pattern": "consumption",
+      "relation_id": "eats",
+      "confidence": 0.7
+    },
+    "drink": {
+      "pattern": "consumption",
+      "relation_id": "drinks",
       "confidence": 0.7
     }
   }
