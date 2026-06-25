@@ -655,13 +655,18 @@ class AssistantOSKernelMvpTests(unittest.TestCase):
                 store.close()
 
     def test_kernel_confirmation_target_extraction_is_token_bounded(self) -> None:
-        self.assertEqual(
-            _requested_confirmation_target("Yes, play calm piano."), "calm piano"
-        )
-        self.assertEqual(_requested_confirmation_target("Yes, call to mom."), "mom")
-        self.assertEqual(_requested_confirmation_target("Yes, phone my mom."), "mom")
-        self.assertEqual(_requested_confirmation_target("Yes, replay calm piano."), "")
-        self.assertEqual(_requested_confirmation_target("Yes, display dad."), "")
+        cases = [
+            ("Yes, play calm piano.", "calm piano"),
+            ("Yes, call to mom.", "mom"),
+            ("Yes, phone my mom.", "mom"),
+            ("Yes, replay calm piano.", ""),
+            ("Yes, display dad.", ""),
+        ]
+        for utterance, expected in cases:
+            with self.subTest(utterance=utterance):
+                self.assertEqual(
+                    _requested_confirmation_target(utterance), expected
+                )
 
     def test_kernel_revokes_fact_consent_and_reload_excludes_it(self) -> None:
         with tempfile.TemporaryDirectory() as tmp:
@@ -929,30 +934,47 @@ class AssistantOSKernelAcquisitionTests(unittest.TestCase):
                 f.write(json.dumps(entry) + "\n")
         return path
 
-    def test_acquisition_offline_lookup_quarantines_unknown_word(self) -> None:
-        """Unknown word in utterance triggers offline lookup; result is quarantined."""
-        with tempfile.TemporaryDirectory() as tmp:
-            tmp_path = Path(tmp)
-            store = AssistantOSStore(tmp_path / "assistant.sqlite")
-            try:
-                self._seed_genus(store)
-                dict_path = self._write_jsonl(
-                    tmp_path,
-                    [{"lemma": "xylophone", "definition": "a musical instrument"}],
-                )
-                kernel = AssistantOSKernel(
-                    store=store,
-                    offline_dictionary_path=str(dict_path),
-                )
-                kernel.handle("What is a xylophone?")
-                senses = lookup_lexical_senses(
-                    store, "xylophone", statuses=("quarantined",),
-                )
-                self.assertEqual(len(senses), 1)
-                self.assertEqual(senses[0]["status"], "quarantined")
-                self.assertEqual(senses[0]["lemma"], "xylophone")
-            finally:
-                store.close()
+    def _setup_acquisition(self, tmp, seed, dict_config):
+        """Helper: create store+kernel for acquisition tests. Returns (store, kernel)."""
+        tmp_path = Path(tmp)
+        store = AssistantOSStore(tmp_path / "assistant.sqlite")
+        if seed:
+            self._seed_genus(store)
+        dict_path = None
+        if dict_config is None:
+            pass
+        elif dict_config == "__missing__":
+            dict_path = str(tmp_path / "missing.jsonl")
+        else:
+            dict_path = str(self._write_jsonl(tmp_path, dict_config))
+        return store, AssistantOSKernel(
+            store=store,
+            offline_dictionary_path=dict_path,
+        )
+
+    def test_acquisition_word_lookup_scenarios(self) -> None:
+        """Parametrized: word lookup scenarios checking lexical senses creation."""
+        scenarios = [
+            ("matching dict entry quarantines unknown word", True, [{"lemma": "xylophone", "definition": "a musical instrument"}], 1, ("quarantined",)),
+            ("no dict creates no lexical entry", False, None, 0, ("quarantined", "active", "dormant")),
+            ("non-matching dict entry creates no entry", True, [{"lemma": "kalimba", "definition": "a small thumb piano"}], 0, ("quarantined", "active", "dormant")),
+            ("missing dict path does not crash or create entry", True, "__missing__", 0, ("quarantined", "active", "dormant")),
+        ]
+        for desc, seed, dict_config, expected_count, statuses in scenarios:
+            with self.subTest(desc):
+                with tempfile.TemporaryDirectory() as tmp:
+                    store, kernel = self._setup_acquisition(tmp, seed, dict_config)
+                    try:
+                        kernel.handle("What is a xylophone?")
+                        senses = lookup_lexical_senses(
+                            store, "xylophone", statuses=statuses,
+                        )
+                        self.assertEqual(len(senses), expected_count)
+                        if expected_count > 0:
+                            self.assertEqual(senses[0]["status"], "quarantined")
+                            self.assertEqual(senses[0]["lemma"], "xylophone")
+                    finally:
+                        store.close()
 
     def test_acquisition_skips_known_word(self) -> None:
         """Known word does not trigger offline lookup — no quarantined entry created."""
@@ -984,61 +1006,6 @@ class AssistantOSKernelAcquisitionTests(unittest.TestCase):
         )
         decision = kernel.handle("What is a xylophone?")
         self.assertIsNotNone(decision)
-
-    def test_acquisition_no_dictionary_no_entry_created(self) -> None:
-        """Kernel without dictionary_path does not create lexical entry for unknown word."""
-        with tempfile.TemporaryDirectory() as tmp:
-            store = AssistantOSStore(Path(tmp) / "assistant.sqlite")
-            try:
-                kernel = AssistantOSKernel(store=store)
-                kernel.handle("What is a xylophone?")
-                senses = lookup_lexical_senses(
-                    store, "xylophone", statuses=("quarantined", "active", "dormant"),
-                )
-                self.assertEqual(len(senses), 0)
-            finally:
-                store.close()
-
-    def test_acquisition_no_matching_dictionary_entry_no_entry_created(self) -> None:
-        """Dictionary file without matching lemma does not create lexical entry."""
-        with tempfile.TemporaryDirectory() as tmp:
-            tmp_path = Path(tmp)
-            store = AssistantOSStore(tmp_path / "assistant.sqlite")
-            try:
-                self._seed_genus(store)
-                dict_path = self._write_jsonl(
-                    tmp_path,
-                    [{"lemma": "kalimba", "definition": "a small thumb piano"}],
-                )
-                kernel = AssistantOSKernel(
-                    store=store,
-                    offline_dictionary_path=str(dict_path),
-                )
-                kernel.handle("What is a xylophone?")
-                senses = lookup_lexical_senses(
-                    store, "xylophone", statuses=("quarantined", "active", "dormant"),
-                )
-                self.assertEqual(len(senses), 0)
-            finally:
-                store.close()
-
-    def test_acquisition_missing_dictionary_file_no_crash(self) -> None:
-        """Non-existent dictionary file does not crash the acquisition pass."""
-        with tempfile.TemporaryDirectory() as tmp:
-            store = AssistantOSStore(Path(tmp) / "assistant.sqlite")
-            try:
-                self._seed_genus(store)
-                kernel = AssistantOSKernel(
-                    store=store,
-                    offline_dictionary_path=str(Path(tmp) / "missing.jsonl"),
-                )
-                kernel.handle("What is a xylophone?")
-                senses = lookup_lexical_senses(
-                    store, "xylophone", statuses=("quarantined", "active", "dormant"),
-                )
-                self.assertEqual(len(senses), 0)
-            finally:
-                store.close()
 
 
 class M3AcquisitionEndToEndTests(unittest.TestCase):

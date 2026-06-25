@@ -13,6 +13,7 @@ import json
 import tempfile
 import unittest
 from dataclasses import replace
+from datetime import datetime, timezone
 from pathlib import Path
 from typing import Any
 
@@ -42,17 +43,27 @@ def _add_personal_experience(
     intent: str,
     user_id: str,
     polarity: float,
+    *,
+    created_at: str | None = None,
+    label: str | None = None,
 ) -> None:
     store.add_entity(
         entity_id=entity_id,
         kind="personal_experience",
-        label=f"turn: {intent}",
+        label=label or f"turn: {intent}",
         semantic_class_id="personal_experience",
         canonical_lemma=f"test utterance about {intent}",
     )
     store.set_entity_slot(entity_id, "outcome", "resolved", provenance="experience_writer")
     store.set_entity_slot(entity_id, "polarity", polarity, provenance="experience_writer")
     store.set_entity_slot(entity_id, "user_id", user_id, provenance="experience_writer")
+    store.set_entity_slot(entity_id, "intent", intent, provenance="experience_writer")
+    if created_at is not None:
+        store.connection.execute(
+            "UPDATE entities SET created_at=?, updated_at=? WHERE entity_id=?",
+            (created_at, created_at, entity_id),
+        )
+        store.connection.commit()
 
 
 # ---------------------------------------------------------------------------
@@ -93,7 +104,11 @@ class SelfIdentitySkillTests(unittest.TestCase):
         try:
             _add_personal_experience(store, "pe_001", "story", "user_test", 0.1)
             _add_personal_experience(store, "pe_002", "story", "user_test", 0.2)
-            _add_personal_experience(store, "pe_003", "weather", "user_test", 0.9)
+            _add_personal_experience(store, "pe_003", "story", "user_test", 0.2)
+            _add_personal_experience(store, "pe_004", "story", "user_test", 0.1)
+            _add_personal_experience(store, "pe_005", "weather", "user_test", 0.9)
+            _add_personal_experience(store, "pe_006", "weather", "user_test", 0.8)
+            _add_personal_experience(store, "pe_007", "weather", "user_test", 0.7)
             result = analyze_user_identity(store, "user_test")
             self.assertIsNotNone(result)
             self.assertEqual(result.highest_meaning_intent, "weather")
@@ -106,8 +121,12 @@ class SelfIdentitySkillTests(unittest.TestCase):
         store = _make_store()
         try:
             _add_personal_experience(store, "pe_001", "story", "user_test", 0.5)
-            _add_personal_experience(store, "pe_002", "weather", "user_test", 0.5)
-            _add_personal_experience(store, "pe_003", "weather", "user_test", 0.5)
+            _add_personal_experience(store, "pe_002", "story", "user_test", 0.5)
+            _add_personal_experience(store, "pe_003", "story", "user_test", 0.5)
+            _add_personal_experience(store, "pe_004", "weather", "user_test", 0.5)
+            _add_personal_experience(store, "pe_005", "weather", "user_test", 0.5)
+            _add_personal_experience(store, "pe_006", "weather", "user_test", 0.5)
+            _add_personal_experience(store, "pe_007", "weather", "user_test", 0.5)
             result = analyze_user_identity(store, "user_test")
             self.assertIsNotNone(result)
             self.assertEqual(result.highest_meaning_intent, "weather")
@@ -126,13 +145,66 @@ class SelfIdentitySkillTests(unittest.TestCase):
         finally:
             store.close()
 
+    def test_analyze_uses_recent_window(self) -> None:
+        from melm.appliance.assistant_skill_self_identity import analyze_user_identity
+        store = _make_store()
+        try:
+            old = "2020-01-01T00:00:00+00:00"
+            now = datetime.now(timezone.utc).isoformat()
+            for i in range(3):
+                _add_personal_experience(
+                    store, f"old_{i}", "weather", "user_test", 0.9,
+                    created_at=old,
+                )
+            for i in range(3):
+                _add_personal_experience(
+                    store, f"new_{i}", "story", "user_test", 0.2,
+                    created_at=now,
+                )
+            result = analyze_user_identity(store, "user_test", days=30)
+            self.assertIsNotNone(result)
+            self.assertEqual(result.highest_meaning_intent, "story")
+            self.assertEqual(result.per_intent_counts, {"story": 3})
+        finally:
+            store.close()
+
+    def test_analyze_reads_intent_slot_not_display_label(self) -> None:
+        from melm.appliance.assistant_skill_self_identity import analyze_user_identity
+        store = _make_store()
+        try:
+            for i in range(3):
+                _add_personal_experience(
+                    store, f"pe_{i}", "story", "user_test", 0.5,
+                    label="human-readable summary without turn prefix",
+                )
+            result = analyze_user_identity(store, "user_test")
+            self.assertIsNotNone(result)
+            self.assertEqual(result.highest_meaning_intent, "story")
+        finally:
+            store.close()
+
+    def test_winning_intent_must_meet_min_data_points(self) -> None:
+        from melm.appliance.assistant_skill_self_identity import analyze_user_identity
+        store = _make_store()
+        try:
+            _add_personal_experience(store, "pe_001", "story", "user_test", 0.9)
+            _add_personal_experience(store, "pe_002", "weather", "user_test", 0.0)
+            _add_personal_experience(store, "pe_003", "meal_suggestion", "user_test", 0.0)
+            result = analyze_user_identity(store, "user_test")
+            self.assertIsNone(result)
+        finally:
+            store.close()
+
     def test_analyze_per_user_isolation(self) -> None:
         from melm.appliance.assistant_skill_self_identity import analyze_user_identity
         store = _make_store()
         try:
             _add_personal_experience(store, "pe_001", "story", "user_alice", 0.5)
-            _add_personal_experience(store, "pe_002", "weather", "user_alice", 0.3)
-            _add_personal_experience(store, "pe_003", "weather", "user_alice", 0.4)
+            _add_personal_experience(store, "pe_002", "story", "user_alice", 0.5)
+            _add_personal_experience(store, "pe_003", "story", "user_alice", 0.5)
+            _add_personal_experience(store, "pe_007", "weather", "user_alice", 0.3)
+            _add_personal_experience(store, "pe_008", "weather", "user_alice", 0.4)
+            _add_personal_experience(store, "pe_009", "weather", "user_alice", 0.4)
             _add_personal_experience(store, "pe_004", "meal_suggestion", "user_bob", 0.9)
             _add_personal_experience(store, "pe_005", "meal_suggestion", "user_bob", 0.8)
             _add_personal_experience(store, "pe_006", "meal_suggestion", "user_bob", 0.7)
@@ -195,6 +267,25 @@ class SelfIdentitySkillTests(unittest.TestCase):
         self.assertIn("12", explanation)
         self.assertIn("+0.6", explanation)
 
+    def test_identity_explanation_uses_highest_meaning_metrics(self) -> None:
+        from melm.appliance.assistant_skill_self_identity import (
+            DerivedIdentity,
+            derive_identity_explanation,
+        )
+        identity = DerivedIdentity(
+            user_id="test", highest_meaning_intent="story",
+            highest_meaning_polarity=0.9, top_intent="weather",
+            top_intent_count=5, top_intent_mean_polarity=0.1,
+            total_turns=6, per_intent_counts={"story": 1, "weather": 5},
+            per_intent_mean_polarities={"story": 0.9, "weather": 0.1},
+        )
+        explanation = derive_identity_explanation(identity)
+        self.assertIsNotNone(explanation)
+        self.assertIn("sharing stories", explanation)
+        self.assertIn("1", explanation)
+        self.assertIn("+0.9", explanation)
+        self.assertNotIn("5", explanation)
+
     def test_get_name_awareness_template(self) -> None:
         from melm.appliance.assistant_skill_self_identity import (
             DerivedIdentity,
@@ -242,12 +333,17 @@ class SelfIdentityRouterTests(unittest.TestCase):
         self.assertEqual(decision.intent, "assistant_identity")
         self.assertIn("identity_action:name_origin", decision.evidence_keys)
 
+    def test_router_detects_who_named_you(self) -> None:
+        router = OnDeviceAssistantRouter(LocalAssistantProfile())
+        decision = router.handle("Who named you?")
+        self.assertEqual(decision.intent, "assistant_identity")
+        self.assertIn("identity_action:name_origin", decision.evidence_keys)
+
     def test_router_detects_real_name_question(self) -> None:
-        """'Real name' uses the name frame (action='name'), not the name_awareness path."""
         router = OnDeviceAssistantRouter(LocalAssistantProfile())
         decision = router.handle("What is your real name?")
         self.assertEqual(decision.intent, "assistant_identity")
-        self.assertIn("self_model.name", decision.evidence_keys)
+        self.assertIn("identity_action:name_awareness", decision.evidence_keys)
 
     def test_standard_identity_no_action_marker(self) -> None:
         router = OnDeviceAssistantRouter(LocalAssistantProfile())
@@ -309,6 +405,45 @@ class SelfIdentityKernelTests(unittest.TestCase):
             finally:
                 store.close()
 
+    def test_kernel_given_name_is_per_user(self) -> None:
+        with tempfile.TemporaryDirectory() as tmp:
+            store = AssistantOSStore(Path(tmp) / "assistant.sqlite")
+            try:
+                store.set_given_name("Buddy", user_id="alice")
+                for i in range(3):
+                    _add_personal_experience(store, f"a_{i}", "story", "alice", 0.5)
+                    _add_personal_experience(store, f"b_{i}", "weather", "bob", 0.5)
+                from melm.appliance.assistant_skill_self_identity import analyze_user_identity
+                alice = analyze_user_identity(store, "alice")
+                bob = analyze_user_identity(store, "bob")
+                self.assertTrue(alice.has_name)
+                self.assertEqual(alice.given_name, "Buddy")
+                self.assertFalse(bob.has_name)
+                self.assertIsNone(bob.given_name)
+            finally:
+                store.close()
+
+    def test_profile_user_id_survives_store_load(self) -> None:
+        with tempfile.TemporaryDirectory() as tmp:
+            store = AssistantOSStore(Path(tmp) / "assistant.sqlite")
+            try:
+                from melm.appliance.assistant_os_kernel import AssistantOSKernel
+                kernel = AssistantOSKernel(
+                    profile=LocalAssistantProfile(user_id="alice"),
+                    store=store,
+                )
+                self.assertEqual(kernel.profile.user_id, "alice")
+            finally:
+                store.close()
+
+    def test_identity_response_pool_lookup_uses_contract_pools(self) -> None:
+        from melm.appliance.assistant_synthesis import _pool_select
+        router = OnDeviceAssistantRouter(LocalAssistantProfile())
+        decision = router.handle("Who are you?")
+        result = _pool_select(decision, LocalAssistantProfile())
+        self.assertIsNotNone(result)
+        self.assertIn("MELM", result)
+
 
 # ---------------------------------------------------------------------------
 # Store-backed self-state tests
@@ -346,10 +481,10 @@ class SelfIdentityStoreTests(unittest.TestCase):
     def test_set_given_name(self) -> None:
         store = _make_store()
         try:
-            store.set_given_name("Alice")
+            store.set_given_name("Alice", user_id="test")
             state = store.load_self_state()
-            self.assertEqual(state["given_name"], "Alice")
-            self.assertTrue(state["has_name"])
+            self.assertEqual(state["given_name:test"], "Alice")
+            self.assertTrue(state["has_name:test"])
         finally:
             store.close()
 
@@ -360,7 +495,7 @@ class SelfIdentityStoreTests(unittest.TestCase):
             _add_personal_experience(store, "pe_001", "story", "test", 0.5)
             _add_personal_experience(store, "pe_002", "story", "test", 0.6)
             _add_personal_experience(store, "pe_003", "story", "test", 0.4)
-            store.set_given_name("Buddy")
+            store.set_given_name("Buddy", user_id="test")
             result = analyze_user_identity(store, "test")
             self.assertIsNotNone(result)
             self.assertTrue(result.has_name)
@@ -457,6 +592,17 @@ class SelfIdentityEdgeCaseTests(unittest.TestCase):
         )
         result = get_name_awareness_template(identity, "no_name")
         self.assertIsNone(result)
+
+
+class SelfIdentitySkillRegistryTests(unittest.TestCase):
+    def test_self_identity_skill_registers_manifest(self) -> None:
+        from melm.appliance.assistant_skill_base import get_skill_registry
+        import melm.appliance.assistant_skill_self_identity as self_identity
+        registry = get_skill_registry()
+        self.assertTrue(hasattr(self_identity, "MANIFEST"))
+        manifest = registry.by_family("assistant_identity")
+        self.assertIsNotNone(manifest)
+        self.assertTrue(manifest.has_knowledge("melm.self_identity.v1"))
 
 
 if __name__ == "__main__":

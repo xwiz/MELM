@@ -116,7 +116,7 @@ class SeedClassSchemasMvpTests(unittest.TestCase):
             ).fetchall()
             ids = [str(r["semantic_class_id"]) for r in rows]
             self.assertEqual(
-                ["abstract", "anonymous_fact", "cognition", "competition", "deferred_task", "entity", "epistemic_state", "event", "learned_fact", "mood_ambient", "mood_session_summary", "mood_state", "novelty_candidate", "object", "person", "personal_experience", "place", "uol_parse", "user_commitment", "world_fact"],
+                ["abstract", "anonymous_fact", "causal_rule", "cognition", "competition", "deferred_task", "entity", "epistemic_state", "event", "learned_fact", "mood_ambient", "mood_session_summary", "mood_state", "novelty_candidate", "object", "person", "personal_experience", "place", "uol_parse", "user_commitment", "world_fact"],
                 ids,
             )
         finally:
@@ -144,7 +144,7 @@ class SeedClassSchemasMvpTests(unittest.TestCase):
             seed_class_schemas(store)
             seed_class_schemas(store)
             count = store.connection.execute("SELECT COUNT(*) AS c FROM class_schemas").fetchone()
-            self.assertEqual(20, count["c"])
+            self.assertEqual(21, count["c"])
         finally:
             store.close()
 

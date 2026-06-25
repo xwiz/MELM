@@ -326,7 +326,7 @@ class M4ScaffoldTests(unittest.TestCase):
         self.assertEqual(result.decoder, "template")
         self.assertEqual(result.tokens_generated, 2)
 
-    def test_decode_returns_template_decoder_for_weather(self) -> None:
+    def test_synthesize_uses_template_decoder_for_weather(self) -> None:
         profile = LocalAssistantProfile(
             weekly_weather={"today": "sunny"},
             story_models={},
@@ -343,24 +343,16 @@ class M4ScaffoldTests(unittest.TestCase):
                 source="user_profile", license="private_local", local_only=True,
             ),
         )
-        decision = _make_decision("weather")
-        from melm.appliance import SynthesisEvidence
-        sevidence = tuple(
-            SynthesisEvidence(
-                key=item.key, kind=item.kind, value=item.value,
-                source=item.source, license=item.license,
-                local_only=item.local_only,
-            )
-            for item in items
+        decision = _make_decision("weather", evidence_keys=("weekly_weather.today", "profile.location"))
+        result = synth.synthesize(
+            decision,
+            boundary_crossed="none",
+            membrane_allowed=True,
         )
-        packet = build_evidence_packet(decision.evidence_keys, items, "none")
-        plan = build_answer_plan(decision, packet)
-        result = synth._decode(plan, sevidence, decision)
-        self.assertEqual(result.decoder, "template")
-        self.assertGreater(result.tokens_generated, 0)
+        self.assertEqual(result.decoder_used, "template")
         self.assertIn("sunny", result.answer.lower())
 
-    def test_decode_tokens_generated_counts_words(self) -> None:
+    def test_synthesize_tokens_generated_counts_words(self) -> None:
         profile = LocalAssistantProfile(
             health_goals=("sleep earlier",),
             story_models={},
@@ -379,22 +371,13 @@ class M4ScaffoldTests(unittest.TestCase):
                 source="local_policy", license="local_policy", local_only=False,
             ),
         )
-        packet = build_evidence_packet(
-            ("health_goals", "local_health_safety_policy"), items, "none",
+        decision = _make_decision("health_advice", evidence_keys=("health_goals", "local_health_safety_policy"))
+        result = synth.synthesize(
+            decision,
+            boundary_crossed="none",
+            membrane_allowed=True,
         )
-        decision = _make_decision("health_advice")
-        plan = build_answer_plan(decision, packet)
-        from melm.appliance import SynthesisEvidence
-        sevidence = tuple(
-            SynthesisEvidence(
-                key=item.key, kind=item.kind, value=item.value,
-                source=item.source, license=item.license,
-                local_only=item.local_only,
-            )
-            for item in items
-        )
-        result = synth._decode(plan, sevidence, decision)
-        self.assertGreater(result.tokens_generated, 5)
+        self.assertGreater(len(result.answer.split()), 5)
         # Template decoder should produce "not a diagnosis" (negated, allowed)
         self.assertIn("diagnosis", result.answer.lower())
         self.assertIn("sleep", result.answer.lower())

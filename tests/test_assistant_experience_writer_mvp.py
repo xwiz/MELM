@@ -63,14 +63,10 @@ class TestComputeOutcome:
         s = _make_synthesis(boundary_crossed="privacy_blocked")
         assert _compute_outcome(s, d) == "escalated"
 
-    def test_boundary_crossed_none_not_escalated(self) -> None:
+    @pytest.mark.parametrize("bc_value", ["none", ""])
+    def test_boundary_crossed_not_escalated(self, bc_value: str) -> None:
         d = _make_decision()
-        s = _make_synthesis(boundary_crossed="none")
-        assert _compute_outcome(s, d) != "escalated"
-
-    def test_boundary_crossed_empty_not_escalated(self) -> None:
-        d = _make_decision()
-        s = _make_synthesis(boundary_crossed="")
+        s = _make_synthesis(boundary_crossed=bc_value)
         assert _compute_outcome(s, d) != "escalated"
 
     def test_refused_returns_abandoned(self) -> None:
@@ -117,11 +113,9 @@ class TestComputeIntentAchieved:
 # ===================================================================
 
 class TestComputePolarity:
-    def test_defaults_to_neutral(self) -> None:
-        assert _compute_polarity(_make_synthesis(), _make_decision()) == 0.0
-
-    def test_none_synthesis_is_neutral(self) -> None:
-        assert _compute_polarity(None, _make_decision()) == 0.0
+    @pytest.mark.parametrize("synthesis", [_make_synthesis(), None])
+    def test_neutral_polarity(self, synthesis: BoundedSynthesisResult | None) -> None:
+        assert _compute_polarity(synthesis, _make_decision()) == 0.0
 
 
 # ===================================================================
@@ -169,50 +163,35 @@ class TestRecordConversationExperience:
         assert json.loads(slots["learned_fact_ids"]) == []
         assert json.loads(slots["user_id"]) == "default"
 
-    def test_user_id_slot_is_set(self) -> None:
+    @pytest.mark.parametrize("user_id,expected", [("user_alice", "user_alice"), (None, "default")])
+    def test_user_id_slot(self, user_id: str | None, expected: str) -> None:
         decision = _make_decision()
         synthesis = _make_synthesis(applied=True)
-        record_conversation_experience(self.store, decision, synthesis, user_id="user_alice")
+        kwargs = {"user_id": user_id} if user_id is not None else {}
+        record_conversation_experience(self.store, decision, synthesis, **kwargs)
         slots = self._set_slots()
-        assert json.loads(slots["user_id"]) == "user_alice"
+        assert json.loads(slots["user_id"]) == expected
 
-    def test_user_id_defaults_to_default(self) -> None:
+    @pytest.mark.parametrize(
+        "synthesis,expected_outcome,expected_intent_achieved",
+        [
+            (_make_synthesis(boundary_crossed="privacy_blocked"), "escalated", "no"),
+            (_make_synthesis(refused=True), "abandoned", "no"),
+            (_make_synthesis(applied=False, refused=False), "unresolved", "no"),
+            (None, "unresolved", "no"),
+        ],
+    )
+    def test_outcome_and_intent_achieved(
+        self,
+        synthesis: BoundedSynthesisResult | None,
+        expected_outcome: str,
+        expected_intent_achieved: str,
+    ) -> None:
         decision = _make_decision()
-        synthesis = _make_synthesis(applied=True)
         record_conversation_experience(self.store, decision, synthesis)
         slots = self._set_slots()
-        assert json.loads(slots["user_id"]) == "default"
-
-    def test_escalated_outcome_when_boundary_crossed(self) -> None:
-        decision = _make_decision()
-        synthesis = _make_synthesis(boundary_crossed="privacy_blocked")
-        record_conversation_experience(self.store, decision, synthesis)
-        slots = self._set_slots()
-        assert json.loads(slots["outcome"]) == "escalated"
-        assert json.loads(slots["intent_achieved"]) == "no"
-
-    def test_abandoned_outcome_when_refused(self) -> None:
-        decision = _make_decision()
-        synthesis = _make_synthesis(refused=True)
-        record_conversation_experience(self.store, decision, synthesis)
-        slots = self._set_slots()
-        assert json.loads(slots["outcome"]) == "abandoned"
-        assert json.loads(slots["intent_achieved"]) == "no"
-
-    def test_unresolved_outcome_when_not_applied(self) -> None:
-        decision = _make_decision()
-        synthesis = _make_synthesis(applied=False, refused=False)
-        record_conversation_experience(self.store, decision, synthesis)
-        slots = self._set_slots()
-        assert json.loads(slots["outcome"]) == "unresolved"
-        assert json.loads(slots["intent_achieved"]) == "no"
-
-    def test_unresolved_outcome_when_none_synthesis(self) -> None:
-        decision = _make_decision()
-        record_conversation_experience(self.store, decision, None)
-        slots = self._set_slots()
-        assert json.loads(slots["outcome"]) == "unresolved"
-        assert json.loads(slots["intent_achieved"]) == "no"
+        assert json.loads(slots["outcome"]) == expected_outcome
+        assert json.loads(slots["intent_achieved"]) == expected_intent_achieved
 
     def test_label_contains_intent(self) -> None:
         decision = _make_decision(intent="weather")

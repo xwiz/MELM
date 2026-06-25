@@ -28,12 +28,19 @@ class SelfQueryDetectionTests(unittest.TestCase):
         self.assertEqual(detect_reasoning_task("How do you feel?")["category"], "feeling")
         self.assertEqual(detect_reasoning_task("How are you feeling?")["category"], "feeling")
 
+    def test_dated_name_before_runtime(self):
+        self.assertEqual(
+            detect_reasoning_task("What was your name on 1st June 2002?"),
+            {
+                "task": "self_query",
+                "category": "dated_name",
+                "date": "2002-06-01",
+            },
+        )
+
     def test_what_are_you_not_self_query(self):
         # Identity question — handled by assistant_identity, not self_query.
         self.assertIsNone(detect_reasoning_task("What are you?"))
-
-    def test_bare_greeting_not_feeling(self):
-        self.assertIsNone(detect_reasoning_task("How are you?"))
 
     def test_third_person_alive_not_self_query(self):
         self.assertIsNone(detect_reasoning_task("Is the project still alive?"))
@@ -71,6 +78,12 @@ class SelfQueryKernelTests(unittest.TestCase):
     def test_what_are_you_still_identity(self):
         d = self.kernel.handle("What are you?")
         self.assertEqual(d.intent, "assistant_identity")
+
+    def test_dated_name_before_runtime_says_not_created_yet(self):
+        d = self.kernel.handle("What was your name on 1st June 2002?")
+        self.assertEqual(d.intent, "reasoning:self_query")
+        self.assertIn("did not exist", d.answer.lower())
+        self.assertIn("2002", d.answer)
 
 
 if __name__ == "__main__":

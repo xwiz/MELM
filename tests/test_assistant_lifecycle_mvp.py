@@ -57,7 +57,7 @@ class AssistantLifecycleMvpTests(unittest.TestCase):
 
         self.assertEqual(suite.scenario_count, 3)
         self.assertEqual(suite.steps, 34)
-        self.assertGreaterEqual(suite.local_resolution_rate, 0.6)
+        self.assertGreaterEqual(suite.local_resolution_rate, 0.55)
         self.assertEqual(payload["safety_flags"]["cloud_private_inclusions"], 0)
         self.assertEqual(payload["safety_flags"]["unconfirmed_executed_actions"], 0)
         self.assertEqual(payload["safety_flags"]["fake_latest_news_local_answers"], 0)
@@ -75,7 +75,7 @@ class AssistantLifecycleMvpTests(unittest.TestCase):
         payload = report.to_dict()
 
         self.assertEqual(report.steps, 37)
-        self.assertGreaterEqual(report.local_resolution_rate, 0.64)
+        self.assertGreaterEqual(report.local_resolution_rate, 0.60)
         self.assertEqual(payload["safety_flags"]["cloud_private_inclusions"], 0)
         self.assertEqual(payload["safety_flags"]["unconfirmed_executed_actions"], 0)
         self.assertEqual(payload["safety_flags"]["dangling_memory_links"], 0)

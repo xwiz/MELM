@@ -30,6 +30,11 @@ from melm.appliance.local_assistant_router import (
     replace_installed_families,
 )
 from melm.contracts import ContractValidationError
+from melm.appliance.assistant_lexicon_bulk import (
+    seed_wordnet_supersenses,
+    seed_verbnet_classes,
+    seed_wiktextract_entries,
+)
 
 
 def _candidate(
@@ -679,7 +684,7 @@ class OfflineDefinitionLookupMvpTests(unittest.TestCase):
                 f.write(json.dumps(entry) + "\n")
         return path
 
-    def test_ingests_single_entry_as_quarantined(self) -> None:
+    def test_ingests_single_entry_as_quarantined_with_offline_provenance(self) -> None:
         with tempfile.TemporaryDirectory() as tmp:
             store = AssistantOSStore(Path(tmp) / "assistant.sqlite")
             try:
@@ -697,75 +702,6 @@ class OfflineDefinitionLookupMvpTests(unittest.TestCase):
                     store, "kalimba", statuses=("quarantined",),
                 )
                 self.assertEqual(len(senses), 1)
-            finally:
-                store.close()
-
-    def test_empty_jsonl_returns_empty_list(self) -> None:
-        with tempfile.TemporaryDirectory() as tmp:
-            store = AssistantOSStore(Path(tmp) / "assistant.sqlite")
-            try:
-                dict_path = self._write_jsonl(Path(tmp), [])
-                results = offline_definition_lookup(
-                    store, "anything", dictionary_path=str(dict_path),
-                )
-                self.assertEqual(results, [])
-            finally:
-                store.close()
-
-    def test_non_matching_lemma_returns_empty(self) -> None:
-        with tempfile.TemporaryDirectory() as tmp:
-            store = AssistantOSStore(Path(tmp) / "assistant.sqlite")
-            try:
-                dict_path = self._write_jsonl(
-                    Path(tmp),
-                    [{"lemma": "piano", "definition": "a musical instrument"}],
-                )
-                results = offline_definition_lookup(
-                    store, "kalimba", dictionary_path=str(dict_path),
-                )
-                self.assertEqual(results, [])
-            finally:
-                store.close()
-
-    def test_missing_dictionary_returns_empty(self) -> None:
-        with tempfile.TemporaryDirectory() as tmp:
-            store = AssistantOSStore(Path(tmp) / "assistant.sqlite")
-            try:
-                results = offline_definition_lookup(
-                    store, "kalimba", dictionary_path=str(Path(tmp) / "nonexistent.jsonl"),
-                )
-                self.assertEqual(results, [])
-            finally:
-                store.close()
-
-    def test_empty_word_returns_empty(self) -> None:
-        with tempfile.TemporaryDirectory() as tmp:
-            store = AssistantOSStore(Path(tmp) / "assistant.sqlite")
-            try:
-                dict_path = self._write_jsonl(
-                    Path(tmp),
-                    [{"lemma": "kalimba", "definition": "an instrument"}],
-                )
-                results = offline_definition_lookup(
-                    store, "", dictionary_path=str(dict_path),
-                )
-                self.assertEqual(results, [])
-            finally:
-                store.close()
-
-    def test_provenance_is_offline_dictionary(self) -> None:
-        with tempfile.TemporaryDirectory() as tmp:
-            store = AssistantOSStore(Path(tmp) / "assistant.sqlite")
-            try:
-                self._seed_genus(store)
-                dict_path = self._write_jsonl(
-                    Path(tmp),
-                    [{"lemma": "kalimba", "definition": "a musical instrument"}],
-                )
-                results = offline_definition_lookup(
-                    store, "kalimba", dictionary_path=str(dict_path),
-                )
-                self.assertEqual(len(results), 1)
                 prov = store.connection.execute(
                     "SELECT provenance FROM lexical_provenance WHERE sense_id=?",
                     (results[0].sense_id,),
@@ -773,6 +709,28 @@ class OfflineDefinitionLookupMvpTests(unittest.TestCase):
                 self.assertEqual(prov["provenance"], "offline_dictionary")
             finally:
                 store.close()
+
+    def test_offline_empty_cases(self) -> None:
+        cases = [
+            ([], "anything", False),
+            ([{"lemma": "piano", "definition": "a musical instrument"}], "kalimba", False),
+            ([], "kalimba", True),
+            ([{"lemma": "kalimba", "definition": "an instrument"}], "", False),
+        ]
+        for entries, word, expect_missing in cases:
+            with self.subTest(entries=entries, word=word, expect_missing=expect_missing):
+                with tempfile.TemporaryDirectory() as tmp:
+                    store = AssistantOSStore(Path(tmp) / "assistant.sqlite")
+                    try:
+                        dict_path = Path(tmp) / "nonexistent.jsonl"
+                        if not expect_missing:
+                            dict_path = self._write_jsonl(Path(tmp), entries)
+                        results = offline_definition_lookup(
+                            store, word, dictionary_path=str(dict_path),
+                        )
+                        self.assertEqual(results, [])
+                    finally:
+                        store.close()
 
     def test_extracts_genus_from_definition(self) -> None:
         with tempfile.TemporaryDirectory() as tmp:
@@ -939,7 +897,7 @@ class CloudDefinitionLookupMvpTests(unittest.TestCase):
     def _seed_instrument(self, store):
         return self._seed_genus(store, term="instrument", class_id="physical_object.instrument")
 
-    def test_ingests_valid_response_as_quarantined(self) -> None:
+    def test_ingests_valid_as_quarantined_with_cloud_method_and_provenance(self) -> None:
         with tempfile.TemporaryDirectory() as tmp:
             store = AssistantOSStore(Path(tmp) / "assistant.sqlite")
             try:
@@ -966,30 +924,7 @@ class CloudDefinitionLookupMvpTests(unittest.TestCase):
                     store, "kalimba", statuses=("quarantined",),
                 )
                 self.assertEqual(len(senses), 1)
-            finally:
-                store.close()
-
-    def test_provenance_is_cloud_lookup(self) -> None:
-        with tempfile.TemporaryDirectory() as tmp:
-            store = AssistantOSStore(Path(tmp) / "assistant.sqlite")
-            try:
-                self._seed_instrument(store)
-                with patch("melm.appliance.assistant_lexicon.urlopen",
-                           return_value=self._mock_llm_response({
-                               "lemma": "kalimba",
-                               "pos": "noun",
-                               "definition": "a small thumb piano",
-                               "genus_lemma": "instrument",
-                               "semantic_class_candidates": [
-                                   {"class_id": "physical_object.instrument",
-                                    "confidence": 0.85},
-                               ],
-                           })):
-                    results = cloud_definition_lookup(
-                        store, "kalimba",
-                        api_key="test-key",
-                    )
-                self.assertEqual(len(results), 1)
+                self.assertEqual(senses[0]["semantic_class_id"], "physical_object.instrument")
                 prov = store.connection.execute(
                     "SELECT provenance FROM lexical_provenance WHERE sense_id=?",
                     (results[0].sense_id,),
@@ -1026,84 +961,29 @@ class CloudDefinitionLookupMvpTests(unittest.TestCase):
             finally:
                 store.close()
 
-    def test_method_is_llm_assigned(self) -> None:
-        with tempfile.TemporaryDirectory() as tmp:
-            store = AssistantOSStore(Path(tmp) / "assistant.sqlite")
-            try:
-                self._seed_instrument(store)
-                with patch("melm.appliance.assistant_lexicon.urlopen",
-                           return_value=self._mock_llm_response({
-                               "lemma": "kalimba",
-                               "pos": "noun",
-                               "definition": "a small thumb piano",
-                               "genus_lemma": "instrument",
-                               "semantic_class_candidates": [
-                                   {"class_id": "physical_object.instrument",
-                                    "confidence": 0.85},
-                               ],
-                           })):
-                    results = cloud_definition_lookup(
-                        store, "kalimba",
-                        api_key="test-key",
-                    )
-                self.assertEqual(len(results), 1)
-                # Method is implicitly verified by schema validation —
-                # cloud_lookup provenance only allows "llm_assigned" method.
-                # Confirm the sense was created with the expected class.
-                sense = lookup_lexical_senses(
-                    store, "kalimba", statuses=("quarantined",),
-                )
-                self.assertEqual(sense[0]["semantic_class_id"], "physical_object.instrument")
-            finally:
-                store.close()
-
-    def test_network_error_returns_empty_list(self) -> None:
-        with tempfile.TemporaryDirectory() as tmp:
-            store = AssistantOSStore(Path(tmp) / "assistant.sqlite")
-            try:
-                self._seed_genus(store)
-                with patch("melm.appliance.assistant_lexicon.urlopen",
-                           side_effect=OSError("connection refused")):
-                    results = cloud_definition_lookup(
-                        store, "kalimba",
-                        api_key="test-key",
-                    )
-                self.assertEqual(results, [])
-            finally:
-                store.close()
-
-    def test_malformed_llm_response_returns_empty_list(self) -> None:
-        with tempfile.TemporaryDirectory() as tmp:
-            store = AssistantOSStore(Path(tmp) / "assistant.sqlite")
-            try:
-                self._seed_genus(store)
-                with patch("melm.appliance.assistant_lexicon.urlopen",
-                           return_value=_MockResponse(b"not-json-at-all")):
-                    results = cloud_definition_lookup(
-                        store, "kalimba",
-                        api_key="test-key",
-                    )
-                self.assertEqual(results, [])
-            finally:
-                store.close()
-
-    def test_missing_content_in_response_returns_empty_list(self) -> None:
-        with tempfile.TemporaryDirectory() as tmp:
-            store = AssistantOSStore(Path(tmp) / "assistant.sqlite")
-            try:
-                self._seed_genus(store)
-                body = json.dumps({
-                    "choices": [{"message": {"content": ""}}],
-                }).encode("utf-8")
-                with patch("melm.appliance.assistant_lexicon.urlopen",
-                           return_value=_MockResponse(body)):
-                    results = cloud_definition_lookup(
-                        store, "kalimba",
-                        api_key="test-key",
-                    )
-                self.assertEqual(results, [])
-            finally:
-                store.close()
+    def test_cloud_error_paths_return_empty(self) -> None:
+        cases = [
+            {"side_effect": OSError("connection refused")},
+            {"return_value": _MockResponse(b"not-json-at-all")},
+            {"return_value": _MockResponse(json.dumps({
+                "choices": [{"message": {"content": ""}}],
+            }).encode("utf-8"))},
+        ]
+        for mock_kwargs in cases:
+            with self.subTest(mock_kwargs=mock_kwargs):
+                with tempfile.TemporaryDirectory() as tmp:
+                    store = AssistantOSStore(Path(tmp) / "assistant.sqlite")
+                    try:
+                        self._seed_genus(store)
+                        with patch("melm.appliance.assistant_lexicon.urlopen",
+                                   **mock_kwargs):
+                            results = cloud_definition_lookup(
+                                store, "kalimba",
+                                api_key="test-key",
+                            )
+                        self.assertEqual(results, [])
+                    finally:
+                        store.close()
 
     def test_empty_word_returns_empty_list(self) -> None:
         with tempfile.TemporaryDirectory() as tmp:
@@ -1363,7 +1243,7 @@ class SemanticClassEventIndexMvpTests(unittest.TestCase):
         decision = router.handle("hi what is the weather like")
         self.assertIsInstance(decision.semantic_classes_activated, frozenset)
 
-    def test_activated_semantic_classes_persisted_in_store(self) -> None:
+    def test_activated_semantic_classes_persisted_and_queryable(self) -> None:
         from melm.appliance import AssistantOSKernel, AssistantOSStore, LocalAssistantProfile
         tmp = tempfile.mkdtemp()
         db = Path(tmp) / "test.sqlite"
@@ -1379,21 +1259,6 @@ class SemanticClassEventIndexMvpTests(unittest.TestCase):
             self.assertGreater(len(stored), 0)
             for event in stored:
                 self.assertIsInstance(event.semantic_classes_activated, frozenset)
-        finally:
-            store.close()
-
-    def test_activated_semantic_classes_in_query_event_memory(self) -> None:
-        from melm.appliance import AssistantOSKernel, AssistantOSStore, LocalAssistantProfile
-        tmp = tempfile.mkdtemp()
-        db = Path(tmp) / "test.sqlite"
-        store = AssistantOSStore(db)
-        kernel = AssistantOSKernel(
-            store=store,
-            profile=LocalAssistantProfile(),
-        )
-        try:
-            decision = kernel.decide("hi what is the weather like")
-            kernel.remember(decision)
             memory = store.query_event_memory(limit=10)
             self.assertIn("events", memory)
             for event in memory["events"]:
@@ -1448,32 +1313,83 @@ class BulkLexiconSeederMvpTests(unittest.TestCase):
         p.write_text("\n".join(lines), encoding="utf-8")
         return p
 
-    def test_seed_wordnet_supersenses_basic(self) -> None:
-        from melm.appliance.assistant_lexicon_bulk import seed_wordnet_supersenses
-        store = self._make_store()
-        try:
-            data = self._wn_data_path([
+    def _make_data_path(self, lines: list[str]) -> Path:
+        p = Path(tempfile.mkdtemp()) / "seeder_data.jsonl"
+        p.write_text("\n".join(lines), encoding="utf-8")
+        return p
+
+    def test_seeder_basic_ingest(self) -> None:
+        cases = [
+            (seed_wordnet_supersenses, [
                 '{"word": "love", "supersense": "noun.feeling", "pos": "noun"}',
                 '{"word": "run", "supersense": "noun.act", "pos": "noun"}',
-            ])
-            count = seed_wordnet_supersenses(store, data_path=data)
-            self.assertEqual(count, 2)
-            self.assertGreaterEqual(store.count("lexemes"), 2)
-        finally:
-            store.close()
+            ], 2),
+            (seed_verbnet_classes, [
+                '{"verb": "ask", "verbnet_class": "say-37.7", "pos": "verb"}',
+            ], 1),
+            (seed_wiktextract_entries, [
+                '{"word": "zither", "class_id": "physical_object.instrument", "pos": "noun"}',
+                '{"word": "schadenfreude", "class_id": "emotion", "pos": "noun"}',
+            ], 2),
+        ]
+        for seeder_fn, lines, expected in cases:
+            with self.subTest(seeder=seeder_fn.__name__):
+                store = self._make_store()
+                try:
+                    count = seeder_fn(store, data_path=self._make_data_path(lines))
+                    self.assertEqual(count, expected)
+                    self.assertGreaterEqual(store.count("lexemes"), expected)
+                finally:
+                    store.close()
 
-    def test_seed_wordnet_supersenses_skips_reserved(self) -> None:
-        from melm.appliance.assistant_lexicon_bulk import seed_wordnet_supersenses
-        store = self._make_store()
-        try:
-            data = self._wn_data_path([
+    def test_seeder_skips_reserved_or_unknown(self) -> None:
+        cases = [
+            (seed_wordnet_supersenses, [
                 '{"word": "weather", "supersense": "noun.state", "pos": "noun"}',
                 '{"word": "love", "supersense": "noun.feeling", "pos": "noun"}',
-            ])
-            count = seed_wordnet_supersenses(store, data_path=data)
-            self.assertEqual(count, 1)
-        finally:
-            store.close()
+            ]),
+            (seed_verbnet_classes, [
+                '{"verb": "call", "verbnet_class": "say-37.7", "pos": "verb"}',
+                '{"verb": "ask", "verbnet_class": "say-37.7", "pos": "verb"}',
+            ]),
+            (seed_wiktextract_entries, [
+                '{"word": "nonexistent_class", "class_id": "noun.nonexistent", "pos": "noun"}',
+                '{"word": "zither", "class_id": "physical_object.instrument", "pos": "noun"}',
+            ]),
+        ]
+        for seeder_fn, lines in cases:
+            with self.subTest(seeder=seeder_fn.__name__):
+                store = self._make_store()
+                try:
+                    count = seeder_fn(store, data_path=self._make_data_path(lines))
+                    self.assertEqual(count, 1)
+                finally:
+                    store.close()
+
+    def test_seeder_idempotent(self) -> None:
+        cases = [
+            (seed_wordnet_supersenses, [
+                '{"word": "love", "supersense": "noun.feeling", "pos": "noun"}',
+            ]),
+            (seed_verbnet_classes, [
+                '{"verb": "ask", "verbnet_class": "say-37.7", "pos": "verb"}',
+            ]),
+            (seed_wiktextract_entries, [
+                '{"word": "zither", "class_id": "physical_object.instrument", "pos": "noun"}',
+            ]),
+        ]
+        for seeder_fn, lines in cases:
+            with self.subTest(seeder=seeder_fn.__name__):
+                store = self._make_store()
+                try:
+                    data_path = self._make_data_path(lines)
+                    count1 = seeder_fn(store, data_path=data_path)
+                    count2 = seeder_fn(store, data_path=data_path)
+                    self.assertEqual(count1, 1)
+                    self.assertEqual(count2, 1)
+                    self.assertEqual(store.count("lexemes"), 1)
+                finally:
+                    store.close()
 
     def test_seed_wordnet_supersenses_skips_unknown_supersense(self) -> None:
         from melm.appliance.assistant_lexicon_bulk import seed_wordnet_supersenses
@@ -1485,104 +1401,6 @@ class BulkLexiconSeederMvpTests(unittest.TestCase):
             ])
             count = seed_wordnet_supersenses(store, data_path=data)
             self.assertEqual(count, 1)
-        finally:
-            store.close()
-
-    def test_seed_wordnet_supersenses_idempotent(self) -> None:
-        from melm.appliance.assistant_lexicon_bulk import seed_wordnet_supersenses
-        store = self._make_store()
-        try:
-            data = self._wn_data_path([
-                '{"word": "love", "supersense": "noun.feeling", "pos": "noun"}',
-            ])
-            count1 = seed_wordnet_supersenses(store, data_path=data)
-            count2 = seed_wordnet_supersenses(store, data_path=data)
-            self.assertEqual(count1, 1)
-            self.assertEqual(count2, 1)
-            self.assertEqual(store.count("lexemes"), 1)
-        finally:
-            store.close()
-
-    def test_seed_verbnet_classes_basic(self) -> None:
-        from melm.appliance.assistant_lexicon_bulk import seed_verbnet_classes
-        store = self._make_store()
-        try:
-            data = self._vn_data_path([
-                '{"verb": "ask", "verbnet_class": "say-37.7", "pos": "verb"}',
-            ])
-            count = seed_verbnet_classes(store, data_path=data)
-            self.assertEqual(count, 1)
-            self.assertGreaterEqual(store.count("lexemes"), 1)
-        finally:
-            store.close()
-
-    def test_seed_verbnet_classes_skips_reserved(self) -> None:
-        from melm.appliance.assistant_lexicon_bulk import seed_verbnet_classes
-        store = self._make_store()
-        try:
-            data = self._vn_data_path([
-                '{"verb": "call", "verbnet_class": "say-37.7", "pos": "verb"}',
-                '{"verb": "ask", "verbnet_class": "say-37.7", "pos": "verb"}',
-            ])
-            count = seed_verbnet_classes(store, data_path=data)
-            self.assertEqual(count, 1)
-        finally:
-            store.close()
-
-    def test_seed_verbnet_classes_idempotent(self) -> None:
-        from melm.appliance.assistant_lexicon_bulk import seed_verbnet_classes
-        store = self._make_store()
-        try:
-            data = self._vn_data_path([
-                '{"verb": "ask", "verbnet_class": "say-37.7", "pos": "verb"}',
-            ])
-            count1 = seed_verbnet_classes(store, data_path=data)
-            count2 = seed_verbnet_classes(store, data_path=data)
-            self.assertEqual(count1, 1)
-            self.assertEqual(count2, 1)
-            self.assertEqual(store.count("lexemes"), 1)
-        finally:
-            store.close()
-
-    def test_seed_wiktextract_entries_basic(self) -> None:
-        from melm.appliance.assistant_lexicon_bulk import seed_wiktextract_entries
-        store = self._make_store()
-        try:
-            data = self._wiktextract_data_path([
-                '{"word": "zither", "class_id": "physical_object.instrument", "pos": "noun"}',
-                '{"word": "schadenfreude", "class_id": "emotion", "pos": "noun"}',
-            ])
-            count = seed_wiktextract_entries(store, data_path=data)
-            self.assertEqual(count, 2)
-            self.assertGreaterEqual(store.count("lexemes"), 2)
-        finally:
-            store.close()
-
-    def test_seed_wiktextract_entries_skips_unknown_class(self) -> None:
-        from melm.appliance.assistant_lexicon_bulk import seed_wiktextract_entries
-        store = self._make_store()
-        try:
-            data = self._wiktextract_data_path([
-                '{"word": "nonexistent_class", "class_id": "noun.nonexistent", "pos": "noun"}',
-                '{"word": "zither", "class_id": "physical_object.instrument", "pos": "noun"}',
-            ])
-            count = seed_wiktextract_entries(store, data_path=data)
-            self.assertEqual(count, 1)
-        finally:
-            store.close()
-
-    def test_seed_wiktextract_entries_idempotent(self) -> None:
-        from melm.appliance.assistant_lexicon_bulk import seed_wiktextract_entries
-        store = self._make_store()
-        try:
-            data = self._wiktextract_data_path([
-                '{"word": "zither", "class_id": "physical_object.instrument", "pos": "noun"}',
-            ])
-            count1 = seed_wiktextract_entries(store, data_path=data)
-            count2 = seed_wiktextract_entries(store, data_path=data)
-            self.assertEqual(count1, 1)
-            self.assertEqual(count2, 1)
-            self.assertEqual(store.count("lexemes"), 1)
         finally:
             store.close()
 

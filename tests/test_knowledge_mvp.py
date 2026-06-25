@@ -4,8 +4,10 @@ import json
 from pathlib import Path
 
 from melm.appliance.assistant_knowledge import classify_knowledge, extract_proposition
+from melm.appliance.assistant_os_kernel import AssistantOSKernel
 from melm.appliance.assistant_os_store import AssistantOSStore
 from melm.appliance.assistant_os_store import seed_class_schemas
+from melm.appliance.local_assistant_router import LocalAssistantProfile
 
 
 # ── classify_knowledge tests ──────────────────────────────────────────────
@@ -120,6 +122,12 @@ def _make_store(tmp_path):
     return store
 
 
+def _make_kernel(tmp_path):
+    store = _make_store(tmp_path)
+    profile = LocalAssistantProfile(user_id="knowledge-test-user")
+    return AssistantOSKernel(profile=profile, store=store), store
+
+
 def test_set_world_fact_creates_entity(tmp_path):
     store = _make_store(tmp_path)
     eid = "wf_test_001"
@@ -178,3 +186,53 @@ def test_find_contradicting_facts_no_match(tmp_path):
     store.set_world_fact("wf_nc1", "abuja", "is_a", "capital", "asserted", "user", 0.6)
     contradictions = store.find_contradicting_facts("abuja", "is_a", "capital", "asserted")
     assert len(contradictions) == 0
+
+
+def test_kernel_stores_natural_copular_claim(tmp_path):
+    kernel, store = _make_kernel(tmp_path)
+
+    result = kernel.handle("Abuja is the capital")
+
+    assert result.intent == "personal_memory"
+    assert result.reason == "knowledge_write"
+    facts = store.query_world_fact("abuja", "is_a", "capital")
+    assert len(facts) == 1
+    assert facts[0]["polarity"] == "asserted"
+    assert facts[0]["source_utterance"] == "Abuja is the capital"
+
+
+def test_kernel_stores_natural_negated_claim(tmp_path):
+    kernel, store = _make_kernel(tmp_path)
+
+    result = kernel.handle("Abuja is not the capital")
+
+    assert result.intent == "personal_memory"
+    assert result.reason == "knowledge_write"
+    facts = store.query_world_fact("abuja", "is_a", "capital")
+    assert len(facts) == 1
+    assert facts[0]["polarity"] == "negated"
+
+
+def test_kernel_arbitrates_contradiction_before_storing(tmp_path):
+    kernel, store = _make_kernel(tmp_path)
+
+    first = kernel.handle("Abuja is the capital")
+    second = kernel.handle("Abuja is not the capital")
+
+    assert first.reason == "knowledge_write"
+    assert second.reason == "knowledge_contradiction"
+    facts = store.query_world_fact("abuja", "is_a", "capital")
+    assert len(facts) == 1
+    assert facts[0]["polarity"] == "asserted"
+
+
+def test_kernel_preserves_multi_token_opinion_object(tmp_path):
+    kernel, store = _make_kernel(tmp_path)
+
+    result = kernel.handle("Jollof is the best food")
+
+    assert result.intent == "personal_memory"
+    assert result.reason == "knowledge_write"
+    facts = store.query_world_fact("jollof", "is_a")
+    assert len(facts) == 1
+    assert facts[0]["object"] == "best food"

@@ -416,8 +416,11 @@ class AssistantSynthesisMvpTests(unittest.TestCase):
             self.assertTrue(
                 payload["answer"].startswith("I picked")
                 or payload["answer"].startswith("Here is a story")
-                or payload["answer"].startswith("Let me tell you"),
-                f"Unexpected story answer start: {payload['answer'][:50]!r}",
+                or payload["answer"].startswith("Let me tell you")
+                or payload["answer"].startswith("Would you like to hear")
+                or payload["answer"].startswith("I recall a tale")
+                or payload["answer"].startswith("Sit comfortably for"),
+                f"Unexpected story answer start: {payload['answer'][:70]!r}",
             )
             self.assertNotIn("Using the public-domain catalog entry", payload["answer"])
             first_story = story_payloads["ia_rainmapbedtimestory00test"]

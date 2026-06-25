@@ -35,6 +35,12 @@ class TemporalDetectionTests(unittest.TestCase):
     def test_offset_past(self):
         self.assertEqual(detect_reasoning_task("What day was it 2 days ago?")["days"], -2)
 
+    def test_absolute_date_day_lookup(self):
+        self.assertEqual(
+            detect_reasoning_task("What day was June 11 1991?"),
+            {"task": "temporal", "op": "absolute_date", "date": "1991-06-11"},
+        )
+
 
 class TemporalSolverTests(unittest.TestCase):
     def _patch(self):
@@ -63,6 +69,27 @@ class TemporalSolverTests(unittest.TestCase):
         self.assertIn((FIXED - timedelta(days=2)).strftime("%A"), answer)
         self.assertIn("2 days ago", answer)
 
+    def test_absolute_date(self):
+        with self._patch():
+            result, answer, refusal = solve(
+                {"task": "temporal", "op": "absolute_date", "date": "1991-06-11"}
+            )
+        self.assertIsNone(refusal)
+        self.assertEqual(result["weekday"], "Tuesday")
+        self.assertEqual(result["relation"], "past")
+        self.assertIn("Tuesday", answer)
+        self.assertIn("was", answer)
+        self.assertIn("June 11, 1991", answer)
+
+    def test_absolute_future_date_uses_future_tense(self):
+        with self._patch():
+            result, answer, refusal = solve(
+                {"task": "temporal", "op": "absolute_date", "date": "2030-06-11"}
+            )
+        self.assertIsNone(refusal)
+        self.assertEqual(result["relation"], "future")
+        self.assertIn("will be", answer)
+
 
 class TemporalKernelTests(unittest.TestCase):
     def setUp(self) -> None:
@@ -89,6 +116,27 @@ class TemporalKernelTests(unittest.TestCase):
             d = self.kernel.handle("What time is it?")
         self.assertEqual(d.intent, "reasoning:temporal")
         self.assertIn("It is", d.answer)
+
+    def test_absolute_date_local(self):
+        d = self.kernel.handle("What day was June 11 1991?")
+        self.assertEqual(d.intent, "reasoning:temporal")
+        self.assertIn("Tuesday", d.answer)
+
+    def test_historical_weather_routes_to_dated_fetch(self):
+        d = self.kernel.handle("What was the weather on June 11 1991?")
+        self.assertEqual(d.intent, "weather")
+        self.assertEqual(d.route, "external_fetch")
+        self.assertTrue(d.external_fetch_needed)
+        self.assertIn("1991-06-11", d.evidence_keys)
+        self.assertIn("historical", d.reason)
+
+    def test_future_weather_routes_to_dated_forecast_fetch(self):
+        d = self.kernel.handle("What will the weather be on June 11 2030?")
+        self.assertEqual(d.intent, "weather")
+        self.assertEqual(d.route, "external_fetch")
+        self.assertTrue(d.external_fetch_needed)
+        self.assertIn("2030-06-11", d.evidence_keys)
+        self.assertIn("forecast", d.reason)
 
 
 if __name__ == "__main__":

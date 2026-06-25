@@ -75,7 +75,7 @@ class LocalAssistantOSCliMvpTests(unittest.TestCase):
             self.assertEqual(identity["debug_parse"]["chat_frame"]["intent"], "assistant_identity")
             self.assertEqual(identity["debug_parse"]["chat_frame"]["domain"], "self_model")
             self.assertTrue(identity["debug_parse"]["chat_frame"]["can_answer_locally"])
-            self.assertEqual(parsed["uol"]["action"], "name")
+            self.assertEqual(parsed["uol"]["action"], "name_awareness")
             self.assertEqual(parsed["uol"]["object"], "self_model")
             self.assertEqual(parsed["nlp"]["primary_parse_basis"], "uol_chat_frame")
             self.assertEqual(parsed["nlp"]["compositional_parse"]["pattern"], "what_copula_possessive_name")

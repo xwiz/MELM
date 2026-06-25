@@ -1,4 +1,4 @@
-"""Rigorous bug-finding tests for self-identity derivation module.
+"""Regression tests for self-identity derivation edge cases.
 
 Each test class targets one specific bug, logic flaw, or edge case
 identified in the code review of assistant_skill_self_identity.py.
@@ -6,7 +6,6 @@ identified in the code review of assistant_skill_self_identity.py.
 
 from __future__ import annotations
 
-import json
 import unittest
 from unittest.mock import patch
 from typing import Any
@@ -118,7 +117,8 @@ class LabelSubstringMatchTests(unittest.TestCase):
                 analyze_user_identity,
             )
             result = analyze_user_identity(store, "test")
-            self.assertIsNotNone(result)
+            self.assertIsNone(result)
+            return
             # Split "not_turn: story" by "turn: " → ["not_", " story"]
             # So intent = " story" (with leading space)
             self.assertIn(
@@ -148,10 +148,8 @@ class LabelSubstringMatchTests(unittest.TestCase):
                 analyze_user_identity,
             )
             result = analyze_user_identity(store, "test")
-            self.assertIsNone(
-                result,
-                "Capitalised 'Turn:' should be treated the same as 'turn:'",
-            )
+            self.assertIsNotNone(result)
+            self.assertEqual(result.highest_meaning_intent, "story")
         finally:
             store.close()
 
@@ -184,16 +182,16 @@ class LabelTrailingSpaceTests(unittest.TestCase):
             # will return None for highest_meaning_intent "story ".
             self.assertEqual(
                 result.highest_meaning_intent,
-                "story ",
+                "story",
             )
             # Verify the intent name has a trailing space (the defect)
             self.assertEqual(
-                result.per_intent_counts.get("story ", 0), 3,
-                "Trailing-space intent should have 3 counts",
+                result.per_intent_counts.get("story ", 0), 0,
+                "Trailing-space intent should not be counted",
             )
             self.assertEqual(
-                result.per_intent_counts.get("story", 0), 0,
-                "Canonical 'story' intent should have 0 counts",
+                result.per_intent_counts.get("story", 0), 3,
+                "Canonical 'story' intent should have 3 counts",
             )
         finally:
             store.close()
@@ -218,14 +216,8 @@ class MalformedJsonUseridTests(unittest.TestCase):
             from melm.appliance.assistant_skill_self_identity import (
                 analyze_user_identity,
             )
-            try:
-                result = analyze_user_identity(store, "test")
-                # If we get here without crash, that's success.
-                # The entities should be skipped because json.loads failed.
-                # But currently it WILL crash, so we test that crash occurs.
-                self.fail("Expected json.JSONDecodeError was not raised")
-            except json.JSONDecodeError:
-                pass  # Expected bug: unhandled crash from malformed JSON
+            result = analyze_user_identity(store, "test")
+            self.assertIsNone(result)
         finally:
             store.close()
 
@@ -269,8 +261,13 @@ class MalformedJsonPolarityTests(unittest.TestCase):
             from melm.appliance.assistant_skill_self_identity import (
                 analyze_user_identity,
             )
-            with self.assertRaises(json.JSONDecodeError):
-                analyze_user_identity(store, "test")
+            result = analyze_user_identity(store, "test")
+            self.assertIsNotNone(result)
+            self.assertEqual(result.per_intent_counts["story"], 3)
+            self.assertAlmostEqual(
+                result.per_intent_mean_polarities["story"],
+                0.5,
+            )
         finally:
             store.close()
 
@@ -307,7 +304,7 @@ class StringPolaritySilentDropTests(unittest.TestCase):
                 ) VALUES (?, ?, ?, ?, 'filled', 1, 1, 0, 'private_local',
                           'test', 0.8, 'test', datetime('now'))
                 """,
-                ("pe_001_polarity", "pe_001", "polarity", '"0.5"'),
+                ("pe_001_polarity", "pe_001", "polarity", '"0.8"'),
             )
             store.connection.commit()
 
@@ -318,15 +315,10 @@ class StringPolaritySilentDropTests(unittest.TestCase):
             )
             result = analyze_user_identity(store, "test")
             self.assertIsNotNone(result)
-            # The string polarity '"0.5"' is SKIPPED because isinstance
-            # check rejects strings.  Only 2 numeric values counted.
-            # Mean = (0.6 + 0.4) / 2 = 0.5
             self.assertAlmostEqual(
                 result.per_intent_mean_polarities.get("story", -999),
-                (0.6 + 0.4) / 2,
+                (0.8 + 0.6 + 0.4) / 3,
             )
-            # The entity with string polarity was NOT counted toward the
-            # mean, so the mean is computed from only 2 values, not 3.
         finally:
             store.close()
 
@@ -364,10 +356,8 @@ class MixedMetricsExplanationTests(unittest.TestCase):
         self.assertIsNotNone(explanation)
         # The frame comes from "weather" → "checking the weather"
         self.assertIn("checking the weather", explanation)
-        # The count and polarity come from top_intent (story: 50, +0.1)
-        # Bug: should be weather's 1 and +0.9
-        self.assertIn("50", explanation)
-        self.assertIn("+0.1", explanation)
+        self.assertIn("1", explanation)
+        self.assertIn("+0.9", explanation)
 
 
 # ---------------------------------------------------------------------------
@@ -443,12 +433,12 @@ class EmptyPolarityDataTests(unittest.TestCase):
     def test_all_zero_polarity_still_picks_first_alphabetical(self) -> None:
         store = _make_store()
         try:
-            _add_pe(store, "pe_001", "zulu", "test")
-            _add_pe(store, "pe_002", "zulu", "test")
-            _add_pe(store, "pe_003", "zulu", "test")
-            _add_pe(store, "pe_004", "alpha", "test")
-            _add_pe(store, "pe_005", "alpha", "test")
-            _add_pe(store, "pe_006", "alpha", "test")
+            _add_pe(store, "pe_001", "weather", "test")
+            _add_pe(store, "pe_002", "weather", "test")
+            _add_pe(store, "pe_003", "weather", "test")
+            _add_pe(store, "pe_004", "story", "test")
+            _add_pe(store, "pe_005", "story", "test")
+            _add_pe(store, "pe_006", "story", "test")
             from melm.appliance.assistant_skill_self_identity import (
                 analyze_user_identity,
             )
@@ -458,7 +448,7 @@ class EmptyPolarityDataTests(unittest.TestCase):
             # Both have same polarity (0.0).  Count tiebreaker: alpha has 3.
             # So highest_meaning will be alpha (ties → alphabetical).
             self.assertEqual(
-                result.highest_meaning_intent, "alpha",
+                result.highest_meaning_intent, "story",
             )
             self.assertAlmostEqual(result.highest_meaning_polarity, 0.0)
         finally:
@@ -518,9 +508,7 @@ class NumericUserIdTests(unittest.TestCase):
             )
             result = analyze_user_identity(store, "42")
             self.assertIsNotNone(result)
-            # pe_001 has numeric user_id 42 (int), which != "42" (str).
-            # So pe_001 is skipped.  Only pe_002, pe_003, pe_004 counted.
-            self.assertEqual(result.total_turns, 3)
+            self.assertEqual(result.total_turns, 4)
         finally:
             store.close()
 
@@ -545,11 +533,7 @@ class MinDataPointsPerIntentTests(unittest.TestCase):
                 analyze_user_identity,
             )
             result = analyze_user_identity(store, "test")
-            self.assertIsNotNone(result)
-            # Bug: identity is derived with only 2 data points for "story"
-            # but min_data_points is 3.  The total is 3, which passes.
-            self.assertEqual(result.highest_meaning_intent, "story")
-            self.assertEqual(result.per_intent_counts["story"], 2)
+            self.assertIsNone(result)
         finally:
             store.close()
 
@@ -733,12 +717,7 @@ class LabelWithColonTests(unittest.TestCase):
                 analyze_user_identity,
             )
             result = analyze_user_identity(store, "test")
-            self.assertIsNotNone(result)
-            # split("turn: ", 1)[1] on "turn: story: test" = "story: test"
-            self.assertEqual(
-                result.highest_meaning_intent,
-                "story: test",
-            )
+            self.assertIsNone(result)
         finally:
             store.close()
 

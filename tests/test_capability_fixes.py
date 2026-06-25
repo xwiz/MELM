@@ -11,6 +11,7 @@ import unittest
 from pathlib import Path
 
 
+
 # ---------------------------------------------------------------------------
 # Fix #1: TimeRef in AtomContext + _guess_semantic_class
 # ---------------------------------------------------------------------------
@@ -39,33 +40,32 @@ class TestUolTimeRef(unittest.TestCase):
 
     def test_to_dict_serialises_time_ref(self) -> None:
         from melm.appliance.uol_types import AtomContext, AtomLinks, PredicateRef, RoleAssignment, TimeRef, UolAtom
-        t = TimeRef(text="tomorrow", tense="future", relation="on", anchor="utterance_time")
-        ctx = AtomContext(tense="future", time=t)
-        atom = UolAtom(
-            id="test_atom",
-            kind="event",
-            predicate=PredicateRef(id="go", semantic_class="verb.move"),
-            roles=(RoleAssignment(role="agent", value="user"),),
-            context=ctx,
-        )
-        d = atom.to_dict()
-        self.assertIn("time", d["context"])
-        time_dict = d["context"]["time"]
-        self.assertIsNotNone(time_dict)
-        self.assertEqual(time_dict["text"], "tomorrow")
-        self.assertEqual(time_dict["tense"], "future")
-        self.assertEqual(time_dict["anchor"], "utterance_time")
 
-    def test_to_dict_serialises_none_time(self) -> None:
-        from melm.appliance.uol_types import AtomContext, AtomLinks, PredicateRef, RoleAssignment, UolAtom
-        atom = UolAtom(
-            id="test_atom2",
-            kind="state",
-            predicate=PredicateRef(id="be", semantic_class="verb.stative"),
-            context=AtomContext(),
-        )
-        d = atom.to_dict()
-        self.assertIsNone(d["context"]["time"])
+        for label, make_atom in [
+            ("with_time", lambda: UolAtom(
+                id="test_atom", kind="event",
+                predicate=PredicateRef(id="go", semantic_class="verb.move"),
+                roles=(RoleAssignment(role="agent", value="user"),),
+                context=AtomContext(tense="future", time=TimeRef(
+                    text="tomorrow", tense="future", relation="on", anchor="utterance_time")),
+            )),
+            ("without_time", lambda: UolAtom(
+                id="test_atom2", kind="state",
+                predicate=PredicateRef(id="be", semantic_class="verb.stative"),
+                context=AtomContext(),
+            )),
+        ]:
+            with self.subTest(label):
+                atom = make_atom()
+                d = atom.to_dict()
+                if label == "with_time":
+                    self.assertIn("time", d["context"])
+                    self.assertIsNotNone(d["context"]["time"])
+                    self.assertEqual(d["context"]["time"]["text"], "tomorrow")
+                    self.assertEqual(d["context"]["time"]["tense"], "future")
+                    self.assertEqual(d["context"]["time"]["anchor"], "utterance_time")
+                else:
+                    self.assertIsNone(d["context"]["time"])
 
     def test_future_tense_tokens_produce_timeref(self) -> None:
         from melm.appliance.functional_grammar import parse_functional_relations
@@ -81,16 +81,19 @@ class TestUolTimeRef(unittest.TestCase):
             self.assertIsNotNone(atom.context.time)
             self.assertEqual(atom.context.time.tense, "future")  # type: ignore[union-attr]
 
-    def test_guess_semantic_class_resolves_known_predicate(self) -> None:
+    def test_guess_semantic_class(self) -> None:
         from melm.appliance.uol_atomizer import _guess_semantic_class
-        sc = _guess_semantic_class("eat")
-        self.assertNotEqual(sc, "unknown")
-        self.assertIn("verb", sc)
-
-    def test_guess_semantic_class_unknown_term_returns_unknown(self) -> None:
-        from melm.appliance.uol_atomizer import _guess_semantic_class
-        sc = _guess_semantic_class("xyzzy_nonexistent_verb")
-        self.assertEqual(sc, "unknown")
+        for token, expected_not_unknown in [
+            ("eat", True),
+            ("xyzzy_nonexistent_verb", False),
+        ]:
+            with self.subTest(token=token):
+                sc = _guess_semantic_class(token)
+                if expected_not_unknown:
+                    self.assertNotEqual(sc, "unknown")
+                    self.assertIn("verb", sc)
+                else:
+                    self.assertEqual(sc, "unknown")
 
 
 # ---------------------------------------------------------------------------
@@ -205,10 +208,23 @@ class TestLexiconHotReload(unittest.TestCase):
         from melm.appliance.local_assistant_router import refresh_in_memory_lexicon
         self.assertTrue(callable(refresh_in_memory_lexicon))
 
-    def test_refresh_returns_int(self) -> None:
+    def test_refresh_return_value_contract(self) -> None:
+        from melm.appliance.assistant_os_store import seed_assistant_os_lexicon
         from melm.appliance.local_assistant_router import refresh_in_memory_lexicon
-        n = refresh_in_memory_lexicon(self.store)
-        self.assertIsInstance(n, int)
+
+        with self.subTest("returns_int"):
+            n = refresh_in_memory_lexicon(self.store)
+            self.assertIsInstance(n, int)
+
+        with self.subTest("empty_store_returns_zero"):
+            n = refresh_in_memory_lexicon(self.store)
+            self.assertEqual(n, 0)
+
+        seed_assistant_os_lexicon(self.store)
+        with self.subTest("second_call_idempotent"):
+            refresh_in_memory_lexicon(self.store)  # first call loads seeded senses
+            n2 = refresh_in_memory_lexicon(self.store)  # second call adds 0
+            self.assertEqual(n2, 0)
 
     def test_new_active_sense_added_to_lexicon(self) -> None:
         from melm.appliance.assistant_os_store import seed_assistant_os_lexicon
@@ -261,20 +277,6 @@ class TestLexiconHotReload(unittest.TestCase):
             pass  # ContractValidationError possible if class not found — that's ok
         n = refresh_in_memory_lexicon(self.store)
         self.assertIsInstance(n, int)
-
-    def test_refresh_safe_on_empty_store(self) -> None:
-        from melm.appliance.local_assistant_router import refresh_in_memory_lexicon
-        n = refresh_in_memory_lexicon(self.store)
-        self.assertEqual(n, 0)
-
-    def test_refresh_idempotent(self) -> None:
-        from melm.appliance.assistant_os_store import seed_assistant_os_lexicon
-        from melm.appliance.local_assistant_router import _IN_MEMORY_LEXICON, refresh_in_memory_lexicon
-        seed_assistant_os_lexicon(self.store)
-        n1 = refresh_in_memory_lexicon(self.store)
-        n2 = refresh_in_memory_lexicon(self.store)
-        # Second call adds 0 new terms (already merged)
-        self.assertEqual(n2, 0)
 
 
 if __name__ == "__main__":

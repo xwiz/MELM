@@ -327,3 +327,85 @@ class TestSynthesisWithDecoder:
         v = verify_answer(plan, "This diagnosis shows you need treatment immediately.", packet)
         assert not v.passed
         assert "constraint_violation" in v.failure_codes
+
+
+# ---------------------------------------------------------------------------
+# AtomDecoderBackend — protocol conformance & dispatch
+# ---------------------------------------------------------------------------
+
+
+@dataclass
+class _FakeUolAct:
+    """Minimal UolAct-like dict for testing atom backend."""
+    content: tuple[dict, ...] = ()
+
+    def to_dict(self) -> dict:
+        return {
+            "content": [
+                {
+                    "id": a.get("id", "atom_1"),
+                    "kind": a.get("kind", "event"),
+                    "predicate": {"id": a.get("predicate_id", "weather"), "semantic_class": "verb.stative"},
+                    "roles": [{"role": "theme", "value": a.get("theme", "today")}],
+                    "links": {"causes": [], "caused_by": [], "enables": [], "prevents": []},
+                }
+                for a in self.content
+            ]
+        }
+
+
+@pytest.fixture
+def atom_uol() -> dict:
+    return _FakeUolAct(content=({"predicate_id": "weather", "theme": "today"},)).to_dict()
+
+
+@pytest.fixture
+def atom_grammar(atom_uol: dict) -> DecodingGrammar:
+    return DecodingGrammar(
+        allowed_entities=(),
+        required_constraints=(),
+        prohibited_tokens=(),
+        max_tokens=64,
+        template_hint="fallback hint",
+        mood="neutral",
+        uol_act=atom_uol,
+        intent="weather",
+    )
+
+
+class TestAtomDecoderBackend:
+    def test_atom_backend_conforms_to_protocol(self) -> None:
+        from melm.appliance.assistant_decoder_atom import AtomDecoderBackend
+        backend: DecoderBackend = AtomDecoderBackend()
+        assert isinstance(backend, AtomDecoderBackend)
+        assert backend.name == "atom"
+
+    def test_atom_backend_registered_by_default(self) -> None:
+        decoder = ConstrainedDecoder()
+        assert "atom" in decoder.available
+
+    def test_atom_backend_returns_text_with_valid_uol(self, empty_plan: AnswerPlan, atom_grammar: DecodingGrammar) -> None:
+        from melm.appliance.assistant_decoder_atom import AtomDecoderBackend
+        backend = AtomDecoderBackend()
+        result = backend.decode(empty_plan, atom_grammar)
+        assert result
+        assert "today" in result
+        assert "weather" in result.lower() or "today" in result
+
+    def test_atom_backend_empty_without_uol(self, empty_plan: AnswerPlan, stub_grammar: DecodingGrammar) -> None:
+        from melm.appliance.assistant_decoder_atom import AtomDecoderBackend
+        backend = AtomDecoderBackend()
+        result = backend.decode(empty_plan, stub_grammar)
+        assert result == ""
+
+    def test_dispatch_uses_atom_over_template_when_uol_present(self, decoder: ConstrainedDecoder, empty_plan: AnswerPlan, atom_grammar: DecodingGrammar) -> None:
+        result = decoder.dispatch(empty_plan, atom_grammar)
+        assert result is not None
+        assert result.decoder == "atom"
+        assert "today" in result.answer
+
+    def test_dispatch_falls_to_template_when_no_uol(self, decoder: ConstrainedDecoder, empty_plan: AnswerPlan, stub_grammar: DecodingGrammar) -> None:
+        result = decoder.dispatch(empty_plan, stub_grammar)
+        assert result is not None
+        assert result.decoder == "template"
+        assert result.answer == "hello from template"

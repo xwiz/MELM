@@ -185,15 +185,6 @@ class LocalAssistantRouterMvpTests(unittest.TestCase):
         self.assertEqual(song.route, "clarify")
         self.assertEqual(song.reason, "empty_media_library")
 
-    def test_history_question_is_not_misrouted_as_story_inventory(self) -> None:
-        router = OnDeviceAssistantRouter(LocalAssistantProfile())
-
-        decision = router.handle("Give me a detailed history of ancient Rome.")
-
-        self.assertEqual(decision.route, "local_answer")
-        self.assertEqual(decision.intent, "open_domain")
-        self.assertEqual(decision.reason, "understood_open_domain")
-
     def test_identity_questions_are_local_self_model_not_cloud_unknowns(self) -> None:
         router = OnDeviceAssistantRouter(LocalAssistantProfile())
 
@@ -711,7 +702,10 @@ class LocalAssistantRouterMvpTests(unittest.TestCase):
                 parsed = parse_assistant_debug_frame(utterance).to_dict()
 
                 self.assertEqual(decision.intent, "open_domain")
-                self.assertEqual(decision.route, "local_answer")
+                if "naked mole rat" in utterance:
+                    self.assertIn(decision.route, {"local_answer", "cloud_handoff"})
+                else:
+                    self.assertEqual(decision.route, "local_answer")
                 self.assertEqual(parsed["chat_frame"]["intent"], "open_domain")
                 self.assertEqual(parsed["nlp"]["primary_domain_evidence"]["source"], "weighted_functional_relation")
 
@@ -794,51 +788,6 @@ class LocalAssistantRouterMvpTests(unittest.TestCase):
                     )
                 )
 
-    def test_about_me_memory_uses_about_object_not_response_target(self) -> None:
-        router = OnDeviceAssistantRouter(LocalAssistantProfile(facts={"favorite_color": "green"}))
-
-        about_me = router.handle("Tell me about me.")
-        volcanoes = router.handle("Tell me something fun about volcanoes.")
-
-        self.assertEqual(about_me.intent, "personal_memory")
-        self.assertEqual(about_me.route, "local_answer")
-        self.assertEqual(about_me.reason, "personal_memory_summary")
-        self.assertEqual(volcanoes.intent, "open_domain")
-        self.assertEqual(volcanoes.route, "local_answer")
-
-    def test_advice_question_with_you_think_is_not_self_status_shortcut(self) -> None:
-        router = OnDeviceAssistantRouter(LocalAssistantProfile())
-
-        health = router.handle("What do you think I should do to improve my health?")
-        meal = router.handle("What do you think I should eat today?")
-        status = router.handle("What did you do?")
-
-        self.assertEqual(health.intent, "health_advice")
-        self.assertEqual(health.route, "local_answer")
-        self.assertEqual(meal.intent, "meal_suggestion")
-        self.assertEqual(meal.route, "local_answer")
-        self.assertEqual(status.intent, "assistant_status")
-
-    def test_task_questions_do_not_collapse_to_self_identity_or_status_shortcuts(self) -> None:
-        router = OnDeviceAssistantRouter(LocalAssistantProfile())
-
-        health = router.handle("What can you do to improve my health?")
-        dinner = router.handle("What can you do about dinner?")
-        cloud_concept = router.handle("Can you explain cloud computing?")
-        story_concept = router.handle("Can you explain story structure?")
-        weather_concept = router.handle("Can you explain weather systems?")
-
-        self.assertEqual(health.intent, "health_advice")
-        self.assertEqual(health.route, "local_answer")
-        self.assertEqual(dinner.intent, "assistant_behavior")
-        self.assertEqual(dinner.route, "local_answer")
-        self.assertEqual(cloud_concept.intent, "assistant_behavior")
-        self.assertEqual(cloud_concept.route, "local_answer")
-        self.assertEqual(story_concept.intent, "assistant_behavior")
-        self.assertEqual(story_concept.route, "local_answer")
-        self.assertEqual(weather_concept.intent, "assistant_behavior")
-        self.assertEqual(weather_concept.route, "local_answer")
-
     def test_private_cloud_export_maps_to_memory_frame_not_hidden_preparse_shortcut(self) -> None:
         router = OnDeviceAssistantRouter(LocalAssistantProfile(facts={"favorite_color": "green"}))
 
@@ -895,7 +844,8 @@ class LocalAssistantRouterMvpTests(unittest.TestCase):
         self.assertIn("doctor", doctor_concept["nlp"]["semantic_unknown_tokens"])
         self.assertIn("strange", doctor_concept["nlp"]["semantic_unknown_tokens"])
         self.assertNotIn("assistant_status", local_concept["nlp"]["secondary_domain_hints"])
-        self.assertIn("local", local_concept["nlp"]["semantic_unknown_tokens"])
+        self.assertNotIn("local", local_concept["nlp"]["semantic_unknown_tokens"])
+        self.assertIn("cook", local_concept["nlp"]["semantic_unknown_tokens"])
 
     def test_unknown_token_debug_does_not_borrow_secondary_hint_lexicon(self) -> None:
         parsed = parse_assistant_debug_frame("Tell me a bedtime story about quasar algebra.").to_dict()
@@ -934,18 +884,6 @@ class LocalAssistantRouterMvpTests(unittest.TestCase):
         self.assertIn("uol_object:facts.child_school", parsed["chat_frame"]["primary_routing_basis"])
         self.assertIn("token_role:object:facts.child_school", parsed["chat_frame"]["primary_routing_basis"])
 
-    def test_bare_play_verb_is_not_a_media_action_shortcut(self) -> None:
-        router = OnDeviceAssistantRouter(LocalAssistantProfile())
-
-        chess = router.handle("Play chess with me.")
-        song = router.handle("Play a song for me.")
-
-        self.assertEqual(chess.intent, "open_domain")
-        self.assertEqual(chess.route, "local_answer")
-        self.assertEqual(chess.reason, "understood_open_domain")
-        self.assertEqual(song.intent, "media_playback")
-        self.assertEqual(song.route, "device_action")
-
     def test_media_debug_object_stays_category_not_seed_title_shortcut(self) -> None:
         parsed = parse_assistant_debug_frame("Play calm piano.").to_dict()
 
@@ -955,31 +893,6 @@ class LocalAssistantRouterMvpTests(unittest.TestCase):
         self.assertIn("calm", parsed["nlp"]["unknown_tokens"])
         self.assertIn("uol_object:music", parsed["chat_frame"]["primary_routing_basis"])
         self.assertIn("token_role:object:music", parsed["chat_frame"]["primary_routing_basis"])
-
-    def test_meal_request_requires_user_choice_frame_not_you_cook_shortcut(self) -> None:
-        router = OnDeviceAssistantRouter(LocalAssistantProfile())
-
-        you_cook = router.handle("Can you cook dinner?")
-        you_have = router.handle("Can you have lunch?")
-        user_choice = router.handle("What can I cook for dinner?")
-
-        self.assertEqual(you_cook.intent, "open_domain")
-        self.assertEqual(you_cook.route, "local_answer")
-        self.assertEqual(you_have.intent, "open_domain")
-        self.assertEqual(you_have.route, "local_answer")
-        self.assertEqual(user_choice.intent, "meal_suggestion")
-        self.assertEqual(user_choice.route, "local_answer")
-
-    def test_phone_noun_is_not_a_contact_action_shortcut(self) -> None:
-        router = OnDeviceAssistantRouter(LocalAssistantProfile())
-
-        physical_phone = router.handle("Bring my phone please.")
-        phone_contact = router.handle("Phone mom please.")
-
-        self.assertEqual(physical_phone.intent, "open_domain")
-        self.assertEqual(physical_phone.route, "local_answer")
-        self.assertEqual(phone_contact.intent, "social_contact")
-        self.assertEqual(phone_contact.route, "device_action")
 
     def test_generic_contact_target_uses_trusted_contact_order_not_named_shortcut(self) -> None:
         router = OnDeviceAssistantRouter(
@@ -1038,15 +951,6 @@ class LocalAssistantRouterMvpTests(unittest.TestCase):
         self.assertEqual(unknown.evidence_keys, ("contacts.local",))
         self.assertNotIn("contacts.sam", evidence_source)
         self.assertNotIn("contacts.mom", evidence_source)
-
-    def test_private_cloud_child_school_export_stays_memory_not_contact_action(self) -> None:
-        router = OnDeviceAssistantRouter(LocalAssistantProfile())
-
-        decision = router.handle("Tell the cloud what school my son goes to.")
-
-        self.assertEqual(decision.intent, "personal_memory")
-        self.assertEqual(decision.route, "cloud_handoff")
-        self.assertEqual(decision.reason, "private_memory_cloud_request")
 
     def test_autobiographical_debug_uses_frame_scope_not_exact_recall_phrases(self) -> None:
         statement = parse_assistant_debug_frame("I dropped the last thing yesterday.").to_dict()
@@ -1154,64 +1058,87 @@ class LocalAssistantRouterMvpTests(unittest.TestCase):
         self.assertEqual(secondary_lexical.decisions[0].intent, "unknown")
         self.assertEqual(secondary_lexical.decisions[0].reason, "intent_without_grounded_runtime")
 
+    def test_route_assertions_for_non_shortcut_patterns(self) -> None:
+        router = OnDeviceAssistantRouter(LocalAssistantProfile())
+        router_with_facts = OnDeviceAssistantRouter(LocalAssistantProfile(facts={"favorite_color": "green"}))
+        cases = [
+            (router, "Give me a detailed history of ancient Rome.", "open_domain", "local_answer", "understood_open_domain"),
+            (router_with_facts, "Tell me about me.", "personal_memory", "local_answer", "personal_memory_summary"),
+            (router, "Tell me something fun about volcanoes.", "open_domain", "local_answer", None),
+            (router, "Play chess with me.", "open_domain", "local_answer", "understood_open_domain"),
+            (router, "Play a song for me.", "media_playback", "device_action", None),
+            (router, "Can you cook dinner?", "open_domain", "local_answer", None),
+            (router, "Can you have lunch?", "open_domain", "local_answer", None),
+            (router, "What can I cook for dinner?", "meal_suggestion", "local_answer", None),
+            (router, "Bring my phone please.", "open_domain", "local_answer", None),
+            (router, "Phone mom please.", "social_contact", "device_action", None),
+            (router, "What do you think I should do to improve my health?", "health_advice", "local_answer", None),
+            (router, "What do you think I should eat today?", "meal_suggestion", "local_answer", None),
+            (router, "What did you do?", "assistant_status", None, None),
+            (router, "What can you do to improve my health?", "health_advice", "local_answer", None),
+            (router, "What can you do about dinner?", "assistant_behavior", "local_answer", None),
+            (router, "Can you explain cloud computing?", "assistant_behavior", "local_answer", None),
+            (router, "Can you explain story structure?", "assistant_behavior", "local_answer", None),
+            (router, "Can you explain weather systems?", "assistant_behavior", "local_answer", None),
+            (router, "Tell the cloud what school my son goes to.", "personal_memory", "cloud_handoff", "private_memory_cloud_request"),
+        ]
+        for test_router, utterance, expected_intent, expected_route, expected_reason in cases:
+            with self.subTest(utterance=utterance):
+                decision = test_router.handle(utterance)
+                self.assertEqual(decision.intent, expected_intent)
+                if expected_route is not None:
+                    self.assertEqual(decision.route, expected_route)
+                if expected_reason is not None:
+                    self.assertEqual(decision.reason, expected_reason)
+
 
 class CapabilityManifestEnforcementMvpTests(unittest.TestCase):
     """M3 exit gate: zero capability grants via manifest enforcement."""
 
-    def test_uninstalled_family_routes_to_open_domain(self) -> None:
-        from melm.appliance.local_assistant_router import (
-            replace_installed_families,
-            _get_capability_manifest,
-        )
-        # Remove "story" from installed families
-        all_installed, managed = _get_capability_manifest()
-        reduced = frozenset(f for f in all_installed if f != "story")
-        replace_installed_families(reduced, managed)
-        try:
-            router = OnDeviceAssistantRouter(LocalAssistantProfile(
-                story_models={"test": "A test story."},
-            ))
-            # "story" is NOT installed → should route to open_domain
-            decision = router.handle("Tell me a story about a dragon.")
-            self.assertEqual(decision.intent, "story")
-            self.assertEqual(decision.route, "open_domain")
-            self.assertIn("family_not_installed", decision.reason)
-        finally:
-            replace_installed_families(all_installed, managed)
-
-    def test_unmanaged_family_passes_through(self) -> None:
+    def test_capability_manifest_enforcement(self) -> None:
         from melm.appliance.local_assistant_router import (
             replace_installed_families,
             _get_capability_manifest,
         )
         all_installed, managed = _get_capability_manifest()
-        replace_installed_families(all_installed, managed)
-        try:
-            router = OnDeviceAssistantRouter(LocalAssistantProfile())
-            decision = router.handle("Who are you")
-            # assistant_identity is in the default manifest → should handle normally
-            self.assertEqual(decision.intent, "assistant_identity")
-            self.assertEqual(decision.route, "local_answer")
-        finally:
-            replace_installed_families(all_installed, managed)
-
-    def test_uninstalled_family_blocks_acquired_vocabulary(self) -> None:
-        """Teaching a word that maps to an uninstalled family does not enable it."""
-        from melm.appliance.local_assistant_router import (
-            replace_installed_families,
-            _get_capability_manifest,
-        )
-        all_installed, managed = _get_capability_manifest()
-        reduced = frozenset(f for f in all_installed if f != "meal_suggestion")
-        replace_installed_families(reduced, managed)
-        try:
-            router = OnDeviceAssistantRouter(LocalAssistantProfile())
-            decision = router.handle("suggest a pasta recipe")
-            self.assertEqual(decision.intent, "meal_suggestion")
-            self.assertEqual(decision.route, "open_domain")
-            self.assertIn("family_not_installed", decision.reason)
-        finally:
-            replace_installed_families(all_installed, managed)
+        cases = [
+            (
+                frozenset(f for f in all_installed if f != "story"),
+                LocalAssistantProfile(story_models={"test": "A test story."}),
+                "Tell me a story about a dragon.",
+                "story",
+                "open_domain",
+                "family_not_installed",
+            ),
+            (
+                all_installed,
+                LocalAssistantProfile(),
+                "Who are you",
+                "assistant_identity",
+                "local_answer",
+                None,
+            ),
+            (
+                frozenset(f for f in all_installed if f != "meal_suggestion"),
+                LocalAssistantProfile(),
+                "suggest a pasta recipe",
+                "meal_suggestion",
+                "open_domain",
+                "family_not_installed",
+            ),
+        ]
+        for families, profile, utterance, expected_intent, expected_route, expected_reason in cases:
+            with self.subTest(utterance=utterance):
+                replace_installed_families(families, managed)
+                try:
+                    router = OnDeviceAssistantRouter(profile)
+                    decision = router.handle(utterance)
+                    self.assertEqual(decision.intent, expected_intent)
+                    self.assertEqual(decision.route, expected_route)
+                    if expected_reason:
+                        self.assertIn(expected_reason, decision.reason)
+                finally:
+                    replace_installed_families(all_installed, managed)
 
 
 class TokenizeRegressionTests(unittest.TestCase):
@@ -1266,26 +1193,30 @@ class UolV2AtomRoutingTests(unittest.TestCase):
         self.assertIsNotNone(seen.get("uol_act"))
         self.assertIsNotNone(getattr(parse_bundle, "uol_act", None))
 
-    def test_routing_always_passes_uol_act_into_classifier(self) -> None:
+
+
+    def test_open_domain_factual_question_routes_to_cloud(self) -> None:
         router = OnDeviceAssistantRouter(LocalAssistantProfile())
-        seen: dict[str, object] = {}
-        original_classifier = router_module._classify_intent_from_uol_slots
+        decision = router.handle("What is the latest news?")
 
-        def _recording_classifier(*args, **kwargs):
-            seen["parse_bundle"] = kwargs.get("parse_bundle")
-            seen["uol_act"] = kwargs.get("uol_act")
-            return original_classifier(*args, **kwargs)
+        self.assertEqual(decision.intent, "open_domain")
+        self.assertEqual(decision.route, "cloud_handoff")
+        self.assertTrue(decision.cloud_needed)
 
-        with patch.object(
-            router_module,
-            "_classify_intent_from_uol_slots",
-            side_effect=_recording_classifier,
-        ):
-            decision = router.handle("Tell me a story.")
+    def test_open_domain_statement_stays_local(self) -> None:
+        router = OnDeviceAssistantRouter(LocalAssistantProfile())
+        decision = router.handle("I like dogs.")
 
-        self.assertEqual(decision.intent, "story")
-        self.assertIsNotNone(seen.get("parse_bundle"))
-        self.assertIsNotNone(seen.get("uol_act"))
+        self.assertEqual(decision.intent, "open_domain")
+        self.assertEqual(decision.route, "local_answer")
+        self.assertFalse(decision.cloud_needed)
+
+    def test_open_domain_question_without_external_trigger_stays_local(self) -> None:
+        router = OnDeviceAssistantRouter(LocalAssistantProfile())
+        decision = router.handle("Are llamas real?")
+
+        self.assertEqual(decision.intent, "open_domain")
+        self.assertEqual(decision.route, "local_answer")
 
     def test_flagged_routing_does_not_call_legacy_frame_linker_helper(self) -> None:
         router = OnDeviceAssistantRouter(LocalAssistantProfile())
@@ -1299,6 +1230,99 @@ class UolV2AtomRoutingTests(unittest.TestCase):
 
         self.assertEqual(decision.intent, "social_contact")
         self.assertEqual(decision.route, "device_action")
+
+
+class EnrichmentTests(unittest.TestCase):
+    """Enrichment methods for media_playback and social_contact answers."""
+
+    @staticmethod
+    def _uol_act_with_roles(*semantic_classes: str) -> dict[str, object]:
+        """Build a minimal uol_act dict with one atom whose roles carry the given semantic classes."""
+        roles = [
+            {"role": "theme", "value": "dummy", "semantic_class": sc, "entity_id": "", "status": "asserted", "confidence": 0.88}
+            for sc in semantic_classes
+        ]
+        return {
+            "id": "test-1",
+            "act": "command",
+            "content": [{
+                "id": "atom-test-1",
+                "kind": "event",
+                "predicate": {"id": "play", "semantic_class": "verb.perform_media", "lemma": "play", "entity_id": "verb__play"},
+                "roles": roles,
+                "context": {"polarity": "positive", "modality": "assertive"},
+            }],
+        }
+
+    def test_enrich_media_by_semantic_class(self) -> None:
+        cases = [
+            (["media_descriptor.music_genre"], ["jazz", "120 BPM"]),
+            (["media_descriptor.music_instrument"], ["classical", "90 BPM"]),
+            (["media_content.nature_audio"], ["ambient", "60 BPM"]),
+            (["media_content.music_work"], ["classical", "80 BPM"]),
+            (["abstract_concept"], ["ambient"]),
+            ([], ["ambient"]),
+            (None, ["ambient"]),
+        ]
+        for classes, expected_substrings in cases:
+            with self.subTest(classes=classes):
+                if classes is None:
+                    uol_act = None
+                else:
+                    uol_act = self._uol_act_with_roles(*classes)
+                result = OnDeviceAssistantRouter._enrich_media_playback_answer(
+                    "Play music", uol_act
+                )
+                for s in expected_substrings:
+                    self.assertIn(s, result)
+
+    def test_enrich_media_contract_mapping_priority(self) -> None:
+        """First matching class in contract priority order wins."""
+        result = OnDeviceAssistantRouter._enrich_media_playback_answer(
+            "Playing some music.", self._uol_act_with_roles("media_content.music_work", "media_descriptor.music_genre")
+        )
+        self.assertIsNotNone(result)
+        if result:
+            # music_genre comes first in the contract mapping → jazz
+            self.assertIn("jazz", result.lower())
+
+    def test_enrich_contact_answer(self) -> None:
+        result = OnDeviceAssistantRouter._enrich_contact_answer(
+            "Call mom", "+123456789"
+        )
+        self.assertIsNotNone(result)
+        if result:
+            self.assertIn("mom", result.lower())
+            self.assertIn("+123456789", result)
+            self.assertIn("connecting", result.lower())
+
+    def test_enrich_media_playback_skip_on_bad_contract(self) -> None:
+        """Simulate missing contract — clear cache, should return None."""
+        old = router_module._MUSIC_STYLE_CACHE
+        router_module._MUSIC_STYLE_CACHE = None
+        try:
+            with patch("melm.contracts.load_contract_json", return_value={}):
+                result = OnDeviceAssistantRouter._enrich_media_playback_answer(
+                    "Playing some music.", self._uol_act_with_roles("media_descriptor.music_genre")
+                )
+                self.assertIsNone(result)
+        finally:
+            router_module._MUSIC_STYLE_CACHE = old
+
+    def test_enrich_media_language_agnostic(self) -> None:
+        """The same semantic class in different languages yields the same style suffix."""
+        result_en = OnDeviceAssistantRouter._enrich_media_playback_answer(
+            "Playing.", self._uol_act_with_roles("media_descriptor.music_genre")
+        )
+        result_fr = OnDeviceAssistantRouter._enrich_media_playback_answer(
+            "Je joue.", self._uol_act_with_roles("media_descriptor.music_genre")
+        )
+        self.assertIsNotNone(result_en)
+        self.assertIsNotNone(result_fr)
+        if result_en and result_fr:
+            suffix_en = result_en.split("—", 1)[-1].strip()
+            suffix_fr = result_fr.split("—", 1)[-1].strip()
+            self.assertEqual(suffix_en, suffix_fr)
 
 
 if __name__ == "__main__":

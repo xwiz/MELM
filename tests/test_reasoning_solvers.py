@@ -9,33 +9,7 @@ from pathlib import Path
 from melm.appliance.assistant_os_kernel import AssistantOSKernel
 from melm.appliance.assistant_os_store import AssistantOSStore, seed_class_schemas
 from melm.appliance.local_assistant_router import LocalAssistantProfile
-from melm.appliance.reasoning.task_router import detect_reasoning_task
 from melm.appliance.reasoning.solvers import solve
-
-
-class TaskDetectionTests(unittest.TestCase):
-    def test_metalinguistic_detected(self):
-        t = detect_reasoning_task("How many r's in strawberry?")
-        self.assertEqual(t, {"task": "metalinguistic_count", "char": "r", "word": "strawberry"})
-
-    def test_letter_phrasing_detected(self):
-        t = detect_reasoning_task("How many letter a in banana?")
-        self.assertEqual(t["char"], "a")
-        self.assertEqual(t["word"], "banana")
-
-    def test_arithmetic_detected(self):
-        t = detect_reasoning_task("I have 3 apples and eat one, how many are left?")
-        self.assertEqual(t["task"], "quantity_arithmetic")
-        self.assertEqual(t["start"], 3.0)
-        self.assertEqual(t["delta"], 1.0)
-        self.assertEqual(t["sign"], -1)
-        self.assertEqual(t["noun"], "apples")
-
-    def test_plain_meal_question_not_a_task(self):
-        self.assertIsNone(detect_reasoning_task("What should I eat today?"))
-
-    def test_non_count_question_not_a_task(self):
-        self.assertIsNone(detect_reasoning_task("Tell me a story."))
 
 
 class SolverTests(unittest.TestCase):

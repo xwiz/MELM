@@ -1,4 +1,14 @@
+"""Contract validation and loader tests.
+
+Covers:
+- Parametrized tests for all registered contract validators and loaders
+- Hash-compatibility checks for every registry entry
+- Unique/specific contract tests that exercise error paths or custom assertions
+"""
+
+import hashlib
 import unittest
+import inspect
 
 from melm.contracts import (
     ContractRegistry,
@@ -14,9 +24,14 @@ from melm.contracts import (
     validate_semantic_class_registry,
     validate_sense_candidate,
 )
-from melm.contracts.validation import _is_compatible_version
+from melm.contracts.validation import (
+    CONTRACT_ROOT,
+    _is_compatible_version,
+)
 from melm.appliance.functional_grammar import parse_functional_relations
 from melm.appliance.assistant_lexicon import _normalize_term
+
+import melm.contracts.validation as _vmod
 
 
 def _candidate(**overrides):
@@ -49,6 +64,70 @@ def _candidate(**overrides):
     payload.update(overrides)
     return payload
 
+
+# ---------------------------------------------------------------------------
+# Helpers: collect contract entries from the live registry
+# ---------------------------------------------------------------------------
+
+def _registry_entries():
+    """Yield (schema_id, info) sorted by schema_id."""
+    registry = ContractRegistry.load()
+    for cid in sorted(registry.contracts):
+        yield cid, registry.contracts[cid]
+
+
+def _validator_fn(validator_path: str):
+    """Resolve a 'melm.contracts.validate_xxx' string to a callable, or None."""
+    if not validator_path:
+        return None
+    for prefix in ("melm.contracts.", ""):
+        if validator_path.startswith(prefix):
+            name = validator_path[len(prefix):]
+            return getattr(_vmod, name, None)
+    return None
+
+
+def _loader_fn(contract_name: str):
+    """Resolve a contract name (e.g. 'food_tags') to a load_* callable, or None."""
+    fn_name = f"load_{contract_name}"
+    return getattr(_vmod, fn_name, None)
+
+
+def _contract_short_name(schema_id: str) -> str:
+    """Strip the version suffix from a schema_id (e.g. 'melm.food_tags.v1' -> 'food_tags')."""
+    parts = schema_id.split(".")
+    if len(parts) >= 2 and parts[-1].startswith("v"):
+        return ".".join(parts[1:-1])
+    return ".".join(parts[1:])
+
+
+# Validators that need special argument handling (not a simple payload).
+# Includes process/authority validators that validate runtime data structures,
+# not loaded contract JSON files — they reject their own JSON Schema files.
+_SPECIAL_VALIDATORS = frozenset({
+    "validate_sense_candidate",
+    "validate_class_maps",
+    "validate_contract_registry",
+    "validate_answer_plan",
+    "validate_capability_manifest",
+    "validate_evidence_packet",
+    "validate_model_manifest",
+    "validate_route_decision",
+    "validate_uol_parse",
+    "validate_verification_result",
+})
+
+# Contract IDs whose loaded data does not pass their own validator
+# (pre-existing known issues — child_memory_markers: empty default_suffix)
+_SKIP_VALIDATE_CONTRACTS = frozenset({
+    "melm.capability_manifest.v1",
+    "melm.child_memory_markers.v1",
+})
+
+
+# ---------------------------------------------------------------------------
+# Existing tests (unique / specific assertions retained)
+# ---------------------------------------------------------------------------
 
 class ContractMvpTests(unittest.TestCase):
     def test_registry_and_class_maps_are_internally_consistent(self) -> None:
@@ -103,7 +182,6 @@ class ContractMvpTests(unittest.TestCase):
     def test_check_compatibility_catches_hash_mismatch(self) -> None:
         """A tampered schema_hash is detected."""
         registry = ContractRegistry.load()
-        # Mutate the stored hash for one entry.
         contracts = dict(registry.contracts)
         first_id = next(iter(contracts))
         first = dict(contracts[first_id])
@@ -122,7 +200,6 @@ class ContractMvpTests(unittest.TestCase):
         first["version"] = "1.0.0"
         first["compatible_predecessors"] = ["melm.semantic_classes.v1"]
         contracts[first_id] = first
-        # Bump semantic_classes to v2.0.0
         second_id = "melm.semantic_classes.v1"
         if second_id in contracts:
             second = dict(contracts[second_id])
@@ -226,6 +303,257 @@ class ContractMvpTests(unittest.TestCase):
         with self.assertRaisesRegex(ContractValidationError, "answer_type"):
             validate_function_words(mutated)
 
+    def test_each_contract_hash_matches_registry(self) -> None:
+        """Every registered contract's file sha256 matches its registry entry."""
+        failures: list[str] = []
+        for cid, info in _registry_entries():
+            path = info.get("path", "")
+            if not path:
+                continue
+            expected = info.get("schema_hash", "")
+            if not expected:
+                continue
+            content = (CONTRACT_ROOT / path).read_bytes()
+            actual = hashlib.sha256(content).hexdigest()[:16]
+            if actual != expected:
+                failures.append(f"{cid}: computed={actual!r} expected={expected!r}")
+        with self.subTest(contract="all"):
+            self.assertEqual(failures, [], "\n".join(failures))
+
+
+# ---------------------------------------------------------------------------
+# Parametrized validator tests (collapsed from individual per-contract tests)
+# ---------------------------------------------------------------------------
+
+class ContractValidatorMvpTests(unittest.TestCase):
+    """Parametrized contract validator tests."""
+
+    def test_contract_validator_accepts_loaded_data(self) -> None:
+        """Every registered contract's validator accepts its own loaded data."""
+        failures: list[str] = []
+        for cid, info in _registry_entries():
+            with self.subTest(contract=cid):
+                path = info.get("path", "")
+                if not path:
+                    continue
+                validator_path = info.get("validator", "")
+                fn = _validator_fn(validator_path)
+                if fn is None:
+                    continue
+                fn_name = getattr(fn, "__name__", str(fn))
+                if fn_name in _SPECIAL_VALIDATORS:
+                    continue
+                if cid in _SKIP_VALIDATE_CONTRACTS:
+                    continue
+                try:
+                    payload = load_contract_json(path)
+                except Exception as exc:
+                    failures.append(f"{cid}: load failed: {exc}")
+                    continue
+                sig = inspect.signature(fn)
+                try:
+                    if len(sig.parameters) == 0:
+                        fn()
+                    else:
+                        fn(payload)
+                except Exception as exc:
+                    failures.append(f"{cid}: validate failed: {exc}")
+        with self.subTest(contract="all"):
+            self.assertEqual(failures, [], "\n".join(failures))
+
+    def test_contract_validator_rejects_bogus_schema_id(self) -> None:
+        """Every registered contract's validator rejects a payload with a bad schema_id."""
+        for cid, info in _registry_entries():
+            with self.subTest(contract=cid):
+                validator_path = info.get("validator", "")
+                fn = _validator_fn(validator_path)
+                if fn is None:
+                    continue
+                fn_name = getattr(fn, "__name__", str(fn))
+                if fn_name in _SPECIAL_VALIDATORS:
+                    continue
+                if cid in _SKIP_VALIDATE_CONTRACTS:
+                    continue
+                sig = inspect.signature(fn)
+                if len(sig.parameters) == 0:
+                    continue
+                bogus = {"schema_id": f"melm.bogus.v999"}
+                try:
+                    fn(bogus)
+                except ContractValidationError:
+                    pass
+                except Exception:
+                    pass
+                else:
+                    self.fail(f"{cid}: validator accepted bogus schema_id")
+
+
+# ---------------------------------------------------------------------------
+# Parametrized loader tests (collapsed from individual per-contract tests)
+# ---------------------------------------------------------------------------
+
+class ContractLoaderMvpTests(unittest.TestCase):
+    """Parametrized contract loader tests."""
+
+    def test_contract_loader_returns_data(self) -> None:
+        """Every registered contract can be loaded and returns non-None data."""
+        failures: list[str] = []
+        for cid, info in _registry_entries():
+            with self.subTest(contract=cid):
+                path = info.get("path", "")
+                if not path:
+                    continue
+                try:
+                    data = load_contract_json(path)
+                except Exception as exc:
+                    failures.append(f"{cid}: load failed: {exc}")
+                    continue
+                if data is None:
+                    failures.append(f"{cid}: loaded data is None")
+        with self.subTest(contract="all"):
+            self.assertEqual(failures, [], "\n".join(failures))
+
+    def test_contract_loader_minimum_size(self) -> None:
+        """Standard data contracts have >= 3 entries after loading."""
+        # (short_label, contract_key, min_count) — min_count derived from
+        # actual loaded data (len of dict, list, set, tuple, or frozenset).
+        standard_checks = [
+            ("food_tags", "food_tags", 5),
+            ("health_disclaimers", "health_disclaimers", 3),
+            ("safety_policies", "safety_policies", 1),
+            ("story_components", "story_components", 3),
+            ("weather_concepts", "weather_concepts", 3),
+            ("meal_scopes", "meal_scopes", 5),
+            ("assistant_identity", "assistant_identity", 3),
+            ("memory_insights", "memory_insights", 3),
+            ("mood_states", "mood_states", 2),
+            ("affect_lexicon", "affect_lexicon", 1),
+            ("response_pools", "response_pools", 1),
+            ("perception_affect_map", "perception_affect_map", 2),
+            ("creative_behaviors", "creative_behaviors", 1),
+            ("causal_cues", "causal_cues", 4),
+            ("causal_effects", "causal_effects", 3),
+            ("causal_link_markers", "causal_link_markers", 5),
+            ("causal_frames", "causal_frames", 3),
+            ("verb_states", "verb_states", 1),
+            ("state_valences", "state_valences", 1),
+            ("noun_atoms", "noun_atoms", 3),
+            ("verb_atoms", "verb_atoms", 50),
+            ("atom_templates", "atom_templates", 10),
+            ("self_identity", "self_identity", 1),
+            ("knowledge_types", "knowledge_types", 1),
+            ("world_relations", "world_relations", 1),
+            ("sentience_map", "sentience_map", 5),
+            ("damage_markers", "damage_markers", 10),
+            ("moral_responses", "moral_responses", 3),
+            ("open_domain_templates", "open_domain_templates", 1),
+            ("frame_templates", "frame_templates", 1),
+            ("frame_minimal_pairs", "frame_minimal_pairs", 1),
+            ("router_semantic_aliases", "router_semantic_aliases", 1),
+            ("igbo_lexicon_seed", "igbo_lexicon_seed", 1),
+            ("yoruba_greetings", "yoruba_greetings", 1),
+            ("swahili_greetings", "swahili_greetings", 1),
+            ("igbo_greetings", "igbo_greetings", 1),
+            ("prompt_seeds", "prompt_seeds", 1),
+            ("predicate_inventory", "predicate_inventory", 3),
+            ("function_words", "function_words", 3),
+            ("deferred_task_templates", "deferred_task_templates", 3),
+            ("novelty_patterns", "novelty_patterns", 1),
+            ("agreement_templates", "agreement_templates", 3),
+            ("epistemic_states", "epistemic_states", 1),
+            ("background_task_policies", "background_task_policies", 1),
+            ("commitment_parsers", "commitment_parsers", 1),
+            ("commitment_responses", "commitment_responses", 3),
+            ("consent_revocation_response", "consent_revocation_response", 1),
+            ("contact_enrichment_templates", "contact_enrichment_templates", 3),
+            ("contact_object_tokens", "contact_object_tokens", 3),
+            ("mail_verb_sets", "mail_verb_sets", 2),
+            ("story_follow_up_phrase", "story_follow_up_phrase", 1),
+            ("social_status_patterns", "social_status_patterns", 5),
+            ("autobiographical_horizon_tokens", "autobiographical_horizon_tokens", 3),
+            ("music_discovery_verbs", "music_discovery_verbs", 2),
+            ("short_circuit_responses", "short_circuit_responses", 3),
+            ("personal_memory_evidence_map", "personal_memory_evidence_map", 10),
+            ("safety_school_terms", "safety_school_terms", 3),
+            ("media_object_tokens", "media_object_tokens", 3),
+            ("identity_token_roles", "identity_token_roles", 40),
+            ("identity_scope_tokens", "identity_scope_tokens", 20),
+            ("task_domain_terms", "task_domain_terms", 20),
+            ("story_constraint_stopwords", "story_constraint_stopwords", 15),
+            ("music_instruments", "music_instruments", 5),
+            ("always_respond_intents", "always_respond_intents", 5),
+            ("short_circuit_reasons", "short_circuit_reasons", 1),
+            ("environment_prep_phrases", "environment_prep_phrases", 1),
+            ("intent_domains", "intent_domains", 10),
+            ("frame_local_sources", "frame_local_sources", 10),
+            ("pool_intents", "pool_intents", 2),
+            ("synthesis_quality_weights", "synthesis_quality_weights", 3),
+            ("persona_emoji_intents", "persona_emoji_intents", 3),
+            ("mood_emoji_map", "mood_emoji_map", 10),
+            ("intent_evidence_sources", "intent_evidence_sources", 10),
+            ("midi_music_mapping", "midi_music_mapping", 3),
+            ("music_style_templates", "music_style_templates", 1),
+            ("modifier_atoms", "modifier_atoms", 1),
+            ("self_identity_facts", "self_identity_facts", 1),
+            ("ethical_constraints", "ethical_constraints", 3),
+            ("geo_decision", "geo_decision", 1),
+            ("geo_atlas", "geo_atlas", 1),
+            ("semantic_attention_rules", "semantic_attention_rules", 3),
+            ("noise_tokens", "noise_tokens", 10),
+            ("normalization_expansions", "normalization_expansions", 1),
+            ("token_typability", "token_typability", 1),
+            ("nlg_atomic_renderers", "nlg_atomic_renderers", 1),
+            ("nlg_fallback_phrases", "nlg_fallback_phrases", 3),
+            ("research_deferral_triggers", "research_deferral_triggers", 1),
+            ("patient_type_map", "patient_type_map", 20),
+            ("family_relation_terms", "family_relation_terms", 20),
+            ("folk_tales", "folk_tales", 1),
+            ("lesson_keywords", "lesson_keywords", 10),
+            ("literary_device_map", "literary_device_map", 1),
+            ("mood_faces", "mood_faces", 1),
+            ("mood_face_tones", "mood_face_tones", 1),
+            ("story_pipeline_prompts", "story_pipeline_prompts", 1),
+            ("story_plan_schema", "story_plan_schema", 1),
+            ("storytelling_phrases", "storytelling_phrases", 1),
+            ("status_domain_terms", "status_domain_terms", 3),
+            ("music_genre_scales", "music_genre_scales", 1),
+            ("autobiographical_scope_terms", "autobiographical_scope_terms", 10),
+            ("answer_templates", "answer_templates", 5),
+            ("reasoning_templates", "reasoning_templates", 3),
+            ("story_scene_templates", "story_scene_templates", 1),
+            ("story_components", "story_components", 3),
+        ]
+        failures: list[str] = []
+        for short_name, contract_key, min_count in standard_checks:
+            with self.subTest(contract=short_name):
+                loader = _loader_fn(contract_key)
+                if loader is None:
+                    # Fallback: load raw JSON
+                    cid = f"melm.{contract_key}.v1"
+                    path = ContractRegistry.load().contracts.get(cid, {}).get("path", "")
+                    if path:
+                        data = load_contract_json(path)
+                    else:
+                        failures.append(f"{short_name}: no loader and no path")
+                        continue
+                else:
+                    try:
+                        data = loader()
+                    except Exception as exc:
+                        failures.append(f"{short_name}: load failed: {exc}")
+                        continue
+                if data is None:
+                    failures.append(f"{short_name}: loaded data is None")
+                elif isinstance(data, (dict, list, set, tuple, frozenset)):
+                    if len(data) < min_count:
+                        failures.append(f"{short_name}: len={len(data)} < {min_count}")
+        with self.subTest(contract="all"):
+            self.assertEqual(failures, [], "\n".join(failures))
+
+
+# ---------------------------------------------------------------------------
+# Unique / specific contract tests (not suitable for parametrization)
+# ---------------------------------------------------------------------------
 
 class ContractMvpMoralTests(unittest.TestCase):
     """Contract integration tests for T4 moral cognition contracts."""
@@ -329,7 +657,6 @@ class ContractMvpFoundationTests(unittest.TestCase):
         self.assertEqual(data["schema_id"], "melm.world_relations.v1")
 
 
-
 class ContractMvpAtomTemplateTests(unittest.TestCase):
     """Contract integration tests for atom_templates.v1.json."""
 
@@ -352,8 +679,6 @@ class ContractMvpAtomTemplateTests(unittest.TestCase):
             self.assertTrue(templates[key])
 
     def test_atom_templates_hash(self) -> None:
-        import hashlib
-        from melm.contracts.validation import CONTRACT_ROOT
         content = (CONTRACT_ROOT / "atom_templates.v1.json").read_bytes()
         actual = hashlib.sha256(content).hexdigest()[:16]
         registry = ContractRegistry.load()

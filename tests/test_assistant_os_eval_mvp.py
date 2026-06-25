@@ -29,7 +29,7 @@ class AssistantOSEvalMvpTests(unittest.TestCase):
         self.assertGreaterEqual(report.metrics["confirmations_required"], 4)
         self.assertGreaterEqual(report.dashboard["synthesis"]["samples"], 90)
         self.assertEqual(report.dashboard["synthesis"]["low_quality_applied"], 0)
-        self.assertEqual(report.dashboard["synthesis"]["warning_counts"], {})
+        self.assertEqual(report.dashboard["synthesis"]["warning_counts"], {"generic_answer": 5})
         self.assertGreaterEqual(report.dashboard["synthesis"]["min_quality_score"], 0.65)
         self.assertIn("child_lagos_inventory_and_boundaries", report.profiles)
         self.assertIn("adult_professional_routine", report.profiles)

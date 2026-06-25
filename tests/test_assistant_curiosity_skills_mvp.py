@@ -5,9 +5,6 @@ greeting_context, commitments, background_runner.
 """
 
 import json
-import uuid
-from datetime import datetime, timezone
-from typing import Any
 
 import pytest
 
@@ -50,10 +47,6 @@ class TestDeferredTasks:
         slot = store.get_entity_slot(eid, "engagement_prompt")
         assert slot is not None and "Igbo" in json.loads(slot.value_json)
 
-    def test_queue_deferred_task_none_store(self):
-        from melm.appliance.assistant_skill_deferred_tasks import queue_deferred_task
-        assert queue_deferred_task(None, "topic", "action") is None
-
     def test_find_due_tasks_returns_queued(self, store):
         from melm.appliance.assistant_skill_deferred_tasks import queue_deferred_task, find_due_tasks
         queue_deferred_task(store, topic="test topic", action="auto_research")
@@ -72,26 +65,16 @@ class TestDeferredTasks:
         topics = [t["topic"] for t in due]
         assert "completed topic" not in topics
 
-    def test_find_due_tasks_none_store(self):
-        from melm.appliance.assistant_skill_deferred_tasks import find_due_tasks
-        assert find_due_tasks(None) == []
-
-    def test_surface_task_context_auto_research(self):
+    @pytest.mark.parametrize("task,expected_substrings", [
+        ({"topic": "Yoruba art", "action": "auto_research"}, ["still working on researching", "Yoruba art"]),
+        ({"topic": "talking drums", "action": "novelty_review"}, ["talking drums", "wondered what you make of it"]),
+        ({"topic": "groceries", "action": "shopping"}, ["pending task"]),
+    ])
+    def test_surface_task_context(self, task, expected_substrings):
         from melm.appliance.assistant_skill_deferred_tasks import surface_task_context
-        result = surface_task_context(None, {"topic": "Yoruba art", "action": "auto_research"})
-        assert "looking into" in result
-        assert "Yoruba art" in result
-
-    def test_surface_task_context_novelty(self):
-        from melm.appliance.assistant_skill_deferred_tasks import surface_task_context
-        result = surface_task_context(None, {"topic": "talking drums", "action": "novelty_review"})
-        assert "interesting" in result
-        assert "talking drums" in result
-
-    def test_surface_task_context_default(self):
-        from melm.appliance.assistant_skill_deferred_tasks import surface_task_context
-        result = surface_task_context(None, {"topic": "groceries", "action": "shopping"})
-        assert "pending task" in result
+        result = surface_task_context(None, task)
+        for substring in expected_substrings:
+            assert substring in result
 
     def test_complete_deferred_task_sets_status(self, store):
         from melm.appliance.assistant_skill_deferred_tasks import (
@@ -117,12 +100,18 @@ class TestDeferredTasks:
         slot = store.get_entity_slot(eid, "status")
         assert slot is not None and json.loads(slot.value_json) == "cancelled"
 
-    def test_complete_cancel_safe_on_none_store(self):
-        from melm.appliance.assistant_skill_deferred_tasks import (
-            complete_deferred_task, cancel_deferred_task,
-        )
-        complete_deferred_task(None, "eid")  # should not raise
-        cancel_deferred_task(None, "eid")  # should not raise
+    @pytest.mark.parametrize("func_name,args,expected", [
+        ("queue_deferred_task", ("topic", "action"), None),
+        ("find_due_tasks", (), []),
+        ("complete_deferred_task", ("eid",), None),
+        ("cancel_deferred_task", ("eid",), None),
+    ])
+    def test_nil_store_no_crash(self, func_name, args, expected):
+        import importlib
+        mod = importlib.import_module("melm.appliance.assistant_skill_deferred_tasks")
+        func = getattr(mod, func_name)
+        result = func(None, *args)
+        assert result == expected
 
 
 # ===================================================================
@@ -181,18 +170,26 @@ class TestBackgroundRunner:
 
     def test_execute_job_unknown_kind_raises(self):
         from melm.appliance.assistant_background_runner import BackgroundTaskRunner
+        from melm.appliance.assistant_os_store import StoredInventoryJob
         runner = BackgroundTaskRunner(store=None)
-        import pytest
+        job = StoredInventoryJob(
+            job_id="test", kind="unknown", status="queued",
+            priority=0.5, attempts=0, max_attempts=3,
+            resource_budget={}, payload={},
+        )
         with pytest.raises(ValueError, match="Unknown job kind"):
-            runner._execute_job({"kind": "unknown", "payload_json": "{}"})
+            runner._execute_job(job)
 
     def test_execute_job_deferred_research(self):
         from melm.appliance.assistant_background_runner import BackgroundTaskRunner
+        from melm.appliance.assistant_os_store import StoredInventoryJob
         runner = BackgroundTaskRunner(store=None)
-        result = runner._execute_job({
-            "kind": "deferred_research",
-            "payload_json": json.dumps({"topic": "Yoruba sculpture"}),
-        })
+        job = StoredInventoryJob(
+            job_id="test", kind="deferred_research", status="queued",
+            priority=0.5, attempts=0, max_attempts=3,
+            resource_budget={}, payload={"topic": "Yoruba sculpture"},
+        )
+        result = runner._execute_job(job)
         assert result["status"] == "completed"
         assert "Yoruba sculpture" in result["summary"]
 
@@ -213,113 +210,107 @@ class TestNovelty:
         assert nc.confidence == 0.5
         assert nc.decomposition == ""
 
-    def test_is_palindrome_true(self):
+    @pytest.mark.parametrize("word,expected", [
+        ("kayak", True), ("racecar", True), ("Aba", True),
+        ("hello", False), ("ab", False),
+    ])
+    def test_is_palindrome(self, word, expected):
         from melm.appliance.assistant_skill_novelty import _is_palindrome
-        assert _is_palindrome("kayak") is True
-        assert _is_palindrome("racecar") is True
-        assert _is_palindrome("Aba") is True  # case-insensitive
+        assert _is_palindrome(word) is expected
 
-    def test_is_palindrome_false(self):
-        from melm.appliance.assistant_skill_novelty import _is_palindrome
-        assert _is_palindrome("hello") is False
-        assert _is_palindrome("ab") is False  # too short
-
-    def test_has_morpheme_boundary_suffix(self):
+    @pytest.mark.parametrize("word,affixes,expected", [
+        ("running", ["-ing", "un-", "-ed"], True),
+        ("talking", ["-ing"], True),
+        ("unfair", ["un-", "-ing"], True),
+        ("redo", ["re-", "-ed"], True),
+        ("cat", ["-ing", "un-"], False),
+    ])
+    def test_has_morpheme_boundary(self, word, affixes, expected):
         from melm.appliance.assistant_skill_novelty import _has_morpheme_boundary
-        assert _has_morpheme_boundary("running", ["-ing", "un-", "-ed"]) is True
-        assert _has_morpheme_boundary("talking", ["-ing"]) is True
+        assert _has_morpheme_boundary(word, affixes) is expected
 
-    def test_has_morpheme_boundary_prefix(self):
-        from melm.appliance.assistant_skill_novelty import _has_morpheme_boundary
-        assert _has_morpheme_boundary("unfair", ["un-", "-ing"]) is True
-        assert _has_morpheme_boundary("redo", ["re-", "-ed"]) is True
-
-    def test_has_morpheme_boundary_false(self):
-        from melm.appliance.assistant_skill_novelty import _has_morpheme_boundary
-        assert _has_morpheme_boundary("cat", ["-ing", "un-"]) is False
-
-    def test_check_cultural_symbol_found(self):
+    @pytest.mark.parametrize("word,expected", [
+        ("kente", "african_diaspora"),
+        ("adinkra symbols", "african_diaspora"),
+        ("python", None),
+    ])
+    def test_check_cultural_symbol(self, word, expected):
         from melm.appliance.assistant_skill_novelty import _check_cultural_symbol
-        symbols = {
-            "african_diaspora": {
-                "patterns": ["adinkra", "kente", "ankara"],
-            },
-        }
-        assert _check_cultural_symbol("kente", symbols) == "african_diaspora"
-        assert _check_cultural_symbol("adinkra symbols", symbols) == "african_diaspora"
+        symbols = {"african_diaspora": {"patterns": ["adinkra", "kente", "ankara"]}}
+        assert _check_cultural_symbol(word, symbols) == expected
 
-    def test_check_cultural_symbol_not_found(self):
-        from melm.appliance.assistant_skill_novelty import _check_cultural_symbol
-        symbols = {
-            "african_diaspora": {
-                "patterns": ["adinkra", "kente"],
-            },
-        }
-        assert _check_cultural_symbol("python", symbols) is None
-
-    def test_detect_novelty_returns_candidates(self):
+    @pytest.mark.parametrize("bundle_with_data,expected_forms", [
+        pytest.param(
+            {"tokens": ["kayak", "unhappiness", "hello"], "text": "test utterance"},
+            ["kayak", "unhappiness"],
+            id="with_data",
+        ),
+        pytest.param(None, [], id="none_bundle"),
+    ])
+    def test_detect_novelty(self, bundle_with_data, expected_forms):
         from melm.appliance.assistant_skill_novelty import detect_novelty
-        bundle = type("FakeBundle", (), {
-            "semantic_unknown_tokens": ["kayak", "unhappiness", "hello"],
-            "text": "test utterance",
-        })()
+        if bundle_with_data is not None:
+            bundle = type("FakeBundle", (), {
+                "semantic_unknown_tokens": bundle_with_data["tokens"],
+                "text": bundle_with_data["text"],
+            })()
+        else:
+            bundle = None
         candidates = detect_novelty(bundle, lexicon=None, store=None)
-        assert len(candidates) >= 1
-        reasons = {c.surface_form: c.detection_reason for c in candidates}
-        assert "kayak" in reasons  # palindrome
-        assert "unhappiness" in reasons  # morpheme cluster
+        if expected_forms:
+            assert len(candidates) >= 1
+            reasons = {c.surface_form: c.detection_reason for c in candidates}
+            for sf in expected_forms:
+                assert sf in reasons
+        else:
+            assert candidates == []
 
-    def test_detect_novelty_none_bundle(self):
-        from melm.appliance.assistant_skill_novelty import detect_novelty
-        candidates = detect_novelty(None, lexicon=None, store=None)
-        assert candidates == []
-
-    def test_record_novelty_candidates_creates_entities(self, store):
+    @pytest.mark.parametrize("nc_kwargs,use_store", [
+        (
+            {"surface_form": "kayak", "utterance_context": "the word kayak",
+             "detection_reason": "palindrome", "decomposition": "palindrome(5 chars)",
+             "confidence": 0.65},
+            True,
+        ),
+        ({"surface_form": "test", "utterance_context": "", "detection_reason": "test"}, False),
+    ])
+    def test_record_novelty_candidates(self, nc_kwargs, use_store, store):
         from melm.appliance.assistant_skill_novelty import (
             NoveltyCandidate, record_novelty_candidates,
         )
-        nc = NoveltyCandidate(
-            surface_form="kayak",
-            utterance_context="the word kayak",
-            detection_reason="palindrome",
-            decomposition="palindrome(5 chars)",
-            confidence=0.65,
-        )
-        ids = record_novelty_candidates(store, [nc])
+        nc = NoveltyCandidate(**nc_kwargs)
+        store_arg = store if use_store else None
+        ids = record_novelty_candidates(store_arg, [nc])
+        if not use_store:
+            assert ids == []
+            return
         assert len(ids) == 1
         slot = store.get_entity_slot(ids[0], "surface_form")
         assert slot is not None and json.loads(slot.value_json) == "kayak"
         slot = store.get_entity_slot(ids[0], "review_status")
         assert slot is not None and json.loads(slot.value_json) == "flagged"
 
-    def test_record_novelty_candidates_none_store(self):
-        from melm.appliance.assistant_skill_novelty import (
-            NoveltyCandidate, record_novelty_candidates,
-        )
-        nc = NoveltyCandidate(surface_form="test", utterance_context="", detection_reason="test")
-        assert record_novelty_candidates(None, [nc]) == []
-
-    def test_build_novelty_digest(self, store):
+    @pytest.mark.parametrize("seed_type,use_store", [
+        pytest.param("with_data", True, id="with_data"),
+        pytest.param("empty", True, id="empty"),
+        pytest.param("none_store", False, id="none_store"),
+    ])
+    def test_build_novelty_digest(self, seed_type, use_store, store):
         from melm.appliance.assistant_skill_novelty import (
             NoveltyCandidate, record_novelty_candidates, build_novelty_digest,
         )
-        nc = NoveltyCandidate(
-            surface_form="kayak",
-            utterance_context="test",
-            detection_reason="palindrome",
-        )
-        record_novelty_candidates(store, [nc])
-        digest = build_novelty_digest(store, "sess_001")
-        assert "kayak" in digest
-        assert "palindrome" in digest
-
-    def test_build_novelty_digest_empty(self, store):
-        from melm.appliance.assistant_skill_novelty import build_novelty_digest
-        assert build_novelty_digest(store, "sess_001") == ""
-
-    def test_build_novelty_digest_none_store(self):
-        from melm.appliance.assistant_skill_novelty import build_novelty_digest
-        assert build_novelty_digest(None, "sess_001") == ""
+        store_arg = store if use_store else None
+        if seed_type == "with_data":
+            nc = NoveltyCandidate(
+                surface_form="kayak", utterance_context="test",
+                detection_reason="palindrome",
+            )
+            record_novelty_candidates(store_arg, [nc])
+            digest = build_novelty_digest(store_arg, "sess_001")
+            assert "kayak" in digest
+            assert "palindrome" in digest
+        else:
+            assert build_novelty_digest(store_arg, "sess_001") == ""
 
 
 # ===================================================================
@@ -340,10 +331,6 @@ class TestEpistemic:
         assert eid is not None
         slot = store.get_entity_slot(eid, "source_event_id")
         assert slot is not None and json.loads(slot.value_json) == "pe_abc123"
-
-    def test_record_epistemic_state_none_store(self):
-        from melm.appliance.assistant_skill_epistemic import record_epistemic_state
-        assert record_epistemic_state(None, "curiosity", "topic") is None
 
     def test_load_open_epistemic_states(self, store):
         from melm.appliance.assistant_skill_epistemic import (
@@ -366,23 +353,30 @@ class TestEpistemic:
         states = load_open_epistemic_states(store)
         assert all(s["topic"] != "resolved topic" for s in states)
 
-    def test_load_open_epistemic_states_none_store(self):
-        from melm.appliance.assistant_skill_epistemic import load_open_epistemic_states
-        assert load_open_epistemic_states(None) == []
-
-    def test_surface_open_states_returns_string(self, store):
+    @pytest.mark.parametrize("has_data", [True, False])
+    def test_surface_open_states(self, has_data, store):
         from melm.appliance.assistant_skill_epistemic import (
             record_epistemic_state, surface_open_states,
         )
-        record_epistemic_state(store, "curiosity", "Yoruba art")
-        text = surface_open_states(store)
-        assert text is not None
-        assert "curious" in text
-        assert "Yoruba art" in text
+        if has_data:
+            record_epistemic_state(store, "curiosity", "Yoruba art")
+            text = surface_open_states(store)
+            assert text is not None
+            assert "curious" in text
+            assert "Yoruba art" in text
+        else:
+            assert surface_open_states(store) is None
 
-    def test_surface_open_states_returns_none_when_empty(self, store):
-        from melm.appliance.assistant_skill_epistemic import surface_open_states
-        assert surface_open_states(store) is None
+    @pytest.mark.parametrize("func_name,args,expected", [
+        ("record_epistemic_state", ("curiosity", "topic"), None),
+        ("load_open_epistemic_states", (), []),
+    ])
+    def test_nil_store_no_crash(self, func_name, args, expected):
+        import importlib
+        mod = importlib.import_module("melm.appliance.assistant_skill_epistemic")
+        func = getattr(mod, func_name)
+        result = func(None, *args)
+        assert result == expected
 
 
 # ===================================================================
@@ -456,89 +450,63 @@ class TestGreetingContext:
 # ===================================================================
 
 class TestCommitments:
-    def test_extract_commitment_reminder_request(self):
+    @pytest.mark.parametrize("utterance,expected_data", [
+        ("remind me to check the weather", {"commitment_type": "reminder_request", "topic_contains": "check the weather"}),
+        ("remind me to buy groceries tomorrow", {"topic_contains": "buy groceries"}),
+        ("remind you to call mom", {"not_none": True}),
+        ("remind us to leave at 5", {"not_none": True}),
+        ("do not let me forget to water the plants", {"commitment_type": "reminder_request", "topic_contains": "water the plants"}),
+        ("hello how are you", None),
+        ("remind me", {"not_none": True}),
+    ])
+    def test_extract_commitment(self, utterance, expected_data):
         from melm.appliance.assistant_skill_commitments import extract_commitment
-        result = extract_commitment("remind me to check the weather", None)
-        assert result is not None
-        assert result.commitment_type == "reminder_request"
-        assert "check the weather" in result.topic
+        result = extract_commitment(utterance, None)
+        if expected_data is None:
+            assert result is None
+        else:
+            assert result is not None
+            if "commitment_type" in expected_data:
+                assert result.commitment_type == expected_data["commitment_type"]
+            if "topic_contains" in expected_data:
+                assert expected_data["topic_contains"] in result.topic
 
-    def test_extract_commitment_remind_me(self):
-        from melm.appliance.assistant_skill_commitments import extract_commitment
-        result = extract_commitment("remind me to buy groceries tomorrow", None)
-        assert result is not None
-        assert "buy groceries" in result.topic
-
-    def test_extract_commitment_remind_you(self):
-        from melm.appliance.assistant_skill_commitments import extract_commitment
-        result = extract_commitment("remind you to call mom", None)
-        assert result is not None
-
-    def test_extract_commitment_remind_us(self):
-        from melm.appliance.assistant_skill_commitments import extract_commitment
-        result = extract_commitment("remind us to leave at 5", None)
-        assert result is not None
-
-    def test_extract_commitment_dont_let_me_forget(self):
-        from melm.appliance.assistant_skill_commitments import extract_commitment
-        result = extract_commitment("do not let me forget to water the plants", None)
-        assert result is not None
-        assert result.commitment_type == "reminder_request"
-        assert "water the plants" in result.topic
-
-    def test_extract_commitment_no_match(self):
-        from melm.appliance.assistant_skill_commitments import extract_commitment
-        result = extract_commitment("hello how are you", None)
-        assert result is None
-
-    def test_extract_commitment_remind_me_no_topic(self):
-        from melm.appliance.assistant_skill_commitments import extract_commitment
-        result = extract_commitment("remind me", None)
-        assert result is not None
-
-    def test_record_commitment_creates_entity(self, store):
+    @pytest.mark.parametrize("commitment_kwargs,use_store", [
+        (
+            {"topic": "buy groceries", "commitment_type": "reminder_request",
+             "user_utterance": "remind me to buy groceries", "session_id": "sess_001"},
+            True,
+        ),
+        (
+            {"topic": "call mom", "commitment_type": "reminder_request",
+             "promised_time": "tomorrow", "parsed_time": "2026-06-20T09:00:00",
+             "user_utterance": "remind me to call mom tomorrow", "session_id": "sess_001"},
+            True,
+        ),
+        ({"topic": "test"}, False),
+    ])
+    def test_record_commitment(self, commitment_kwargs, use_store, store):
         from melm.appliance.assistant_skill_commitments import (
             UserCommitment, record_commitment,
         )
-        c = UserCommitment(
-            commitment_type="reminder_request",
-            topic="buy groceries",
-            user_utterance="remind me to buy groceries",
-            session_id="sess_001",
-        )
-        eid = record_commitment(store, c)
+        c = UserCommitment(**commitment_kwargs)
+        store_arg = store if use_store else None
+        eid = record_commitment(store_arg, c)
+        if not use_store:
+            assert eid is None
+            return
         assert eid is not None
         assert eid.startswith("uc_")
-        slot = store.get_entity_slot(eid, "topic")
-        assert slot is not None and json.loads(slot.value_json) == "buy groceries"
-        slot = store.get_entity_slot(eid, "status")
-        assert slot is not None and json.loads(slot.value_json) == "pending"
-
-    def test_record_commitment_with_times(self, store):
-        from melm.appliance.assistant_skill_commitments import (
-            UserCommitment, record_commitment,
-        )
-        c = UserCommitment(
-            commitment_type="reminder_request",
-            topic="call mom",
-            promised_time="tomorrow",
-            parsed_time="2026-06-20T09:00:00",
-            user_utterance="remind me to call mom tomorrow",
-            session_id="sess_001",
-        )
-        eid = record_commitment(store, c)
-        assert eid is not None
-        slot = store.get_entity_slot(eid, "promised_time")
-        assert slot is not None and json.loads(slot.value_json) == "tomorrow"
-        slot = store.get_entity_slot(eid, "parsed_time")
-        assert slot is not None and "2026" in json.loads(slot.value_json)
-
-    def test_record_commitment_none_store(self):
-        from melm.appliance.assistant_skill_commitments import (
-            UserCommitment, record_commitment,
-        )
-        c = UserCommitment(topic="test")
-        assert record_commitment(None, c) is None
+        if commitment_kwargs.get("promised_time"):
+            slot = store.get_entity_slot(eid, "promised_time")
+            assert slot is not None and json.loads(slot.value_json) == commitment_kwargs["promised_time"]
+            slot = store.get_entity_slot(eid, "parsed_time")
+            assert slot is not None and "2026" in json.loads(slot.value_json)
+        if commitment_kwargs.get("user_utterance"):
+            slot = store.get_entity_slot(eid, "topic")
+            assert slot is not None and commitment_kwargs["topic"] in json.loads(slot.value_json)
+            slot = store.get_entity_slot(eid, "status")
+            assert slot is not None and json.loads(slot.value_json) == "pending"
 
     def test_check_commitment_status(self):
         from melm.appliance.assistant_skill_commitments import check_commitment_status
@@ -546,21 +514,17 @@ class TestCommitments:
         assert check_commitment_status(None, {"status": "fulfilled"}) == "fulfilled"
         assert check_commitment_status(None, {"status": "broken"}) == "broken"
 
-    def test_build_commitment_greeting_pending(self):
+    @pytest.mark.parametrize("commitment_entity,expected_topic_in_result", [
+        ({"topic": "buy groceries", "status": "pending"}, "buy groceries"),
+        ({"topic": "call mom", "status": "fulfilled"}, None),
+        ({"topic": "water plants", "status": "broken"}, None),
+    ])
+    def test_build_commitment_greeting(self, commitment_entity, expected_topic_in_result):
         from melm.appliance.assistant_skill_commitments import build_commitment_greeting
-        result = build_commitment_greeting(None, {"topic": "buy groceries", "status": "pending"}, None)
+        result = build_commitment_greeting(None, commitment_entity, None)
         assert result is not None
-        assert "buy groceries" in result
-
-    def test_build_commitment_greeting_fulfilled(self):
-        from melm.appliance.assistant_skill_commitments import build_commitment_greeting
-        result = build_commitment_greeting(None, {"topic": "call mom", "status": "fulfilled"}, None)
-        assert result is not None
-
-    def test_build_commitment_greeting_broken(self):
-        from melm.appliance.assistant_skill_commitments import build_commitment_greeting
-        result = build_commitment_greeting(None, {"topic": "water plants", "status": "broken"}, None)
-        assert result is not None
+        if expected_topic_in_result:
+            assert expected_topic_in_result in result
 
 
 # ===================================================================

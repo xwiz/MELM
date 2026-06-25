@@ -66,21 +66,16 @@ class E3RerankerLoadContractTests(unittest.TestCase):
 class E3RerankerContentTokensTests(unittest.TestCase):
     """_content_tokens filters stopwords correctly."""
 
-    def test_filters_stopwords(self) -> None:
+    def test_content_tokens(self) -> None:
         from melm.appliance.assistant_frame_ranker import _content_tokens
-        tokens = ("tell", "me", "a", "story", "about", "rain")
-        result = _content_tokens(tokens)
-        self.assertEqual(result, ["tell", "story", "rain"])
-
-    def test_all_stopwords_returns_empty(self) -> None:
-        from melm.appliance.assistant_frame_ranker import _content_tokens
-        result = _content_tokens(("a", "the", "is", "it"))
-        self.assertEqual(result, [])
-
-    def test_no_stopwords_preserves_all(self) -> None:
-        from melm.appliance.assistant_frame_ranker import _content_tokens
-        result = _content_tokens(("rain", "snow", "story"))
-        self.assertEqual(result, ["rain", "snow", "story"])
+        cases = [
+            (("tell", "me", "a", "story", "about", "rain"), ["tell", "story", "rain"]),
+            (("a", "the", "is", "it"), []),
+            (("rain", "snow", "story"), ["rain", "snow", "story"]),
+        ]
+        for tokens, expected in cases:
+            with self.subTest(tokens=tokens):
+                self.assertEqual(_content_tokens(tokens), expected)
 
 
 class E3RerankerMinimalPairsTests(unittest.TestCase):
@@ -234,7 +229,7 @@ class E3RerankerMinimalPairsTests(unittest.TestCase):
 
         Thresholds in frame_templates.v1.json were calibrated against rule_score.
         Since ScoredCandidate.score now returns rerank_score (which weights rule_score
-        at 0.40×), this test empirically verifies that the effective threshold remains
+        at 0.40x), this test empirically verifies that the effective threshold remains
         safe: no correct case is within 0.05 of the template threshold.
         """
         margins: list[float] = []
@@ -325,23 +320,18 @@ class E3RerankerActionAlignmentTests(unittest.TestCase):
             },
         }
 
-    def test_content_token_matches_action_tokens(self) -> None:
+    def test_action_alignment_score(self) -> None:
         from melm.appliance.assistant_frame_ranker import _action_alignment_score, _content_tokens
-        content = _content_tokens(("tell", "me", "a", "story"))
-        score = _action_alignment_score("story", self.templates, content)
-        self.assertAlmostEqual(score, 1.0)
-
-    def test_no_action_tokens_returns_zero(self) -> None:
-        from melm.appliance.assistant_frame_ranker import _action_alignment_score, _content_tokens
-        content = _content_tokens(("rain", "today"))
-        score = _action_alignment_score("weather", self.templates, content)
-        self.assertAlmostEqual(score, 0.0)
-
-    def test_no_match_returns_zero(self) -> None:
-        from melm.appliance.assistant_frame_ranker import _action_alignment_score, _content_tokens
-        content = _content_tokens(("rain", "today"))
-        score = _action_alignment_score("story", self.templates, content)
-        self.assertAlmostEqual(score, 0.0)
+        cases = [
+            (("tell", "me", "a", "story"), "story", 1.0),
+            (("rain", "today"), "weather", 0.0),
+            (("rain", "today"), "story", 0.0),
+        ]
+        for tokens, frame_id, expected in cases:
+            with self.subTest(tokens=tokens, frame_id=frame_id):
+                content = _content_tokens(tokens)
+                score = _action_alignment_score(frame_id, self.templates, content)
+                self.assertAlmostEqual(score, expected)
 
 
 class E3RerankerRoleCoverageTests(unittest.TestCase):
@@ -365,32 +355,17 @@ class E3RerankerRoleCoverageTests(unittest.TestCase):
             "define": frozenset({"definition_request"}),
         }
 
-    def test_all_content_tokens_serve_frame(self) -> None:
+    def test_role_coverage_score(self) -> None:
         from melm.appliance.assistant_frame_ranker import _role_coverage_score
-        score = _role_coverage_score(
-            "story", ("tell", "a", "story"), self.lexicon, self.templates,
-        )
-        # content tokens: ["tell", "story"] → both have narrative_content → 2/2=1.0
-        self.assertAlmostEqual(score, 1.0)
-
-    def test_half_content_tokens_serve_frame(self) -> None:
-        from melm.appliance.assistant_frame_ranker import _role_coverage_score
-        score = _role_coverage_score(
-            "story", ("tell", "a", "story", "rain"), self.lexicon, self.templates,
-        )
-        # content tokens: ["tell", "story", "rain"] → 2/3 have narrative_content → ~0.667
-        self.assertAlmostEqual(score, 2.0 / 3.0, places=4)
-
-    def test_exclude_classes_not_counted_as_coverage(self) -> None:
-        """Exclude classes should not contribute to coverage score."""
-        from melm.appliance.assistant_frame_ranker import _role_coverage_score
-        score = _role_coverage_score(
-            "story", ("tell", "a", "story", "define"), self.lexicon, self.templates,
-        )
-        # "define" → definition_request, which is NOT in required/optional/action_tokens
-        # content: ["tell", "story", "define"] → "define" does NOT contribute
-        # expected: 2/3 ≈ 0.667 (tell + story contribute)
-        self.assertAlmostEqual(score, 2.0 / 3.0, places=4)
+        cases = [
+            ("story", ("tell", "a", "story"), 1.0),
+            ("story", ("tell", "a", "story", "rain"), 2.0 / 3.0),
+            ("story", ("tell", "a", "story", "define"), 2.0 / 3.0),
+        ]
+        for frame_id, tokens, expected in cases:
+            with self.subTest(tokens=tokens):
+                score = _role_coverage_score(frame_id, tokens, self.lexicon, self.templates)
+                self.assertAlmostEqual(score, expected, places=4)
 
 
 class E3RerankerSpecificityTests(unittest.TestCase):
@@ -411,21 +386,24 @@ class E3RerankerSpecificityTests(unittest.TestCase):
             "mom": frozenset({"social_relation"}),
         }
 
-    def test_different_frames_get_different_scores(self) -> None:
-        content = self._content(("tell", "a", "story", "about", "rain"))
-        scores = {}
-        for fid in ("story", "weather", "social_contact"):
-            scores[fid] = self._score(fid, content, self.lexicon, self.hierarchy, self.templates)
-        self.assertNotEqual(
-            scores["story"], scores["weather"],
-            f"story and weather get same specificity: {scores}",
-        )
-
-    def test_no_relevant_classes_returns_zero(self) -> None:
-        content = self._content(("rain", "today"))
-        score = self._score("story", content, self.lexicon, self.hierarchy, self.templates)
-        # "rain" and "today" have no narrative_content → 0
-        self.assertAlmostEqual(score, 0.0)
+    def test_class_specificity_score(self) -> None:
+        cases: list[tuple[str, tuple[str, ...], str | None, float | None]] = [
+            ("differentiate", ("tell", "a", "story", "about", "rain"), None, None),
+            ("zero", ("rain", "today"), "story", 0.0),
+        ]
+        for kind, tokens, frame_id, expected in cases:
+            with self.subTest(kind=kind):
+                content = self._content(tokens)
+                if kind == "differentiate":
+                    a_score = self._score("story", content, self.lexicon, self.hierarchy, self.templates)
+                    b_score = self._score("weather", content, self.lexicon, self.hierarchy, self.templates)
+                    self.assertNotEqual(
+                        a_score, b_score,
+                        f"story and weather get same specificity: {a_score}",
+                    )
+                else:
+                    score = self._score(frame_id, content, self.lexicon, self.hierarchy, self.templates)
+                    self.assertAlmostEqual(score, expected)
 
 
 class E3RerankerPredicateActionAlignmentTests(unittest.TestCase):
@@ -451,54 +429,37 @@ class E3RerankerPredicateActionAlignmentTests(unittest.TestCase):
             for i, e in enumerate(entries)
         )
 
-    def test_main_predicate_lemma_matches_action_tokens(self) -> None:
+    def test_predicate_action_alignment_score(self) -> None:
         from melm.appliance.assistant_frame_ranker import _predicate_action_alignment_score
-        roles = self._make_roles([
-            {"token": "tell", "lemma": "tell", "role": "main_predicate", "meaning": "tell:communication"},
-            {"token": "story", "lemma": "story", "role": "semantic_object", "meaning": "narrative_content"},
-        ])
-        score = _predicate_action_alignment_score("story", self.templates, roles)
-        self.assertAlmostEqual(score, 1.0)
-
-    def test_main_predicate_lemma_no_match(self) -> None:
-        from melm.appliance.assistant_frame_ranker import _predicate_action_alignment_score
-        roles = self._make_roles([
-            {"token": "rain", "lemma": "rain", "role": "main_predicate", "meaning": "rain:weather"},
-            {"token": "today", "lemma": "today", "role": "content_nominal", "meaning": "temporal_descriptor"},
-        ])
-        score = _predicate_action_alignment_score("story", self.templates, roles)
-        self.assertAlmostEqual(score, 0.0)
-
-    def test_secondary_predicate_matches_at_0_5(self) -> None:
-        """When a secondary_predicate_candidate (not main) matches, returns 0.5."""
-        from melm.appliance.assistant_frame_ranker import _predicate_action_alignment_score
-        roles = self._make_roles([
-            {"token": "I", "lemma": "i", "role": "grammatical_subject", "meaning": "user"},
-            {"token": "want", "lemma": "want", "role": "main_predicate", "meaning": "want:desire"},
-            {"token": "to", "lemma": "to", "role": "relation_marker", "meaning": "to"},
-            {"token": "eat", "lemma": "eat", "role": "secondary_predicate_candidate", "meaning": "eat:consumption"},
-            {"token": "pasta", "lemma": "pasta", "role": "semantic_object", "meaning": "food_item"},
-        ])
-        score = _predicate_action_alignment_score("meal_suggestion", self.templates, roles)
-        self.assertAlmostEqual(score, 0.5)
-
-    def test_no_action_tokens_returns_zero(self) -> None:
-        from melm.appliance.assistant_frame_ranker import _predicate_action_alignment_score
-        roles = self._make_roles([
-            {"token": "rain", "lemma": "rain", "role": "main_predicate", "meaning": "rain:weather"},
-        ])
-        score = _predicate_action_alignment_score("weather", self.templates, roles)
-        self.assertAlmostEqual(score, 0.0)
-
-    def test_no_matching_role_returns_zero(self) -> None:
-        """When token_roles exist but no predicate role is helpful, return 0.0."""
-        from melm.appliance.assistant_frame_ranker import _predicate_action_alignment_score
-        roles = self._make_roles([
-            {"token": "the", "lemma": "the", "role": "determiner", "meaning": "nominal_scope"},
-            {"token": "weather", "lemma": "weather", "role": "content_nominal", "meaning": "weather_phenomenon"},
-        ])
-        score = _predicate_action_alignment_score("story", self.templates, roles)
-        self.assertAlmostEqual(score, 0.0)
+        cases = [
+            ("main_predicate_matches",
+             [{"token": "tell", "lemma": "tell", "role": "main_predicate", "meaning": "tell:communication"},
+              {"token": "story", "lemma": "story", "role": "semantic_object", "meaning": "narrative_content"}],
+             "story", 1.0),
+            ("main_predicate_no_match",
+             [{"token": "rain", "lemma": "rain", "role": "main_predicate", "meaning": "rain:weather"},
+              {"token": "today", "lemma": "today", "role": "content_nominal", "meaning": "temporal_descriptor"}],
+             "story", 0.0),
+            ("secondary_predicate_matches",
+             [{"token": "I", "lemma": "i", "role": "grammatical_subject", "meaning": "user"},
+              {"token": "want", "lemma": "want", "role": "main_predicate", "meaning": "want:desire"},
+              {"token": "to", "lemma": "to", "role": "relation_marker", "meaning": "to"},
+              {"token": "eat", "lemma": "eat", "role": "secondary_predicate_candidate", "meaning": "eat:consumption"},
+              {"token": "pasta", "lemma": "pasta", "role": "semantic_object", "meaning": "food_item"}],
+             "meal_suggestion", 0.5),
+            ("no_action_tokens",
+             [{"token": "rain", "lemma": "rain", "role": "main_predicate", "meaning": "rain:weather"}],
+             "weather", 0.0),
+            ("no_matching_role",
+             [{"token": "the", "lemma": "the", "role": "determiner", "meaning": "nominal_scope"},
+              {"token": "weather", "lemma": "weather", "role": "content_nominal", "meaning": "weather_phenomenon"}],
+             "story", 0.0),
+        ]
+        for label, role_entries, frame_id, expected in cases:
+            with self.subTest(label=label):
+                roles = self._make_roles(role_entries)
+                score = _predicate_action_alignment_score(frame_id, self.templates, roles)
+                self.assertAlmostEqual(score, expected)
 
 
 class E3RerankerObjectAlignmentTests(unittest.TestCase):
@@ -538,42 +499,32 @@ class E3RerankerObjectAlignmentTests(unittest.TestCase):
             for i, e in enumerate(entries)
         )
 
-    def test_object_class_matches_frame_classes(self) -> None:
+    def test_object_alignment_score(self) -> None:
         from melm.appliance.assistant_frame_ranker import _object_alignment_score
-        roles = self._make_roles([
-            {"token": "eat", "lemma": "eat", "role": "main_predicate", "meaning": "eat:consumption"},
-            {"token": "pasta", "lemma": "pasta", "role": "semantic_object", "meaning": "food_item"},
-        ])
-        score = _object_alignment_score("meal_suggestion", self.templates, roles, self.lexicon)
-        self.assertAlmostEqual(score, 1.0)
-
-    def test_object_class_no_match_for_frame(self) -> None:
-        from melm.appliance.assistant_frame_ranker import _object_alignment_score
-        roles = self._make_roles([
-            {"token": "tell", "lemma": "tell", "role": "main_predicate", "meaning": "tell:communication"},
-            {"token": "story", "lemma": "story", "role": "semantic_object", "meaning": "narrative_content"},
-        ])
-        # story object does NOT match weather (needs weather_phenomenon)
-        score = _object_alignment_score("weather", self.templates, roles, self.lexicon)
-        self.assertAlmostEqual(score, 0.0)
-
-    def test_no_semantic_object_returns_zero(self) -> None:
-        from melm.appliance.assistant_frame_ranker import _object_alignment_score
-        roles = self._make_roles([
-            {"token": "tell", "lemma": "tell", "role": "main_predicate", "meaning": "tell:communication"},
-        ])
-        score = _object_alignment_score("story", self.templates, roles, self.lexicon)
-        self.assertAlmostEqual(score, 0.0)
-
-    def test_no_frame_classes_returns_zero(self) -> None:
-        from melm.appliance.assistant_frame_ranker import _object_alignment_score
-        tmpl_no_classes = {"no_class_frame": {"activation": {"required_classes": [], "optional_classes": []}}}
-        roles = self._make_roles([
-            {"token": "eat", "lemma": "eat", "role": "main_predicate", "meaning": "eat:consumption"},
-            {"token": "pasta", "lemma": "pasta", "role": "semantic_object", "meaning": "food_item"},
-        ])
-        score = _object_alignment_score("no_class_frame", tmpl_no_classes, roles, self.lexicon)
-        self.assertAlmostEqual(score, 0.0)
+        no_class_templates = {"no_class_frame": {"activation": {"required_classes": [], "optional_classes": []}}}
+        cases = [
+            ("match",
+             [{"token": "eat", "lemma": "eat", "role": "main_predicate", "meaning": "eat:consumption"},
+              {"token": "pasta", "lemma": "pasta", "role": "semantic_object", "meaning": "food_item"}],
+             "meal_suggestion", 1.0, None),
+            ("no_match_for_frame",
+             [{"token": "tell", "lemma": "tell", "role": "main_predicate", "meaning": "tell:communication"},
+              {"token": "story", "lemma": "story", "role": "semantic_object", "meaning": "narrative_content"}],
+             "weather", 0.0, None),
+            ("no_semantic_object",
+             [{"token": "tell", "lemma": "tell", "role": "main_predicate", "meaning": "tell:communication"}],
+             "story", 0.0, None),
+            ("no_frame_classes",
+             [{"token": "eat", "lemma": "eat", "role": "main_predicate", "meaning": "eat:consumption"},
+              {"token": "pasta", "lemma": "pasta", "role": "semantic_object", "meaning": "food_item"}],
+             "no_class_frame", 0.0, no_class_templates),
+        ]
+        for label, role_entries, frame_id, expected, templates_override in cases:
+            with self.subTest(label=label):
+                roles = self._make_roles(role_entries)
+                templates = templates_override if templates_override is not None else self.templates
+                score = _object_alignment_score(frame_id, templates, roles, self.lexicon)
+                self.assertAlmostEqual(score, expected)
 
 
 class E3RerankerUOLIntegrationTests(unittest.TestCase):

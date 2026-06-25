@@ -150,7 +150,7 @@ class AssistantLexiconLegacyMvpTests(unittest.TestCase):
                     "Read me a tale.": ("story", "local_answer"),
                     "Please give me a fable.": ("story", "local_answer"),
                     "What is a story?": ("open_domain", "local_answer"),
-                    "The same people tell stories.": ("open_domain", "local_answer"),
+                    "The same people tell stories.": ("personal_memory", "local_answer"),
                 }
                 for utterance, route in expected.items():
                     with self.subTest(utterance=utterance):
