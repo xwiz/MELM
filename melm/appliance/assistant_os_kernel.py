@@ -8,7 +8,12 @@ from pathlib import Path
 import re
 from typing import Any, Literal
 
+import logging
+
+logger = logging.getLogger(__name__)
+
 from .assistant_actions import LocalDeviceActionExecutor
+from .assistant_background_runner import BackgroundTaskRunner
 from .assistant_experience_writer import record_conversation_experience
 from ..contracts.validation import ContractRegistry, ContractValidationError
 from .assistant_integrity import ResponseIntegrityAssessment, assess_response_integrity
@@ -47,6 +52,7 @@ from .local_assistant_router import (
     parse_assistant_debug_frame,
     rebuild_entity_lexicon_index,
     replace_in_memory_lexicon,
+    _requested_contact,
 )
 
 
@@ -272,6 +278,8 @@ class AssistantOSKernel:
         self.improvement_opt_in = bool(improvement_opt_in)
         self.offline_dictionary_path = str(offline_dictionary_path) if offline_dictionary_path is not None else None
         self.cloud_api_key = cloud_api_key
+        from .provisioning import load_identity_prefs
+        self.identity_prefs: dict = load_identity_prefs()
         self.events: list[AssistantMemoryEvent] = []
         self.executed_jobs: list[str] = []
         self.last_synthesis: BoundedSynthesisResult | None = None
@@ -279,6 +287,8 @@ class AssistantOSKernel:
         self._last_decision_intent: str | None = None
         self.last_response_integrity: ResponseIntegrityAssessment | None = None
         self._current_self_status: dict[str, Any] = {}
+        self._router: OnDeviceAssistantRouter | None = None
+        self._background_runner = BackgroundTaskRunner(self.store)
         if self.store is not None:
             self.events = [
                 AssistantMemoryEvent(
@@ -307,12 +317,12 @@ class AssistantOSKernel:
             )
 
     def start(self) -> None:
-        """Start background runner (no-op — passive by default)."""
-        pass
+        """Start the passive background runner."""
+        self._background_runner.start()
 
     def stop(self) -> None:
-        """Stop background runner (no-op — passive by default)."""
-        pass
+        """Stop the passive background runner."""
+        self._background_runner.stop()
 
     def _is_new_session(self) -> bool:
         """Detect if this is the first handle() call of a new session."""
@@ -323,6 +333,11 @@ class AssistantOSKernel:
         return False
 
     def handle(self, utterance: str) -> AssistantDecision:
+        # Run any due passive background tasks at the start of the turn
+        try:
+            self._background_runner.tick()
+        except Exception:
+            logger.warning("kernel: background_runner.tick() failed", exc_info=True)
         # Check for deferred-task greeting context at session start
         if self.store is not None and self._is_new_session():
             try:
@@ -331,16 +346,28 @@ class AssistantOSKernel:
                 if context:
                     self._pending_greeting_context = context
             except Exception:
-                pass
+                logger.warning("kernel: build_greeting_context() failed", exc_info=True)
         decision = self.decide(utterance)
         self.remember(decision)
         # Inject pending greeting context
         if self._pending_greeting_context and decision.intent == "social_greeting":
-            from dataclasses import replace
             existing = getattr(decision, "answer", "")
             new_answer = f"{self._pending_greeting_context} {existing}" if existing else self._pending_greeting_context
             decision = replace(decision, answer=new_answer)
             self._pending_greeting_context = None
+        # Enrich device_action answers with style/contact details (PH3-A/B)
+        if decision.route == "device_action":
+            if decision.intent == "media_playback":
+                enriched = OnDeviceAssistantRouter._enrich_media_playback_answer(decision.answer, decision.uol_act)
+                if enriched:
+                    decision = replace(decision, answer=enriched)
+            elif decision.intent == "social_contact":
+                contact = _requested_contact(utterance, self.profile.contacts)
+                number = self.profile.contacts.get(contact) if contact else None
+                if number:
+                    enriched = OnDeviceAssistantRouter._enrich_contact_answer(decision.answer, number, contact_name=contact, store=self.store)
+                    if enriched:
+                        decision = replace(decision, answer=enriched)
         self._run_acquisition()
         self._run_user_teaching(utterance)
         # Persist session mood summary and ambient mood (G3)
@@ -387,14 +414,14 @@ class AssistantOSKernel:
                         self.store, token, dictionary_path=self.offline_dictionary_path,
                     )
                 except Exception:
-                    pass
+                    logger.warning("kernel: offline_definition_lookup() failed for '%s'", token, exc_info=True)
             if self.cloud_api_key is not None:
                 try:
                     cloud_definition_lookup(
                         self.store, token, api_key=self.cloud_api_key,
                     )
                 except Exception:
-                    pass
+                    logger.warning("kernel: cloud_definition_lookup() failed for '%s'", token, exc_info=True)
 
     def decide(self, utterance: str) -> AssistantDecision:
         self._current_self_status = {}
@@ -457,10 +484,12 @@ class AssistantOSKernel:
             if synthesis.applied:
                 return replace(autobiographical_recall, answer=synthesis.answer)
             return autobiographical_recall
-        decision = OnDeviceAssistantRouter(
-            self.profile,
-            store=self.store,
-        ).handle(utterance, last_intent=self._last_decision_intent)
+        if self._router is None:
+            self._router = OnDeviceAssistantRouter(
+                self.profile,
+                store=self.store,
+            )
+        decision = self._router.handle(utterance, last_intent=self._last_decision_intent)
         self._last_decision_intent = decision.intent
         # Learned-fact lookup for open_domain / unknown: if we have a stored
         # fact matching the extracted topic, answer locally instead of handing
@@ -757,6 +786,9 @@ class AssistantOSKernel:
             elif decision.reason == "cancelled_pending_action":
                 self.store.mark_latest_pending_action_cancelled(decision.answer)
             persist_self_observation(self.store, self.self_model)
+            # Flush verb candidate ring buffer to session entity (T5 Gap 2c)
+            from melm.appliance.reasoning.implications import flush_verb_candidates as _flush_verb_candidates
+            _flush_verb_candidates(self.store, session_id)
 
     def _privacy_control_decision(self, utterance: str) -> AssistantDecision | None:
         fact_key = _revoked_fact_key(utterance)
@@ -774,13 +806,34 @@ class AssistantOSKernel:
         )
 
     def _apply_profile_setup_fact(
-        self, kind: str, key: str, value: str,
+        self, kind: str, key: str, value: str, relationship: str | None = None,
     ) -> tuple[str, str, str]:
         """Apply one setup fact to the profile. Returns (evidence_key, label, reason)."""
-        if kind == "trusted_contact":
+        if kind in ("trusted_contact", "relationship_contact"):
             contacts = dict(self.profile.contacts)
             contacts[key] = value
             self.profile = replace(self.profile, contacts=contacts)
+            if self.store is not None:
+                entity_id = f"contact:{key}"
+                existing = self.store.get_entity(entity_id)
+                if existing is None:
+                    self.store.add_entity(entity_id, "person", key, "person")
+                self.store.set_entity_slot(
+                    entity_id, "name", key,
+                    source="user_setup", confidence=0.90, provenance="user_setup",
+                )
+                if value:
+                    self.store.set_entity_slot(
+                        entity_id, "phone", value,
+                        source="user_setup", confidence=0.90, provenance="user_setup",
+                    )
+                if relationship:
+                    self.store.set_entity_slot(
+                        entity_id, "relationship", relationship,
+                        source="user_setup", confidence=0.90, provenance="user_setup_extracted",
+                    )
+            if relationship:
+                return f"contacts.{key}", f"{key} as my {relationship}", f"consented_{kind}_stored"
             return f"contacts.{key}", f"{key} as a trusted contact", "consented_trusted_contact_stored"
         if kind == "profile_fact":
             if key == "profile.age":
@@ -816,10 +869,13 @@ class AssistantOSKernel:
         labels: list[str] = []
         reasons: list[str] = []
         only_contacts = True
-        for kind, key, value in setups:
-            if kind != "trusted_contact":
+        for kind, key, value, extra in setups:
+            if kind not in ("trusted_contact", "relationship_contact"):
                 only_contacts = False
-            evidence_key, label, reason = self._apply_profile_setup_fact(kind, key, value)
+            if extra is not None:
+                evidence_key, label, reason = self._apply_profile_setup_fact(kind, key, value, relationship=extra)
+            else:
+                evidence_key, label, reason = self._apply_profile_setup_fact(kind, key, value)
             evidence_keys.append(evidence_key)
             labels.append(label)
             reasons.append(reason)
@@ -1398,12 +1454,17 @@ class AssistantOSKernel:
         self.store.save_self_model(_self_model_payload(self.self_model))
 
     def _synthesizer(self) -> BoundedLocalSynthesizer:
+        self_state = _self_model_payload(self.self_model)
+        display_name = self.identity_prefs.get("display_name")
+        if display_name:
+            self_state = {**self_state, "name": display_name}
         return BoundedLocalSynthesizer(
             self.profile,
             store=self.store,
-            self_state=_self_model_payload(self.self_model),
+            self_state=self_state,
             runtime_status=self._current_self_status,
             decoder=self.decoder,
+            identity_prefs=self.identity_prefs,
         )
 
     def _fact_privacy_index(self) -> dict[str, dict[str, Any]]:
@@ -2117,33 +2178,40 @@ def _extract_basic_profile_facts(text: str, normalized: str) -> list[tuple[str, 
     return facts
 
 
-def _extract_local_profile_setups(utterance: str) -> list[tuple[str, str, str]]:
+def _extract_local_profile_setups(utterance: str) -> list[tuple[str, str, str, str | None]]:
     """All consented setup facts in one utterance (compound-aware).
 
     Single-fact extractors (contact/child/routine/household) contribute at most
     one fact; basic profile facts are clause-split so name+location+age in one
     sentence are all captured. De-duplicated by key.
+
+    Each tuple is (kind, key, value, extra) where *extra* carries relationship
+    metadata for contact extractions or None otherwise.
     """
     text = " ".join(utterance.strip().split())
     normalized = text.lower()
     if not text or "?" in text:
         return []
-    collected: list[tuple[str, str, str]] = []
+    collected: list[tuple[str, str, str, str | None]] = []
     contact = _extract_trusted_contact_setup(text, normalized)
     if contact is not None:
-        collected.append(contact)
+        collected.append((*contact, None))
+    relationship = _extract_relationship_setup(text, normalized)
+    if relationship is not None:
+        collected.append(relationship)
     child = _extract_child_setup(text, normalized)
     if child is not None:
-        collected.append(child)
-    collected.extend(_extract_basic_profile_facts(text, normalized))
+        collected.append((*child, None))
+    for fact in _extract_basic_profile_facts(text, normalized):
+        collected.append((*fact, None))
     routine = _extract_routine_setup(text, normalized)
     if routine is not None:
-        collected.append(routine)
+        collected.append((*routine, None))
     household = _extract_household_setup(text, normalized)
     if household is not None:
-        collected.append(household)
+        collected.append((*household, None))
     seen: set[str] = set()
-    result: list[tuple[str, str, str]] = []
+    result: list[tuple[str, str, str, str | None]] = []
     for fact in collected:
         if fact[1] not in seen:
             result.append(fact)
@@ -2168,6 +2236,40 @@ def _extract_trusted_contact_setup(text: str, normalized: str) -> tuple[str, str
         return None
     value = _clean_memory_value(match.group("value") or f"local_contact:{name}")
     return ("trusted_contact", name, value)
+
+
+def _extract_relationship_setup(text: str, normalized: str) -> tuple[str, str, str, str] | None:
+    """Extract '<NAME> is my <RELATIONSHIP>' or 'my <RELATIONSHIP> is <NAME>' patterns.
+
+    Returns (kind, name, phone_or_empty, relationship) or None.
+    """
+    tokens_data = _get_contact_object_tokens()
+    rel_tokens = list(tokens_data.get("relationship_tokens", []))
+    if not rel_tokens:
+        return None
+    # Pattern 1: <NAME> is my <RELATIONSHIP>  e.g. "Ada is my daughter"
+    for rel in rel_tokens:
+        pattern = rf"\b([A-Za-z][A-Za-z0-9 _'-]{{0,32}})\s+is\s+my\s+{re.escape(rel)}\b"
+        match = re.search(pattern, text, flags=re.IGNORECASE)
+        if match:
+            name = _memory_key(match.group(1))
+            if name:
+                return ("relationship_contact", name, "", rel)
+    # Pattern 2: my <RELATIONSHIP> is <NAME> [at <PHONE>]
+    #   e.g. "My daughter is Ada" or "My daughter is Ada at +234-555-1212"
+    for rel in rel_tokens:
+        pattern = (
+            rf"\bmy\s+{re.escape(rel)}\s+is\s+"
+            r"(?P<name>[A-Za-z][A-Za-z0-9 _'-]{0,32})"
+            r"(?:\s+at\s+(?P<phone>[+0-9][+0-9A-Za-z ()-]{4,32}))?"
+        )
+        match = re.search(pattern, text, flags=re.IGNORECASE)
+        if match:
+            name = _memory_key(match.group("name"))
+            if name:
+                phone = match.group("phone") or ""
+                return ("relationship_contact", name, phone, rel)
+    return None
 
 
 def _extract_basic_profile_setup(text: str, normalized: str) -> tuple[str, str, str] | None:
@@ -2320,48 +2422,70 @@ def _clean_memory_value(value: str | None) -> str:
     return cleaned[:240]
 
 
+_CONTACT_TOKEN_CACHE: dict[str, Any] | None = None
+
+def _get_contact_object_tokens() -> dict[str, Any]:
+    global _CONTACT_TOKEN_CACHE
+    if _CONTACT_TOKEN_CACHE is None:
+        try:
+            from melm.contracts.validation import load_contact_object_tokens
+            _CONTACT_TOKEN_CACHE = load_contact_object_tokens()
+        except Exception:
+            _CONTACT_TOKEN_CACHE = {
+                "relationship_tokens": ["mom", "dad", "caregiver"],
+                "relationship_object": "relationship_contact",
+                "someone_token": "someone",
+                "default_object": "trusted_contact",
+            }
+    return _CONTACT_TOKEN_CACHE
+
+
+_REVOKED_FACT_MARKERS_CACHE: dict[str, Any] | None = None
+
+def _get_revoked_fact_markers() -> dict[str, Any]:
+    global _REVOKED_FACT_MARKERS_CACHE
+    if _REVOKED_FACT_MARKERS_CACHE is None:
+        try:
+            from melm.contracts.validation import load_revoked_fact_markers
+            _REVOKED_FACT_MARKERS_CACHE = load_revoked_fact_markers()
+        except Exception:
+            _REVOKED_FACT_MARKERS_CACHE = {}
+    return _REVOKED_FACT_MARKERS_CACHE
+
 def _revoked_fact_key(utterance: str) -> str | None:
     text = utterance.lower().strip()
-    forget_markers = (
-        "forget",
-        "stop remembering",
-        "stop using",
-        "don't remember",
-        "do not remember",
-        "remove",
-        "delete",
-    )
+    markers_data = _get_revoked_fact_markers()
+    forget_markers = tuple(markers_data.get("forget_markers", (
+        "forget", "stop remembering", "stop using",
+        "don't remember", "do not remember", "remove", "delete",
+    )))
     if not _contains_any_lifecycle_marker(text, forget_markers):
         return None
-    if _has_marker(text, "favorite color"):
-        return "facts.favorite_color"
-    if _contains_any_lifecycle_marker(text, ("morning routine", "routine")):
-        return "facts.morning_routine"
-    if _contains_any_lifecycle_marker(
-        text,
-        ("child", "kid", "son", "daughter", "child's", "kid's", "son's", "daughter's"),
-    ):
-        if _has_marker(text, "school"):
-            return "facts.child_school"
-        if _contains_any_lifecycle_marker(text, ("name", "called")):
-            return "facts.child_name"
-        if _contains_any_lifecycle_marker(text, ("age", "old")):
-            return "facts.child_age"
-        return "facts.child_age"
-    if _contains_any_lifecycle_marker(text, ("household", "family memory", "shared device", "our family")):
-        return "facts.household_context"
-    if _has_marker(text, "job"):
-        return "facts.job"
-    if _has_marker(text, "trip"):
-        return "facts.trip"
-    if _has_marker(text, "accessibility"):
-        return "facts.accessibility"
-    if _contains_any_lifecycle_marker(text, ("story theme", "story preference")):
-        return "preferences.story_theme"
-    if _contains_any_lifecycle_marker(text, ("music", "song preference")):
-        return "preferences.music"
-    if _has_marker(text, "breakfast"):
-        return "preferences.breakfast"
+
+    # Simple direct marker checks
+    for key, marker_list in markers_data.get("simple_markers", {}).items():
+        if _contains_any_lifecycle_marker(text, tuple(marker_list)):
+            return key
+
+    # Child context markers
+    child_parent = tuple(markers_data.get("child_parent_markers", (
+        "child", "kid", "son", "daughter",
+        "child's", "kid's", "son's", "daughter's",
+    )))
+    if _contains_any_lifecycle_marker(text, child_parent):
+        child_markers = markers_data.get("child_markers", {})
+        for marker_text, fact_key in child_markers.items():
+            if _has_marker(text, marker_text) or _contains_any_lifecycle_marker(text, (marker_text,)):
+                return fact_key
+        return str(markers_data.get("child_default", "facts.child_age"))
+
+    # Household markers
+    household_markers = tuple(markers_data.get("household_markers", (
+        "household", "family memory", "shared device", "our family",
+    )))
+    if _contains_any_lifecycle_marker(text, household_markers):
+        return str(markers_data.get("household_key", "facts.household_context"))
+
     return None
 
 

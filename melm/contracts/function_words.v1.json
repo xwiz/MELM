@@ -79,6 +79,17 @@
     {"lemma": "sometimes", "language": "en", "role": "frequency"},
     {"lemma": "usually", "language": "en", "role": "frequency"},
 
+    {"lemma": "yesterday", "language": "en", "role": "temporal", "subrole": "past"},
+    {"lemma": "today",     "language": "en", "role": "temporal", "subrole": "present"},
+    {"lemma": "tomorrow",  "language": "en", "role": "temporal", "subrole": "future"},
+    {"lemma": "last",      "language": "en", "role": "temporal", "subrole": "past"},
+    {"lemma": "ago",       "language": "en", "role": "temporal", "subrole": "past"},
+    {"lemma": "earlier",   "language": "en", "role": "temporal", "subrole": "past"},
+    {"lemma": "recently",  "language": "en", "role": "temporal", "subrole": "past"},
+    {"lemma": "before",    "language": "en", "role": "temporal", "subrole": "past"},
+    {"lemma": "now",       "language": "en", "role": "temporal", "subrole": "present"},
+    {"lemma": "then",      "language": "en", "role": "temporal", "subrole": "past"},
+
     {"lemma": "same",    "language": "en", "role": "equivalence"},
     {"lemma": "similar", "language": "en", "role": "equivalence"},
 
