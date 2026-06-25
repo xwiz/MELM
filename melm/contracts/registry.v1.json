@@ -1821,7 +1821,7 @@
       "failure_behavior": "UOL trigger responses are disabled",
       "safety_critical": false,
       "version": "1.0.0",
-      "schema_hash": "6cb8960bec936046"
+      "schema_hash": "54c2d8405106e4b5"
     },
     {
       "schema_id": "melm.personal_memory_evidence_map.v1",

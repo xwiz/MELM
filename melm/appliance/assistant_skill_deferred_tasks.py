@@ -142,3 +142,24 @@ def cancel_deferred_task(store: Any, entity_id: str) -> None:
         store.set_entity_slot(entity_id, "status", "cancelled")
     except Exception:
         pass
+
+
+def run_trigger_learning_pipeline(store: Any, **kwargs: Any) -> str | None:
+    """Run the trigger response learning pipeline.
+
+    Called as a deferred task action handler. Scans folk tales, Gutenberg
+    texts, and transcripts for sentences matching trigger patterns.
+    """
+    if store is None:
+        return None
+    try:
+        from melm.appliance.assistant_skill_trigger_learning import TriggerLearningPipeline
+
+        pipeline = TriggerLearningPipeline(store)
+        counts = pipeline.run()
+        if counts:
+            summaries = "; ".join(f"{tid}={n}" for tid, n in counts.items() if n > 0)
+            return f"Learned trigger responses: {summaries}" if summaries else None
+        return None
+    except Exception:
+        return None

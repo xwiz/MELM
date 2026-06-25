@@ -1022,9 +1022,10 @@ class BoundedLocalSynthesizer:
             if complaint_answer is not None:
                 return complaint_answer
 
-        # UOL trigger responses — the router already rendered a randomized answer
-        # from the contract pool. Return it before semantic attention or open-domain
-        # fallbacks can override it.
+        # UOL trigger responses — the router already rendered a response from
+        # fallback pool or learned entity store. Return early so semantic
+        # attention / open-domain fallbacks cannot override it. Behavior engine
+        # wrapping happens in synthesize() after _answer() returns.
         if decision.reason == "uol_trigger_detected":
             return self._finalize_answer(decision.answer, decision)
 

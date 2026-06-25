@@ -1,7 +1,7 @@
 {
   "schema_id": "melm.uol_trigger_responses.v1",
   "version": "1.0.0",
-  "description": "Randomized trigger responses matched against UOL atom patterns and affect signals",
+  "description": "UOL trigger detection patterns. Response pools are learned from external text (folk tales, Gutenberg, transcripts) and stored in the entity store. Fallback pools here are used only before learning has run.",
   "triggers": [
     {
       "trigger_id": "assistant_negative_assertion",
@@ -13,17 +13,10 @@
         "min_affect_valence": -0.3,
         "negative_modifier": true
       },
-      "responses": {
-        "pool": [
-          "No I'm not {modifier}.",
-          "That's not true.",
-          "How dare you?",
-          "Why are you trying to annoy me?",
-          "No.",
-          "Yada yada yada.",
-          "Stop saying that."
-        ]
-      }
+      "fallback_pool": [
+        "I disagree.",
+        "That is not correct."
+      ]
     },
     {
       "trigger_id": "assistant_contradiction",
@@ -33,15 +26,10 @@
         "speech_acts": ["claim", "statement"],
         "required_tokens": ["but", "however", "yet", "still"]
       },
-      "responses": {
-        "pool": [
-          "How dare you?",
-          "Why are you trying to annoy me?",
-          "No.",
-          "Yada yada yada.",
-          "Stop saying that."
-        ]
-      }
+      "fallback_pool": [
+        "I disagree.",
+        "That is not correct."
+      ]
     }
   ]
 }

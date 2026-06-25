@@ -1,15 +1,10 @@
-"""UOL-pattern trigger responses.
-
-Detects UOL atom patterns that call for a randomized, mood-aware response
-(e.g. defiant denials when the user asserts something negative about the
-assistant). All trigger patterns and response pools live in the contract
-``uol_trigger_responses.v1.json``; this module is a generic consumer.
-"""
-
 from __future__ import annotations
 
+import hashlib
+import json
 import re
 from dataclasses import dataclass
+from datetime import datetime, timezone
 from typing import Any
 
 from melm.contracts import load_affect_lexicon, load_uol_trigger_responses
@@ -22,10 +17,8 @@ _VARIABLE_RE = re.compile(r"\{(\w+)\}")
 
 @dataclass(frozen=True)
 class UolTriggerMatch:
-    """A UOL trigger that fired together with its matched atom variables."""
-
     trigger_id: str
-    response_pool: tuple[str, ...]
+    fallback_pool: tuple[str, ...]
     variables: dict[str, str]
 
 
@@ -36,12 +29,42 @@ def _uol_trigger_responses() -> dict[str, Any]:
         return {"triggers": []}
 
 
-def _is_assistant_targeted(uol_act: dict[str, Any] | None) -> bool:
-    """Return True when the assistant is the subject/target of the utterance.
+def _load_learned_responses(store: Any, trigger_id: str) -> list[dict[str, Any]]:
+    if store is None:
+        return []
+    try:
+        entities = store.find_entities(kind="learned_trigger_response")
+        results = []
+        for ent in entities:
+            tid_slot = store.get_entity_slot(ent.entity_id, "trigger_id")
+            if tid_slot is not None and tid_slot.value_json:
+                try:
+                    stored_tid = json.loads(tid_slot.value_json)
+                except (json.JSONDecodeError, TypeError):
+                    continue
+                if stored_tid == trigger_id:
+                    row = {"entity_id": ent.entity_id}
+                    for slot_name in ("response_text", "variables", "source", "context_uol", "confidence", "use_count", "learned_at"):
+                        slot = store.get_entity_slot(ent.entity_id, slot_name)
+                        if slot is not None and slot.value_json:
+                            try:
+                                row[slot_name] = json.loads(slot.value_json)
+                            except (json.JSONDecodeError, TypeError):
+                                row[slot_name] = None
+                        else:
+                            row[slot_name] = None
+                    results.append(row)
+        return results
+    except Exception:
+        return []
 
-    A default addressee of "assistant" is not enough — the UOL atom must
-    reference the assistant as agent, theme, patient, or second-person predicate.
-    """
+
+def _seed_for_response(trigger_id: str, utterance: str, response_text: str) -> int:
+    raw = f"{trigger_id}:{utterance}:{response_text}"
+    return int(hashlib.sha256(raw.encode("utf-8")).hexdigest()[:8], 16)
+
+
+def _is_assistant_targeted(uol_act: dict[str, Any] | None) -> bool:
     if uol_act is None:
         return False
     if uol_act.get("speaker") == "assistant":
@@ -59,7 +82,6 @@ def _is_assistant_targeted(uol_act: dict[str, Any] | None) -> bool:
 
 
 def _atom_variables(atom: dict[str, Any]) -> dict[str, str]:
-    """Extract template variables from a single UOL atom dict."""
     variables: dict[str, str] = {}
     pred = atom.get("predicate", {}) or {}
     if pred.get("id"):
@@ -145,14 +167,6 @@ def _condition_matches(
     affect: AffectSignal | None,
     tokens: tuple[str, ...],
 ) -> bool:
-    """Return True if a UOL act satisfies a trigger's conditions.
-
-    Gate conditions (``assistant_targeted``, ``speech_acts``,
-    ``required_tokens``, ``excluded_tokens``) must all pass. After that, any
-    matching condition (``polarity``, ``min_affect_valence``,
-    ``negative_modifier``) is sufficient by default. Use ``all`` to require
-    every matching condition.
-    """
     if "assistant_targeted" in conditions:
         targeted = _is_assistant_targeted(uol_act)
         if targeted != bool(conditions["assistant_targeted"]):
@@ -189,52 +203,9 @@ def _condition_matches(
 
 
 def _fill_template(template: str, variables: dict[str, str]) -> str:
-    """Fill placeholders, leaving missing variables as empty strings."""
     def repl(match: re.Match) -> str:
         return variables.get(match.group(1), "")
     return _VARIABLE_RE.sub(repl, template)
-
-
-def _template_variables(template: str) -> frozenset[str]:
-    return frozenset(_VARIABLE_RE.findall(template))
-
-
-def _select_response(
-    pool: tuple[str, ...],
-    variables: dict[str, str],
-    seed: int,
-    *,
-    nlg_template: str | None = None,
-    nlg_enabled: bool = False,
-) -> str:
-    """Pick a deterministic-but-randomized response that can be filled.
-
-    Templates that reference missing variables are skipped unless they are
-    the only option, in which case missing variables are replaced with
-    empty strings.
-    """
-    candidates: list[str] = []
-    for template in pool:
-        needed = _template_variables(template)
-        if needed.issubset(variables.keys()):
-            candidates.append(template)
-    if not candidates:
-        candidates = list(pool)
-    if nlg_enabled and nlg_template:
-        needed = _template_variables(nlg_template)
-        if needed.issubset(variables.keys()):
-            candidates.append(nlg_template)
-    index = seed % len(candidates)
-    return _fill_template(candidates[index], variables)
-
-
-def _response_seed(trigger_id: str, utterance: str) -> int:
-    raw = f"{trigger_id}:{utterance}"
-    h = 0
-    for ch in raw.encode("utf-8"):
-        h = ((h << 5) - h) + ch
-        h &= 0xFFFFFFFF
-    return abs(h)
 
 
 def detect_uol_trigger(
@@ -242,11 +213,6 @@ def detect_uol_trigger(
     affect: AffectSignal | None,
     tokens: tuple[str, ...],
 ) -> UolTriggerMatch | None:
-    """Find the first trigger whose conditions match the UOL act.
-
-    Triggers are evaluated in contract order. Only the first match is
-    returned so the behavior is deterministic and easy to reason about.
-    """
     payload = _uol_trigger_responses()
     triggers = payload.get("triggers", [])
     if not triggers:
@@ -260,13 +226,11 @@ def detect_uol_trigger(
             continue
         if not _condition_matches(conditions, uol_act, affect, tokens):
             continue
-        responses = trigger.get("responses", {})
-        pool = tuple(str(t) for t in responses.get("pool", []) if t)
-        if not pool:
-            continue
+        fallback = trigger.get("fallback_pool", [])
+        fallback_pool = tuple(str(t) for t in fallback if t)
         return UolTriggerMatch(
             trigger_id=str(trigger.get("trigger_id", "")),
-            response_pool=pool,
+            fallback_pool=fallback_pool,
             variables=variables,
         )
     return None
@@ -277,11 +241,18 @@ def render_trigger_response(
     utterance: str,
     affect: AffectSignal | None,
     profile: Any,
+    store: Any = None,
 ) -> str:
-    """Render a randomized response from the matched trigger pool."""
-    seed = _response_seed(match.trigger_id, utterance)
-    return _select_response(
-        match.response_pool,
-        match.variables,
-        seed,
-    )
+    learned = _load_learned_responses(store, match.trigger_id)
+    if learned:
+        for entry in learned:
+            text = entry.get("response_text") or ""
+            if text:
+                return _fill_template(text, match.variables)
+
+    if match.fallback_pool:
+        seed = _seed_for_response(match.trigger_id, utterance, "fallback")
+        idx = seed % len(match.fallback_pool)
+        return _fill_template(match.fallback_pool[idx], match.variables)
+
+    return "I disagree."

@@ -1067,6 +1067,7 @@ class OnDeviceAssistantRouter:
                         affect = turn_context.get("utterance_affect")
                         answer = render_trigger_response(
                             trigger_match, utterance, affect, self.profile,
+                            store=getattr(self, "store", None),
                         )
                         decision = replace(decision, reason=sc_reason, answer=answer)
                 elif sc_reason in {"emotional_expression", "identity_self_probe"}:

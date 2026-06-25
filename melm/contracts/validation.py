@@ -3413,19 +3413,13 @@ def validate_uol_trigger_responses(payload: dict[str, Any]) -> None:
             sa = conditions["speech_acts"]
             if not isinstance(sa, list) or not sa or not all(isinstance(t, str) and t for t in sa):
                 _fail(f"{path}.conditions.speech_acts", "must be a non-empty array of strings")
-        responses = trigger.get("responses")
-        if not isinstance(responses, dict):
-            _fail(f"{path}.responses", "must be an object")
-        pool = responses.get("pool")
-        if not isinstance(pool, list) or not pool:
-            _fail(f"{path}.responses.pool", "must be a non-empty array of strings")
-        for j, entry in enumerate(pool):
-            if not isinstance(entry, str) or not entry:
-                _fail(f"{path}.responses.pool[{j}]", "must be a non-empty string")
-        if "nlg_template" in responses and not isinstance(responses["nlg_template"], str):
-            _fail(f"{path}.responses.nlg_template", "must be a string")
-        if "nlg_enabled" in responses and not isinstance(responses["nlg_enabled"], bool):
-            _fail(f"{path}.responses.nlg_enabled", "must be a boolean")
+        fallback = trigger.get("fallback_pool")
+        if fallback is not None:
+            if not isinstance(fallback, list) or not fallback:
+                _fail(f"{path}.fallback_pool", "must be a non-empty array of strings")
+            for j, entry in enumerate(fallback):
+                if not isinstance(entry, str) or not entry:
+                    _fail(f"{path}.fallback_pool[{j}]", "must be a non-empty string")
 
 
 def load_uol_trigger_responses() -> dict[str, Any]:

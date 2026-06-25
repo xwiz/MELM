@@ -3678,6 +3678,23 @@ def seed_class_schemas(store: AssistantOSStore) -> None:
             ("epistemic_state", "resolved_at", "text", 0, "ISO timestamp when resolved"),
         ],
     )
+    store.connection.execute(
+        "INSERT INTO class_schemas(semantic_class_id, parent_class_id, label, base_entity_kind, description, updated_at) VALUES (?, ?, ?, ?, ?, ?)",
+        ("learned_trigger_response", "abstract", "LearnedTriggerResponse", "abstract", "A trigger response phrase learned from external text sources", now),
+    )
+    store.connection.executemany(
+        "INSERT INTO class_schema_slots(semantic_class_id, slot_name, value_type, required, description) VALUES (?, ?, ?, ?, ?)",
+        [
+            ("learned_trigger_response", "trigger_id", "text", 1, "Which trigger this response belongs to"),
+            ("learned_trigger_response", "response_text", "text", 1, "The learned response phrase"),
+            ("learned_trigger_response", "variables", "text", 0, "Template variables in JSON"),
+            ("learned_trigger_response", "source", "text", 1, "Source text: folk_tale | gutenberg | transcript"),
+            ("learned_trigger_response", "context_uol", "text", 0, "UOL context from the source utterance"),
+            ("learned_trigger_response", "confidence", "real", 1, "Confidence score 0.0 to 1.0"),
+            ("learned_trigger_response", "use_count", "integer", 1, "Number of times this response has been used"),
+            ("learned_trigger_response", "learned_at", "text", 1, "ISO timestamp when learned"),
+        ],
+    )
 
 
 def migrate_contacts_to_entities(store: AssistantOSStore) -> int:
