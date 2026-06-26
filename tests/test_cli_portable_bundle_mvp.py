@@ -89,7 +89,7 @@ class PortableBundleStructuralMvpTests(unittest.TestCase):
     def test_bundle_builds_successfully(self):
         self._require_bundle()
         failed_items = [k for k in ("passed",) if not self.report.get(k)]
-        self.assertTrue(self.report["passed"], f"report.passed=False, checks={self.report.get('launcher_smoke', {}).get('checks', {})}, launch_stderr={self.report.get('launcher_smoke', {}).get('start_process', {}).get('stderr_tail', '')[:500]}, launch_stdout={self.report.get('launcher_smoke', {}).get('start_process', {}).get('stdout_tail', '')[:500]}")
+        self.assertTrue(self.report["passed"], f"report.passed=False, checks={self.report.get('launcher_smoke', {}).get('checks', {})}, launch_error={self.report.get('launcher_smoke', {}).get('launch_error', '')[:500]}, launch_stderr={self.report.get('launcher_smoke', {}).get('start_process', {}).get('stderr_tail', '')[:500]}, launch_stdout={self.report.get('launcher_smoke', {}).get('start_process', {}).get('stdout_tail', '')[:500]}")
         self.assertEqual(Path(self.report["runbook"]).name, "RUN_PORTABLE_APP.md")
         self.assertFalse(self.report["smoke_skipped"])
         self.assertFalse(self.report["bundle"]["required_network"])
@@ -202,7 +202,7 @@ class PortableBundleStructuralMvpTests(unittest.TestCase):
         self._require_bundle()
         subs = {k: self.report.get(k, {}).get("passed") for k in ("api_smoke", "api_session_smoke", "ui_smoke", "bootstrap_runtime", "launcher_smoke", "open_traces", "transcript_replay")}
         failed_subs = [k for k, v in subs.items() if not v]
-        self.assertFalse(failed_subs, f"failed sub-smokes: {failed_subs}, all={subs}, launch_stderr={self.report.get('launcher_smoke', {}).get('start_process', {}).get('stderr_tail', '')[:500]}, launch_stdout={self.report.get('launcher_smoke', {}).get('start_process', {}).get('stdout_tail', '')[:500]}")
+        self.assertFalse(failed_subs, f"failed sub-smokes: {failed_subs}, all={subs}, launch_error={self.report.get('launcher_smoke', {}).get('launch_error', '')[:500]}, launch_stderr={self.report.get('launcher_smoke', {}).get('start_process', {}).get('stderr_tail', '')[:500]}, launch_stdout={self.report.get('launcher_smoke', {}).get('start_process', {}).get('stdout_tail', '')[:500]}")
         self.assertTrue(self.report["api_smoke"]["passed"])
         self.assertTrue(all(self.report["api_smoke"]["checks"].values()))
         self.assertTrue(self.report["api_session_smoke"]["passed"])
