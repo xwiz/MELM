@@ -89,7 +89,7 @@ class PortableBundleStructuralMvpTests(unittest.TestCase):
     def test_bundle_builds_successfully(self):
         self._require_bundle()
         failed_items = [k for k in ("passed",) if not self.report.get(k)]
-        self.assertTrue(self.report["passed"], f"report.passed=False, bundle={self.report.get('bundle', {})}")
+        self.assertTrue(self.report["passed"], f"report.passed=False, launcher_smoke_checks={self.report.get('launcher_smoke', {}).get('checks', {})}")
         self.assertEqual(Path(self.report["runbook"]).name, "RUN_PORTABLE_APP.md")
         self.assertFalse(self.report["smoke_skipped"])
         self.assertFalse(self.report["bundle"]["required_network"])
