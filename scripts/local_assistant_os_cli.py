@@ -13079,12 +13079,22 @@ def _run_pi_bundle_transcript_calibration(out_dir: Path) -> dict:
 
 
 def _run_cli_json(cwd: Path, *args: str) -> dict:
-    result = subprocess.run(
-        [sys.executable, "scripts/local_assistant_os_cli.py", *args],
-        cwd=cwd,
-        capture_output=True,
-        text=True,
-    )
+    try:
+        result = subprocess.run(
+            [sys.executable, "scripts/local_assistant_os_cli.py", *args],
+            cwd=cwd,
+            capture_output=True,
+            text=True,
+            timeout=120,
+        )
+    except subprocess.TimeoutExpired as exc:
+        return {
+            "passed": False,
+            "returncode": -1,
+            "stdout": str(exc.stdout)[-2000:] if exc.stdout else "",
+            "stderr": str(exc.stderr)[-2000:] if exc.stderr else "",
+            "timeout": True,
+        }
     if result.returncode != 0:
         return {
             "passed": False,
