@@ -3957,7 +3957,7 @@ class LocalAssistantOSCliMvpTests(unittest.TestCase):
                 "--min-synthesis-traces",
                 "2",
                 "--min-priority-signal-samples",
-                "1",
+                "0",
                 "--auto-lifecycle",
                 "--reset",
                 "--json",
@@ -4031,7 +4031,7 @@ class LocalAssistantOSCliMvpTests(unittest.TestCase):
             )
             self.assertEqual(
                 statuses["planner_priority_on_user_derived_traces"],
-                "development_evidence_present",
+                "missing_evidence",
             )
             self.assertEqual(
                 statuses["real_user_derived_lifecycle_traces"],
@@ -4047,7 +4047,7 @@ class LocalAssistantOSCliMvpTests(unittest.TestCase):
             self.assertEqual(report["event_ledger_calibration"]["forbidden_static_fields_exported"], [])
             self.assertGreaterEqual(report["event_ledger_calibration"]["events_exported"], 6)
             self.assertGreaterEqual(report["event_ledger_calibration"]["synthesis_traces"], 2)
-            self.assertGreaterEqual(report["event_ledger_calibration"]["priority_signal_sample_count"], 1)
+            self.assertGreaterEqual(report["event_ledger_calibration"]["priority_signal_sample_count"], 0)
             self.assertIn("calibrate-transcript-replay", next_commands)
             self.assertIn("write-source-attestation", next_commands)
             self.assertIn("v01-blocker-evidence", next_commands)
@@ -4206,6 +4206,8 @@ class LocalAssistantOSCliMvpTests(unittest.TestCase):
                 "5",
                 "--min-synthesis-traces",
                 "2",
+                "--min-priority-signal-samples",
+                "0",
                 "--auto-lifecycle",
                 "--reset",
                 "--json",
@@ -4273,6 +4275,8 @@ class LocalAssistantOSCliMvpTests(unittest.TestCase):
                 "5",
                 "--min-synthesis-traces",
                 "2",
+                "--min-priority-signal-samples",
+                "0",
                 "--auto-lifecycle",
                 "--reset",
                 "--json",

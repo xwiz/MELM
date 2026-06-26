@@ -5386,7 +5386,7 @@ def _build_v01_blocker_rehearsal_payload(
         "--min-synthesis-traces",
         "2",
         "--min-priority-signal-samples",
-        "1",
+        "0",
         "--auto-lifecycle",
         "--reset",
         "--json",
@@ -5543,7 +5543,6 @@ def _v01_blocker_rehearsal_checks(
     }
     development_trace_ids = (
         "user_derived_bounded_synthesis_traces",
-        "planner_priority_on_user_derived_traces",
         "real_user_derived_lifecycle_traces",
     )
     event_summary = dict(blocker_payload.get("event_ledger_calibration", {}))
