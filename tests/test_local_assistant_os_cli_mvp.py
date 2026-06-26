@@ -384,7 +384,7 @@ class LocalAssistantOSCliMvpTests(unittest.TestCase):
             )
 
             for report in (default_progress, loaded_progress):
-                self.assertTrue(report["passed"])
+        self.assertTrue(report["passed"], f"v01-audit failed: checks={report.get('checks')}, core_reqs={[(c['id'], c['status']) for c in report.get('core_requirements', [])]}")
                 self.assertFalse(report["architecture_complete"])
                 self.assertFalse(report["architecture_complete_claimed"])
                 self.assertFalse(report["candidate_review_ready"])
