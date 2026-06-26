@@ -14389,12 +14389,12 @@ set -eu
 SCRIPT_DIR="$(dirname "$0")"
 cd "$SCRIPT_DIR/.."
 
-python3 scripts/local_assistant_os_cli.py verify-bundle --json
-python3 scripts/local_assistant_os_cli.py dataset-audit --reset --json
-python3 scripts/local_assistant_os_cli.py target-report --reset --json
-python3 scripts/local_assistant_os_cli.py bootstrap-runtime --reset --json "$@"
-python3 scripts/local_assistant_os_cli.py ui-smoke --reset --json
-python3 scripts/local_assistant_os_cli.py launcher-smoke --reset --json
+${MELM_PYTHON:-python3} scripts/local_assistant_os_cli.py verify-bundle --json
+${MELM_PYTHON:-python3} scripts/local_assistant_os_cli.py dataset-audit --reset --json
+${MELM_PYTHON:-python3} scripts/local_assistant_os_cli.py target-report --reset --json
+${MELM_PYTHON:-python3} scripts/local_assistant_os_cli.py bootstrap-runtime --reset --json "$@"
+${MELM_PYTHON:-python3} scripts/local_assistant_os_cli.py ui-smoke --reset --json
+${MELM_PYTHON:-python3} scripts/local_assistant_os_cli.py launcher-smoke --reset --json
 
 printf '%s\\n' "First-run checks passed. Start the local browser app with: sh bin/start_app.sh"
 printf '%s\\n' "Then open: http://127.0.0.1:8771/"
@@ -14412,11 +14412,11 @@ HOST="${MELM_ASSISTANT_HOST:-127.0.0.1}"
 PORT="${MELM_ASSISTANT_PORT:-8771}"
 
 if [ ! -f "$DB" ]; then
-  python3 scripts/local_assistant_os_cli.py bootstrap-runtime --db "$DB" --json
+  ${MELM_PYTHON:-python3} scripts/local_assistant_os_cli.py bootstrap-runtime --db "$DB" --json
 fi
 
 printf '%s\\n' "Open http://$HOST:$PORT/ in a browser."
-exec python3 scripts/local_assistant_os_cli.py serve --db "$DB" --host "$HOST" --port "$PORT"
+exec ${MELM_PYTHON:-python3} scripts/local_assistant_os_cli.py serve --db "$DB" --host "$HOST" --port "$PORT"
 """
 
 
@@ -14426,11 +14426,11 @@ set -eu
 SCRIPT_DIR="$(dirname "$0")"
 cd "$SCRIPT_DIR/.."
 
-python3 scripts/local_assistant_os_cli.py verify-bundle --json
-python3 scripts/local_assistant_os_cli.py dataset-audit --reset --json
-python3 scripts/local_assistant_os_cli.py target-report --reset --require-raspberry-pi --json
-python3 scripts/local_assistant_os_cli.py bootstrap-runtime --reset --json "$@"
-python3 scripts/local_assistant_os_cli.py launcher-smoke --reset --json
+${MELM_PYTHON:-python3} scripts/local_assistant_os_cli.py verify-bundle --json
+${MELM_PYTHON:-python3} scripts/local_assistant_os_cli.py dataset-audit --reset --json
+${MELM_PYTHON:-python3} scripts/local_assistant_os_cli.py target-report --reset --require-raspberry-pi --json
+${MELM_PYTHON:-python3} scripts/local_assistant_os_cli.py bootstrap-runtime --reset --json "$@"
+${MELM_PYTHON:-python3} scripts/local_assistant_os_cli.py launcher-smoke --reset --json
 
 printf '%s\\n' "First-run checks passed. Start the local API with: sh bin/start_api.sh"
 """
@@ -14525,10 +14525,10 @@ HOST="${MELM_ASSISTANT_HOST:-127.0.0.1}"
 PORT="${MELM_ASSISTANT_PORT:-8771}"
 
 if [ ! -f "$DB" ]; then
-  python3 scripts/local_assistant_os_cli.py bootstrap-runtime --db "$DB" --json
+  ${MELM_PYTHON:-python3} scripts/local_assistant_os_cli.py bootstrap-runtime --db "$DB" --json
 fi
 
-exec python3 scripts/local_assistant_os_cli.py serve --db "$DB" --host "$HOST" --port "$PORT"
+exec ${MELM_PYTHON:-python3} scripts/local_assistant_os_cli.py serve --db "$DB" --host "$HOST" --port "$PORT"
 """
 
 
@@ -14539,7 +14539,7 @@ set -eu
 HOST="${MELM_ASSISTANT_HOST:-127.0.0.1}"
 PORT="${MELM_ASSISTANT_PORT:-8771}"
 
-python3 - "$HOST" "$PORT" <<'PY'
+${MELM_PYTHON:-python3} - "$HOST" "$PORT" <<'PY'
 import json
 import sys
 from urllib.request import urlopen

@@ -3,9 +3,9 @@
 Extracted from test_local_assistant_os_cli_mvp.py's monolithic
 test_cli_pi_bundle_builds_portable_self_checked_bundle into focused sub-tests.
 
-Pre-existing failures: v01_audit/v01_progress milestone blockers are marked
-with @unittest.expectedFailure so they show as expected failures when the
-bundle builds, rather than blocking CI.
+CI notes: v01_audit/v01_progress milestone blockers were previously marked
+with @unittest.expectedFailure. Now that the plan file is tracked in git,
+they pass as regular tests.
 """
 
 import json
@@ -222,7 +222,6 @@ class PortableBundleStructuralMvpTests(unittest.TestCase):
         self.assertTrue(self.report["open_traces"]["passed"])
         self.assertTrue(self.report["transcript_replay"]["passed"])
 
-    @unittest.expectedFailure
     def test_bundle_v01_milestone_report_blockers(self):
         self._require_bundle()
         self.assertTrue(self.report["v01_audit"]["passed"])
@@ -284,7 +283,6 @@ class PortableBundleStructuralMvpTests(unittest.TestCase):
         self.assertTrue(self.self_check["open_traces"]["passed"])
         self.assertTrue(self.self_check["transcript_replay"]["passed"])
 
-    @unittest.expectedFailure
     def test_bundle_v01_self_check_known_blockers(self):
         self._require_bundle()
         self.assertTrue(
