@@ -89,7 +89,7 @@ class PortableBundleStructuralMvpTests(unittest.TestCase):
     def test_bundle_builds_successfully(self):
         self._require_bundle()
         failed_items = [k for k in ("passed",) if not self.report.get(k)]
-        self.assertTrue(self.report["passed"], f"report.passed=False, launcher_smoke_checks={self.report.get('launcher_smoke', {}).get('checks', {})}")
+        self.assertTrue(self.report["passed"], f"report.passed=False, checks={self.report.get('launcher_smoke', {}).get('checks', {})}, stderr_tail={self.report.get('stderr_tail', '')[:500]}, stdout_tail={self.report.get('stdout_tail', '')[:500]}")
         self.assertEqual(Path(self.report["runbook"]).name, "RUN_PORTABLE_APP.md")
         self.assertFalse(self.report["smoke_skipped"])
         self.assertFalse(self.report["bundle"]["required_network"])
@@ -202,7 +202,7 @@ class PortableBundleStructuralMvpTests(unittest.TestCase):
         self._require_bundle()
         subs = {k: self.report.get(k, {}).get("passed") for k in ("api_smoke", "api_session_smoke", "ui_smoke", "bootstrap_runtime", "launcher_smoke", "open_traces", "transcript_replay")}
         failed_subs = [k for k, v in subs.items() if not v]
-        self.assertFalse(failed_subs, f"failed sub-smokes: {failed_subs}, all={subs}")
+        self.assertFalse(failed_subs, f"failed sub-smokes: {failed_subs}, all={subs}, stderr_tail={self.report.get('stderr_tail', '')[:500]}, stdout_tail={self.report.get('stdout_tail', '')[:500]}")
         self.assertTrue(self.report["api_smoke"]["passed"])
         self.assertTrue(all(self.report["api_smoke"]["checks"].values()))
         self.assertTrue(self.report["api_session_smoke"]["passed"])
