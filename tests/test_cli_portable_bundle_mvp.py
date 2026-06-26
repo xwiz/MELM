@@ -88,7 +88,8 @@ class PortableBundleStructuralMvpTests(unittest.TestCase):
 
     def test_bundle_builds_successfully(self):
         self._require_bundle()
-        self.assertTrue(self.report["passed"])
+        failed_items = [k for k in ("passed",) if not self.report.get(k)]
+        self.assertTrue(self.report["passed"], f"report.passed=False, bundle={self.report.get('bundle', {})}")
         self.assertEqual(Path(self.report["runbook"]).name, "RUN_PORTABLE_APP.md")
         self.assertFalse(self.report["smoke_skipped"])
         self.assertFalse(self.report["bundle"]["required_network"])
@@ -199,6 +200,9 @@ class PortableBundleStructuralMvpTests(unittest.TestCase):
 
     def test_bundle_api_and_runtime_smokes_pass(self):
         self._require_bundle()
+        subs = {k: self.report.get(k, {}).get("passed") for k in ("api_smoke", "api_session_smoke", "ui_smoke", "bootstrap_runtime", "launcher_smoke", "open_traces", "transcript_replay")}
+        failed_subs = [k for k, v in subs.items() if not v]
+        self.assertFalse(failed_subs, f"failed sub-smokes: {failed_subs}, all={subs}")
         self.assertTrue(self.report["api_smoke"]["passed"])
         self.assertTrue(all(self.report["api_smoke"]["checks"].values()))
         self.assertTrue(self.report["api_session_smoke"]["passed"])
@@ -260,8 +264,8 @@ class PortableBundleStructuralMvpTests(unittest.TestCase):
 
     def test_bundle_self_check_passes(self):
         self._require_bundle()
-        self.assertTrue(self.manifest["self_check"]["passed"])
-        self.assertTrue(self.self_check["passed"])
+        self.assertTrue(self.manifest["self_check"]["passed"], f"manifest self_check passed=False")
+        self.assertTrue(self.self_check["passed"], f"self_check file passed=False")
         self.assertTrue(self.self_check["dataset_audit"]["passed"])
         self.assertTrue(self.self_check["pi_smoke"]["passed"])
         self.assertTrue(self.self_check["autoimmune_smoke"]["passed"])

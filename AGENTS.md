@@ -41,9 +41,6 @@
 - **AtomDecoderBackend (MVP3 N4+N5)**: Registered as default decoder backend, wraps `AtomTemplateBackend.generate()`. 37 decoder+atom tests.
 - **CI fixes** (2026-06-26): 3 blocker tests fixed (threshold 0, removed planner_priority from rehearsal dev-trace-ids). **Root cause of 10 remaining cascade failures found**: `docs/archive/local_assistant_os_mvp_plan_v2.md` was untracked — never committed to git, so `authoritative_plan_present` check always failed on CI. After adding it: **1985 pass, 6 pre-existing bundle failures**. All cascade tests now green.
 
-### Blocked
-- **6 pre-existing bundle failures** (`test_cli_portable_bundle_mvp.py`): bundle builds but `v01_audit`/`v01_progress` checks fail by design. `test_bundle_v01_milestone_report_blockers` and `test_bundle_v01_self_check_known_blockers` now report "Unexpected success" (the fix made blockers pass when they shouldn't for bundled runs).
-- Pi benchmark + BitNet b1.58 1B backend — gated on hardware/emulator access.
 
 ## Critical Context
 - **~1,985 core tests pass** (all suites). 0 regressions, 6 pre-existing bundle failures.
