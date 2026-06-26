@@ -275,7 +275,9 @@ class LocalAssistantOSCliMvpTests(unittest.TestCase):
     def test_cli_v01_audit_reports_runnable_core_and_remaining_real_world_blockers(self) -> None:
         report = _run_cli("v01-audit", "--json")
 
-        self.assertTrue(report["passed"])
+        failed_checks = [k for k, v in report.get("checks", {}).items() if not v]
+        failed_reqs = [c["id"] for c in report.get("core_requirements", []) if c["status"] != "met"]
+        self.assertTrue(report["passed"], f"v01-audit failed: checks={failed_checks}, reqs={failed_reqs}")
         self.assertTrue(report["core_browser_cli_ready"])
         self.assertFalse(report["architecture_complete"])
         self.assertEqual(report["status"], "browser_cli_ready_with_real_world_blockers")
