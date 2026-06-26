@@ -64,8 +64,10 @@ class TestMultiTurnIntentTracking(unittest.TestCase):
         # rapid_occurrence tracks consecutive same-utterance text in the
         # router's in-memory _rapid_state dict.  The kernel recreates the
         # router per turn, so test directly with a persistent router instance.
+        # Use store=None to exercise the in-memory fallback; the store-backed
+        # path counts DB events which are only written by the kernel.
         router = OnDeviceAssistantRouter(
-            self.kernel.profile, store=self.store,
+            self.kernel.profile, store=None,
         )
         d1 = router.handle("Hello")
         self.assertEqual(d1.rapid_occurrence, 0)

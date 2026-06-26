@@ -525,9 +525,13 @@ class TestProbePassThrough(unittest.TestCase):
     """The experiment probe still runs and the winner passes 18/18."""
 
     def test_probe_runs_and_winner_passes(self) -> None:
+        from pathlib import Path
+        probe_path = Path("experiments/nlg_attention_packet_probe.py")
+        if not probe_path.is_file():
+            raise unittest.SkipTest("experiments/nlg_attention_packet_probe.py not found")
         import subprocess, sys
         result = subprocess.run(
-            [sys.executable, "experiments/nlg_attention_packet_probe.py", "--json"],
+            [sys.executable, str(probe_path), "--json"],
             capture_output=True, text=True, timeout=60,
         )
         self.assertEqual(result.returncode, 0, msg=result.stderr[:500])

@@ -2,7 +2,6 @@
 
 **A zero-dependency local assistant OS that understands meaning, not just keywords. Runs on anything from a Raspberry Pi to a laptop — no GPU, no ML framework, no cloud, no vector database.**
 
-> **Why "Event"?** The system's entity architecture is organized around events — every utterance, conversation, personal experience, and causal relation is stored as a typed event entity (`event_instance`, `personal_experience`, etc.). The three-timescale meaning model (utterance → conversation → history) aggregates events across time.
 
 ```powershell
 # bootstrap runtime database (one-time)
@@ -32,12 +31,16 @@ MELM is a **meaning-first local assistant OS**. Unlike neural frameworks (Rasa, 
 This makes MELM:
 
 - **Deterministic** — same input always produces the same output. No hallucinations, no flaky tests.
-- **Verifiable** — every decision is traceable to a UOL parse frame, evidence keys, and policy rules. Verified by a routing benchmark (48 cases, 16 intents) and 23 routing accuracy tests with specific reason/evidence assertions.
+- **Verifiable** — every decision is traceable to a UOL parse frame, evidence keys, and policy rules. Verified by a routing benchmark (48 cases, 16 capabilities) and 23 routing accuracy tests with specific reason/evidence assertions.
 - **Meaning-aware** — utterances are stored as structured propositions (`world_fact` entities) with a truth model (asserted / negated / contradicted).
 - **Self-aware** — derives its sense of identity from usage patterns stored in `personal_experience` entities.
 - **Lightweight** — core package runs on stdlib Python; targets sub-50 ms responses and <1 MB RAM per session on a Raspberry Pi 5 (measured baseline with local LLM decode: ~97 ms TTFT, ~545 MB RSS; core stdlib-only path is sub-millisecond at ~186 MB RSS).
 - **Private** — fully local. No data leaves the device. No API keys. No cloud dependency.
 - **Assistant Ready** — Need to build your own local assistant that runs without LLM keys? MELM is built just for that.
+
+
+
+> **Why "Event"?** The system's entity architecture is organized around events — every utterance, conversation, personal experience, and causal relation is stored as a typed event entity (`event_instance`, `personal_experience`, etc.). The three-timescale meaning model (utterance → conversation → history) aggregates events across time.
 
 ---
 
@@ -89,7 +92,7 @@ This makes MELM:
 ## Capabilities
 
 | Capability | Tests | Live | How | Score |
-|---|---|---|---|---|---|
+|---|---|---|---|---|
 | Weather | 100% (18+ files) | Correct, contextualized | Cached offline tool, climate-aware routing, temporal query detection (historical/forecast) | 92/100 |
 | Meal suggestions | 100% (18+ files) | Good, weather-aware | Knowledge contracts + entity inventory, weather-context aware, contract-driven food tags | 92/100 |
 | Self-identity | 100% (72 tests) | Detailed, correct | Derives label from usage patterns (mean polarity per intent), name awareness/origin routing, 28 self-identity tests | 92/100 |
@@ -100,28 +103,12 @@ This makes MELM:
 | Personal memory | 100% (25 tests) | Partial | Entity store recall (session, digest), T2 experience writer with outcome/polarity/learned_facts | 85/100 |
 | Story generation | 100% (52 tests) | Good inventory pick | Expanded 12→25 title keywords, 16→31 full-text keywords, 9→16 challenges, 8→16 lessons, contract-driven templates | 85/100 |
 | Knowledge typing | 100% (18 tests) | N/A | UOL claim → classify → store as `world_fact` with truth model (asserted/negated/contradicted), copular state extraction | 82/100 |
-| Input normalization | 100% (80 tests) | Weak responses | 3-tier pipeline: contract expansion → lexicon SymSpell → agreement fix, proper-noun/NER protection | 75/100 |
-| Mood tracking | 100% (10+ files) | Correct routing | Valence/arousal decay model (6h/1.5h), 9 mood regions, affect signal aggregation, multi-turn mood decay verified by stress tests | 78/100 |
 | Music & calls | 100% (10+ files) | Correct routing | Device action via typed confirmation gate + media inventory, UOL semantic-class-based style enrichment with modifier support (language-agnostic) | 80/100 |
+| Mood tracking | 100% (10+ files) | Correct routing | Valence/arousal decay model (6h/1.5h), 9 mood regions, affect signal aggregation, multi-turn mood decay verified by stress tests | 78/100 |
 | Fact negation | 100% (8+ files) | Correct gating | Detects negated claims, stores polarity, handles contradiction, negation gates classifier + frame linker routing | 78/100 |
+| Input normalization | 100% (80 tests) | Weak responses | 3-tier pipeline: contract expansion → lexicon SymSpell → agreement fix, proper-noun/NER protection | 75/100 |
 | Trusted contacts | 100% (14+ files) | Correct routing | Profile-resolved action via entity store, social_relation frame linking, relationship-aware enrichment templates | 72/100 |
 | Cloud handoff | 100% (8+ files) | N/A | Privacy-gated fallback for unknown intents, consent tracking, private facts block, open-domain speech-act templates | 65/100 |
-
----
-
-## Use Cases
-
-### Researchers
-MELM is a testbed for **symbolic AI and conversational agents without neural networks**. The UOL grammar, contract registry, and test suite (~2,000 tests across 152 files, zero flaky tests, zero regressions) provide a reproducible platform for experiments in meaning representation, moral cognition, knowledge persistence, and skill-based architectures.
-
-### Makers & Raspberry Pi users
-MELM targets **Raspberry Pi 5 (8 GB)** operation. Measured baseline (laptop, Qwen2.5-0.5B GGUF decode): ~97 ms median TTFT, ~545 MB RSS, ~61 tok/s. The core stdlib path is lighter still. Use it as a local voice assistant, home automation interface, or offline educational companion. Raspberry Pi is an optional appliance validation target — all core acceptance tests run on any stdlib Python platform. Pi smoke-gate validation via `python -m melm pi-smoke` (~7 min).
-
-### Privacy-conscious users
-MELM is **fully offline** with no external API calls in the default path. All conversational memory, user facts, learned vocabulary, and typed world facts live in a local SQLite database. The only data that leaves is explicitly gated through `cloud_handoff` with privacy consent tracking.
-
-### Embedded & edge devices
-With zero external dependencies (stdlib Python only) and a ~15 MB core footprint (stdlib code + contracts; bundled folk tale data adds ~10 MB), MELM can run in environments where Docker, Redis, or GPU drivers are impractical. Optional local-model generation adds the model file and `llama-cpp-python` extra.
 
 ---
 
@@ -146,7 +133,7 @@ With zero external dependencies (stdlib Python only) and a ~15 MB core footprint
 
 ## Accomplishments
 
-- **~2,000 tests across 152 files** — zero flaky tests, zero regressions. Coverage spans single-assertion unit checks through full-pipeline **lifecycle simulations**: 17-step and 37-step multi-day sessions exercising the kernel/router/synthesis/store pipeline end-to-end, 29-turn structured scenarios with capability growth, and 25-turn real transcript replay with no pre-baked answers. Routing correctness validated by a **48-case routing benchmark** covering all 16 intents, **23 routing accuracy tests** with specific reason/evidence assertions, and **16 multi-turn stress tests** verifying mood decay, intent tracking, experience persistence, and cross-session recall.
+- **~2,000 tests across 152 files** — zero flaky tests, zero regressions. Coverage spans single-assertion unit checks through full-pipeline **lifecycle simulations**: 17-step and 37-step multi-day sessions exercising the kernel/router/synthesis/store pipeline end-to-end, 29-turn structured scenarios with capability growth, and 25-turn real transcript replay with no pre-baked answers. Routing correctness validated by a **48-case routing benchmark** covering all 16 capabilities, **23 routing accuracy tests** with specific reason/evidence assertions, and **16 multi-turn stress tests** verifying mood decay, intent tracking, experience persistence, and cross-session recall.
 - **122 registered versioned JSON contracts** defining all domain knowledge — food tags, health disclaimers, safety policies, story components, verb states, mood states, capability manifests, knowledge types, world relations, normalization expansions, self-identity, causal frames, music style templates, contact enrichment, and 100+ more across 7 infrastructure categories.
 - **115 semantic classes** in `semantic_classes.v1.json` — the spine of all cross-layer meaning, enforced by CI invariant tests that catch class-ID drift across contracts, entity schemas, and UOL frames.
 - **Causal frame expansion**: 156 curated predicate frames with 263 state definitions, hand-crafted across 6 batches covering all README use cases (music, planning, chatting, health, story, weather, mood, memory, identity, moral reasoning). Classification fields are 100% rule-correct via contract lookup.
@@ -169,25 +156,10 @@ With zero external dependencies (stdlib Python only) and a ~15 MB core footprint
 
 ---
 
-## V0.4.2 Gap Fixes (Resolved)
+## Roadmap
+The major capabilities missing currently are:
+Scheduling/reminders
 
-All verified gaps from the V0.4.2 probing pass have been fixed. See `docs/superpowers/plans/2026-06-24-v0_4_2-gap-verification-and-implementation-plan.md` for the original gap analysis and root-cause traces.
-
-| Gap | Severity | Status | Fix |
-|---|---|---|---|
-| **Negation → classifier gating** | P0 | ✅ Fixed | `_main_atom_negated()` helper gates `health_advice` frame-linker match on negated/counterfactual atom context. "I do not feel sick" → `open_domain`. |
-| **Mood routing regression** | P0 | ✅ Fixed | `_apply_short_circuits()` routes emotionally valenced claims to `assistant_behavior`, with tag-based exclusion of pain/complaint/profanity so health complaints still route correctly. |
-| **"Remind" routing regression** | P0 | ✅ Fixed | `remind` added to `predicate_inventory.v1.json`; classifier rule routes remind/remember/recall + user agent/beneficiary to `personal_memory`. |
-| **Temporal memory routing** | P1 | ✅ Fixed | Temporal deixis added to `function_words.v1.json`; past-tense + first-person + meal-predicate questions now route to `personal_memory` instead of `meal_suggestion`. |
-| **Consciousness → self_query** | P1 | ✅ Fixed | Unified self-probe short-circuit in `_apply_short_circuits()` routes "Are you conscious/real/alive/sentient?" to `assistant_behavior`. |
-| **Rapid repetition reset** | P1 | ✅ Fixed | `AssistantOSKernel` now reuses a persistent `OnDeviceAssistantRouter` instance across turns, preserving `_rapid_state`. |
-| **Music mood modifier enrichment** | P2 | ✅ Fixed | `_enrich_media_playback_answer()` now reads atom modifier semantic classes in addition to role classes. "Play calm music" → ambient style. |
-| **CLI bundle file list** | P2 | ✅ Fixed | Bundle required-docs paths updated to archived locations in `local_assistant_os_cli.py`. |
-| **Symbolic story fallback** | P2 | ✅ Fixed | `SymbolicStoryEngine` wired as Tier 2 fallback in `_story_answer()` (folk tale → symbolic → LLM pipeline → template). |
-| **Semantic attention NLG** | P3 | ✅ Built | `SemanticAttentionPacket` + contract-backed `NlgRenderer` integrated into synthesis before atom template fallback. 58 tests pass. |
-| **Pi benchmark + BitNet backend** | P2 | ⏳ Deferred | Cannot verify constrained-decoder tok/s/TTFT/RSS without hardware or emulator access. |
-
----
 
 ## Quickstart
 
