@@ -384,7 +384,10 @@ class LocalAssistantOSCliMvpTests(unittest.TestCase):
             )
 
             for report in (default_progress, loaded_progress):
-        self.assertTrue(report["passed"], f"v01-audit failed: checks={report.get('checks')}, core_reqs={[(c['id'], c['status']) for c in report.get('core_requirements', [])]}")
+        if not report["passed"]:
+            failed_checks = [k for k, v in report.get("checks", {}).items() if not v]
+            failed_reqs = [c["id"] for c in report.get("core_requirements", []) if c["status"] != "met"]
+            self.fail(f"v01-audit failed: checks={failed_checks}, reqs={failed_reqs}")
                 self.assertFalse(report["architecture_complete"])
                 self.assertFalse(report["architecture_complete_claimed"])
                 self.assertFalse(report["candidate_review_ready"])
@@ -1419,7 +1422,8 @@ class LocalAssistantOSCliMvpTests(unittest.TestCase):
             db_dir = Path(tmp) / "target_report"
             report = _run_cli("target-report", "--db-dir", str(db_dir), "--reset", "--json")
 
-            self.assertTrue(report["passed"])
+            failed_checks = [k for k, v in report.get("checks", {}).items() if not v]
+            self.assertTrue(report["passed"], f"target-report failed: checks={failed_checks}")
             self.assertTrue(report["checks"]["python_supported"])
             self.assertTrue(report["checks"]["sqlite_available"])
             self.assertTrue(report["checks"]["db_dir_writable"])
